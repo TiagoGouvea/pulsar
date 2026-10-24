@@ -23,7 +23,8 @@ const SECRET_PATTERNS = [
 export async function scanSecrets(ctx: Ctx, cwd: string, base?: string) {
   const ref = base ?? (await git(cwd, "rev-list", "--max-parents=0", "HEAD")).split("\n")[0];
   const d = await git(cwd, "diff", ref, "--", ".", ":(exclude).harness");
-  const values = Object.values(ctx.env).filter((v): v is string => !!v && v.length >= 12 && !/^https?:\/\//.test(v));
+  // only secret-like vars (public Firebase config and project ids are expected in the code)
+  const values = Object.entries(ctx.env).filter(([k, v]) => /KEY|TOKEN|SECRET|PASSWORD/.test(k) && !!v && v.length >= 12).map(([, v]) => v!);
   const problems: string[] = [];
   let fileName = "";
   for (const l of d.split("\n")) {
