@@ -37,8 +37,7 @@ export async function prepareExecutionBranch(workspace: string, runId: string, p
   const repository = await runProcess(["git", "rev-parse", "--show-toplevel"], { cwd: workspace, timeoutMs: 3_000 });
   if (repository.exitCode !== 0) return { status: "skipped", detail: "Workspace ainda não é um repositório Git." };
   const repositoryRoot = repository.stdout.trim();
-  const relativeToProtected = path.relative(protectedRoot, repositoryRoot);
-  if (relativeToProtected === "" || (!relativeToProtected.startsWith("..") && !path.isAbsolute(relativeToProtected))) {
+  if (path.resolve(repositoryRoot) === path.resolve(protectedRoot)) {
     return { status: "skipped", detail: "Fixture/repositório do harness: branch não foi alterada." };
   }
   const branch = `harness/${runId}`;
@@ -61,8 +60,7 @@ export async function checkpointFiles(input: {
   const repository = await runProcess(["git", "rev-parse", "--show-toplevel"], { cwd: input.workspace, timeoutMs: 3_000 });
   if (repository.exitCode !== 0) return { committed: false, revision: await currentRevision(input.workspace) };
   const repositoryRoot = repository.stdout.trim();
-  const relativeToProtected = path.relative(input.protectedRoot, repositoryRoot);
-  if (relativeToProtected === "" || (!relativeToProtected.startsWith("..") && !path.isAbsolute(relativeToProtected))) {
+  if (path.resolve(repositoryRoot) === path.resolve(input.protectedRoot)) {
     return { committed: false, revision: await currentRevision(input.workspace) };
   }
   const relativeFiles = input.files.map((file) => path.relative(input.workspace, assertPathInside(path.resolve(input.workspace, file), input.workspace)));

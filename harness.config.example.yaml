@@ -65,19 +65,6 @@ models:
     contextTokens: 8192
     maxOutputTokens: 2048
 
-  - alias: local-qwen-coder
-    executor: pi
-    provider: lmstudio
-    modelId: qwen3-coder-30b-a3b-instruct
-    endpoint: http://localhost:1235/v1
-    family: qwen3-coder
-    modality: local
-    capabilities: [text, tools, reasoning]
-    roles: [implementer, testAuthor, diagnostic]
-    enabled: true
-    contextTokens: 8192
-    maxOutputTokens: 2048
-
   - alias: local-qwen-9b
     executor: pi
     provider: lmstudio
@@ -87,6 +74,19 @@ models:
     modality: local
     capabilities: [text, tools, reasoning]
     roles: [planner, implementer, testAuthor, diagnostic, learningAnalyst]
+    enabled: true
+    contextTokens: 8192
+    maxOutputTokens: 2048
+
+  - alias: local-qwen-coder
+    executor: pi
+    provider: lmstudio
+    modelId: qwen3-coder-30b-a3b-instruct
+    endpoint: http://localhost:1235/v1
+    family: qwen3-coder
+    modality: local
+    capabilities: [text, tools, reasoning]
+    roles: [implementer, testAuthor, diagnostic]
     enabled: true
     contextTokens: 8192
     maxOutputTokens: 2048
