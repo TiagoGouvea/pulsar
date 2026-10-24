@@ -4,6 +4,7 @@ import path from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import type { ModelCandidate } from "../../src/domain/types.js";
 import { openAiEndpoint, probeCandidate } from "../../src/providers/probes.js";
+import type { ProcessResult } from "../../src/utils/process.js";
 import { createTestConfig } from "../helpers/config.js";
 
 const candidate: ModelCandidate = {
@@ -38,8 +39,11 @@ describe("probes de provedores", () => {
       .mockResolvedValueOnce(new Response(JSON.stringify({
         choices: [{ message: { tool_calls: [{ function: { name: "report_value", arguments: "{\"value\":7}" } }] } }],
       }), { status: 200 }));
+    const processRunner = (command: string[]): Promise<ProcessResult> => Promise.resolve({
+      command, exitCode: 0, signal: null, stdout: "", stderr: "", durationMs: 1, timedOut: false,
+    });
 
-    const checks = await probeCandidate(config, candidate, { inference: true });
+    const checks = await probeCandidate(config, candidate, { inference: true, processRunner });
 
     expect(checks.map((check) => [check.id, check.status])).toEqual([
       ["model.local-test.availability", "pass"],

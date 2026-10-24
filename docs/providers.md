@@ -18,9 +18,9 @@ lms server start
 yarn harness models probe --config harness.config.yaml --alias <alias> --inference
 ```
 
-A política aceita somente um modelo local carregado. Configure no LM Studio “Only Keep Last JIT Loaded Model” ou faça load/unload explicitamente. O harness não baixa modelos sozinho.
+A política aceita somente um modelo local carregado. Em cada execução ou probe com inferência, o harness executa `lms unload --all`, carrega apenas o candidato com contexto inicial limitado e garante outro `lms unload --all` ao final, inclusive em falha. Não compartilhe o servidor com outro agente durante uma execução local. O harness não baixa modelos sozinho.
 
-Em 24/10/2026, `gpt-oss-20b`, `qwen3.5-9b-optiq` e `qwen3.5-9b-mlx` responderam a texto e function calling no endpoint local. O catálogo não declara visão nem saída estruturada porque essas capacidades ainda não foram validadas. O Qwen3-Coder 30B só deve entrar quando seu ID real aparecer em `/v1/models`.
+Em 24/10/2026, os três modelos-alvo estavam baixados: `qwen3-coder-30b-a3b-instruct`, `qwen3.5-9b-mlx` e `mlx-community/gpt-oss-20b`. O catálogo não declara visão nem saída estruturada porque essas capacidades ainda não foram validadas. O Qwen3-Coder 30B exige mais memória e deve permanecer com contexto inicial de 8K; se as proteções do LM Studio recusarem o carregamento, o harness pausa com evidência em vez de alterar as proteções do sistema.
 
 OpenRouter é consultado pelo catálogo. Inferência de diagnóstico permanece desabilitada sem `diagnosticsLimit` e ação explícita. Usage/cost do provedor tem precedência sobre estimativas.
 

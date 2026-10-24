@@ -65,10 +65,23 @@ models:
     contextTokens: 8192
     maxOutputTokens: 2048
 
-  - alias: local-qwen-optiq
+  - alias: local-qwen-coder
     executor: pi
     provider: lmstudio
-    modelId: qwen3.5-9b-optiq
+    modelId: qwen3-coder-30b-a3b-instruct
+    endpoint: http://localhost:1235/v1
+    family: qwen3-coder
+    modality: local
+    capabilities: [text, tools, reasoning]
+    roles: [implementer, testAuthor, diagnostic]
+    enabled: true
+    contextTokens: 8192
+    maxOutputTokens: 2048
+
+  - alias: local-qwen-9b
+    executor: pi
+    provider: lmstudio
+    modelId: qwen3.5-9b-mlx
     endpoint: http://localhost:1235/v1
     family: qwen3.5
     modality: local
@@ -78,23 +91,10 @@ models:
     contextTokens: 8192
     maxOutputTokens: 2048
 
-  - alias: local-qwen-mlx
-    executor: pi
-    provider: lmstudio
-    modelId: qwen3.5-9b-mlx
-    endpoint: http://localhost:1235/v1
-    family: qwen3.5
-    modality: local
-    capabilities: [text, tools, reasoning]
-    roles: [implementer, testAuthor, diagnostic]
-    enabled: true
-    contextTokens: 8192
-    maxOutputTokens: 2048
-
   - alias: local-gpt-oss
     executor: pi
     provider: lmstudio
-    modelId: gpt-oss-20b
+    modelId: mlx-community/gpt-oss-20b
     endpoint: http://localhost:1235/v1
     family: gpt-oss
     modality: local
@@ -103,9 +103,6 @@ models:
     enabled: true
     contextTokens: 8192
     maxOutputTokens: 2048
-
-  # Qwen3-Coder 30B: adicione somente quando /v1/models expuser o ID real.
-  # Não use o nome do repositório de download como modelId presumido.
 
 storage:
   root: ./.harness

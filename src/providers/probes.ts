@@ -1,6 +1,7 @@
 import type { HarnessConfig } from "../config/schema.js";
 import type { CheckResult, ModelCandidate } from "../domain/types.js";
 import { safeError } from "../utils/core.js";
+import { withLmStudioModel, type ProcessRunner } from "./lmstudio.js";
 
 interface LmModel {
   key?: string;
@@ -20,6 +21,7 @@ interface ChatCompletion {
 
 export interface ProbeOptions {
   inference?: boolean;
+  processRunner?: ProcessRunner;
 }
 
 export function openAiEndpoint(baseUrl: string, resource: "models" | "chat/completions"): URL {
@@ -39,11 +41,11 @@ export async function probeCandidate(
       summary: "Executor determinístico disponível.", evidence: "Não realiza inferência externa.",
     }];
   }
-  if (candidate.modality === "local") return probeLmStudio(config, candidate, options.inference ?? false);
+  if (candidate.modality === "local") return probeLmStudio(config, candidate, options);
   return probeRemote(candidate);
 }
 
-async function probeLmStudio(config: HarnessConfig, candidate: ModelCandidate, inference: boolean): Promise<CheckResult[]> {
+async function probeLmStudio(config: HarnessConfig, candidate: ModelCandidate, options: ProbeOptions): Promise<CheckResult[]> {
   const baseUrl = candidate.endpoint ?? config.localInference.baseUrl;
   const headers: Record<string, string> = { "content-type": "application/json" };
   const token = process.env.LM_STUDIO_API_TOKEN;
@@ -64,14 +66,28 @@ async function probeLmStudio(config: HarnessConfig, candidate: ModelCandidate, i
       ...(matched ? {} : { remediation: "Ajuste models[].modelId para o ID exato retornado por /v1/models." }),
     };
     if (!matched) return [availability];
-    if (!inference) {
+    if (!(options.inference ?? false)) {
       return [availability, {
         id: `model.${candidate.alias}.inference`, status: "skip", scope: "stage", importance: "recommended",
         summary: "Smoke test de inferência não solicitado.",
         evidence: "Use `models probe --alias ... --inference`; modelos locais não consomem orçamento de API.",
       }];
     }
-    return [availability, ...await probeLocalInference(baseUrl, headers, candidate)];
+    try {
+      const inferenceChecks = await withLmStudioModel(
+        config,
+        candidate,
+        async () => probeLocalInference(baseUrl, headers, candidate),
+        options.processRunner,
+      );
+      return [availability, ...inferenceChecks];
+    } catch (error) {
+      return [availability, {
+        id: `model.${candidate.alias}.lifecycle`, status: "block", scope: "stage", importance: "required",
+        summary: "Falha ao preparar ou limpar o modelo local.", evidence: safeError(error),
+        remediation: "Verifique os recursos do sistema e execute `lms ps`; o harness já tentou descarregar todos os modelos.",
+      }];
+    }
   } catch (error) {
     return [{
       id: `model.${candidate.alias}.endpoint`, status: "block", scope: "stage", importance: "required",

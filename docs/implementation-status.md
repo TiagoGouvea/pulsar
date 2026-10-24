@@ -4,7 +4,7 @@
 
 - CLI, schemas, SQLite/WAL/migrações, estados, eventos, leases e retomada.
 - Executor fake, sessões Pi por tarefa, catálogo, probes, roteamento por capacidade.
-- Sessões independentes de revisão, provider calls auditáveis e load/unload explícito no LM Studio.
+- Sessões independentes de revisão, provider calls auditáveis e ciclo automático unload/load/unload no LM Studio.
 - Requisitos/DAG, contexto seletivo, verificadores, revisão por hash e gate humano.
 - Ledger em micros de USD, reservas, valores incertos e relatórios.
 - Screenshots Playwright, painel local protegido, background e fixture.

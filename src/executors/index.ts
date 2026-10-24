@@ -4,5 +4,5 @@ import { PiExecutor } from "./pi.js";
 import type { Executor } from "./types.js";
 
 export function createExecutor(config: HarnessConfig): Executor {
-  return config.execution.executor === "fake" ? new FakeExecutor() : new PiExecutor();
+  return config.execution.executor === "fake" ? new FakeExecutor() : new PiExecutor(config);
 }

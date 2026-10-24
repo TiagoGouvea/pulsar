@@ -3,7 +3,9 @@ import {
   ModelRuntime,
   SessionManager,
 } from "@earendil-works/pi-coding-agent";
+import type { HarnessConfig } from "../config/schema.js";
 import type { ExecutionRequest, ExecutionResult, ModelCandidate } from "../domain/types.js";
+import { withLmStudioModel } from "../providers/lmstudio.js";
 import { safeError } from "../utils/core.js";
 import type { Executor } from "./types.js";
 
@@ -56,7 +58,23 @@ export class PiExecutor implements Executor {
   readonly name = "pi";
   private abortCurrent: (() => Promise<void>) | undefined;
 
+  constructor(private readonly config: HarnessConfig) {}
+
   async execute(request: ExecutionRequest): Promise<ExecutionResult> {
+    try {
+      if (request.candidate.modality === "local") {
+        return await withLmStudioModel(this.config, request.candidate, async () => this.executeSession(request));
+      }
+      return await this.executeSession(request);
+    } catch (error) {
+      return {
+        taskId: request.task.id, outcome: "failed", summary: safeError(error), changedFiles: [],
+        claimedChecks: [], decisions: [], blockers: ["pi_execution_failed"], suggestedFollowUps: [],
+      };
+    }
+  }
+
+  private async executeSession(request: ExecutionRequest): Promise<ExecutionResult> {
     const { runtime, model } = await createRuntime(request.candidate);
     const { session } = await createAgentSession({
       cwd: request.workspace,
@@ -78,11 +96,6 @@ export class PiExecutor implements Executor {
         costUsd: String(stats.cost),
       };
       return result;
-    } catch (error) {
-      return {
-        taskId: request.task.id, outcome: "failed", summary: safeError(error), changedFiles: [],
-        claimedChecks: [], decisions: [], blockers: ["pi_execution_failed"], suggestedFollowUps: [],
-      };
     } finally {
       clearTimeout(timeout);
       this.abortCurrent = undefined;

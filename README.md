@@ -23,7 +23,7 @@ yarn playwright install chromium
 yarn harness init --project "/caminho/com espaços/meu-projeto"
 # Edite specs, modelos, comandos e limites no harness.config.yaml
 yarn harness preflight --config ./harness.config.yaml
-yarn harness models load --config ./harness.config.yaml --alias <local-alias>
+yarn harness models probe --config ./harness.config.yaml --alias <local-alias> --inference
 yarn harness plan --config ./harness.config.yaml
 yarn harness run --config ./harness.config.yaml
 ```
@@ -72,19 +72,19 @@ O executor fake testa o controlador e para no gate humano. Ele não comprova int
 
 O catálogo de exemplo já aponta para `http://localhost:1235/v1` e contém os IDs validados:
 
-- `qwen3.5-9b-optiq`: implementação principal, testes e diagnóstico.
-- `qwen3.5-9b-mlx`: fallback para implementação e testes.
-- `gpt-oss-20b`: planejamento e revisões independentes.
+- `qwen3-coder-30b-a3b-instruct`: implementação principal.
+- `qwen3.5-9b-mlx`: alternativa leve para implementação e diagnóstico.
+- `mlx-community/gpt-oss-20b`: planejamento e revisões independentes.
 
 Para usar os modelos reais, execute `init`, altere `execution.executor` de `fake` para `pi` no YAML gerado e valide cada candidato:
 
 ```bash
-yarn harness models probe --config harness.config.yaml --alias local-qwen-optiq --inference
-yarn harness models probe --config harness.config.yaml --alias local-qwen-mlx --inference
+yarn harness models probe --config harness.config.yaml --alias local-qwen-coder --inference
+yarn harness models probe --config harness.config.yaml --alias local-qwen-9b --inference
 yarn harness models probe --config harness.config.yaml --alias local-gpt-oss --inference
 ```
 
-Os Qwen de raciocínio precisam de saída acima de 64 tokens até para respostas curtas; o harness usa 2048 e o probe reserva no mínimo 256. Quando o Qwen3-Coder 30B terminar, consulte `/v1/models` e cadastre exatamente o ID devolvido pelo LM Studio.
+Antes de cada inferência local, o harness descarrega todos os modelos, carrega somente o candidato com contexto inicial de 8K e, ao terminar ou falhar, descarrega tudo novamente. Isso exige uso exclusivo do LM Studio durante uma execução do harness. Os Qwen de raciocínio precisam de saída acima de 64 tokens até para respostas curtas; o harness usa 2048 e o probe reserva no mínimo 256.
 
 ## Documentação
 
