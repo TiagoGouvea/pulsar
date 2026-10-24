@@ -99,7 +99,7 @@ export class Orchestrator {
       await this.recover();
       for (;;) {
         const p = this.state.phase;
-        if (["INIT", "STAGE_RUNNING", "STAGE_GATES"].includes(p) && this.ctx.config.loop.stopOnSpecChange && storedHash(this.ctx) && storedHash(this.ctx) !== computeHash(this.ctx)) {
+        if (["INIT", "STAGE_RUNNING", "STAGE_GATES"].includes(p) && this.specChanged()) {
           await this.pauseFor("PAUSED_SPEC_CHANGE");
           await writeSpecChange(this.ctx);
           await notify(this.ctx, "blocked", "mudança na spec/design detectada: veja checkpoints/mudanca-spec.md");
@@ -134,6 +134,7 @@ export class Orchestrator {
     if (!this.state.phase.startsWith("PAUSED") && this.state.phase !== "CRASHED") this.state.pausedFrom = this.state.phase;
     this.set(phase);
   }
+  private specChanged = () => this.ctx.config.loop.stopOnSpecChange && !!storedHash(this.ctx) && storedHash(this.ctx) !== computeHash(this.ctx);
   private stageBranch = (s = this.state.stage) => `stage/${s}`;
   private appAbs = (wt: string) => join(wt, this.ctx.config.project.appDir);
 
@@ -233,7 +234,7 @@ export class Orchestrator {
     const running = new Map<string, Promise<void>>();
     this.fatal = undefined;
     for (;;) {
-      while (running.size < this.ctx.config.loop.maxParallelTasks && !this.fatal && !existsSync(PAUSE_FILE(this.ctx))) {
+      while (running.size < this.ctx.config.loop.maxParallelTasks && !this.fatal && !existsSync(PAUSE_FILE(this.ctx)) && !this.specChanged()) {
         const f = nextFeature(loadFeatures(this.ctx), s, new Set(running.keys()));
         if (!f) break;
         updateFeature(this.ctx, f.id, (x) => { x.status = "in_progress"; });
@@ -248,7 +249,7 @@ export class Orchestrator {
       rmSync(PAUSE_FILE(this.ctx), { force: true });
       return this.pauseFor("PAUSED_MANUAL");
     }
-    if (stageSettled(loadFeatures(this.ctx), s)) this.set("STAGE_GATES");
+    if (!this.specChanged() && stageSettled(loadFeatures(this.ctx), s)) this.set("STAGE_GATES");
   }
 
   private roleFor(f: Feature) {
@@ -559,7 +560,7 @@ export class Orchestrator {
     const lessons = ["project", "harness"].map((f) => existsSync(hp(ctx, "lessons", `${f}.md`)) ? readFileSync(hp(ctx, "lessons", `${f}.md`), "utf8") : "").join("\n");
     const fs = stageFeatures(loadFeatures(ctx), this.state.stage).map((f) => `${f.id} [${f.status}] ${f.title}: ${f.acceptance.join(" | ")}`).join("\n");
     try {
-      const r = await this.rt.invoke({ role: "retro", taskId: `retro-${this.state.stage}-${kind}`, stage: this.state.stage, attempt: 1, cwd: ctx.root, prompt: render(ctx, "retro", { kind, events, lessons, features: fs, stage: String(this.state.stage) }), schema: RetroSchema });
+      const r = await this.rt.invoke({ role: "retro", taskId: `retro-${this.state.stage}-${kind}`, stage: this.state.stage, attempt: 1, cwd: ctx.root, prompt: render(ctx, "retro", { kind, events, lessonFiles: lessons, features: fs, stage: String(this.state.stage) }), schema: RetroSchema });
       if (!r.data) return undefined;
       applyRetro(ctx, r.data);
       return r.data;
