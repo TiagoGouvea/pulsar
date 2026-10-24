@@ -107,6 +107,8 @@ export class Runtime {
     if (r.workerId) {
       const w = enabledWorkers(this.ctx).find((x) => x.id === r.workerId);
       if (!w) throw new NoWorkerError(`worker ${r.workerId} não habilitado`);
+      const b = breach(this.ctx, w, estimate(this.ctx, w, r.role), { stage: r.stage, featureId: r.featureId });
+      if (b) throw new BudgetError(b);
       return w;
     }
     const exclude = [...(r.excludeWorkers ?? [])];

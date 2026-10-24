@@ -27,3 +27,7 @@ export function workerEnv(ctx: Ctx, spec: WorkerSpec): Record<string, string> {
     Object.entries(envMapping(spec)).flatMap(([target, src]) => (ctx.env[src] ? [[target, ctx.env[src]!]] : [])),
   );
 }
+
+/** .env vars that must be filled for the worker (LM Studio URL has a default; OpenRouter key only for openrouter/ models). */
+export const requiredEnv = (spec: WorkerSpec) => [...new Set(Object.values(envMapping(spec)))]
+  .filter((src) => src !== "LMSTUDIO_BASE_URL" && !(src === "OPENROUTER_API_KEY" && !spec.model.startsWith("openrouter/")));

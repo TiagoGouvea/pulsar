@@ -88,6 +88,23 @@ export async function mergeNoFf(cwd: string, branch: string, msg: string) {
   return false;
 }
 
+/** Commits only the given paths (orchestrator state snapshots: .harness, checkpoints). */
+export async function commitPaths(cwd: string, paths: string[], msg: string) {
+  const present = paths.filter((p) => existsSync(join(cwd, p)));
+  if (!present.length) return null;
+  await git(cwd, "add", "-A", "--", ...present);
+  if (await tryGit(cwd, "diff", "--cached", "--quiet")) return null;
+  await git(cwd, "commit", "--no-verify", "-m", msg, "--", ...present);
+  return head(cwd);
+}
+
+/** Merges `branch` into `main` without disturbing the root checkout when it is on another branch. */
+export async function mergeToMain(root: string, main: string, branch: string, msg: string) {
+  if ((await currentBranch(root)) === main) return mergeNoFf(root, branch, msg);
+  const tmp = await addWorktree(root, "main-merge", main, main);
+  try { return await mergeNoFf(tmp, branch, msg); } finally { await removeWorktree(root, tmp); }
+}
+
 export const tag = (root: string, name: string) => git(root, "tag", "-f", name);
 export const isClean = async (root: string) => (await git(root, "status", "--porcelain", ...EXCL)) === "";
 export const hasRemote = async (root: string) => (await git(root, "remote")).length > 0;
