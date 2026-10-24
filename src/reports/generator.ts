@@ -9,6 +9,11 @@ function runDirectory(config: HarnessConfig, runId: string): string {
   return path.join(config.storage.root, "runs", runId);
 }
 
+function csvValue(value: unknown): string {
+  const normalized = typeof value === "string" || typeof value === "number" || typeof value === "bigint" ? String(value) : "";
+  return `"${normalized.replaceAll('"', '""')}"`;
+}
+
 export async function writePlan(config: HarnessConfig, store: StateStore, runId: string): Promise<void> {
   const requirements = store.listRequirements(runId);
   const tasks = store.listTasks(runId);
@@ -71,6 +76,12 @@ export async function writeBudgetReport(config: HarnessConfig, store: StateStore
   const output = path.join(runDirectory(config, runId), "budget-report.md");
   await writeFile(output, markdown, { mode: 0o600 });
   await writeJson(path.join(runDirectory(config, runId), "budget-report.json"), { ...snapshot, limitMicros: snapshot.limitMicros?.toString() ?? null, confirmedMicros: snapshot.confirmedMicros.toString(), reservedMicros: snapshot.reservedMicros.toString(), uncertainMicros: snapshot.uncertainMicros.toString(), usableMicros: snapshot.usableMicros?.toString() ?? null, calls });
+  const csv = [
+    "provider,model_id,modality,state,input_tokens,output_tokens,reported_micros,uncertain_micros",
+    ...calls.map((call) => ["provider", "model_id", "modality", "state", "input_tokens", "output_tokens", "reported_micros", "uncertain_micros"]
+      .map((key) => csvValue(call[key])).join(",")),
+  ].join("\n");
+  await writeFile(path.join(runDirectory(config, runId), "budget-report.csv"), `${csv}\n`, { mode: 0o600 });
   return output;
 }
 

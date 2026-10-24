@@ -1,6 +1,7 @@
 import { access, constants, statfs } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { chromium } from "@playwright/test";
 import type { HarnessConfig } from "../config/schema.js";
 import type { CheckResult } from "../domain/types.js";
 import { probeCandidate } from "../providers/probes.js";
@@ -18,6 +19,13 @@ export async function doctor(): Promise<CheckResult[]> {
     summary: `${process.platform}/${process.arch}`,
     evidence: `${os.cpus().length} CPUs; ${Math.round(os.totalmem() / 1024 ** 3)} GiB de memória nominal.`,
   });
+  try {
+    const executable = chromium.executablePath();
+    await access(executable, constants.X_OK);
+    checks.push({ id: "playwright.chromium", status: "pass", scope: "stage", importance: "required", summary: "Chromium do Playwright instalado.", evidence: executable });
+  } catch (error) {
+    checks.push({ id: "playwright.chromium", status: "block", scope: "stage", importance: "required", summary: "Chromium do Playwright ausente.", evidence: safeError(error), remediation: "Execute `yarn playwright install chromium`." });
+  }
   checks.push({
     id: "machine.node",
     status: Number(process.versions.node.split(".")[0]) >= 24 ? "pass" : "block",

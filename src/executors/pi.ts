@@ -63,7 +63,7 @@ export class PiExecutor implements Executor {
       modelRuntime: runtime,
       model,
       sessionManager: SessionManager.inMemory(),
-      tools: ["read", "bash", "edit", "write", "grep", "find", "ls"],
+      tools: request.readOnly ? ["read", "grep", "find", "ls"] : ["read", "bash", "edit", "write", "grep", "find", "ls"],
     });
     this.abortCurrent = () => session.abort();
     const timeout = setTimeout(() => { void session.abort(); }, request.timeoutMs);

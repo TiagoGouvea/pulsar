@@ -76,6 +76,7 @@ export interface ExecutionRequest {
   candidate: ModelCandidate;
   timeoutMs: number;
   outputDirectory: string;
+  readOnly?: boolean | undefined;
 }
 
 export interface ExecutionResult {

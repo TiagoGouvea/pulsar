@@ -22,4 +22,16 @@ export class ModelCatalog {
     }
     return executorMatch;
   }
+
+  selectReviewer(role: Role, implementer: ModelCandidate): ModelCandidate {
+    const candidates = this.config.models.filter((candidate) =>
+      candidate.enabled && candidate.executor === this.config.execution.executor &&
+      candidate.roles.includes(role) && candidate.capabilities.includes("text"),
+    );
+    const diverse = candidates.find((candidate) => candidate.family !== implementer.family);
+    if (this.config.review.preferDifferentModelFamily && diverse) return diverse;
+    const candidate = candidates[0];
+    if (!candidate) throw new Error(`Nenhum revisor elegível para ${role}.`);
+    return candidate;
+  }
 }

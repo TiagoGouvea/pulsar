@@ -10,10 +10,12 @@ import { startDashboard } from "../dashboard/server.js";
 import { Orchestrator } from "../orchestrator/controller.js";
 import { doctor, preflight, writePreflightReport } from "../preflight/doctor.js";
 import { probeCandidate } from "../providers/probes.js";
+import { loadLmStudioModel, unloadLmStudioModels } from "../providers/lmstudio.js";
 import { writeBudgetReport, writeFinalReport } from "../reports/generator.js";
 import { StateStore } from "../state/store.js";
-import { ensureDirectory, safeError } from "../utils/core.js";
+import { createId, ensureDirectory, nowUtc, safeError } from "../utils/core.js";
 import { captureVisualEvidence } from "../verification/visual.js";
+import { currentRevision } from "../git/workspace.js";
 
 const program = new Command();
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -58,6 +60,20 @@ models.command("probe").requiredOption("--config <path>").requiredOption("--alia
   if (!candidate) throw new Error(`Alias desconhecido: ${options.alias}`);
   printChecks(await probeCandidate(config, candidate));
 });
+models.command("load").description("Descarrega outros modelos e carrega um candidato local")
+  .requiredOption("--config <path>").requiredOption("--alias <alias>").action(async (options: { config: string; alias: string }) => {
+    const config = await loadConfig(options.config);
+    const candidate = config.models.find((item) => item.alias === options.alias);
+    if (!candidate) throw new Error(`Alias desconhecido: ${options.alias}`);
+    const results = await loadLmStudioModel(config, candidate);
+    console.log(results.map((result) => result.stdout || result.stderr).join("\n"));
+  });
+models.command("unload").description("Descarrega modelos locais explicitamente")
+  .requiredOption("--config <path>").action(async (options: { config: string }) => {
+    const result = await unloadLmStudioModels(await loadConfig(options.config));
+    if (result.exitCode !== 0) throw new Error(result.stderr || result.stdout);
+    console.log(result.stdout || "Modelos descarregados.");
+  });
 
 program.command("plan").description("Extrai requisitos e cria o plano rastreável")
   .requiredOption("--config <path>").action(async (options: { config: string }) => withOrchestrator(options.config, async (orchestrator) => {
@@ -84,9 +100,18 @@ program.command("run").description("Executa ou retoma o controlador")
       return;
     }
     await withOrchestrator(config.configPath, async (orchestrator) => {
-      const runId = await orchestrator.run(options.run);
-      const run = orchestrator.store.getRun(runId);
-      console.log(`Run ${runId}: ${String(run?.state)}`);
+      const runId = options.run ?? await orchestrator.plan();
+      const onInterrupt = (signal: "SIGINT" | "SIGTERM"): void => { void orchestrator.interrupt(runId, signal); };
+      const onSigint = (): void => onInterrupt("SIGINT");
+      const onSigterm = (): void => onInterrupt("SIGTERM");
+      process.once("SIGINT", onSigint); process.once("SIGTERM", onSigterm);
+      try {
+        await orchestrator.run(runId);
+        const run = orchestrator.store.getRun(runId);
+        console.log(`Run ${runId}: ${String(run?.state)}`);
+      } finally {
+        process.removeListener("SIGINT", onSigint); process.removeListener("SIGTERM", onSigterm);
+      }
     });
   });
 
@@ -158,6 +183,29 @@ program.command("visual").description("Captura screenshots e checagens estrutura
     const config = await loadConfig(options.config);
     const output = path.join(config.storage.root, "runs", options.run, "visual");
     const evidence = await captureVisualEvidence({ config, url: options.url, outputDirectory: output });
+    const store = new StateStore(config.storage.root);
+    try {
+      const revision = await currentRevision(config.project.workspace);
+      const violations = evidence.flatMap((item) => item.accessibilityViolations.map((violation) => ({ viewport: item.viewport, violation })));
+      const structuralFailures = evidence.filter((item) => item.horizontalOverflow || item.consoleErrors.length || item.failedRequests.length);
+      const verifierId = createId("verification");
+      const passed = violations.length === 0 && structuralFailures.length === 0;
+      store.run(
+        `INSERT INTO verifier_runs(id, run_id, revision, verifier_id, verifier_version, status, output_path, started_at, finished_at)
+         VALUES (?, ?, ?, 'visual-structural', '1', ?, ?, ?, ?)`,
+        verifierId, options.run, revision, passed ? "passed" : "failed", path.join(output, "visual-evidence.json"), nowUtc(), nowUtc(),
+      );
+      for (const finding of violations) {
+        store.run(
+          "INSERT INTO findings(id, run_id, verifier_run_id, severity, category, summary, evidence_path, state, created_at) VALUES (?, ?, ?, 'serious', 'accessibility', ?, ?, 'open', ?)",
+          createId("finding"), options.run, verifierId, `${finding.violation.id} em ${finding.viewport}px: ${finding.violation.targets.join(", ")}`, path.join(output, "visual-evidence.json"), nowUtc(),
+        );
+      }
+      if (!passed) {
+        store.setMilestoneState(options.run, "milestone-001", "changes_requested", revision);
+        store.setRunState(options.run, "blocked", { cause: "visual_verification_failed" });
+      }
+    } finally { store.close(); }
     console.log(JSON.stringify(evidence, null, 2));
   });
 

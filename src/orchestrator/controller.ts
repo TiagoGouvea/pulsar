@@ -1,4 +1,4 @@
-import { cp, mkdir, readFile } from "node:fs/promises";
+import { cp, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { HarnessConfig } from "../config/schema.js";
@@ -6,12 +6,13 @@ import type { ExecutionResult, Requirement, Task, TaskState } from "../domain/ty
 import { BudgetLedger } from "../budget/ledger.js";
 import { buildTaskContext } from "../context/builder.js";
 import { createExecutor } from "../executors/index.js";
-import { currentRevision } from "../git/workspace.js";
+import type { Executor } from "../executors/types.js";
+import { checkpointFiles, currentRevision, prepareExecutionBranch } from "../git/workspace.js";
 import { createTasks, extractRequirements } from "../planning/requirements.js";
 import { ModelCatalog } from "../providers/catalog.js";
 import { writeBudgetReport, writeFinalReport, writeHumanReview, writePlan } from "../reports/generator.js";
 import { assertWorkspace } from "../security/workspace.js";
-import { captureInputs } from "../state/inputs.js";
+import { captureInputs, detectInputChanges } from "../state/inputs.js";
 import { StateStore } from "../state/store.js";
 import { createId, nowUtc, parseUsdToMicros, safeError, sha256, writeJson } from "../utils/core.js";
 import { invalidateStaleVerifications, verifyCommands } from "../verification/commands.js";
@@ -33,6 +34,7 @@ export class Orchestrator {
   readonly store: StateStore;
   private readonly catalog: ModelCatalog;
   private readonly ledger: BudgetLedger;
+  private activeExecutor: Executor | undefined;
 
   constructor(readonly config: HarnessConfig) {
     this.store = new StateStore(config.storage.root);
@@ -41,6 +43,12 @@ export class Orchestrator {
   }
 
   close(): void { this.store.close(); }
+
+  async interrupt(runId: string, signal: "SIGINT" | "SIGTERM"): Promise<void> {
+    this.store.enqueueCommand(runId, "pause", { signal });
+    this.store.event(runId, "run.interrupt_requested", "run", runId, { signal });
+    await this.activeExecutor?.cancel?.();
+  }
 
   async createRun(): Promise<string> {
     await assertWorkspace(this.config.project.workspace, HARNESS_ROOT);
@@ -54,6 +62,8 @@ export class Orchestrator {
       configHash: sha256(await readFile(this.config.configPath)),
     });
     await captureInputs(this.config, this.store, runId);
+    const branch = await prepareExecutionBranch(this.config.project.workspace, runId, HARNESS_ROOT);
+    this.store.event(runId, `git.branch_${branch.status}`, "run", runId, branch);
     return runId;
   }
 
@@ -74,6 +84,12 @@ export class Orchestrator {
     const run = this.store.getRun(id);
     if (!run) throw new Error(`Run inexistente: ${id}`);
     if (["completed", "cancelled", "failed", "awaiting_human"].includes(String(run.state))) return id;
+    const inputChanges = await detectInputChanges(this.config, this.store, id);
+    if (inputChanges.length) {
+      this.store.event(id, "inputs.changed", "run", id, { changes: inputChanges });
+      this.store.setRunState(id, "blocked", { cause: "inputs_changed_replan_required", changes: inputChanges });
+      return id;
+    }
     const owner = `${process.pid}:${createId("lease")}`;
     if (!this.store.acquireLease(id, owner, this.config.execution.staleHeartbeatSeconds)) {
       throw new Error("Esta execução já possui um controlador ativo.");
@@ -148,11 +164,24 @@ export class Orchestrator {
     );
     this.store.setTaskState(runId, task.id, "running");
     const executor = createExecutor(this.config);
+    this.activeExecutor = executor;
+    const sessionId = createId("session");
+    this.store.run(
+      "INSERT INTO sessions(id, attempt_id, role, model_key, independent, context_manifest_path, started_at) VALUES (?, ?, ?, ?, 0, ?, ?)",
+      sessionId, attemptId, task.role, candidate.alias, path.join(attemptDirectory, "context-manifest.json"), nowUtc(),
+    );
+    const providerCallId = this.startProviderCall(attemptId, candidate, estimated);
     const started = performance.now();
-    const result = await executor.execute({
-      runId, attemptId, task, workspace: this.config.project.workspace, prompt, candidate,
-      timeoutMs: this.config.execution.taskTimeoutMinutes * 60_000, outputDirectory: attemptDirectory,
-    });
+    let result: ExecutionResult;
+    try {
+      result = await executor.execute({
+        runId, attemptId, task, workspace: this.config.project.workspace, prompt, candidate,
+        timeoutMs: this.config.execution.taskTimeoutMinutes * 60_000, outputDirectory: attemptDirectory,
+      });
+    } finally {
+      this.activeExecutor = undefined;
+      this.store.run("UPDATE sessions SET finished_at=? WHERE id=?", nowUtc(), sessionId);
+    }
     await writeJson(path.join(attemptDirectory, "result.json"), result);
     const failureSignature = result.outcome === "ready_for_verification" ? null : sha256(`${result.outcome}:${result.summary}:${result.blockers.join(",")}`);
     this.store.run(
@@ -161,12 +190,17 @@ export class Orchestrator {
     );
     const actualMicros = parseUsdToMicros(result.usage?.costUsd ?? "0") ?? 0n;
     const uncertain = candidate.modality === "metered_api" && result.outcome === "failed" && !result.usage;
-    this.ledger.reconcile({ runId, taskId: task.id, reservationId, amountMicros: uncertain ? estimated : actualMicros, uncertain });
+    this.finishProviderCall(providerCallId, result, uncertain, estimated, actualMicros);
+    this.ledger.reconcile({ runId, taskId: task.id, reservationId, providerCallId, amountMicros: uncertain ? estimated : actualMicros, uncertain });
     this.store.run(
       "INSERT INTO routing_observations(id, run_id, attempt_id, candidate_key, role, task_category, duration_ms, cost_micros, outcome, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       createId("route"), runId, attemptId, candidate.alias, task.role, "implementation", Math.round(performance.now() - started), actualMicros, result.outcome, nowUtc(),
     );
     if (result.outcome !== "ready_for_verification") return this.handleFailure(runId, task, priorAttempts, failureSignature, result);
+    const checkpoint = await checkpointFiles({
+      workspace: this.config.project.workspace, protectedRoot: HARNESS_ROOT, runId, taskId: task.id, files: result.changedFiles,
+    });
+    this.store.event(runId, "git.checkpoint", "task", task.id, checkpoint);
     this.store.setTaskState(runId, task.id, "verifying");
     const verification = await verifyCommands({
       config: this.config, store: this.store, runId, taskId: task.id,
@@ -176,8 +210,101 @@ export class Orchestrator {
       this.store.setTaskState(runId, task.id, "changes_requested");
       return true;
     }
+    if (this.config.review.requireIndependentSession) {
+      const reviewed = await this.reviewTask(runId, task, candidate, verification.revision);
+      if (!reviewed) {
+        this.store.setTaskState(runId, task.id, "changes_requested");
+        return true;
+      }
+    }
     this.store.setTaskState(runId, task.id, "passed");
     return true;
+  }
+
+  private startProviderCall(attemptId: string, candidate: ReturnType<ModelCatalog["get"]>, estimatedMicros: bigint): string {
+    const id = createId("call");
+    this.store.run(
+      `INSERT INTO provider_calls(id, attempt_id, provider, model_id, modality, state, estimated_micros, started_at)
+       VALUES (?, ?, ?, ?, ?, 'running', ?, ?)`,
+      id, attemptId, candidate.provider, candidate.modelId, candidate.modality, estimatedMicros, nowUtc(),
+    );
+    return id;
+  }
+
+  private finishProviderCall(callId: string, result: ExecutionResult, uncertain: boolean, estimatedMicros: bigint, actualMicros: bigint): void {
+    this.store.run(
+      `UPDATE provider_calls SET state=?, provider_request_id=?, input_tokens=?, output_tokens=?, cached_tokens=?,
+       reasoning_tokens=?, reported_micros=?, uncertain_micros=?, finished_at=? WHERE id=?`,
+      uncertain ? "uncertain" : result.outcome === "ready_for_verification" ? "completed" : "failed",
+      result.usage?.providerRequestId ?? null, result.usage?.inputTokens ?? null, result.usage?.outputTokens ?? null,
+      result.usage?.cachedTokens ?? null, result.usage?.reasoningTokens ?? null, uncertain ? null : actualMicros,
+      uncertain ? estimatedMicros : null, nowUtc(), callId,
+    );
+  }
+
+  private async reviewTask(runId: string, task: Task, implementer: ReturnType<ModelCatalog["get"]>, revision: string): Promise<boolean> {
+    const candidate = this.catalog.selectReviewer("functionalReviewer", implementer);
+    const reviewTask: Task = {
+      ...task,
+      id: `${task.id}-review`,
+      title: `Revisão independente de ${task.id}`,
+      description: `Revise a implementação de ${task.id} na revisão ${revision}. Verifique os critérios sem editar arquivos.`,
+      role: "functionalReviewer",
+      state: "running",
+    };
+    const attemptId = createId("attempt");
+    const outputDirectory = path.join(this.config.storage.root, "runs", runId, "tasks", task.id, "independent-review", attemptId);
+    await mkdir(outputDirectory, { recursive: true });
+    const prompt = [
+      reviewTask.description,
+      `Critérios:\n${task.acceptanceCriteria.map((item) => `- ${item}`).join("\n")}`,
+      "Use apenas ferramentas de leitura. Não considere a autoavaliação do implementador como evidência.",
+      "Responda somente JSON com taskId, outcome, summary, changedFiles, claimedChecks, decisions, blockers, suggestedFollowUps.",
+    ].join("\n\n");
+    const estimated = this.ledger.estimate(candidate, Math.ceil(prompt.length / 4), candidate.maxOutputTokens);
+    let reservationId: string;
+    try {
+      reservationId = this.ledger.reserve(runId, task.id, candidate, estimated);
+    } catch (error) {
+      this.store.setRunState(runId, "paused_budget", { taskId: task.id, phase: "independent_review", error: safeError(error) });
+      return false;
+    }
+    this.store.run(
+      "INSERT INTO attempts(id, run_id, task_id, number, executor, candidate_key, status, started_at) VALUES (?, ?, ?, 1, ?, ?, 'running', ?)",
+      attemptId, runId, reviewTask.id, candidate.executor, candidate.alias, nowUtc(),
+    );
+    const sessionId = createId("session");
+    this.store.run(
+      "INSERT INTO sessions(id, attempt_id, role, model_key, independent, started_at) VALUES (?, ?, 'functionalReviewer', ?, 1, ?)",
+      sessionId, attemptId, candidate.alias, nowUtc(),
+    );
+    const providerCallId = this.startProviderCall(attemptId, candidate, estimated);
+    const executor = createExecutor(this.config);
+    this.activeExecutor = executor;
+    let result: ExecutionResult;
+    try {
+      result = await executor.execute({
+        runId, attemptId, task: reviewTask, workspace: this.config.project.workspace, prompt, candidate,
+        timeoutMs: this.config.execution.taskTimeoutMinutes * 60_000, outputDirectory, readOnly: true,
+      });
+    } finally {
+      this.activeExecutor = undefined;
+      this.store.run("UPDATE sessions SET finished_at=? WHERE id=?", nowUtc(), sessionId);
+    }
+    await writeJson(path.join(outputDirectory, "result.json"), result);
+    const actualMicros = parseUsdToMicros(result.usage?.costUsd ?? "0") ?? 0n;
+    const uncertain = candidate.modality === "metered_api" && result.outcome === "failed" && !result.usage;
+    this.finishProviderCall(providerCallId, result, uncertain, estimated, actualMicros);
+    this.ledger.reconcile({ runId, taskId: task.id, reservationId, providerCallId, amountMicros: uncertain ? estimated : actualMicros, uncertain });
+    this.store.run("UPDATE attempts SET status=?, result_json=?, finished_at=? WHERE id=?", result.outcome, JSON.stringify(result), nowUtc(), attemptId);
+    const passed = result.outcome === "ready_for_verification" && result.blockers.length === 0;
+    if (!passed) {
+      this.store.run(
+        "INSERT INTO findings(id, run_id, severity, category, summary, evidence_path, state, created_at) VALUES (?, ?, 'major', 'independent_review', ?, ?, 'open', ?)",
+        createId("finding"), runId, result.summary, path.join(outputDirectory, "result.json"), nowUtc(),
+      );
+    }
+    return passed;
   }
 
   private handleFailure(runId: string, task: Task, previous: Record<string, unknown>[], signature: string | null, result: ExecutionResult): boolean {
@@ -254,6 +381,19 @@ export class Orchestrator {
     await cp(source, destination, { errorOnExist: true });
     const revision = await currentRevision(this.config.project.workspace);
     this.store.createApproval({ runId, milestoneId, revision, decision: "changes_requested", actor: process.env.USER ?? "human", scope: "milestone", feedbackPath: destination });
+    this.store.setMilestoneState(runId, milestoneId, "changes_requested", revision);
+    this.store.setRunState(runId, "paused");
+    return destination;
+  }
+
+  async importFeedbackContent(runId: string, content: string, milestoneId = "milestone-001", actor = "dashboard-human"): Promise<string> {
+    if (!content.trim()) throw new Error("Feedback vazio.");
+    const directory = path.join(this.config.storage.root, "runs", runId, "milestones", milestoneId);
+    await mkdir(directory, { recursive: true });
+    const destination = path.join(directory, `human-feedback-${Date.now()}.md`);
+    await writeFile(destination, content, { mode: 0o600, flag: "wx" });
+    const revision = await currentRevision(this.config.project.workspace);
+    this.store.createApproval({ runId, milestoneId, revision, decision: "changes_requested", actor, scope: "milestone", feedbackPath: destination });
     this.store.setMilestoneState(runId, milestoneId, "changes_requested", revision);
     this.store.setRunState(runId, "paused");
     return destination;

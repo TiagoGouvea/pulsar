@@ -34,3 +34,16 @@ export async function captureInputs(config: HarnessConfig, store: StateStore, ru
 export async function readSpecs(config: HarnessConfig): Promise<Array<{ path: string; content: string }>> {
   return Promise.all(config.project.specs.map(async (specPath) => ({ path: specPath, content: await readFile(specPath, "utf8") })));
 }
+
+export async function detectInputChanges(config: HarnessConfig, store: StateStore, runId: string): Promise<Array<{ path: string; previous: string; current: string }>> {
+  const changes = [];
+  for (const inputPath of [config.configPath, ...config.project.specs]) {
+    const latest = store.get<Record<string, unknown>>(
+      "SELECT sha256 FROM input_versions WHERE run_id=? AND path=? ORDER BY captured_at DESC LIMIT 1", runId, inputPath,
+    );
+    if (!latest || typeof latest.sha256 !== "string") continue;
+    const current = await hashFile(inputPath);
+    if (current !== latest.sha256) changes.push({ path: inputPath, previous: latest.sha256, current });
+  }
+  return changes;
+}

@@ -23,6 +23,7 @@ yarn playwright install chromium
 yarn harness init --project "/caminho/com espaços/meu-projeto"
 # Edite specs, modelos, comandos e limites no harness.config.yaml
 yarn harness preflight --config ./harness.config.yaml
+yarn harness models load --config ./harness.config.yaml --alias <local-alias>
 yarn harness plan --config ./harness.config.yaml
 yarn harness run --config ./harness.config.yaml
 ```
@@ -55,6 +56,7 @@ Execução desacoplada do terminal e painel:
 ```bash
 yarn harness run --config harness.config.yaml --background
 yarn harness dashboard --config harness.config.yaml --run <runId>
+yarn harness visual --config harness.config.yaml --run <runId> --url http://127.0.0.1:4173
 ```
 
 ## Demonstração sem custo
