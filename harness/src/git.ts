@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, realpathSync } from "node:fs";
 import { join, relative } from "node:path";
 import { execa } from "execa";
 
@@ -38,17 +38,18 @@ export async function removeWorktree(root: string, path: string, deleteBranch?: 
 
 export async function listWorktrees(root: string) {
   const out = await git(root, "worktree", "list", "--porcelain");
+  const real = realpathSync(root);   // git reports resolved paths (/private/var/... on macOS)
   return out.split("\n\n").map((b) => ({
     path: b.match(/^worktree (.+)$/m)?.[1] ?? "",
     branch: b.match(/^branch refs\/heads\/(.+)$/m)?.[1],
-  })).filter((w) => relative(root, w.path).startsWith(".worktrees"));
+  })).filter((w) => relative(real, w.path).startsWith(".worktrees"));
 }
 
 /** Removes orphan feature worktrees (and their branches) left by a crash. Keeps stage worktrees. */
 export async function pruneOrphans(root: string, keep: (name: string) => boolean) {
   const removed: string[] = [];
   for (const w of await listWorktrees(root)) {
-    const name = relative(join(root, ".worktrees"), w.path);
+    const name = relative(join(realpathSync(root), ".worktrees"), w.path);
     if (keep(name)) continue;
     await removeWorktree(root, w.path, w.branch);
     removed.push(name);

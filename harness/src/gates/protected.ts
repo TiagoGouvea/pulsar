@@ -3,6 +3,8 @@ import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import type { Ctx } from "../config.js";
+import { loadFeatures } from "../features.js";
+import { git } from "../git.js";
 import { hp, readJson, writeJson } from "../state.js";
 
 interface Entry { sha256: string; asserts: number; featureId: string }
@@ -37,11 +39,17 @@ function* walk(dir: string): Generator<string> {
   }
 }
 
-export function checkProtected(ctx: Ctx, cwd: string): { ok: boolean; output: string } {
+/** Checks tests of merged (passing) features plus the current feature's own tests. */
+export async function checkProtected(ctx: Ctx, cwd: string, featureId?: string): Promise<{ ok: boolean; output: string }> {
   const problems: string[] = [];
-  for (const [f, e] of Object.entries(loadProtected(ctx))) {
+  const merged = new Set(loadFeatures(ctx).features.filter((f) => f.status === "passing").map((f) => f.id));
+  for (const [f, e] of Object.entries(loadProtected(ctx)).filter(([, e]) => e.featureId === featureId || merged.has(e.featureId))) {
     const p = join(cwd, f);
-    if (!existsSync(p)) { problems.push(`${f}: removido`); continue; }
+    if (!existsSync(p)) {
+      // only a violation if the file was ever part of this branch (a feature merged meanwhile is not)
+      if (e.featureId === featureId || (await git(cwd, "rev-list", "-1", "HEAD", "--", f).catch(() => ""))) problems.push(`${f}: removido`);
+      continue;
+    }
     const c = readFileSync(p, "utf8");
     if (sha(c) !== e.sha256) problems.push(`${f}: alterado (asserts ${e.asserts} -> ${countAsserts(c)})`);
   }

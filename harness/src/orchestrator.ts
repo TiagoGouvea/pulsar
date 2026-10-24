@@ -325,7 +325,7 @@ export class Orchestrator {
       if (res.outcome !== "success") {
         diag = `A tentativa anterior terminou com "${res.outcome}". Final da resposta:\n${res.result.finalText.slice(-1500)}`;
       } else {
-        gates = await this.deps.runGates(ctx, wt, { stage: f.stage, mode: "feature", base: ctx.config.project.mainBranch });
+        gates = await this.deps.runGates(ctx, wt, { stage: f.stage, mode: "feature", base: ctx.config.project.mainBranch, featureId: f.id });
         writeJson(hp(ctx, "runs", f.id, `gate-report-${attempt}.json`), gates);
         if (gates.failed.includes("G7")) {
           outcome = "protected_violation";
@@ -402,7 +402,7 @@ export class Orchestrator {
       const res = await this.rt.invoke({ role: "implement_hard", taskId: f.id, featureId: f.id, stage: f.stage, attempt: 1, cwd: cwt, prompt, schema: WorkerFinal, tags: f.tags, workerId: w.id, deferEvent: true });
       this.harvestInbox(cwt, f.id);
       await g.commitAll(cwt, `wip(${f.id}): candidato ${i} (${w.id})`);
-      const gates = res.outcome === "success" ? await this.deps.runGates(ctx, cwt, { stage: f.stage, mode: "feature", base: ctx.config.project.mainBranch }) : undefined;
+      const gates = res.outcome === "success" ? await this.deps.runGates(ctx, cwt, { stage: f.stage, mode: "feature", base: ctx.config.project.mainBranch, featureId: f.id }) : undefined;
       return { i, w, cwt, res, ok: !!gates?.ok, diff: await g.diff(cwt, testsBase) };
     }));
     const passing = runs.filter((r) => r.ok);
@@ -457,7 +457,7 @@ export class Orchestrator {
     all.features.push({
       id: `F-${stage}.fix-${this.state.stageFixRounds}`, stage, title, description: details.slice(0, 8000), specRefs: [], covers: [],
       acceptance: ["Todos os gates obrigatórios da etapa passam na suíte completa", "Nenhum teste protegido é alterado"],
-      tests: [], protectedTests: [...new Set(stageFeatures(all, stage).flatMap((f) => f.protectedTests))], tags, difficulty: "hard",
+      tests: [], protectedTests: [...new Set(stageFeatures(all, stage).filter((f) => f.status === "passing").flatMap((f) => f.protectedTests))], tags, difficulty: "hard",
       dependsOn: [], status: "failing", attempts: 0, costUsd: 0, history: [],
     });
     saveFeatures(this.ctx, all);

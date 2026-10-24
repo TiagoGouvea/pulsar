@@ -114,7 +114,7 @@ export function buildCheckpoint(ctx: Ctx, c: CheckpointInput) {
   const ts = evs.map((e) => Date.parse(e.ts!)).filter(Number.isFinite);
   const hours = ts.length ? (Math.max(...ts) - Math.min(...ts)) / 3.6e6 : 0;
   const stageName = ctx.config.stages.find((s) => s.id === c.stage)?.name ?? "";
-  for (const s of c.screenshots ?? []) copyFileSync(s, join(dir, "screenshots", basename(s)));
+  for (const s of (c.screenshots ?? []).filter((x) => existsSync(x))) copyFileSync(s, join(dir, "screenshots", basename(s)));
   const passing = fs.filter((f) => f.status === "passing"), blocked = fs.filter((f) => f.status === "blocked"), pending = fs.filter((f) => !["passing", "blocked"].includes(f.status));
 
   writeFileSync(join(dir, "RELATORIO.md"), [

@@ -10,7 +10,7 @@ import { a11yGate, layoutGate, lighthouseGate } from "./quality.js";
 
 export interface GateResult { id: string; name: string; ok: boolean; required: boolean; skipped?: string; durationMs: number; output: string }
 export interface GateReport { ok: boolean; mode: "feature" | "stage"; stage: number; failed: string[]; results: GateResult[] }
-export interface GateOpts { stage: number; mode: "feature" | "stage"; base?: string; only?: string[] }
+export interface GateOpts { stage: number; mode: "feature" | "stage"; base?: string; only?: string[]; featureId?: string }
 export type RunGates = (ctx: Ctx, cwd: string, o: GateOpts) => Promise<GateReport>;
 
 const SECRET_PATTERNS = [
@@ -54,7 +54,7 @@ export const runGates: RunGates = (ctx, cwd, o) => serialized(async () => {
     if (skip) { results.push({ id, name: g.name, ok: true, required: g.required, skipped: skip, durationMs: 0, output: "" }); continue; }
     let r: { ok: boolean; output: string };
     try {
-      if (g.builtin === "protected") r = checkProtected(ctx, cwd);
+      if (g.builtin === "protected") r = await checkProtected(ctx, cwd, o.featureId);
       else if (g.builtin === "secrets") r = await scanSecrets(ctx, cwd, o.base);
       else if (!existsSync(appAbs)) r = { ok: false, output: `${ctx.config.project.appDir}/ não existe` };
       else if (g.builtin === "privacy") r = await privacyGate(ctx, appAbs);
