@@ -1,0 +1,29 @@
+{
+  "name": "pulsar-harness",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Autonomous multi-model harness that builds the Pulsar app",
+  "bin": {
+    "harness": "./bin/harness"
+  },
+  "scripts": {
+    "harness": "tsx src/cli.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "execa": "^10.2.1",
+    "yaml": "^2.9.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  }
+}

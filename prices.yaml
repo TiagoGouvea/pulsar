@@ -1,0 +1,12 @@
+# USD por 1M tokens, por workerId. Preencha com os preços atuais de cada provedor.
+# Usado quando a CLI não reporta custo. Workers billing: subscription/local têm custo marginal 0.
+# O doctor falha se um worker habilitado com billing: api não tiver preço aqui.
+opus:         { input: "<preencher>", output: "<preencher>", cached: "<preencher>" }
+sonnet:       { input: "<preencher>", output: "<preencher>", cached: "<preencher>" }
+haiku:        { input: "<preencher>", output: "<preencher>", cached: "<preencher>" }
+codex-top:    { input: "<preencher>", output: "<preencher>", cached: "<preencher>" }
+codex-mini:   { input: "<preencher>", output: "<preencher>", cached: "<preencher>" }
+gemini-pro:   { input: "<preencher>", output: "<preencher>", cached: "<preencher>" }
+gemini-flash: { input: "<preencher>", output: "<preencher>", cached: "<preencher>" }
+kimi:         { input: "<preencher>", output: "<preencher>" }
+deepseek:     { input: "<preencher>", output: "<preencher>" }

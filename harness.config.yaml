@@ -1,0 +1,112 @@
+project:
+  name: pulsar
+  appDir: app
+  # alias -> arquivo. specRefs nas features usam o alias (ex.: "spec.md#4.4")
+  specFiles:
+    spec.md: docs/Pulsar_Especificacao_Completa.md
+    arquitetura.md: docs/Pulsar_Arquitetura_e_Implementacao.md
+  acceptanceSection: "10"        # seção da spec com os critérios de aceite (cobertura verificada pelo doctor)
+  designDir: design
+  decisionsFile: DECISOES.md
+  language: pt-BR
+  mainBranch: main
+
+workers:
+  # --- Anthropic ---
+  fable:        { cli: claude, model: claude-fable-5-1,   family: anthropic, tier: high, vision: true,  billing: api, concurrency: 1, timeoutMin: 60, enabled: false }
+  opus:         { cli: claude, model: claude-opus-5-5,    family: anthropic, tier: high, vision: true,  billing: api, concurrency: 2, timeoutMin: 45 }
+  sonnet:       { cli: claude, model: claude-sonnet-5-5,  family: anthropic, tier: mid,  vision: true,  billing: api, concurrency: 3, timeoutMin: 40 }
+  haiku:        { cli: claude, model: claude-haiku-5-5,   family: anthropic, tier: low,  vision: true,  billing: api, concurrency: 3, timeoutMin: 15 }
+  # --- OpenAI ---
+  codex-top:    { cli: codex,  model: "<preencher>",      family: openai,    tier: high, vision: true,  billing: api, concurrency: 2, timeoutMin: 45 }
+  codex-mini:   { cli: codex,  model: "<preencher>",      family: openai,    tier: low,  vision: false, billing: api, concurrency: 2, timeoutMin: 20 }
+  # --- Google ---
+  gemini-pro:   { cli: gemini, model: "<preencher>",      family: google,    tier: high, vision: true,  billing: api, concurrency: 2, timeoutMin: 45 }
+  gemini-flash: { cli: gemini, model: "<preencher>",      family: google,    tier: low,  vision: true,  billing: api, concurrency: 3, timeoutMin: 20 }
+  # --- Open source via assinatura / OpenRouter ---
+  glm:          { cli: claude, model: "<preencher>",      family: zhipu,     tier: mid,  vision: false, billing: subscription, concurrency: 2, timeoutMin: 40,
+                  env: { ANTHROPIC_BASE_URL: ZAI_ANTHROPIC_BASE_URL, ANTHROPIC_AUTH_TOKEN: ZAI_API_KEY } }
+  kimi:         { cli: pi,     model: "openrouter/<preencher>", family: moonshot, tier: mid, vision: false, billing: api, concurrency: 2, timeoutMin: 40 }
+  deepseek:     { cli: pi,     model: "openrouter/<preencher>", family: deepseek, tier: low, vision: false, billing: api, concurrency: 2, timeoutMin: 30 }
+  # --- Locais (LM Studio, http://localhost:1234/v1) ---
+  local-gptoss: { cli: pi, model: "lmstudio/gpt-oss-20b",                       family: openai, tier: local, vision: false, billing: local, concurrency: 1, timeoutMin: 30, maxContextTokens: 32000 }
+  local-coder:  { cli: pi, model: "lmstudio/qwen3-coder-30b-a3b-instruct",      family: qwen,   tier: local, vision: false, billing: local, concurrency: 1, timeoutMin: 40, maxContextTokens: 32000, requiresFreeRamGb: 18 }
+  local-small:  { cli: pi, model: "lmstudio/qwen3.5-9b",                        family: qwen,   tier: local, vision: false, billing: local, concurrency: 1, timeoutMin: 15, maxContextTokens: 32000 }
+  # os IDs "lmstudio/..." devem ser conferidos com GET /v1/models do LM Studio
+  # --- Testes ---
+  fake:         { cli: fake,   model: fake, family: local-other, tier: low, vision: true, billing: local, concurrency: 4, timeoutMin: 1, enabled: false }
+
+roles:
+  initializer:     { pool: [opus],                           note: "decompõe spec, scaffold, design system" }
+  test_writer:     { pool: [opus, codex-top],                note: "escreve testes de aceite ANTES da implementação" }
+  implement:       { pool: [sonnet, glm, kimi, local-coder], note: "features comuns" }
+  implement_hard:  { pool: [opus, codex-top],                note: "estatística, security rules, sincronização, privacidade" }
+  review_code:     { pool: [codex-top, gemini-pro, opus],    rule: different_family_from_implementer }
+  review_ui:       { pool: [gemini-pro, opus],               rule: different_family_from_implementer, requires: vision }
+  triage:          { pool: [local-small, haiku, deepseek, gemini-flash] }
+  approval_parser: { pool: [haiku, gemini-flash, deepseek, local-small], note: "converte APROVACAO.md/DUVIDAS.md em JSON" }
+  retro:           { pool: [opus] }
+  postmortem:      { pool: [opus] }
+
+routing:
+  explorationRate: 0.10        # 10% das tarefas testam worker fora do melhor histórico
+  escalateAfterFailures: 2     # implement -> implement_hard
+  maxAttemptsPerFeature: 5     # depois: bloqueia a feature e registra em DUVIDAS
+  hardTags: [statistics, security-rules, sync, privacy-mode]   # vão direto para implement_hard
+  tournament:
+    enabled: true
+    tags: [statistics, security-rules, privacy-mode]   # features críticas
+    contenders: 2
+    judge: review_code
+
+loop:
+  maxParallelTasks: 2          # worktrees simultâneas (locais contam como exclusivos)
+  retroEveryNFeatures: 10
+  stopOnSpecChange: true
+  maxStageFixRounds: 3         # rodadas de correção quando a suíte completa da etapa falha
+
+stages:
+  - { id: 0, name: Setup }
+  - { id: 1, name: Base }
+  - { id: 2, name: Registro }
+  - { id: 3, name: Insights }
+  - { id: 4, name: Curadoria }
+  - { id: 5, name: PWA e push, optional: true }
+  - { id: 6, name: IA generativa, optional: true }
+  - { id: 7, name: Polimento }
+
+# Comandos rodam dentro de <worktree>/<appDir>. "builtin" = implementado pelo harness.
+# scope: feature (feature e fim de etapa) | stage (só fim de etapa)
+gates:
+  G1:  { name: install-build,  cmd: "yarn install --frozen-lockfile && yarn build" }
+  G2:  { name: lint-format,    cmd: "yarn lint && yarn format:check" }
+  G3:  { name: typecheck,      cmd: "yarn typecheck" }
+  G4:  { name: unit,           cmd: "yarn test:unit --coverage" }
+  G5:  { name: security-rules, cmd: "yarn test:rules", fromStage: 1 }
+  G6:  { name: e2e,            cmd: "yarn test:e2e" }
+  G7:  { name: protected-tests, builtin: protected }
+  G8:  { name: privacy-leak,   builtin: privacy, fromStage: 1 }
+  G9:  { name: a11y,           builtin: a11y }
+  G10: { name: mobile-layout,  builtin: layout }
+  G11: { name: visual-regression, cmd: "yarn test:visual", updateCmd: "yarn test:visual --update-snapshots", fromStage: 2 }
+  G12: { name: lighthouse,     builtin: lighthouse, scope: stage }
+  G13: { name: secrets,        builtin: secrets }
+
+browser:
+  # servidor usado pelos gates de navegador (G8/G9/G10/G12) e screenshots; deve subir emuladores + seed
+  serveCmd: "yarn e2e:serve"
+  baseUrl: "http://localhost:4173"
+  routesFile: e2e/routes.json      # criado pelo inicializador: [{ "path": "/", "name": "dashboard", "tags": ["ui"] }]
+  readyTimeoutSec: 120
+  sentinels: [ZQX_ENERGIA_7F3, ZQX_SONO_9K2, ZQX_FOCO_4M8, ZQX_OBS_NOTA_5T1]
+  lighthouse: { performance: 85, accessibility: 95 }
+
+preview:
+  enabled: true
+  buildCmd: "yarn build"
+  deployCmd: "firebase hosting:channel:deploy etapa-{stage} --expires 14d --project $FIREBASE_PROJECT_ID --json"
+  demoSeedCmd: "yarn seed --demo"   # exige HARNESS_ALLOW_DEMO_SEED=1
+
+notify:
+  webhookEnv: NOTIFY_WEBHOOK_URL   # POST JSON genérico (Telegram/e-mail/WhatsApp/Agento)
+  events: [checkpoint_ready, budget_80, budget_100, blocked, run_finished, crash]

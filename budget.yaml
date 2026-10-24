@@ -1,0 +1,17 @@
+currency: USD
+caps:
+  run: 150            # execução inteira
+  stage: 40           # por etapa
+  feature: 6          # por feature (todas as tentativas + reviews)
+  dailyByProvider:
+    anthropic: 40
+    openai: 25
+    google: 20
+    openrouter: 15
+alerts: [0.5, 0.8, 1.0]
+onSoftLimit: prefer_cheap    # >= 80%: router prioriza low/local
+onHardLimit: pause_and_checkpoint
+# Limites duros externos (configure nos consoles; o doctor só lembra):
+# - OpenRouter: guardrail por chave com reset diário
+# - Anthropic / OpenAI: limite mensal no console
+# - Google Cloud: alertas de orçamento (não bloqueiam)
