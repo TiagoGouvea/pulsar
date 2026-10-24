@@ -32,7 +32,7 @@ budget:
   unknownCostPolicy: block_paid_calls
 
 localInference:
-  baseUrl: http://127.0.0.1:1234
+  baseUrl: http://localhost:1235/v1
   maxLoadedModels: 1
   initialContextTokens: 8192
   maxOutputTokens: 2048
@@ -64,6 +64,48 @@ models:
     enabled: true
     contextTokens: 8192
     maxOutputTokens: 2048
+
+  - alias: local-qwen-optiq
+    executor: pi
+    provider: lmstudio
+    modelId: qwen3.5-9b-optiq
+    endpoint: http://localhost:1235/v1
+    family: qwen3.5
+    modality: local
+    capabilities: [text, tools, reasoning]
+    roles: [planner, implementer, testAuthor, diagnostic, learningAnalyst]
+    enabled: true
+    contextTokens: 8192
+    maxOutputTokens: 2048
+
+  - alias: local-qwen-mlx
+    executor: pi
+    provider: lmstudio
+    modelId: qwen3.5-9b-mlx
+    endpoint: http://localhost:1235/v1
+    family: qwen3.5
+    modality: local
+    capabilities: [text, tools, reasoning]
+    roles: [implementer, testAuthor, diagnostic]
+    enabled: true
+    contextTokens: 8192
+    maxOutputTokens: 2048
+
+  - alias: local-gpt-oss
+    executor: pi
+    provider: lmstudio
+    modelId: gpt-oss-20b
+    endpoint: http://localhost:1235/v1
+    family: gpt-oss
+    modality: local
+    capabilities: [text, tools, reasoning]
+    roles: [planner, diagnostic, functionalReviewer, visualReviewer, securityReviewer, learningAnalyst]
+    enabled: true
+    contextTokens: 8192
+    maxOutputTokens: 2048
+
+  # Qwen3-Coder 30B: adicione somente quando /v1/models expuser o ID real.
+  # Não use o nome do repositório de download como modelId presumido.
 
 storage:
   root: ./.harness

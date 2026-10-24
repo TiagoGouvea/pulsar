@@ -54,12 +54,14 @@ models.command("list").requiredOption("--config <path>").action(async (options: 
   const config = await loadConfig(options.config);
   console.table(config.models.map(({ alias, executor, provider, modelId, modality, enabled, capabilities }) => ({ alias, executor, provider, modelId, modality, enabled, capabilities: capabilities.join(",") })));
 });
-models.command("probe").requiredOption("--config <path>").requiredOption("--alias <alias>").action(async (options: { config: string; alias: string }) => {
-  const config = await loadConfig(options.config);
-  const candidate = config.models.find((item) => item.alias === options.alias);
-  if (!candidate) throw new Error(`Alias desconhecido: ${options.alias}`);
-  printChecks(await probeCandidate(config, candidate));
-});
+models.command("probe").requiredOption("--config <path>").requiredOption("--alias <alias>")
+  .option("--inference", "Executa smoke tests reais de texto e ferramentas")
+  .action(async (options: { config: string; alias: string; inference?: boolean }) => {
+    const config = await loadConfig(options.config);
+    const candidate = config.models.find((item) => item.alias === options.alias);
+    if (!candidate) throw new Error(`Alias desconhecido: ${options.alias}`);
+    printChecks(await probeCandidate(config, candidate, { inference: options.inference ?? false }));
+  });
 models.command("load").description("Descarrega outros modelos e carrega um candidato local")
   .requiredOption("--config <path>").requiredOption("--alias <alias>").action(async (options: { config: string; alias: string }) => {
     const config = await loadConfig(options.config);

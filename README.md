@@ -68,6 +68,24 @@ yarn harness run --config harness.config.example.yaml
 
 O executor fake testa o controlador e para no gate humano. Ele não comprova integrações de IA.
 
+## Modelos locais no LM Studio
+
+O catálogo de exemplo já aponta para `http://localhost:1235/v1` e contém os IDs validados:
+
+- `qwen3.5-9b-optiq`: implementação principal, testes e diagnóstico.
+- `qwen3.5-9b-mlx`: fallback para implementação e testes.
+- `gpt-oss-20b`: planejamento e revisões independentes.
+
+Para usar os modelos reais, execute `init`, altere `execution.executor` de `fake` para `pi` no YAML gerado e valide cada candidato:
+
+```bash
+yarn harness models probe --config harness.config.yaml --alias local-qwen-optiq --inference
+yarn harness models probe --config harness.config.yaml --alias local-qwen-mlx --inference
+yarn harness models probe --config harness.config.yaml --alias local-gpt-oss --inference
+```
+
+Os Qwen de raciocínio precisam de saída acima de 64 tokens até para respostas curtas; o harness usa 2048 e o probe reserva no mínimo 256. Quando o Qwen3-Coder 30B terminar, consulte `/v1/models` e cadastre exatamente o ID devolvido pelo LM Studio.
+
 ## Documentação
 
 - [Arquitetura](docs/architecture.md)

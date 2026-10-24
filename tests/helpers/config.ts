@@ -35,7 +35,7 @@ Critérios:
     project: { id: `test-${path.basename(root).replace(/[^a-zA-Z0-9_-]/g, "-")}`, workspace, specs: [path.join(inputs, "spec.md")], profile: "generic", timezone: "America/Sao_Paulo" },
     execution: { executor: options.executor ?? "fake", maxConcurrentTasks: 1, maxConcurrentLocalRequests: 1, maxAttemptsPerTask: 2, maxSameFailureCount: 2, taskTimeoutMinutes: 1, staleHeartbeatSeconds: 15, humanGate: "every_milestone", allowProductionDeploy: false, continueWhileAwaitingHuman: false },
     budget: { currency: "USD", projectLimit: options.projectLimit ?? null, dailyLimit: null, milestoneLimit: null, taskLimit: null, diagnosticsLimit: null, finalVerificationReservePercent: 20, warningThresholds: [50, 75, 90], automaticTopUp: false, unknownCostPolicy: "block_paid_calls" },
-    localInference: { baseUrl: "http://127.0.0.1:1234", maxLoadedModels: 1, initialContextTokens: 8192, maxOutputTokens: 2048, memoryPressureAction: "pause" },
+    localInference: { baseUrl: "http://localhost:1235/v1", maxLoadedModels: 1, initialContextTokens: 8192, maxOutputTokens: 2048, memoryPressureAction: "pause" },
     review: { requireIndependentSession: true, preferDifferentModelFamily: true, viewportWidths: [390] },
     commands: options.testCommand ? { test: options.testCommand } : {},
     models: [{ alias: "fake", executor: "fake", provider: "fake", modelId: "v1", family: "fake", modality: "fake", capabilities: ["text", "tools", "structured_output"], roles: ["planner", "implementer", "testAuthor", "diagnostic", "functionalReviewer", "securityReviewer", "learningAnalyst"], enabled: true, contextTokens: 8192, maxOutputTokens: 1024 }],

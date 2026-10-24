@@ -25,7 +25,7 @@ function extractResult(text: string | undefined, taskId: string): ExecutionResul
 async function createRuntime(candidate: ModelCandidate): Promise<{ runtime: ModelRuntime; model: NonNullable<ReturnType<ModelRuntime["getModel"]>> }> {
   const runtime = await ModelRuntime.create({ allowModelNetwork: false });
   if (candidate.modality === "local") {
-    const endpoint = candidate.endpoint ?? "http://127.0.0.1:1234/v1";
+    const endpoint = candidate.endpoint ?? "http://localhost:1235/v1";
     runtime.registerProvider(candidate.provider, {
       name: candidate.provider,
       baseUrl: endpoint.endsWith("/v1") ? endpoint : `${endpoint.replace(/\/$/, "")}/v1`,

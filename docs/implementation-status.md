@@ -11,7 +11,7 @@
 
 ## Implementado, pendente de acesso real
 
-- Probes de inferência Pi/LM Studio/OpenRouter e outros provedores.
+- Probes pagos de inferência remota e adaptadores adicionais além de LM Studio/OpenRouter.
 - Revisão visual independente com um modelo de visão validado.
 - Firebase remoto, preview e integrações que exigem projeto/credenciais.
 

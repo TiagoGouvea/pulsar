@@ -79,7 +79,7 @@ export async function preflight(config: HarnessConfig): Promise<CheckResult[]> {
     summary: browser.exitCode === 0 ? browser.stdout.trim() : "Playwright indisponível.", evidence: browser.stderr || browser.stdout,
     remediation: "Execute `yarn install` e, quando for usar navegador, `yarn playwright install chromium`.",
   });
-  for (const candidate of config.models.filter((item) => item.enabled)) {
+  for (const candidate of config.models.filter((item) => item.enabled && item.executor === config.execution.executor)) {
     checks.push(...await probeCandidate(config, candidate));
   }
   if (config.project.profile.includes("firebase")) checks.push(...firebaseChecklist());

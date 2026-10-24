@@ -46,13 +46,13 @@ export const harnessConfigSchema = z.object({
     unknownCostPolicy: z.enum(["block_paid_calls", "allow_with_task_limit"]).default("block_paid_calls"),
   }),
   localInference: z.object({
-    baseUrl: z.url().default("http://127.0.0.1:1234"),
+    baseUrl: z.url().default("http://localhost:1235/v1"),
     maxLoadedModels: z.literal(1).default(1),
     initialContextTokens: z.number().int().min(1024).default(8192),
     maxOutputTokens: z.number().int().min(128).default(2048),
     memoryPressureAction: z.enum(["unload_and_route_or_pause", "pause"]).default("unload_and_route_or_pause"),
   }).default({
-    baseUrl: "http://127.0.0.1:1234",
+    baseUrl: "http://localhost:1235/v1",
     maxLoadedModels: 1,
     initialContextTokens: 8192,
     maxOutputTokens: 2048,
