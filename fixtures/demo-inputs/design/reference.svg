@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600">
+  <rect width="900" height="600" fill="#10131a"/>
+  <rect x="140" y="70" width="620" height="460" rx="24" fill="#181e29" stroke="#2d3748"/>
+  <text x="190" y="140" fill="#f4f7fb" font-family="system-ui" font-size="34">Meus itens</text>
+  <rect x="190" y="175" width="385" height="48" rx="8" fill="#0d1117" stroke="#4f7cff"/>
+  <rect x="590" y="175" width="120" height="48" rx="8" fill="#3159c6"/>
+  <text x="614" y="206" fill="white" font-family="system-ui" font-size="16">Adicionar</text>
+  <rect x="190" y="250" width="520" height="52" rx="8" fill="#222b39"/>
+  <rect x="190" y="315" width="520" height="52" rx="8" fill="#222b39"/>
+</svg>

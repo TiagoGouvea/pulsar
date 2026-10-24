@@ -1,0 +1,13 @@
+{
+  "name": "harness-demo-workspace",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node server.mjs",
+    "typecheck": "node --check app.js",
+    "lint": "node --check app.js",
+    "test": "node --test",
+    "build": "node scripts/build.mjs",
+    "test:e2e": "node --test tests/behavior.test.mjs"
+  }
+}
