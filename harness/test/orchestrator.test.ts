@@ -182,6 +182,38 @@ describe("orquestrador (adapter fake)", () => {
     expect(l.helpedRate).toBe(1);
   });
 
+  it("paralelo: 2 worktrees simultâneas, merges serializados na etapa", async () => {
+    const { root, ctx } = await makeProject({ config: { loop: { maxParallelTasks: 2, retroEveryNFeatures: 2, stopOnSpecChange: true, maxStageFixRounds: 1 } } });
+    setFakeScript(script(Array.from({ length: 4 }, (_, i) => ({ id: `F-0.0${i + 1}`, stage: 0 }))));
+    let active = 0, maxActive = 0;
+    const d = deps();
+    const gates = d.runGates;
+    d.runGates = async (...a) => { active++; maxActive = Math.max(maxActive, active); await new Promise((r) => setTimeout(r, 30)); active--; return gates(...a); };
+    expect(await orch(ctx, d).start()).toBe("AWAITING_APPROVAL");
+    expect(loadFeatures(ctx).features.every((f) => f.status === "passing")).toBe(true);
+    expect(maxActive).toBe(2);
+    const log = await git(root, "log", "--oneline", "stage/0");
+    for (let i = 1; i <= 4; i++) expect(log).toContain(`feat(F-0.0${i})`);
+    expect(readEvents(ctx).filter((e) => e.role === "retro").length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("torneio: features críticas rodam 2 candidatos e um juiz de outra família escolhe", async () => {
+    const { ctx } = await makeProject({ config: { routing: { explorationRate: 0, escalateAfterFailures: 2, maxAttemptsPerFeature: 5, hardTags: ["statistics"], tournament: { enabled: true, tags: ["statistics"], contenders: 2, judge: "review_code" } } } });
+    setFakeScript(script([{ id: "F-0.01", stage: 0, tags: ["statistics"] }], (run, spec) => {
+      if (run.role === "implement_hard") return { files: { [`app/src/stats-${spec.id}.ts`]: `export const by = "${spec.id}";\n` } };
+      if (run.role === "review_code" && run.prompt.includes("juiz de torneio")) return { json: { winner: 1, reason: "melhor" } };
+    }));
+    await orch(ctx).start();
+    const evs = readEvents(ctx).filter((e) => e.featureId === "F-0.01");
+    const contenders = evs.filter((e) => e.role === "implement_hard").map((e) => e.workerId);
+    expect(new Set(contenders).size).toBe(2);
+    expect(evs.filter((e) => e.tournament === "lost")).toHaveLength(1);
+    const judgeEv = evs.find((e) => e.role === "review_code")!;
+    expect(["anthropic", "openai"]).not.toContain(judgeEv.family);
+    expect(feature(ctx.root, "F-0.01").status).toBe("passing");
+    expect((await listWorktrees(ctx.root)).map((w) => w.branch)).toEqual(["stage/0"]);
+  });
+
   it("12. approve converte respostas do humano em features de ajuste e decisões", async () => {
     const { root, ctx } = await makeProject();
     setFakeScript(script([{ id: "F-0.01", stage: 0 }], (run) => {
