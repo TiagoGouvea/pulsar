@@ -60,4 +60,17 @@ export function saveState(ctx: Ctx, s: State) {
   writeJson(hp(ctx, "state.json"), s);
 }
 
+/** Normalized text for dedup (lessons, questions). */
+export const normText = (s: string) => s.toLowerCase().replace(/\W+/g, " ").trim();
+
+/** Promise queue: runs callbacks one at a time (merges, gates). */
+export function mutex() {
+  let q: Promise<unknown> = Promise.resolve();
+  return <T>(fn: () => Promise<T>): Promise<T> => {
+    const p = q.then(fn, fn);
+    q = p.catch(() => undefined);
+    return p;
+  };
+}
+
 export const newState = (): State => StateSchema.parse({ phase: "INIT", stage: 0, updatedAt: new Date().toISOString() });

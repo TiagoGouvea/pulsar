@@ -15,7 +15,7 @@ import {
   uncovered, updateFeature,
 } from "./features.js";
 import { captureScreens } from "./gates/visual.js";
-import { registerProtected } from "./gates/protected.js";
+import { registerProtected, TEST_FILE } from "./gates/protected.js";
 import { type GateReport, runGates as realRunGates, type RunGates } from "./gates/run-gates.js";
 import * as g from "./git.js";
 import { BudgetError, type InvokeRes, NoWorkerError, Runtime } from "./invoke.js";
@@ -24,7 +24,7 @@ import { log, logEvent, readEvents } from "./logger.js";
 import { notify } from "./notify.js";
 import { acceptanceCriteria, featureVars, render } from "./prompts.js";
 import { pick, recordStats } from "./router.js";
-import { hp, loadState, newState, type Phase, readJsonl, saveState, type State, writeJson } from "./state.js";
+import { hp, loadState, mutex, newState, type Phase, readJsonl, saveState, type State, writeJson } from "./state.js";
 
 export interface Deps {
   runGates: RunGates;
@@ -37,7 +37,6 @@ export interface Deps {
 
 const WorkerFinal = z.object({ summary: z.string() }).passthrough();
 const InitFinal = z.object({ summary: z.string() }).passthrough();
-const TEST_FILE = /\.(test|spec)\.[cm]?[jt]sx?$/;
 const PAUSE_FILE = (ctx: Ctx) => hp(ctx, "PAUSE");
 
 export const defaultDeps = (): Deps => ({
@@ -53,16 +52,10 @@ export const defaultDeps = (): Deps => ({
   },
 });
 
-/** Serializes merges into the stage branch across parallel tasks. */
-const mutex = () => {
-  let q = Promise.resolve();
-  return <T>(fn: () => Promise<T>) => { const p = q.then(fn, fn); q = p.then(() => undefined, () => undefined); return p; };
-};
-
 export class Orchestrator {
   rt: Runtime;
   state!: State;
-  private merge = mutex();
+  private merge = mutex();   // serializes merges into the stage branch
   private fatal?: unknown;
 
   constructor(public ctx: Ctx, public deps: Deps = defaultDeps()) {

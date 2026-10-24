@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { parse, stringify } from "yaml";
 import { z } from "zod";
 import type { Ctx } from "./config.js";
-import { hp, writeAtomic } from "./state.js";
+import { hp, normText, writeAtomic } from "./state.js";
 
 export const LessonSchema = z.object({
   id: z.string(),
@@ -35,12 +35,11 @@ export const saveLessons = (ctx: Ctx, f: LessonFile, ls: Lesson[]) =>
   writeAtomic(path(ctx, f), HEADER[f] + (ls.length ? stringify(ls) : "[]\n"));
 
 const all = (ctx: Ctx) => [...loadLessons(ctx, "project"), ...loadLessons(ctx, "harness")];
-const norm = (s: string) => s.toLowerCase().replace(/\W+/g, " ").trim();
 
 /** Adds a lesson. Lessons without evidence or duplicated rules are rejected. */
 export function addLesson(ctx: Ctx, l: { scope?: Lesson["scope"]; rule: string; evidence: string[] }, file: LessonFile = "project"): Lesson | null {
   if (!l.evidence?.length || !l.rule?.trim()) return null;
-  if (all(ctx).some((x) => x.status !== "retired" && norm(x.rule) === norm(l.rule))) return null;
+  if (all(ctx).some((x) => x.status !== "retired" && normText(x.rule) === normText(l.rule))) return null;
   const n = Math.max(0, ...all(ctx).map((x) => Number(x.id.slice(2)) || 0)) + 1;
   const lesson = LessonSchema.parse({
     id: `L-${String(n).padStart(3, "0")}`, scope: l.scope ?? { roles: [], tags: [] }, rule: l.rule.trim(),

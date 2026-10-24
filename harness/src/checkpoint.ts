@@ -8,7 +8,7 @@ import { readLedger, spent } from "./budget.js";
 import { loadFeatures, stageFeatures } from "./features.js";
 import { readEvents } from "./logger.js";
 import { gateEnv } from "./gates/browser.js";
-import { hp, readJson, readJsonl, writeJson } from "./state.js";
+import { hp, normText, readJson, readJsonl, writeJson } from "./state.js";
 
 // ---------- spec/design hash and change detection ----------
 
@@ -66,7 +66,6 @@ function appendRow(ctx: Ctx, kind: string, row: object) {
   writeFileSync(hp(ctx, "inbox", `${kind}.jsonl`), JSON.stringify({ ts: new Date().toISOString(), ...row }) + "\n", { flag: "a" });
 }
 
-const norm = (s: string) => s.toLowerCase().replace(/\W+/g, " ").trim();
 export const answeredIds = (ctx: Ctx): string[] => readJson(hp(ctx, "inbox", "answered.json"), []);
 export const markAnswered = (ctx: Ctx, ids: string[]) => writeJson(hp(ctx, "inbox", "answered.json"), [...new Set([...answeredIds(ctx), ...ids])]);
 
@@ -76,7 +75,7 @@ export function openQuestions(ctx: Ctx) {
   const seen = new Set<string>();
   return readJsonl<Question>(hp(ctx, "inbox", "questions.jsonl"))
     .map((q, i) => ({ ...q, id: `Q-${i + 1}` }))
-    .filter((q) => q.pergunta && !done.has(q.id) && !seen.has(norm(q.pergunta)) && seen.add(norm(q.pergunta)));
+    .filter((q) => q.pergunta && !done.has(q.id) && !seen.has(normText(q.pergunta)) && seen.add(normText(q.pergunta)));
 }
 
 const list = (v: unknown) => (Array.isArray(v) ? v.join("; ") : String(v ?? "-"));

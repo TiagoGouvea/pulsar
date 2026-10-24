@@ -15,7 +15,7 @@ export const loadProtected = (ctx: Ctx): Registry => readJson(file(ctx), {});
 const sha = (s: string) => createHash("sha256").update(s).digest("hex");
 const countAsserts = (s: string) => (s.match(/\bexpect(\.soft)?\(|\bassert[.(]/g) ?? []).length;
 const FORBIDDEN = /\b(?:test|it|describe)\.(?:skip|only|fixme|todo)\b|\b(?:xit|xdescribe|fit|fdescribe)\(|\btest\.fixme\b/;
-const TEST_FILE = /\.(test|spec)\.[cm]?[jt]sx?$/;
+export const TEST_FILE = /\.(test|spec)\.[cm]?[jt]sx?$/;
 
 /** Records hash + assert count of the protected tests (paths relative to the repo root). */
 export function registerProtected(ctx: Ctx, cwd: string, featureId: string, files: string[]) {
