@@ -21,18 +21,19 @@ workers:
   codex-top:    { cli: codex,  model: "<preencher>",      family: openai,    tier: high, vision: true,  billing: api, concurrency: 2, timeoutMin: 45 }
   codex-mini:   { cli: codex,  model: "<preencher>",      family: openai,    tier: low,  vision: false, billing: api, concurrency: 2, timeoutMin: 20 }
   # --- Google ---
-  gemini-pro:   { cli: gemini, model: "<preencher>",      family: google,    tier: high, vision: true,  billing: api, concurrency: 2, timeoutMin: 45 }
-  gemini-flash: { cli: gemini, model: "<preencher>",      family: google,    tier: low,  vision: true,  billing: api, concurrency: 3, timeoutMin: 20 }
+  # via Antigravity CLI (agy); IDs de `agy models`. Login do agy, sem custo reportado -> billing: subscription
+  gemini-pro:   { cli: agy,    model: gemini-3.8-flash-high, family: google, tier: high, vision: true, billing: subscription, concurrency: 2, timeoutMin: 45 }
+  gemini-flash: { cli: agy,    model: gemini-3.8-flash-low,  family: google, tier: low,  vision: true, billing: subscription, concurrency: 3, timeoutMin: 20 }
   # --- Open source via assinatura / OpenRouter ---
   glm:          { cli: claude, model: "<preencher>",      family: zhipu,     tier: mid,  vision: false, billing: subscription, concurrency: 2, timeoutMin: 40,
                   env: { ANTHROPIC_BASE_URL: ZAI_ANTHROPIC_BASE_URL, ANTHROPIC_AUTH_TOKEN: ZAI_API_KEY } }
   kimi:         { cli: pi,     model: "openrouter/<preencher>", family: moonshot, tier: mid, vision: false, billing: api, concurrency: 2, timeoutMin: 40 }
   deepseek:     { cli: pi,     model: "openrouter/<preencher>", family: deepseek, tier: low, vision: false, billing: api, concurrency: 2, timeoutMin: 30 }
-  # --- Locais (LM Studio, http://localhost:1234/v1) ---
-  local-gptoss: { cli: pi, model: "lmstudio/gpt-oss-20b",                       family: openai, tier: local, vision: false, billing: local, concurrency: 1, timeoutMin: 30, maxContextTokens: 32000 }
-  local-coder:  { cli: pi, model: "lmstudio/qwen3-coder-30b-a3b-instruct",      family: qwen,   tier: local, vision: false, billing: local, concurrency: 1, timeoutMin: 40, maxContextTokens: 32000, requiresFreeRamGb: 18 }
-  local-small:  { cli: pi, model: "lmstudio/qwen3.5-9b",                        family: qwen,   tier: local, vision: false, billing: local, concurrency: 1, timeoutMin: 15, maxContextTokens: 32000 }
-  # os IDs "lmstudio/..." devem ser conferidos com GET /v1/models do LM Studio
+  # --- Locais (LM Studio, LMSTUDIO_BASE_URL, padrão http://localhost:1235/v1) ---
+  local-gptoss: { cli: pi, model: "lmstudio/mlx-community/gpt-oss-20b",         family: openai, tier: local, vision: false, billing: local, concurrency: 1, timeoutMin: 30, maxContextTokens: 32000 }
+  local-coder:  { cli: pi, model: "lmstudio/qwen3-coder-30b-a3b-instruct-mlx",  family: qwen,   tier: local, vision: false, billing: local, concurrency: 1, timeoutMin: 40, maxContextTokens: 32000, requiresFreeRamGb: 18 }
+  local-small:  { cli: pi, model: "lmstudio/qwen3.5-9b-mlx",                    family: qwen,   tier: local, vision: false, billing: local, concurrency: 1, timeoutMin: 15, maxContextTokens: 32000 }
+  # "lmstudio/<key>": key de GET /api/v1/models. O harness descarrega tudo, carrega só o modelo da chamada e o descarrega ao final.
   # --- Testes ---
   fake:         { cli: fake,   model: fake, family: local-other, tier: low, vision: true, billing: local, concurrency: 4, timeoutMin: 1, enabled: false }
 

@@ -5,7 +5,7 @@ import { adapters, workerEnv } from "./adapters/index.js";
 import { FatalError, type Role, type WorkerResult, type WorkerSpec } from "./adapters/types.js";
 import { breach, type Cap, estimate, record, usageRatio } from "./budget.js";
 import { type Ctx, enabledWorkers } from "./config.js";
-import { logEvent } from "./logger.js";
+import { log, logEvent } from "./logger.js";
 import { extractJson } from "./prompts.js";
 import { candidates, pick, recordStats } from "./router.js";
 import { hp } from "./state.js";
@@ -50,8 +50,19 @@ export class Runtime {
   preferCheap = (stage: number) => usageRatio(this.ctx, stage) >= 0.8;
 
   async invoke<T>(r: InvokeReq<T>): Promise<InvokeRes<T>> {
-    const w = await this.choose(r);
-    this.busy.set(w.id, (this.busy.get(w.id) ?? 0) + 1);
+    const adapter = (w: WorkerSpec) => adapters[w.cli];
+    let w: WorkerSpec;
+    for (;;) {
+      w = await this.choose(r);
+      this.busy.set(w.id, (this.busy.get(w.id) ?? 0) + 1);
+      const err = await adapter(w).prepare?.(w, this.ctx.env);
+      if (!err) break;
+      // e.g. LM Studio refused to load the model: exclude it for this run and pick another worker
+      this.busy.set(w.id, (this.busy.get(w.id) ?? 1) - 1);
+      this.unavailable.add(w.id);
+      log(`worker ${w.id} indisponível: ${err.slice(0, 200)}`);
+      if (r.workerId) throw new NoWorkerError(`worker ${w.id} indisponível: ${err}`);
+    }
     try {
       const dir = hp(this.ctx, "runs", r.taskId);
       mkdirSync(dir, { recursive: true });
@@ -84,6 +95,7 @@ export class Runtime {
       await this.opts.onSpend?.(r.stage);
       return { worker: w, result, data, outcome, costUsd, eventId };
     } finally {
+      await adapter(w).release?.(w, this.ctx.env).catch(() => undefined);
       this.busy.set(w.id, (this.busy.get(w.id) ?? 1) - 1);
     }
   }
@@ -126,9 +138,8 @@ export class Runtime {
         continue;
       }
       const b = breach(this.ctx, w, estimate(this.ctx, w, r.role), { stage: r.stage, featureId: r.featureId });
-      if (!b) return w;
-      lastBreach = b;
-      exclude.push(w.id);
+      if (b) { lastBreach = b; exclude.push(w.id); continue; }
+      return w;
     }
   }
 }

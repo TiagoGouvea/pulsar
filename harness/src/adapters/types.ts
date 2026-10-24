@@ -41,4 +41,8 @@ export interface WorkerAdapter {
   run(spec: WorkerSpec, run: WorkerRun, opts: RunOpts): Promise<WorkerResult>;
   /** Optional availability probe (e.g. LM Studio endpoint up). */
   available?(spec: WorkerSpec, env: Record<string, string | undefined>): Promise<boolean>;
+  /** Called right before a call (e.g. load the local model alone). Returns an error message or null. */
+  prepare?(spec: WorkerSpec, env: Record<string, string | undefined>): Promise<string | null>;
+  /** Called after the call, success or not (e.g. unload the local model). */
+  release?(spec: WorkerSpec, env: Record<string, string | undefined>): Promise<void>;
 }

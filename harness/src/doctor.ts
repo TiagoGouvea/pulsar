@@ -5,6 +5,7 @@ import { execa } from "execa";
 import { z } from "zod";
 import { baseEnv } from "./adapters/exec.js";
 import { requiredEnv } from "./adapters/index.js";
+import { isLocal, listModels, lmKey } from "./adapters/lmstudio.js";
 import { type Ctx, enabledWorkers, PLACEHOLDER, providerOf } from "./config.js";
 import { loadFeatures, uncovered } from "./features.js";
 import * as g from "./git.js";
@@ -35,7 +36,7 @@ export async function doctor(ctx: Ctx, o: { auth?: boolean; emulators?: boolean 
   const bins: [string, boolean, string][] = [
     ["node", true, "instale Node LTS"], ["npm", true, ""], ["yarn", true, "npm i -g yarn (os gates do app usam yarn)"], ["git", true, ""],
     ["java", true, "brew install openjdk (emuladores do Firebase)"], ["firebase", true, "npm i -g firebase-tools"],
-    ...(["claude", "codex", "gemini", "pi"] as const).map((c): [string, boolean, string] => [c, clis.has(c), c === "gemini" ? "npm i -g @google/gemini-cli" : `instale a CLI ${c}`]),
+    ...(["claude", "codex", "agy", "pi"] as const).map((c): [string, boolean, string] => [c, clis.has(c), `instale a CLI ${c}`]),
   ];
   for (const [b, required, hint] of bins) {
     const v = await version(b);
@@ -73,12 +74,14 @@ export async function doctor(ctx: Ctx, o: { auth?: boolean; emulators?: boolean 
   } else add("info", "auth", "pulado (--no-auth)");
 
   // LM Studio
-  const locals = workers.filter((w) => w.model.startsWith("lmstudio/"));
+  const locals = workers.filter(isLocal);
   if (locals.length) {
     try {
-      const r = await fetch(`${ctx.env.LMSTUDIO_BASE_URL ?? "http://localhost:1234/v1"}/models`, { signal: AbortSignal.timeout(3000) });
-      const ids: string[] = ((await r.json()) as any).data?.map((m: any) => m.id) ?? [];
-      for (const w of locals) add(ids.includes(w.model.slice(9)) ? "ok" : "fail", `lmstudio ${w.id}`, ids.includes(w.model.slice(9)) ? "modelo listado" : `não listado em /v1/models (${ids.join(", ") || "vazio"})`);
+      const ms = await listModels(ctx.env);
+      for (const w of locals) {
+        const m = ms.find((x) => x.key === lmKey(w));
+        add(m ? "ok" : "fail", `lmstudio ${w.id}`, m ? `baixado (${(m.size_bytes / 2 ** 30).toFixed(1)} GB)` : `"${lmKey(w)}" não baixado; disponíveis: ${ms.map((x) => x.key).join(", ")}`);
+      }
     } catch {
       add("fail", "lmstudio", "endpoint não responde — abra o LM Studio (server) ou desabilite os workers locais");
     }

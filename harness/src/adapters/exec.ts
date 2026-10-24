@@ -33,9 +33,13 @@ export function cliAdapter(def: {
   args(spec: WorkerSpec, run: WorkerRun): string[];
   parse(stdout: string): { finalText: string; usage: Usage; isError?: boolean };
   available?: WorkerAdapter["available"];
+  prepare?: WorkerAdapter["prepare"];
+  release?: WorkerAdapter["release"];
 }): WorkerAdapter {
   return {
     available: def.available,
+    prepare: def.prepare,
+    release: def.release,
     async run(spec, run, opts: RunOpts): Promise<WorkerResult> {
       const p = await runProcess(def.bin, def.args(spec, run), { cwd: run.cwd, env: baseEnv(opts.env), timeoutMs: spec.timeoutMin * 60_000 });
       mkdirSync(dirname(opts.transcriptPath), { recursive: true });
@@ -55,6 +59,8 @@ export function cliAdapter(def: {
 export const jsonLines = (s: string) => s.split("\n").flatMap((l) => {
   try { return l.trim() ? [JSON.parse(l)] : []; } catch { return []; }
 });
+
+export const lmstudioUrl = (env: Record<string, string | undefined>) => env.LMSTUDIO_BASE_URL ?? "http://localhost:1235/v1";
 
 /** Images are referenced in the prompt for CLIs that read files themselves. */
 export const withAttachments = (run: WorkerRun) =>

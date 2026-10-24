@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { adapters } from "../src/adapters/index.js";
 import { costOf } from "../src/budget.js";
+import { NoWorkerError, Runtime } from "../src/invoke.js";
 import { parseApprovalFiles } from "../src/checkpoint.js";
 import { enabledWorkers } from "../src/config.js";
 import { codeRules, uiRules } from "../src/evaluator.js";
@@ -43,6 +45,30 @@ describe("router", () => {
     ctx.config.roles.triage.pool = ["fake-cheap", "fake-local2"];
     expect(candidates(ctx, { role: "triage", busy: new Map([["fake-cheap", 1]]) })).toEqual([]);
     expect(candidates(ctx, { role: "triage", preferCheap: true }).length).toBe(2);
+  });
+});
+
+describe("invoke: prepare/release (load/unload do LM Studio)", () => {
+  it("modelo que não carrega fica indisponível e outro worker é usado; release sempre roda", async () => {
+    const { ctx } = await makeProject();
+    const calls: string[] = [];
+    Object.assign(adapters.fake, {
+      prepare: async (w: { id: string }) => (calls.push(`prepare:${w.id}`), w.id === "fake-cheap" ? "insufficient system resources" : null),
+      release: async (w: { id: string }) => { calls.push(`release:${w.id}`); },
+    });
+    try {
+      const rt = new Runtime(ctx);
+      const r = await rt.invoke({ role: "triage", taskId: "t", stage: 0, attempt: 1, cwd: ctx.root, prompt: "oi" }).catch((e) => e);
+      expect(r).toBeInstanceOf(NoWorkerError);   // triage pool is only fake-cheap
+      expect(rt.unavailable.has("fake-cheap")).toBe(true);
+      ctx.config.roles.triage.pool = ["fake-cheap", "fake-google"];
+      const ok = await rt.invoke({ role: "triage", taskId: "t", stage: 0, attempt: 1, cwd: ctx.root, prompt: "oi" });
+      expect(ok.worker.id).toBe("fake-google");
+      expect(calls).toEqual(["prepare:fake-cheap", "prepare:fake-google", "release:fake-google"]);
+    } finally {
+      delete (adapters.fake as any).prepare;
+      delete (adapters.fake as any).release;
+    }
   });
 });
 

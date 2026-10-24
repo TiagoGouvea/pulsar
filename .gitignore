@@ -14,3 +14,4 @@ playwright-report/
 .harness/runs/**/*.log
 .harness/PAUSE
 .harness/*.tmp
+.harness/pi-agent/

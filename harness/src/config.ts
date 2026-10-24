@@ -6,7 +6,7 @@ import { z } from "zod";
 export const PLACEHOLDER = "<preencher>";
 
 const Worker = z.object({
-  cli: z.enum(["claude", "codex", "gemini", "pi", "fake"]),
+  cli: z.enum(["claude", "codex", "agy", "pi", "fake"]),
   model: z.string(),
   family: z.enum(["anthropic", "openai", "google", "zhipu", "moonshot", "deepseek", "qwen", "local-other"]),
   tier: z.enum(["high", "mid", "low", "local"]),
