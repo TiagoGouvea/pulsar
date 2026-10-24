@@ -90,6 +90,7 @@ Antes de cada inferência local, o harness descarrega todos os modelos, carrega 
 
 - [Arquitetura](docs/architecture.md)
 - [Provedores](docs/providers.md)
+- [Firebase de desenvolvimento](docs/firebase-setup.md)
 - [Segurança](docs/security.md)
 - [Operação e recuperação](docs/operations.md)
 - [Estado e limitações](docs/implementation-status.md)

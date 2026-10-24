@@ -5,8 +5,8 @@
 
 ## 1. O que o responsável pelo projeto vai fornecer (bloqueante)
 
-- [ ] **Projeto Firebase de desenvolvimento** criado e identificado por `projectId`. Usar um projeto isolado, sem dados reais de produção.
-- [ ] **Acesso autorizado ao Firebase/GCP** concedido ao desenvolvedor/agente com permissões necessárias e limitadas. Preferir login/IAM, **não enviar chaves privadas por chat** e não versionar contas de serviço.
+- [x] **Projeto Firebase de desenvolvimento** criado e identificado por `projectId`: `pulsar-codex`. Usar um projeto isolado, sem dados reais de produção.
+- [x] **Acesso autorizado ao Firebase** concedido ao desenvolvedor/agente. A conta de serviço local está ignorada pelo Git e limitada; Service Usage/Billing permanecem fora de seu alcance.
 - [ ] **Plano Firebase Blaze** ativado e faturamento associado para Cloud Functions e jobs agendados.
 - [ ] **Alertas de orçamento** configurados no Google Cloud. Alertas não são limites automáticos de gastos; complementar com quotas e limites por usuário no app.
 - [ ] **Design quase completo entregue:** fluxos, telas mobile e desktop quando houver, estados vazios, preenchimento, configurações de indicador, cartões de insight, timeline, login, upgrade de conta e notificações. Incluir assets, tipografia, cores e instruções de interação; informar o formato de entrega (ex.: Figma, imagens, HTML).
