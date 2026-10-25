@@ -15,3 +15,9 @@
 {"ts":"2026-10-25T13:13:20.516Z","workerId":"glm","provider":"openrouter","role":"doctor","stage":-1,"tokensIn":1673,"tokensOut":3,"costUsd":0.000146567,"billing":"api"}
 {"ts":"2026-10-25T13:13:34.323Z","workerId":"local-gptoss","provider":"local","role":"doctor","stage":-1,"tokensIn":1392,"tokensOut":41,"costUsd":0,"billing":"local"}
 {"ts":"2026-10-25T13:17:52.237Z","workerId":"kimi","provider":"openrouter","role":"smoke","stage":-1,"tokensIn":1521,"tokensOut":395,"costUsd":0.0026407851999999997,"billing":"api"}
+{"ts":"2026-10-25T13:25:14.354Z","workerId":"codex-mid","provider":"openai","role":"smoke","stage":-1,"tokensIn":89439,"tokensOut":813,"costUsd":0.203437,"billing":"api"}
+{"ts":"2026-10-25T13:25:19.239Z","workerId":"opus","provider":"anthropic","role":"doctor","stage":-1,"tokensIn":6576,"tokensOut":4,"costUsd":0.0352496,"billing":"api"}
+{"ts":"2026-10-25T13:25:22.250Z","workerId":"codex-top","provider":"openai","role":"doctor","stage":-1,"tokensIn":14312,"tokensOut":5,"costUsd":0.057348,"billing":"api"}
+{"ts":"2026-10-25T13:25:28.025Z","workerId":"gemini-pro","provider":"google","role":"doctor","stage":-1,"tokensIn":6836,"tokensOut":175,"costUsd":0,"billing":"subscription"}
+{"ts":"2026-10-25T13:25:29.460Z","workerId":"glm","provider":"openrouter","role":"doctor","stage":-1,"tokensIn":905,"tokensOut":3,"costUsd":0.000131207,"billing":"api"}
+{"ts":"2026-10-25T13:25:42.773Z","workerId":"local-gptoss","provider":"local","role":"doctor","stage":-1,"tokensIn":1392,"tokensOut":44,"costUsd":0,"billing":"local"}

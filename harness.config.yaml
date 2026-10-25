@@ -20,6 +20,7 @@ workers:
   haiku:        { cli: claude, model: claude-haiku-5-5,   family: anthropic, tier: low,  vision: true,  billing: api, concurrency: 3, timeoutMin: 15 }
   # --- OpenAI ---
   codex-top:    { cli: codex,  model: gpt-5.6-sol,        family: openai,    tier: high, vision: true,  billing: api, concurrency: 2, timeoutMin: 45 }
+  codex-mid:    { cli: codex,  model: gpt-5.6-terra,     family: openai,    tier: mid,  vision: true,  billing: api, concurrency: 2, timeoutMin: 40 }
   codex-mini:   { cli: codex,  model: gpt-5.6-luna,       family: openai,    tier: low,  vision: false, billing: api, concurrency: 2, timeoutMin: 20 }
   # --- Google ---
   # via Antigravity CLI (agy); IDs de `agy models`. Login do agy, sem custo reportado -> billing: subscription
@@ -32,23 +33,24 @@ workers:
   deepseek:     { cli: pi,     model: "openrouter/deepseek/deepseek-v4-pro", family: deepseek, tier: low, vision: false, billing: api, concurrency: 2, timeoutMin: 30 }
   # --- Locais (LM Studio, LMSTUDIO_BASE_URL, padrão http://localhost:1235/v1) ---
   local-gptoss: { cli: pi, model: "lmstudio/mlx-community/gpt-oss-20b",         family: openai, tier: local, vision: false, billing: local, concurrency: 1, timeoutMin: 30, maxContextTokens: 32000 }
-  local-coder:  { cli: pi, model: "lmstudio/qwen3-coder-30b-a3b-instruct-mlx",  family: qwen,   tier: local, vision: false, billing: local, concurrency: 1, timeoutMin: 40, maxContextTokens: 32000, requiresFreeRamGb: 18 }
+  local-coder:  { cli: pi, model: "lmstudio/qwen3-coder-30b-a3b-instruct-mlx",  family: qwen,   tier: local, vision: false, billing: local, concurrency: 1, timeoutMin: 40, maxContextTokens: 32000, requiresFreeRamGb: 18, enabled: false }   # não carrega com 24 GB
   local-small:  { cli: pi, model: "lmstudio/qwen3.5-9b-mlx",                    family: qwen,   tier: local, vision: false, billing: local, concurrency: 1, timeoutMin: 15, maxContextTokens: 32000 }
   # "lmstudio/<key>": key de GET /api/v1/models. O harness descarrega tudo, carrega só o modelo da chamada e o descarrega ao final.
   # --- Testes ---
   fake:         { cli: fake,   model: fake, family: local-other, tier: low, vision: true, billing: local, concurrency: 4, timeoutMin: 1, enabled: false }
 
 roles:
-  initializer:     { pool: [opus],                           note: "decompõe spec, scaffold, design system" }
-  test_writer:     { pool: [opus, codex-top],                note: "escreve testes de aceite ANTES da implementação" }
-  implement:       { pool: [sonnet, glm, kimi, local-coder], note: "features comuns" }
-  implement_hard:  { pool: [opus, codex-top],                note: "estatística, security rules, sincronização, privacidade" }
-  review_code:     { pool: [codex-top, gemini-pro, opus],    rule: different_family_from_implementer }
-  review_ui:       { pool: [gemini-pro, opus],               rule: different_family_from_implementer, requires: vision }
-  triage:          { pool: [local-small, haiku, deepseek, gemini-flash] }
-  approval_parser: { pool: [haiku, gemini-flash, deepseek, local-small], note: "converte APROVACAO.md/DUVIDAS.md em JSON" }
-  retro:           { pool: [opus] }
-  postmortem:      { pool: [opus] }
+  # Caros (opus, codex-top) só no initializer e em implement_hard; o volume vai para baratos, assinatura (agy) e locais.
+  initializer:     { pool: [opus],                              note: "decompõe spec, scaffold, design system" }
+  test_writer:     { pool: [sonnet, codex-mid],                 note: "escreve testes de aceite ANTES da implementação" }
+  implement:       { pool: [deepseek, glm, kimi, sonnet],       note: "features comuns" }
+  implement_hard:  { pool: [opus, codex-top],                   note: "estatística, security rules, sincronização, privacidade" }
+  review_code:     { pool: [gemini-pro, codex-mid, sonnet],     rule: different_family_from_implementer }
+  review_ui:       { pool: [gemini-pro, sonnet],                rule: different_family_from_implementer, requires: vision }
+  triage:          { pool: [local-small, gemini-flash, deepseek, haiku] }
+  approval_parser: { pool: [gemini-flash, haiku, local-small],  note: "converte APROVACAO.md/DUVIDAS.md em JSON" }
+  retro:           { pool: [sonnet] }
+  postmortem:      { pool: [sonnet] }
 
 routing:
   explorationRate: 0.10        # 10% das tarefas testam worker fora do melhor histórico
@@ -56,7 +58,7 @@ routing:
   maxAttemptsPerFeature: 5     # depois: bloqueia a feature e registra em DUVIDAS
   hardTags: [statistics, security-rules, sync, privacy-mode]   # vão direto para implement_hard
   tournament:
-    enabled: true
+    enabled: false               # dobra o custo das features críticas
     tags: [statistics, security-rules, privacy-mode]   # features críticas
     contenders: 2
     judge: review_code

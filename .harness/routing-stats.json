@@ -54,5 +54,12 @@
     "custoMedio": 0.0014168002200000002,
     "duracaoMedia": 5912,
     "falhasPorGate": {}
+  },
+  "codex-mid|smoke|*": {
+    "tentativas": 1,
+    "sucessos": 1,
+    "custoMedio": 0.203437,
+    "duracaoMedia": 11000,
+    "falhasPorGate": {}
   }
 }

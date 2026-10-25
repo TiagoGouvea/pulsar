@@ -1,13 +1,13 @@
 currency: USD
 caps:
-  run: 150            # execução inteira
-  stage: 40           # por etapa
-  feature: 6          # por feature (todas as tentativas + reviews)
+  run: 80             # execução inteira
+  stage: 20           # por etapa
+  feature: 3          # por feature (todas as tentativas + reviews)
   dailyByProvider:
-    anthropic: 40
-    openai: 25
-    google: 20
-    openrouter: 15
+    anthropic: 20
+    openai: 15
+    google: 10
+    openrouter: 10
 alerts: [0.5, 0.8, 1.0]
 onSoftLimit: prefer_cheap    # >= 80%: router prioriza low/local
 onHardLimit: pause_and_checkpoint
