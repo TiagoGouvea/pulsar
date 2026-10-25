@@ -29,8 +29,8 @@ const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,
 export function specSection(ctx: Ctx, ref: string): string {
   const [alias, anchor = ""] = ref.split("#");
   const file = ctx.config.project.specFiles[alias] ?? alias;
-  if (!existsSync(join(ctx.root, file))) return "";
-  const lines = readFileSync(join(ctx.root, file), "utf8").split("\n");
+  if (!existsSync(join(ctx.repo, file))) return "";
+  const lines = readFileSync(join(ctx.repo, file), "utf8").split("\n");
   const a = slug(anchor);
   const start = lines.findIndex((l) => {
     const h = l.match(/^(#+)\s+(.*)$/);
@@ -55,7 +55,7 @@ export function acceptanceCriteria(ctx: Ctx) {
 const tail = (file: string, n: number) => (existsSync(file) ? readFileSync(file, "utf8").split("\n").slice(-n).join("\n") : "");
 
 export function designRefs(ctx: Ctx) {
-  const dir = join(ctx.root, ctx.config.project.designDir, "screens");
+  const dir = join(ctx.repo, ctx.config.project.designDir, "screens");
   const screens = existsSync(dir) ? readdirSync(dir).filter((f) => /\.(png|jpe?g|webp)$/i.test(f)).map((f) => join(ctx.config.project.designDir, "screens", f)) : [];
   return { screens, tokens: join(ctx.config.project.designDir, "tokens.json") };
 }

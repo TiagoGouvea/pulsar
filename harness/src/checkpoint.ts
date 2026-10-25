@@ -13,14 +13,14 @@ import { hp, normText, readJson, readJsonl, writeJson } from "./state.js";
 // ---------- spec/design hash and change detection ----------
 
 const files = (ctx: Ctx) => {
-  const out = Object.values(ctx.config.project.specFiles).map((f) => join(ctx.root, f));
+  const out = Object.values(ctx.config.project.specFiles).map((f) => join(ctx.repo, f));
   const walk = (d: string): string[] => (existsSync(d) ? readdirSync(d).flatMap((n) => (statSync(join(d, n)).isDirectory() ? walk(join(d, n)) : [join(d, n)])) : []);
-  return [...out, ...walk(join(ctx.root, ctx.config.project.designDir)).filter((f) => !f.endsWith(".DS_Store"))].sort();
+  return [...out, ...walk(join(ctx.repo, ctx.config.project.designDir)).filter((f) => !f.endsWith(".DS_Store"))].sort();
 };
 
 export function computeHash(ctx: Ctx) {
   const h = createHash("sha256");
-  for (const f of files(ctx)) h.update(relative(ctx.root, f)).update(existsSync(f) ? readFileSync(f) : "");
+  for (const f of files(ctx)) h.update(relative(ctx.repo, f)).update(existsSync(f) ? readFileSync(f) : "");
   return h.digest("hex");
 }
 
@@ -30,9 +30,9 @@ export const storedHash = (ctx: Ctx) => (existsSync(hp(ctx, "spec.hash")) ? read
 export function freezeSpec(ctx: Ctx) {
   writeFileSync(hp(ctx, "spec.hash"), computeHash(ctx) + "\n");
   for (const [alias, f] of Object.entries(ctx.config.project.specFiles)) {
-    if (!existsSync(join(ctx.root, f))) continue;
+    if (!existsSync(join(ctx.repo, f))) continue;
     mkdirSync(hp(ctx, "spec-snapshot"), { recursive: true });
-    copyFileSync(join(ctx.root, f), hp(ctx, "spec-snapshot", alias));
+    copyFileSync(join(ctx.repo, f), hp(ctx, "spec-snapshot", alias));
   }
 }
 
@@ -43,7 +43,7 @@ export async function writeSpecChange(ctx: Ctx) {
   for (const [alias, f] of Object.entries(ctx.config.project.specFiles)) {
     const snap = hp(ctx, "spec-snapshot", alias);
     if (!existsSync(snap)) continue;
-    const d = await execa("git", ["diff", "--no-index", "--unified=2", snap, join(ctx.root, f)], { reject: false });
+    const d = await execa("git", ["diff", "--no-index", "--unified=2", snap, join(ctx.repo, f)], { reject: false });
     if (!d.stdout) continue;
     changed.push(alias);
     parts.push(`## ${alias}\n\n\`\`\`diff\n${String(d.stdout).slice(0, 30000)}\n\`\`\`\n`);

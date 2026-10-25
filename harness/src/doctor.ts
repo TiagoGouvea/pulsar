@@ -114,11 +114,11 @@ export async function doctor(ctx: Ctx, o: { auth?: boolean; emulators?: boolean 
   add("info", "Firebase Hosting", "habilite Hosting no projeto dev (preview channels); Blaze só se push/Functions estiverem no escopo, com alerta de orçamento");
 
   // human inputs
-  for (const [alias, f] of Object.entries(ctx.config.project.specFiles)) add(existsSync(join(ctx.root, f)) ? "ok" : "fail", `spec ${alias}`, f);
+  for (const [alias, f] of Object.entries(ctx.config.project.specFiles)) add(existsSync(join(ctx.repo, f)) ? "ok" : "fail", `spec ${alias}`, f);
   const d = designRefs(ctx);
-  add(existsSync(join(ctx.root, d.tokens)) ? "ok" : "fail", "design tokens", d.tokens);
+  add(existsSync(join(ctx.repo, d.tokens)) ? "ok" : "fail", "design tokens", d.tokens);
   add(d.screens.length >= 3 ? "ok" : "fail", "mockups", `${d.screens.length} em ${ctx.config.project.designDir}/screens (mínimo 3)`);
-  add(existsSync(join(ctx.root, ctx.config.project.decisionsFile)) ? "ok" : "fail", "decisões", ctx.config.project.decisionsFile);
+  add(existsSync(join(ctx.repo, ctx.config.project.decisionsFile)) ? "ok" : "fail", "decisões", ctx.config.project.decisionsFile);
   const ac = acceptanceCriteria(ctx);
   add(ac.length ? "ok" : "fail", "critérios de aceite", `${ac.length} na seção ${ctx.config.project.acceptanceSection} da spec`);
   const feats = loadFeatures(ctx);
@@ -129,9 +129,9 @@ export async function doctor(ctx: Ctx, o: { auth?: boolean; emulators?: boolean 
 
   // git
   try {
-    add((await g.isClean(ctx.root)) ? "ok" : "fail", "git limpo", (await g.isClean(ctx.root)) ? "sem mudanças pendentes" : "faça commit das mudanças antes do start");
-    add((await g.hasRemote(ctx.root)) ? "ok" : "warn", "git remoto", (await g.hasRemote(ctx.root)) ? "configurado" : "nenhum remote (git remote add origin …)");
-    const b = await g.currentBranch(ctx.root);
+    add((await g.isClean(ctx.repo)) ? "ok" : "fail", "git limpo", (await g.isClean(ctx.repo)) ? "sem mudanças pendentes" : "faça commit das mudanças antes do start");
+    add((await g.hasRemote(ctx.repo)) ? "ok" : "warn", "git remoto", (await g.hasRemote(ctx.repo)) ? "configurado" : "nenhum remote (git remote add origin …)");
+    const b = await g.currentBranch(ctx.repo);
     add(b === ctx.config.project.mainBranch ? "ok" : "warn", "git branch", b === ctx.config.project.mainBranch ? b : `checkout atual é ${b}; as etapas aprovadas são mescladas em ${ctx.config.project.mainBranch}`);
   } catch (e) {
     add("fail", "git", (e as Error).message);

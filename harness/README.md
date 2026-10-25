@@ -2,6 +2,11 @@
 
 Harness autônomo e multi-modelo que **constrói o app Pulsar** feature por feature, com gates determinísticos, avaliador independente de outra família de modelo, checkpoints humanos por etapa, aprendizado e orçamento rígido. Spec completa: [`../HARNESS_PULSAR.md`](../HARNESS_PULSAR.md).
 
+## Duas pastas
+
+- **`harness-claude/`** (esta): a fábrica: código do harness, `harness.config.yaml`, `budget.yaml`, `.env`/`secrets/`, estado em `.harness/` e `checkpoints/`.
+- **`../pulsar-claude/`** (`project.repo`): o projeto, um repo git próprio com `docs/` (spec), `design/`, `DECISOES.md` e `app/`. Worktrees, branches `stage/N`/`feat/*`, merges e tags acontecem nele.
+
 ## Fluxo do humano
 
 ```
@@ -38,21 +43,20 @@ Ao fim de cada etapa o processo **termina** em `AWAITING_APPROVAL` e notifica o 
 
 ## Antes do primeiro `start` (checklist)
 
-- [ ] `docs/` com a spec e a arquitetura finais (`project.specFiles` em `harness.config.yaml` mapeia `spec.md`/`arquitetura.md` para os arquivos atuais)
-- [ ] `design/screens/*.png` (≥ 3 mockups) e `design/tokens.json`
-- [ ] `DECISOES.md` (partir de `DECISOES.template.md`)
+- [ ] Em `../pulsar-claude/`: `docs/` com a spec e a arquitetura finais (`project.specFiles` em `harness.config.yaml` mapeia `spec.md`/`arquitetura.md` para os arquivos atuais)
+- [ ] Em `../pulsar-claude/`: `design/screens/*.png` (≥ 3 mockups), `design/tokens.json` e `DECISOES.md` (partir de `DECISOES.template.md`)
 - [ ] `.env` a partir de `.env.example`: uma chave por provedor, dedicada ao harness; service account em `secrets/` (fora do git)
 - [ ] IDs `<preencher>` em `harness.config.yaml` (ou `enabled: false` no worker) e preços em `prices.yaml`
 - [ ] Limites duros nos consoles (OpenRouter por chave, Anthropic/OpenAI mensal, alertas GCP)
 - [ ] `yarn`, `java`, `firebase-tools`, `gemini` instalados; `npx playwright install chromium`
 - [ ] LM Studio com os modelos locais (ou desabilite `local-*`)
-- [ ] Repositório com remote; trabalhar com o checkout em `main` (as etapas aprovadas são mescladas nele)
+- [ ] Repo do projeto com remote; trabalhar com o checkout em `main` (as etapas aprovadas são mescladas nele)
 - [ ] `doctor` verde e `smoke` revisado
 
 ## Como funciona
 
 - **Estado em arquivos** (`.harness/`): `state.json` (máquina de estados), `features.json`, `events.jsonl`, `ledger.jsonl`, `routing-stats.json`, `protected.json`, `inbox/`, `lessons/`, `runs/<taskId>/` (prompt, transcript, gate report, veredito). Escrita atômica (tmp + rename).
-- **Git**: cada feature roda em `.worktrees/<id>` na branch `feat/<id>` criada de `stage/N`; aprovada, é mesclada (`--no-ff`) em `stage/N` via `.worktrees/stage-N`. Commits do harness usam a identidade `pulsar-harness`.
+- **Git** (no repo do projeto): cada feature roda em `.worktrees/<id>` na branch `feat/<id>` criada de `stage/N`; aprovada, é mesclada (`--no-ff`) em `stage/N` via `.worktrees/stage-N`. Commits do harness usam a identidade `pulsar-harness`.
 - **Ciclo por feature**: testes de aceite (test_writer, depois protegidos por hash) → implementação (router escolhe o worker; `hard`/tags críticas e após 2 falhas → `implement_hard`; torneio nas tags críticas) → gates G1–G13 → triage em caso de falha → avaliador de código de outra família → avaliador visual (tag `ui`) → merge. Após 5 tentativas: `blocked` + DUVIDAS/RISCOS.
 - **Gates**: comandos do app em `harness.config.yaml > gates` (yarn); embutidos: G7 (testes protegidos), G8 (sentinelas de privacidade), G9 (axe), G10 (overflow/alvos 44px), G12 (Lighthouse), G13 (segredos no diff). Os gates de navegador sobem `browser.serveCmd` e carregam o Playwright do próprio app. Rodam serializados (emuladores e portas compartilhados).
 - **Roteamento**: bandit (sucesso suavizado ÷ custo ÷ duração) com `explorationRate`; respeita família, visão, disponibilidade (LM Studio), concorrência, exclusividade dos locais e `prefer_cheap` acima de 80% do orçamento.

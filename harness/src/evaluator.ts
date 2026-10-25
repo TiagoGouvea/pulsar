@@ -59,7 +59,7 @@ const rubric = () => readFileSync(join(HARNESS_DIR, "rubrics", "design.md"), "ut
 
 export async function reviewUi(b: Base & { ctx: Ctx; title: string; screenshots: string[] }): Promise<Verdict> {
   const d = designRefs(b.ctx);
-  const tokensPath = join(b.ctx.root, d.tokens);
+  const tokensPath = join(b.ctx.repo, d.tokens);
   const prompt = render(b.ctx, "review_ui", {
     feature: `${b.f.id} — ${b.title}`,
     rubric: rubric(),
@@ -67,7 +67,7 @@ export async function reviewUi(b: Base & { ctx: Ctx; title: string; screenshots:
     screenshots: b.screenshots.join("\n"),
     mockups: d.screens.join("\n"),
   }, b.f.tags);
-  const attachments = [...b.screenshots, ...d.screens.map((s) => join(b.ctx.root, s))].slice(0, 40);
+  const attachments = [...b.screenshots, ...d.screens.map((s) => join(b.ctx.repo, s))].slice(0, 40);
   const r = await review(b, "review_ui", prompt, ReviewUiSchema, attachments);
   return r ? { kind: "ui", pass: uiRules(r.data), score: r.data.score, issues: r.data.issues, porCriterio: r.data.porCriterio, workerId: r.workerId } : noReviewer("ui");
 }

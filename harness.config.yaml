@@ -1,5 +1,6 @@
 project:
   name: pulsar
+  repo: ../pulsar-claude        # repo do projeto (spec, design, DECISOES.md, app/); worktrees ficam lá
   appDir: app
   # alias -> arquivo. specRefs nas features usam o alias (ex.: "spec.md#4.4")
   specFiles:

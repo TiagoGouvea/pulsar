@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { parse } from "yaml";
 import { z } from "zod";
 
@@ -40,6 +40,7 @@ const Gate = z.object({
 export const ConfigSchema = z.object({
   project: z.object({
     name: z.string(),
+    repo: z.string().default("."),   // project git repo (spec, design, app), relative to the harness root
     appDir: z.string(),
     specFiles: z.record(z.string(), z.string()),
     acceptanceSection: z.string().default("10"),
@@ -109,7 +110,8 @@ export type Budget = z.infer<typeof BudgetSchema>;
 export type Prices = z.infer<typeof PricesSchema>;
 
 export interface Ctx {
-  root: string;
+  root: string;   // harness folder: config, .harness state, checkpoints, .env
+  repo: string;   // project repo: spec, design, decisions, app code (worktrees live here)
   config: Config;
   budget: Budget;
   prices: Prices;
@@ -134,9 +136,11 @@ export function readDotenv(file: string): Record<string, string> {
 }
 
 export function loadCtx(root: string): Ctx {
+  const config = readYaml(join(root, "harness.config.yaml"), ConfigSchema);
   return {
     root,
-    config: readYaml(join(root, "harness.config.yaml"), ConfigSchema),
+    repo: resolve(root, config.project.repo),
+    config,
     budget: readYaml(join(root, "budget.yaml"), BudgetSchema),
     prices: existsSync(join(root, "prices.yaml")) ? readYaml(join(root, "prices.yaml"), PricesSchema) : {},
     env: { ...readDotenv(join(root, ".env")), ...pick(process.env, ["HARNESS_ALLOW_DEMO_SEED"]) },
