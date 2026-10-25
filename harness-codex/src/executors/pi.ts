@@ -184,26 +184,60 @@ export class PiExecutor implements Executor {
     });
     this.abortCurrent = () => session.abort();
     const timeoutState = { triggered: false };
+    const timedOut = (): boolean => timeoutState.triggered;
     const timeout = setTimeout(() => { timeoutState.triggered = true; void session.abort(); }, request.timeoutMs);
     try {
       try { await session.prompt(request.prompt); }
       catch (error) { throw new PiExecutionError(timeoutState.triggered ? "timeout" : "provider_request", error); }
-      const rawResponse = session.getLastAssistantText();
-      const safeResponse = redact(rawResponse ?? "[EMPTY RESPONSE]", this.config.security.redactPatterns);
-      const truncated = safeResponse.length > MAX_RAW_RESPONSE_CHARS;
-      await writeFile(
-        path.join(request.outputDirectory, "raw-response.txt"),
-        `${safeResponse.slice(0, MAX_RAW_RESPONSE_CHARS)}${truncated ? "\n[TRUNCATED]\n" : "\n"}`,
-        { encoding: "utf8", mode: 0o600 },
-      );
       if (timeoutState.triggered) throw new PiExecutionError("timeout", new Error(`Sessão excedeu ${request.timeoutMs} ms.`));
+      const initialResponse = session.getLastAssistantText();
+      let rawResponse = initialResponse;
+      const saveRawResponse = async (): Promise<void> => {
+        const safeResponse = redact(rawResponse ?? "[EMPTY RESPONSE]", this.config.security.redactPatterns);
+        const truncated = safeResponse.length > MAX_RAW_RESPONSE_CHARS;
+        await writeFile(
+          path.join(request.outputDirectory, "raw-response.txt"),
+          `${safeResponse.slice(0, MAX_RAW_RESPONSE_CHARS)}${truncated ? "\n[TRUNCATED]\n" : "\n"}`,
+          { encoding: "utf8", mode: 0o600 },
+        );
+      };
       let result: ExecutionResult;
+      let initialParseError: unknown;
       try {
         result = extractResult(
-          rawResponse, request.task.id,
+          initialResponse, request.task.id,
           request.acceptedResultTaskIds ?? [request.task.id],
         );
-      } catch (error) { throw new PiExecutionError("response_parse", error); }
+      } catch (error) {
+        initialParseError = error;
+        const repairPrompt = [
+          "Sua resposta anterior não apresentou o objeto JSON final válido.",
+          "Não use ferramentas e não explique.",
+          `Responda agora somente com o JSON solicitado. O campo taskId deve ser exatamente "${request.task.id}".`,
+          "Inclua taskId, outcome, summary, changedFiles, claimedChecks, decisions, blockers e suggestedFollowUps.",
+        ].join("\n");
+        try { await session.prompt(repairPrompt); }
+        catch (repairError) { throw new PiExecutionError(timedOut() ? "timeout" : "provider_request", repairError); }
+        if (timedOut()) throw new PiExecutionError("timeout", new Error(`Sessão excedeu ${request.timeoutMs} ms.`));
+        const repairedResponse = session.getLastAssistantText();
+        rawResponse = [
+          "[INITIAL RESPONSE]", initialResponse ?? "[EMPTY RESPONSE]",
+          "", "[REPAIR RESPONSE]", repairedResponse ?? "[EMPTY RESPONSE]",
+        ].join("\n");
+        try {
+          result = extractResult(
+            repairedResponse, request.task.id,
+            request.acceptedResultTaskIds ?? [request.task.id],
+          );
+        } catch (repairParseError) {
+          await saveRawResponse();
+          throw new PiExecutionError(
+            "response_parse",
+            new Error(`Resposta inicial inválida: ${safeError(initialParseError)} Resposta de reparo inválida: ${safeError(repairParseError)}`),
+          );
+        }
+      }
+      await saveRawResponse();
       const stats = session.getSessionStats();
       result.usage = {
         inputTokens: stats.tokens.input,
