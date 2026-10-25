@@ -1,9 +1,9 @@
 currency: USD
 caps:
-  run: 60             # projeto inteiro (soma de byStage = 60)
+  run: 66             # projeto inteiro (soma de byStage = 66)
   stage: 6            # padrão para etapas sem valor em byStage
   byStage:            # por etapa (id em harness.config.yaml > stages); opcionais fora do escopo não gastam
-    "0": 8            # Setup: inicializador (opus), scaffold, design system
+    "0": 14           # Setup: inicializador (opus), scaffold, design system (1ª rodada sozinha custou US$ 4,71)
     "1": 10           # Base: auth, security rules (implement_hard)
     "2": 9            # Registro
     "3": 12           # Insights: estatística (implement_hard)
