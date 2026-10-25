@@ -7,6 +7,15 @@ import { migrations } from "./migrations.js";
 
 type Row = Record<string, unknown>;
 
+function isProcessAlive(pid: number): boolean {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    return (error as NodeJS.ErrnoException).code !== "ESRCH";
+  }
+}
+
 export class StateStore {
   readonly databasePath: string;
   private readonly db: DatabaseSync;
@@ -99,6 +108,19 @@ export class StateStore {
   acquireLease(runId: string, owner: string, ttlSeconds: number): boolean {
     const now = nowUtc();
     const expires = new Date(Date.now() + ttlSeconds * 1000).toISOString();
+    const existing = this.get<Row>("SELECT lease_owner, pid FROM runs WHERE id=?", runId);
+    const existingPid = typeof existing?.pid === "number" ? existing.pid : null;
+    const existingOwner = typeof existing?.lease_owner === "string" ? existing.lease_owner : null;
+    if (existingPid != null && existingOwner && !isProcessAlive(existingPid)) {
+      this.transaction(() => {
+        const reclaimed = this.db.prepare(
+          "UPDATE runs SET lease_owner=NULL, lease_expires_at=NULL, pid=NULL, updated_at=? WHERE id=? AND lease_owner=? AND pid=?",
+        ).run(now, runId, existingOwner, existingPid);
+        if (reclaimed.changes === 1) {
+          this.event(runId, "lease.reclaimed", "run", runId, { previousOwner: existingOwner, previousPid: existingPid });
+        }
+      });
+    }
     const result = this.db.prepare(
       `UPDATE runs SET lease_owner=?, lease_expires_at=?, heartbeat_at=?, pid=?, updated_at=?
        WHERE id=? AND (lease_owner IS NULL OR lease_expires_at < ? OR lease_owner=?)`,

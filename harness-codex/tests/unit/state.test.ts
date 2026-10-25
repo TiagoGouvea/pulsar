@@ -6,6 +6,22 @@ import { StateStore } from "../../src/state/store.js";
 import { createLesson } from "../../src/learning/lessons.js";
 
 describe("estado durável", () => {
+  test("recupera lease cujo processo local não existe mais", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "harness-lease-"));
+    const store = new StateStore(root);
+    try {
+      store.upsertProject({ id: "p", workspace: "/tmp/p", profile: "generic", timezone: "UTC" });
+      store.createRun({ id: "r", projectId: "p", configPath: "/tmp/c", configHash: "h" });
+      expect(store.acquireLease("r", "primeiro", 300)).toBe(true);
+      expect(store.acquireLease("r", "segundo", 300)).toBe(false);
+      store.run("UPDATE runs SET pid=999999, lease_expires_at='2999-01-01T00:00:00.000Z' WHERE id='r'");
+
+      expect(store.acquireLease("r", "segundo", 300)).toBe(true);
+      expect(store.get<Record<string, unknown>>("SELECT lease_owner FROM runs WHERE id='r'")?.lease_owner).toBe("segundo");
+      expect(store.listEvents("r").some((event) => event.type === "lease.reclaimed")).toBe(true);
+    } finally { store.close(); }
+  });
+
   test("migra, registra eventos e impede lesson validada sem evidência", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "harness-state-"));
     const store = new StateStore(root);

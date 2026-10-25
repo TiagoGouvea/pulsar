@@ -139,7 +139,6 @@ for (const command of ["status", "pause", "resume", "stop"] as const) {
         store.enqueueCommand(options.run, "cancel"); store.setRunState(options.run, "cancelled"); console.log("Cancelamento solicitado.");
       } else {
         if (run.state === "awaiting_human") throw new Error("A run aguarda aprovação ou feedback humano; resume não ignora esse gate.");
-        store.setRunState(options.run, "running");
         store.close();
         const orchestrator = new Orchestrator(config);
         try { await orchestrator.run(options.run); } finally { orchestrator.close(); }

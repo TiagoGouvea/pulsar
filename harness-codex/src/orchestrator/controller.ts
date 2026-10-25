@@ -110,7 +110,7 @@ export class Orchestrator {
       this.store.setRunState(id, "running");
       this.store.setMilestoneState(id, milestoneId, "in_progress");
       const requirements = this.loadRequirements(id);
-      if (!(await this.recoverCompletedAttempts(id, milestoneId))) return id;
+      if (!(await this.recoverInterruptedWork(id, milestoneId))) return id;
       let pending = this.store.listTasks(id).filter((row) => row.milestone_id === milestoneId && ["pending", "ready", "changes_requested", "failed"].includes(String(row.state)));
       while (pending.length > 0) {
         const control = this.applyControlCommands(id);
@@ -213,33 +213,120 @@ export class Orchestrator {
     return this.verifyReadyResult(runId, task, result, candidate, attemptDirectory);
   }
 
-  private async recoverCompletedAttempts(runId: string, milestoneId: string): Promise<boolean> {
+  private implementerContext(runId: string, task: Task): {
+    attempt: Record<string, unknown>;
+    candidate: ReturnType<ModelCatalog["get"]>;
+    result: ExecutionResult;
+    attemptDirectory: string;
+  } | null {
+    const attempt = this.store.get<Record<string, unknown>>(
+      "SELECT * FROM attempts WHERE run_id=? AND task_id=? AND status='ready_for_verification' ORDER BY number DESC LIMIT 1",
+      runId, task.id,
+    );
+    if (!attempt || typeof attempt.result_json !== "string") return null;
+    const session = this.store.get<Record<string, unknown>>(
+      "SELECT model_key FROM sessions WHERE attempt_id=? AND independent=0 ORDER BY started_at LIMIT 1",
+      String(attempt.id),
+    );
+    if (typeof session?.model_key !== "string") throw new Error(`Sessão implementadora ausente para ${task.id}.`);
+    return {
+      attempt,
+      candidate: this.catalog.get(session.model_key),
+      result: JSON.parse(attempt.result_json) as ExecutionResult,
+      attemptDirectory: path.join(
+        this.config.storage.root, "runs", runId, "tasks", task.id,
+        `attempt-${String(Number(attempt.number)).padStart(3, "0")}`,
+      ),
+    };
+  }
+
+  private reconcileInterruptedReview(runId: string, taskId: string): string | null {
+    const attempt = this.store.get<Record<string, unknown>>(
+      "SELECT * FROM attempts WHERE run_id=? AND task_id=? AND status='running' ORDER BY started_at DESC LIMIT 1",
+      runId, `${taskId}-review`,
+    );
+    if (!attempt) return null;
+    const attemptId = String(attempt.id);
+    const call = this.store.get<Record<string, unknown>>(
+      "SELECT * FROM provider_calls WHERE attempt_id=? AND state='running' ORDER BY started_at DESC LIMIT 1",
+      attemptId,
+    );
+    const reservation = this.store.get<Record<string, unknown>>(
+      "SELECT * FROM cost_reservations WHERE run_id=? AND task_id=? AND state='active' ORDER BY created_at DESC LIMIT 1",
+      runId, taskId,
+    );
+    const now = nowUtc();
+    this.store.transaction(() => {
+      if (call) {
+        this.store.run(
+          "UPDATE provider_calls SET state='uncertain', uncertain_micros=COALESCE(estimated_micros, 0), finished_at=? WHERE id=? AND state='running'",
+          now, String(call.id),
+        );
+      }
+      if (reservation) {
+        this.store.run(
+          "UPDATE cost_reservations SET state='uncertain', provider_call_id=?, released_at=NULL WHERE id=? AND state='active'",
+          call ? String(call.id) : null, String(reservation.id),
+        );
+        this.store.event(runId, "budget.uncertain", "cost_reservation", String(reservation.id), {
+          amountMicros: String(reservation.amount_micros), cause: "interrupted_independent_review",
+        });
+      }
+      this.store.run("UPDATE sessions SET finished_at=COALESCE(finished_at, ?) WHERE attempt_id=?", now, attemptId);
+      this.store.run(
+        "UPDATE attempts SET status='failed', failure_signature='interrupted_review', finished_at=? WHERE id=? AND status='running'",
+        now, attemptId,
+      );
+      this.store.event(runId, "task.review_interrupted", "task", taskId, {
+        attemptId, providerCallId: call?.id ?? null, reservationId: reservation?.id ?? null,
+      });
+    });
+    return attemptId;
+  }
+
+  private async recoverInterruptedWork(runId: string, milestoneId: string): Promise<boolean> {
     const interrupted = this.store.listTasks(runId).filter((row) => row.milestone_id === milestoneId && row.state === "running");
     for (const row of interrupted) {
       const task = rowToTask(row);
-      const attempt = this.store.get<Record<string, unknown>>(
-        "SELECT * FROM attempts WHERE run_id=? AND task_id=? AND status='ready_for_verification' ORDER BY number DESC LIMIT 1",
-        runId, task.id,
-      );
-      if (!attempt || typeof attempt.result_json !== "string") {
+      const context = this.implementerContext(runId, task);
+      if (!context) {
         this.store.setTaskState(runId, task.id, "blocked");
         this.store.setRunState(runId, "blocked", { cause: "interrupted_attempt_requires_reconciliation", taskId: task.id });
         return false;
       }
-      const session = this.store.get<Record<string, unknown>>(
-        "SELECT model_key FROM sessions WHERE attempt_id=? AND independent=0 ORDER BY started_at LIMIT 1",
-        String(attempt.id),
+      await mkdir(context.attemptDirectory, { recursive: true });
+      this.store.event(runId, "task.recovery_resumed", "task", task.id, { attemptId: context.attempt.id, phase: "verification" });
+      if (!(await this.verifyReadyResult(runId, task, context.result, context.candidate, context.attemptDirectory))) return false;
+    }
+
+    const verifying = this.store.listTasks(runId).filter((row) => row.milestone_id === milestoneId && row.state === "verifying");
+    for (const row of verifying) {
+      const task = rowToTask(row);
+      const context = this.implementerContext(runId, task);
+      if (!context) {
+        this.store.setTaskState(runId, task.id, "blocked");
+        this.store.setRunState(runId, "blocked", { cause: "interrupted_review_requires_reconciliation", taskId: task.id });
+        return false;
+      }
+      const interruptedAttemptId = this.reconcileInterruptedReview(runId, task.id);
+      const revision = await currentRevision(this.config.project.workspace);
+      const verification = this.store.get<Record<string, unknown>>(
+        "SELECT id FROM verifier_runs WHERE run_id=? AND task_id=? AND revision=? AND status='passed' ORDER BY finished_at DESC LIMIT 1",
+        runId, task.id, revision,
       );
-      if (typeof session?.model_key !== "string") throw new Error(`Sessão implementadora ausente para ${task.id}.`);
-      const candidate = this.catalog.get(session.model_key);
-      const result = JSON.parse(attempt.result_json) as ExecutionResult;
-      const attemptDirectory = path.join(
-        this.config.storage.root, "runs", runId, "tasks", task.id,
-        `attempt-${String(Number(attempt.number)).padStart(3, "0")}`,
-      );
-      await mkdir(attemptDirectory, { recursive: true });
-      this.store.event(runId, "task.recovery_resumed", "task", task.id, { attemptId: attempt.id, phase: "verification" });
-      if (!(await this.verifyReadyResult(runId, task, result, candidate, attemptDirectory))) return false;
+      if (!verification) {
+        await mkdir(context.attemptDirectory, { recursive: true });
+        this.store.event(runId, "task.recovery_resumed", "task", task.id, {
+          attemptId: context.attempt.id, interruptedAttemptId, phase: "verification",
+        });
+        if (!(await this.verifyReadyResult(runId, task, context.result, context.candidate, context.attemptDirectory))) return false;
+        continue;
+      }
+      this.store.event(runId, "task.recovery_resumed", "task", task.id, {
+        attemptId: context.attempt.id, interruptedAttemptId, phase: "independent_review", revision,
+      });
+      const reviewed = await this.reviewTask(runId, task, context.candidate, revision);
+      this.store.setTaskState(runId, task.id, reviewed ? "passed" : "changes_requested");
     }
     return true;
   }
@@ -316,6 +403,10 @@ export class Orchestrator {
       "Responda somente JSON com taskId, outcome, summary, changedFiles, claimedChecks, decisions, blockers, suggestedFollowUps.",
     ].join("\n\n");
     const estimated = this.ledger.estimate(candidate, Math.ceil(prompt.length / 4), candidate.maxOutputTokens);
+    const attemptNumber = Number(this.store.get<Record<string, unknown>>(
+      "SELECT COUNT(*) AS count FROM attempts WHERE run_id=? AND task_id=?",
+      runId, reviewTask.id,
+    )?.count ?? 0) + 1;
     let reservationId: string;
     try {
       reservationId = this.ledger.reserve(runId, task.id, candidate, estimated);
@@ -324,8 +415,8 @@ export class Orchestrator {
       return false;
     }
     this.store.run(
-      "INSERT INTO attempts(id, run_id, task_id, number, executor, candidate_key, status, started_at) VALUES (?, ?, ?, 1, ?, ?, 'running', ?)",
-      attemptId, runId, reviewTask.id, candidate.executor, candidate.alias, nowUtc(),
+      "INSERT INTO attempts(id, run_id, task_id, number, executor, candidate_key, status, started_at) VALUES (?, ?, ?, ?, ?, ?, 'running', ?)",
+      attemptId, runId, reviewTask.id, attemptNumber, candidate.executor, candidate.alias, nowUtc(),
     );
     const sessionId = createId("session");
     this.store.run(
