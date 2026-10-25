@@ -42,10 +42,10 @@
     "falhasPorGate": {}
   },
   "kimi|smoke|*": {
-    "tentativas": 1,
-    "sucessos": 1,
-    "custoMedio": 0.0026892948,
-    "duracaoMedia": 11158,
+    "tentativas": 2,
+    "sucessos": 2,
+    "custoMedio": 0.0026650399999999996,
+    "duracaoMedia": 7344,
     "falhasPorGate": {}
   },
   "deepseek|smoke|*": {
