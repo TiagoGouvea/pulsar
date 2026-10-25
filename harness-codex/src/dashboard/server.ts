@@ -95,11 +95,12 @@ button{background:#4f7cff;color:white;border:0;border-radius:8px;padding:9px 14p
 <script>
 const token=${JSON.stringify(token)};
 const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const eventDetail=e=>{try{const p=JSON.parse(e.payload_json||'{}');return p.summary||p.cause||p.phase||''}catch{return''}};
 async function refresh(){const r=await fetch('/api/status',{cache:'no-store'});const d=await r.json();
 window.currentStatus=d;
 document.querySelector('#summary').innerHTML='<strong>Estado:</strong> '+esc(d.run.state)+'<br><strong>Revisão:</strong> <code>'+esc(d.run.revision||'n/a')+'</code>';
 document.querySelector('#tasks').innerHTML=d.tasks.map(t=>'<li><strong>'+esc(t.id)+'</strong> — '+esc(t.state)+'<br>'+esc(t.title)+'</li>').join('');
-document.querySelector('#events').innerHTML=d.events.map(e=>'<li>'+esc(e.created_at)+' — '+esc(e.type)+'</li>').join('');}
+document.querySelector('#events').innerHTML=d.events.map(e=>{const detail=eventDetail(e);return '<li>'+esc(e.created_at)+' — '+esc(e.type)+(detail?'<br><span class="muted">'+esc(detail)+'</span>':'')+'</li>'}).join('');}
 document.querySelectorAll('[data-command]').forEach(b=>b.onclick=async()=>{await fetch('/api/control',{method:'POST',headers:{'content-type':'application/json','x-harness-token':token},body:JSON.stringify({command:b.dataset.command})});await refresh()});
 document.querySelector('#approve').onclick=async()=>{const m=window.currentStatus.milestones.find(x=>x.state==='awaiting_human');if(!m)return alert('Nenhum marco aguardando aceite.');const r=await fetch('/api/approve',{method:'POST',headers:{'content-type':'application/json','x-harness-token':token},body:JSON.stringify({milestoneId:m.id,revision:m.revision})});const d=await r.json();if(!r.ok)alert(d.error);await refresh()};
 document.querySelector('#send-feedback').onclick=async()=>{const content=document.querySelector('#feedback').value;const state=await fetch('/api/state',{headers:{'x-harness-token':token}}).then(r=>r.json());const milestoneId=state.milestones.find(m=>m.state!=='approved')?.id;if(!milestoneId)return alert('Nenhuma etapa disponível.');const r=await fetch('/api/feedback',{method:'POST',headers:{'content-type':'application/json','x-harness-token':token},body:JSON.stringify({milestoneId,content})});const d=await r.json();if(!r.ok)alert(d.error);else document.querySelector('#feedback').value='';await refresh()};

@@ -197,6 +197,7 @@ export class Orchestrator {
       this.store.run("UPDATE sessions SET finished_at=? WHERE id=?", nowUtc(), sessionId);
     }
     await writeJson(path.join(attemptDirectory, "result.json"), result);
+    this.recordExecutionFailure(runId, task.id, attemptId, candidate.alias, result);
     const failureSignature = result.outcome === "ready_for_verification" ? null : sha256(`${result.outcome}:${result.summary}:${result.blockers.join(",")}`);
     this.store.run(
       "UPDATE attempts SET status=?, failure_signature=?, result_json=?, finished_at=? WHERE id=?",
@@ -415,6 +416,20 @@ export class Orchestrator {
     );
   }
 
+  private recordExecutionFailure(
+    runId: string,
+    taskId: string,
+    attemptId: string,
+    candidate: string,
+    result: ExecutionResult,
+  ): void {
+    if (result.outcome !== "failed") return;
+    this.store.event(runId, "attempt.execution_failed", "attempt", attemptId, {
+      taskId, candidate, summary: result.summary, blockers: result.blockers,
+      diagnostics: result.diagnostics ?? null,
+    });
+  }
+
   private async reviewTask(runId: string, task: Task, implementer: ReturnType<ModelCatalog["get"]>, revision: string): Promise<ReviewDecision> {
     const reviewTask: Task = {
       ...task,
@@ -487,6 +502,7 @@ export class Orchestrator {
       this.store.run("UPDATE sessions SET finished_at=? WHERE id=?", nowUtc(), sessionId);
     }
     await writeJson(path.join(outputDirectory, "result.json"), result);
+    this.recordExecutionFailure(runId, task.id, attemptId, candidate.alias, result);
     const actualMicros = parseUsdToMicros(result.usage?.costUsd ?? "0") ?? 0n;
     const uncertain = candidate.modality === "metered_api" && result.outcome === "failed" && !result.usage;
     this.finishProviderCall(providerCallId, result, uncertain, estimated, actualMicros);

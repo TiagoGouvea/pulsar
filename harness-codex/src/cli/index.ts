@@ -117,7 +117,7 @@ program.command("run").description("Executa ou retoma o controlador")
       try {
         await orchestrator.run(runId);
         const run = orchestrator.store.getRun(runId);
-        console.log(`Run ${runId}: ${String(run?.state)}`);
+        printRunOutcome(orchestrator.store, runId, String(run?.state));
       } finally {
         process.removeListener("SIGINT", onSigint); process.removeListener("SIGTERM", onSigterm);
       }
@@ -141,8 +141,10 @@ for (const command of ["status", "pause", "resume", "stop"] as const) {
         if (run.state === "awaiting_human") throw new Error("A run aguarda aprovação ou feedback humano; resume não ignora esse gate.");
         store.close();
         const orchestrator = new Orchestrator(config);
-        try { await orchestrator.run(options.run); } finally { orchestrator.close(); }
-        console.log("Retomada concluída ou pausada no próximo gate.");
+        try {
+          await orchestrator.run(options.run);
+          printRunOutcome(orchestrator.store, options.run, String(orchestrator.store.getRun(options.run)?.state));
+        } finally { orchestrator.close(); }
         return;
       }
     } finally {
@@ -179,6 +181,34 @@ program.command("report").requiredOption("--config <path>").requiredOption("--ru
   const config = await loadConfig(options.config); const store = new StateStore(config.storage.root);
   try { console.log(await writeFinalReport(config, store, options.run)); } finally { store.close(); }
 });
+
+program.command("diagnostics").description("Mostra a última falha e seus artefatos técnicos")
+  .requiredOption("--config <path>").requiredOption("--run <id>").option("--task <id>")
+  .action(async (options: { config: string; run: string; task?: string }) => {
+    const config = await loadConfig(options.config);
+    const store = new StateStore(config.storage.root);
+    try {
+      const taskClause = options.task ? " AND (a.task_id=? OR a.task_id=?)" : "";
+      const params = options.task ? [options.run, options.task, `${options.task}-review`] : [options.run];
+      const attempt = store.get<Record<string, unknown>>(
+        `SELECT a.*, pc.provider, pc.model_id, pc.state AS provider_state
+         FROM attempts a LEFT JOIN provider_calls pc ON pc.attempt_id=a.id
+         WHERE a.run_id=? AND a.status='failed'${taskClause}
+         ORDER BY a.started_at DESC LIMIT 1`,
+        ...params,
+      );
+      if (!attempt) throw new Error("Nenhuma tentativa falha encontrada.");
+      const result = typeof attempt.result_json === "string"
+        ? JSON.parse(attempt.result_json) as Record<string, unknown>
+        : null;
+      console.log(JSON.stringify({
+        attemptId: attempt.id, taskId: attempt.task_id, number: attempt.number,
+        candidate: attempt.candidate_key, provider: attempt.provider, modelId: attempt.model_id,
+        providerState: attempt.provider_state, startedAt: attempt.started_at, finishedAt: attempt.finished_at,
+        summary: result?.summary ?? null, blockers: result?.blockers ?? [], diagnostics: result?.diagnostics ?? null,
+      }, null, 2));
+    } finally { store.close(); }
+  });
 
 program.command("dashboard").requiredOption("--config <path>").requiredOption("--run <id>").action(async (options: { config: string; run: string }) => {
   const config = await loadConfig(options.config); const dashboard = await startDashboard(config, options.run);
@@ -225,6 +255,21 @@ async function withOrchestrator(configPath: string, work: (orchestrator: Orchest
 
 function printChecks(checks: Array<{ status: string; id: string; summary: string; evidence: string }>): void {
   for (const check of checks) console.log(`[${check.status.toUpperCase()}] ${check.id}: ${check.summary}\n  ${check.evidence}`);
+}
+
+function printRunOutcome(store: StateStore, runId: string, state: string): void {
+  console.log(`Run ${runId}: ${state}`);
+  if (state !== "blocked") return;
+  const event = store.get<Record<string, unknown>>(
+    "SELECT payload_json FROM events WHERE run_id=? AND type='run.blocked' ORDER BY sequence DESC LIMIT 1",
+    runId,
+  );
+  if (typeof event?.payload_json !== "string") return;
+  const payload = JSON.parse(event.payload_json) as Record<string, unknown>;
+  const cause = typeof payload.cause === "string" ? payload.cause : "causa não informada";
+  const task = typeof payload.taskId === "string" ? ` (${payload.taskId})` : "";
+  console.log(`Bloqueio: ${cause}${task}`);
+  console.log(`Diagnóstico: yarn harness diagnostics --config harness.config.yaml --run ${runId}`);
 }
 
 program.parseAsync().catch((error: unknown) => {

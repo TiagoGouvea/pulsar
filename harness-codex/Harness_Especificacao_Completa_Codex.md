@@ -378,6 +378,9 @@ Evidências em diretório privado por execução, com metadados/hashes e políti
       context-manifest.json
       attempt-001/
         result.json
+        execution-error.json
+        raw-response.txt
+        session-trace.jsonl
         changes.patch
         verification.json
         screenshots/

@@ -90,6 +90,12 @@ export interface ExecutionResult {
   decisions: string[];
   blockers: string[];
   suggestedFollowUps: string[];
+  diagnostics?: {
+    phase: string;
+    errorPath: string;
+    rawResponsePath?: string;
+    tracePath?: string;
+  };
   usage?: {
     inputTokens?: number;
     outputTokens?: number;

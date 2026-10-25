@@ -3,13 +3,57 @@ import {
   ModelRuntime,
   SessionManager,
 } from "@earendil-works/pi-coding-agent";
+import { appendFileSync } from "node:fs";
+import { mkdir, writeFile } from "node:fs/promises";
+import path from "node:path";
 import type { HarnessConfig } from "../config/schema.js";
 import type { ExecutionRequest, ExecutionResult, ModelCandidate } from "../domain/types.js";
 import { withLmStudioModel } from "../providers/lmstudio.js";
-import { safeError } from "../utils/core.js";
+import { redact } from "../security/redaction.js";
+import { nowUtc, safeError, writeJson } from "../utils/core.js";
 import type { Executor } from "./types.js";
 
 const resultKeys = ["taskId", "outcome", "summary", "changedFiles", "claimedChecks", "decisions", "blockers", "suggestedFollowUps"];
+const MAX_RAW_RESPONSE_CHARS = 64_000;
+
+class PiExecutionError extends Error {
+  constructor(readonly phase: string, cause: unknown) {
+    super(safeError(cause), { cause });
+    this.name = "PiExecutionError";
+  }
+}
+
+function errorDetails(error: unknown, patterns: string[]): { name: string; message: string; stack?: string } {
+  if (!(error instanceof Error)) return { name: "UnknownError", message: redact(String(error), patterns) };
+  return {
+    name: error.name,
+    message: redact(error.message, patterns),
+    ...(error.stack ? { stack: redact(error.stack, patterns) } : {}),
+  };
+}
+
+function eventSummary(event: unknown): Record<string, unknown> | null {
+  if (!event || typeof event !== "object") return null;
+  const value = event as Record<string, unknown>;
+  const type = typeof value.type === "string" ? value.type : "unknown";
+  const summary: Record<string, unknown> = { at: nowUtc(), type };
+  if (["tool_execution_start", "tool_execution_end"].includes(type)) {
+    summary.toolName = value.toolName;
+    if (type === "tool_execution_end") {
+      summary.isError = value.isError;
+      summary.durationMs = value.durationMs;
+    }
+    return summary;
+  }
+  if (["auto_retry_start", "auto_retry_end", "agent_settled", "compaction_end"].includes(type)) {
+    for (const key of ["attempt", "maxAttempts", "delayMs", "errorMessage", "finalError", "success", "aborted", "willRetry"]) {
+      if (key in value) summary[key] = value[key];
+    }
+    return summary;
+  }
+  if (["agent_start", "agent_end", "turn_start", "turn_end", "message_start", "message_end"].includes(type)) return summary;
+  return null;
+}
 
 export function extractResult(
   text: string | undefined,
@@ -69,36 +113,91 @@ export class PiExecutor implements Executor {
   constructor(private readonly config: HarnessConfig) {}
 
   async execute(request: ExecutionRequest): Promise<ExecutionResult> {
+    await mkdir(request.outputDirectory, { recursive: true, mode: 0o700 });
+    let enteredSession = false;
     try {
       if (request.candidate.modality === "local") {
-        return await withLmStudioModel(this.config, request.candidate, async () => this.executeSession(request));
+        return await withLmStudioModel(this.config, request.candidate, async () => {
+          enteredSession = true;
+          return this.executeSession(request);
+        });
       }
+      enteredSession = true;
       return await this.executeSession(request);
     } catch (error) {
+      const failure = error instanceof PiExecutionError
+        ? error
+        : new PiExecutionError(enteredSession ? "session" : "model_load", error);
+      const errorPath = path.join(request.outputDirectory, "execution-error.json");
+      const rawResponsePath = path.join(request.outputDirectory, "raw-response.txt");
+      const tracePath = path.join(request.outputDirectory, "session-trace.jsonl");
+      await writeJson(errorPath, {
+        at: nowUtc(), phase: failure.phase, provider: request.candidate.provider,
+        modelId: request.candidate.modelId, alias: request.candidate.alias,
+        timeoutMs: request.timeoutMs, error: errorDetails(failure.cause ?? failure, this.config.security.redactPatterns),
+      });
+      const failureSummary = redact(safeError(failure), this.config.security.redactPatterns);
       return {
-        taskId: request.task.id, outcome: "failed", summary: safeError(error), changedFiles: [],
+        taskId: request.task.id, outcome: "failed", summary: `[${failure.phase}] ${failureSummary}`, changedFiles: [],
         claimedChecks: [], decisions: [], blockers: ["pi_execution_failed"], suggestedFollowUps: [],
+        diagnostics: {
+          phase: failure.phase, errorPath,
+          ...(["response_parse", "timeout"].includes(failure.phase) ? { rawResponsePath } : {}),
+          ...(enteredSession ? { tracePath } : {}),
+        },
       };
     }
   }
 
   private async executeSession(request: ExecutionRequest): Promise<ExecutionResult> {
-    const { runtime, model } = await createRuntime(request.candidate);
-    const { session } = await createAgentSession({
-      cwd: request.workspace,
-      modelRuntime: runtime,
-      model,
-      sessionManager: SessionManager.inMemory(),
-      tools: request.readOnly ? ["read", "grep", "find", "ls"] : ["read", "bash", "edit", "write", "grep", "find", "ls"],
+    let runtimeAndModel: Awaited<ReturnType<typeof createRuntime>>;
+    try { runtimeAndModel = await createRuntime(request.candidate); }
+    catch (error) { throw new PiExecutionError("runtime_setup", error); }
+    let created: Awaited<ReturnType<typeof createAgentSession>>;
+    try {
+      created = await createAgentSession({
+        cwd: request.workspace,
+        modelRuntime: runtimeAndModel.runtime,
+        model: runtimeAndModel.model,
+        sessionManager: SessionManager.inMemory(),
+        tools: request.readOnly ? ["read", "grep", "find", "ls"] : ["read", "bash", "edit", "write", "grep", "find", "ls"],
+      });
+    } catch (error) { throw new PiExecutionError("session_setup", error); }
+    const { session } = created;
+    const tracePath = path.join(request.outputDirectory, "session-trace.jsonl");
+    appendFileSync(tracePath, `${JSON.stringify({
+      at: nowUtc(), type: "session_start", provider: request.candidate.provider,
+      modelId: request.candidate.modelId, alias: request.candidate.alias, timeoutMs: request.timeoutMs,
+    })}\n`, { encoding: "utf8", mode: 0o600 });
+    const unsubscribe = session.subscribe((event) => {
+      const summary = eventSummary(event);
+      if (summary) {
+        const line = redact(JSON.stringify(summary), this.config.security.redactPatterns);
+        appendFileSync(tracePath, `${line}\n`, { encoding: "utf8", mode: 0o600 });
+      }
     });
     this.abortCurrent = () => session.abort();
-    const timeout = setTimeout(() => { void session.abort(); }, request.timeoutMs);
+    const timeoutState = { triggered: false };
+    const timeout = setTimeout(() => { timeoutState.triggered = true; void session.abort(); }, request.timeoutMs);
     try {
-      await session.prompt(request.prompt);
-      const result = extractResult(
-        session.getLastAssistantText(), request.task.id,
-        request.acceptedResultTaskIds ?? [request.task.id],
+      try { await session.prompt(request.prompt); }
+      catch (error) { throw new PiExecutionError(timeoutState.triggered ? "timeout" : "provider_request", error); }
+      const rawResponse = session.getLastAssistantText();
+      const safeResponse = redact(rawResponse ?? "[EMPTY RESPONSE]", this.config.security.redactPatterns);
+      const truncated = safeResponse.length > MAX_RAW_RESPONSE_CHARS;
+      await writeFile(
+        path.join(request.outputDirectory, "raw-response.txt"),
+        `${safeResponse.slice(0, MAX_RAW_RESPONSE_CHARS)}${truncated ? "\n[TRUNCATED]\n" : "\n"}`,
+        { encoding: "utf8", mode: 0o600 },
       );
+      if (timeoutState.triggered) throw new PiExecutionError("timeout", new Error(`Sessão excedeu ${request.timeoutMs} ms.`));
+      let result: ExecutionResult;
+      try {
+        result = extractResult(
+          rawResponse, request.task.id,
+          request.acceptedResultTaskIds ?? [request.task.id],
+        );
+      } catch (error) { throw new PiExecutionError("response_parse", error); }
       const stats = session.getSessionStats();
       result.usage = {
         inputTokens: stats.tokens.input,
@@ -110,6 +209,8 @@ export class PiExecutor implements Executor {
     } finally {
       clearTimeout(timeout);
       this.abortCurrent = undefined;
+      unsubscribe();
+      appendFileSync(tracePath, `${JSON.stringify({ at: nowUtc(), type: "session_disposed", timedOut: timeoutState.triggered })}\n`, { encoding: "utf8", mode: 0o600 });
       session.dispose();
     }
   }
