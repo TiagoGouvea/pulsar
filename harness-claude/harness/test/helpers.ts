@@ -62,7 +62,7 @@ export async function makeProject(o: { config?: Record<string, any>; budget?: Re
   w(repo, "design/tokens.json", "{}");
   w(repo, "DECISOES.md", "# Decisões\n");
   w(top, ".gitignore", ".worktrees/\n.harness/runs/**/*.jsonl\n");
-  if (o.sub) w(top, "other/keep.txt", "outro agente\n");
+  if (o.sub) { w(top, "other/keep.txt", "outro agente\n"); w(repo, ".gitignore", ".harness/\n"); }
   await git(top, "init", "-q", "-b", "main");
   await git(top, "add", "-A");
   await git(top, "commit", "-qm", "init");

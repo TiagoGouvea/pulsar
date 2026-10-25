@@ -63,10 +63,24 @@
     "falhasPorGate": {}
   },
   "opus|initializer|*": {
+    "tentativas": 6,
+    "sucessos": 3,
+    "custoMedio": 1.3178374333333336,
+    "duracaoMedia": 291744.5,
+    "falhasPorGate": {}
+  },
+  "codex-mid|review_code|*": {
+    "tentativas": 3,
+    "sucessos": 3,
+    "custoMedio": 0.2565904666666667,
+    "duracaoMedia": 35140.333333333336,
+    "falhasPorGate": {}
+  },
+  "gemini-pro|review_code|*": {
     "tentativas": 1,
     "sucessos": 0,
-    "custoMedio": 4.706536000000001,
-    "duracaoMedia": 1015916,
+    "custoMedio": 0,
+    "duracaoMedia": 43554,
     "falhasPorGate": {}
   }
 }

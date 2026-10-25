@@ -1,12 +1,13 @@
 {
-  "phase": "PAUSED_BUDGET",
+  "phase": "CRASHED",
   "stage": 0,
+  "pausedFrom": "INIT",
   "featuresSinceRetro": 0,
   "stageFixRounds": 0,
   "budgetAlerts": [
     0.5
   ],
   "postmortemDone": false,
-  "updatedAt": "2026-10-25T15:21:44.728Z",
-  "pausedFrom": "INIT"
+  "lastError": "Error: git add -A -- . :(exclude).harness (/Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/init/pulsar-claude): The following paths are ignored by one of your .gitignore files:\npulsar-claude/.harness\nhint: Use -f if you really want to add them.\nhint: Disable this message with \"git config set advice.addIgnoredFile false\"\n    at git (/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/harness/src/git.ts:10:31)\n    at async Module.commitAll (/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/harness/src/git.ts:48:3)\n    at async Orchestrator.commitToBranch (/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/harness/src/orchestrator.ts:149:5)\n    at async Orchestrator.init (/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/harness/src/orchestrator.ts:219:5)\n    at async Orchestrator.run (/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/harness/src/orchestrator.ts:103:27)\n    at async run (/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/harness/src/cli.ts:39:58)",
+  "updatedAt": "2026-10-25T16:00:48.247Z"
 }

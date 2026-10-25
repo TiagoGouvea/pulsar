@@ -45,7 +45,8 @@ export async function pruneOrphans(root: string, keep: (name: string) => boolean
 
 /** Commits everything except .harness/ (state belongs to the orchestrator). Returns the new sha or null. */
 export async function commitAll(cwd: string, msg: string) {
-  await git(cwd, "add", "-A", ...EXCL);
+  await git(cwd, "add", "-A", "--", ".");
+  await tryGit(cwd, "reset", "-q", "--", ".harness");   // not an exclude pathspec: git add fails when .harness is gitignored
   const merging = existsSync(join(await git(cwd, "rev-parse", "--absolute-git-dir"), "MERGE_HEAD"));
   if (!merging && (await tryGit(cwd, "diff", "--cached", "--quiet"))) return null;
   await git(cwd, "commit", "--no-verify", "-m", msg);

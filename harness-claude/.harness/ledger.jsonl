@@ -30,3 +30,12 @@
 {"ts":"2026-10-25T14:09:10.309Z","workerId":"kimi","provider":"openrouter","role":"doctor","stage":-1,"tokensIn":1367,"tokensOut":27,"costUsd":0.0010079804,"billing":"api"}
 {"ts":"2026-10-25T14:09:27.395Z","workerId":"local-gptoss","provider":"local","role":"doctor","stage":-1,"tokensIn":1392,"tokensOut":19,"costUsd":0,"billing":"local"}
 {"ts":"2026-10-25T15:21:44.717Z","workerId":"opus","provider":"anthropic","role":"initializer","stage":0,"tokensIn":224111,"tokensOut":101365,"costUsd":4.706536000000001,"billing":"api"}
+{"ts":"2026-10-25T15:37:20.388Z","workerId":"opus","provider":"anthropic","role":"initializer","stage":0,"tokensIn":0,"tokensOut":0,"costUsd":0,"billing":"api"}
+{"ts":"2026-10-25T15:39:13.466Z","workerId":"opus","provider":"anthropic","role":"initializer","stage":0,"tokensIn":0,"tokensOut":0,"costUsd":0,"billing":"api"}
+{"ts":"2026-10-25T15:50:33.115Z","workerId":"opus","provider":"anthropic","role":"initializer","stage":0,"tokensIn":67169,"tokensOut":9673,"costUsd":0.718018,"billing":"api"}
+{"ts":"2026-10-25T15:51:06.529Z","workerId":"codex-mid","provider":"openai","role":"review_code","stage":0,"tokensIn":34823,"tokensOut":3902,"costUsd":0.11647,"billing":"api"}
+{"ts":"2026-10-25T15:55:26.445Z","workerId":"opus","provider":"anthropic","role":"initializer","stage":0,"tokensIn":84031,"tokensOut":28020,"costUsd":1.3610646,"billing":"api"}
+{"ts":"2026-10-25T15:56:10.012Z","workerId":"gemini-pro","provider":"google","role":"review_code","stage":0,"tokensIn":32744,"tokensOut":10094,"costUsd":0,"billing":"subscription"}
+{"ts":"2026-10-25T15:57:01.146Z","workerId":"codex-mid","provider":"openai","role":"review_code","stage":0,"tokensIn":220614,"tokensOut":6226,"costUsd":0.5489774000000001,"billing":"api"}
+{"ts":"2026-10-25T16:00:27.282Z","workerId":"opus","provider":"anthropic","role":"initializer","stage":0,"tokensIn":76629,"tokensOut":22427,"costUsd":1.1214060000000001,"billing":"api"}
+{"ts":"2026-10-25T16:00:48.180Z","workerId":"codex-mid","provider":"openai","role":"review_code","stage":0,"tokensIn":37582,"tokensOut":2430,"costUsd":0.104324,"billing":"api"}
