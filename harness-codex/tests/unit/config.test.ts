@@ -12,7 +12,7 @@ describe("configuração e requisitos", () => {
     expect(config.project.workspace).toContain("workspace com espaços");
     expect(config.execution.implementationTimeoutMinutes).toBe(15);
     expect(config.execution.reviewTimeoutMinutes).toBe(2);
-    expect(config.review.maxAttempts).toBe(3);
+    expect(config.review.maxAttempts).toBe(4);
     const requirements = await extractRequirements(config);
     expect(requirements.map((item) => item.id)).toEqual(["REQ-001", "REQ-002"]);
     expect(requirements.every((item) => item.priority === "required")).toBe(true);

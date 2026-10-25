@@ -16,6 +16,12 @@ import type { Executor } from "./types.js";
 const resultKeys = ["taskId", "outcome", "summary", "changedFiles", "claimedChecks", "decisions", "blockers", "suggestedFollowUps"];
 const MAX_RAW_RESPONSE_CHARS = 64_000;
 
+export function localApiFor(candidate: ModelCandidate): "openai-completions" | "openai-responses" {
+  return candidate.family === "gpt-oss" || candidate.modelId.includes("gpt-oss")
+    ? "openai-responses"
+    : "openai-completions";
+}
+
 class PiExecutionError extends Error {
   constructor(readonly phase: string, cause: unknown) {
     super(safeError(cause), { cause });
@@ -83,7 +89,7 @@ async function createRuntime(candidate: ModelCandidate): Promise<{ runtime: Mode
     runtime.registerProvider(candidate.provider, {
       name: candidate.provider,
       baseUrl: endpoint.endsWith("/v1") ? endpoint : `${endpoint.replace(/\/$/, "")}/v1`,
-      api: "openai-completions",
+      api: localApiFor(candidate),
       apiKey: "lm-studio",
       models: [{
         id: candidate.modelId,

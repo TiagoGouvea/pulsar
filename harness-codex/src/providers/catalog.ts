@@ -59,7 +59,7 @@ export class ModelCatalog {
       ? ordered.filter((candidate) => candidate.family !== implementer.family)
       : ordered;
     const candidate = candidates.length
-      ? candidates[(hashSeed(seed) + Math.max(0, attempt - 1)) % candidates.length]
+      ? candidates[(hashSeed(seed) + Math.min(Math.max(0, attempt - 1), candidates.length - 1)) % candidates.length]
       : ordered[0];
     if (!candidate) throw new Error(`Nenhum revisor elegível para ${role}.`);
     return candidate;

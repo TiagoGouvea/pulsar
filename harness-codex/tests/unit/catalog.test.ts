@@ -28,8 +28,10 @@ describe("roteamento de modelos", () => {
     expect(second.alias).not.toBe(first.alias);
     const firstReviewer = catalog.selectReviewer("functionalReviewer", first, "same", 1);
     const secondReviewer = catalog.selectReviewer("functionalReviewer", first, "same", 2);
+    const finalFallbackReviewer = catalog.selectReviewer("functionalReviewer", first, "same", 3);
     expect(firstReviewer.family).not.toBe(first.family);
     expect(secondReviewer.alias).not.toBe(firstReviewer.alias);
+    expect(finalFallbackReviewer.alias).toBe(secondReviewer.alias);
     expect(catalog.isHardTask("Revisar privacidade dos dados")).toBe(true);
   });
 });
