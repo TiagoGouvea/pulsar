@@ -53,6 +53,20 @@ export async function currentRevision(workspace: string): Promise<string> {
   return `${tree.exitCode === 0 ? tree.stdout.trim() : "unborn"}:${sha256(status.stdout + diff.stdout)}`;
 }
 
+export async function workspaceChanges(workspace: string): Promise<string[]> {
+  const repository = await runProcess(["git", "rev-parse", "--show-toplevel"], { cwd: workspace, timeoutMs: 3_000 });
+  if (repository.exitCode !== 0) return [];
+  const repositoryRoot = await realpath(repository.stdout.trim());
+  const workspaceRoot = await realpath(workspace);
+  const relativeWorkspace = path.relative(repositoryRoot, workspaceRoot).split(path.sep).join("/") || ".";
+  const status = await runProcess(
+    ["git", "status", "--porcelain=v1", "-z", "--no-renames", "--untracked-files=all", "--", relativeWorkspace],
+    { cwd: repositoryRoot, timeoutMs: 10_000 },
+  );
+  if (status.exitCode !== 0) throw new Error(`Falha ao inspecionar alterações do workspace: ${status.stderr}`);
+  return status.stdout.split("\0").filter(Boolean).map((entry) => entry.slice(3));
+}
+
 async function directoryFingerprint(root: string): Promise<string> {
   const pieces: string[] = [];
   async function walk(directory: string): Promise<void> {
@@ -75,20 +89,41 @@ export async function checkpointFiles(input: {
   runId: string;
   taskId: string;
   files: string[];
-}): Promise<{ committed: boolean; revision: string }> {
+}): Promise<{ committed: boolean; revision: string; discoveredFiles: string[]; unmatchedReportedFiles: string[] }> {
   const repository = await runProcess(["git", "rev-parse", "--show-toplevel"], { cwd: input.workspace, timeoutMs: 3_000 });
-  if (repository.exitCode !== 0) return { committed: false, revision: await currentRevision(input.workspace) };
-  const repositoryRoot = repository.stdout.trim();
-  if (path.resolve(repositoryRoot) === path.resolve(input.protectedRoot)) {
-    return { committed: false, revision: await currentRevision(input.workspace) };
+  if (repository.exitCode !== 0) {
+    return { committed: false, revision: await currentRevision(input.workspace), discoveredFiles: [], unmatchedReportedFiles: input.files };
   }
-  const relativeFiles = input.files.map((file) => path.relative(input.workspace, assertPathInside(path.resolve(input.workspace, file), input.workspace)));
-  if (!relativeFiles.length) return { committed: false, revision: await currentRevision(input.workspace) };
-  const added = await runProcess(["git", "add", "--", ...relativeFiles], { cwd: input.workspace, timeoutMs: 10_000 });
+  const repositoryRoot = await realpath(repository.stdout.trim());
+  const workspaceRoot = await realpath(input.workspace);
+  const protectedRoot = await realpath(input.protectedRoot).catch(() => path.resolve(input.protectedRoot));
+  if (repositoryRoot === protectedRoot) {
+    return { committed: false, revision: await currentRevision(input.workspace), discoveredFiles: [], unmatchedReportedFiles: [] };
+  }
+  const discoveredFiles = await workspaceChanges(input.workspace);
+  const reported = input.files.map((file) => ({
+    original: file,
+    repositoryPath: path.relative(
+      repositoryRoot,
+      assertPathInside(path.resolve(workspaceRoot, file), workspaceRoot),
+    ).split(path.sep).join("/"),
+  }));
+  const unmatchedReportedFiles = reported
+    .filter(({ repositoryPath }) => !discoveredFiles.some((file) => file === repositoryPath || file.startsWith(`${repositoryPath}/`)))
+    .map(({ original }) => original);
+  if (!discoveredFiles.length) {
+    return { committed: false, revision: await currentRevision(input.workspace), discoveredFiles, unmatchedReportedFiles };
+  }
+  const added = await runProcess(["git", "add", "--", ...discoveredFiles], { cwd: repositoryRoot, timeoutMs: 10_000 });
   if (added.exitCode !== 0) throw new Error(`Falha no checkpoint de ${input.taskId}: ${added.stderr}`);
-  const empty = await runProcess(["git", "diff", "--cached", "--quiet", "--", ...relativeFiles], { cwd: input.workspace, timeoutMs: 3_000 });
-  if (empty.exitCode === 0) return { committed: false, revision: await currentRevision(input.workspace) };
-  const committed = await runProcess(["git", "commit", "--only", "-m", `harness(${input.runId}): ${input.taskId}`, "--", ...relativeFiles], { cwd: input.workspace, timeoutMs: 30_000 });
+  const empty = await runProcess(["git", "diff", "--cached", "--quiet", "--", ...discoveredFiles], { cwd: repositoryRoot, timeoutMs: 3_000 });
+  if (empty.exitCode === 0) {
+    return { committed: false, revision: await currentRevision(input.workspace), discoveredFiles, unmatchedReportedFiles };
+  }
+  const committed = await runProcess(
+    ["git", "commit", "--only", "-m", `harness(${input.runId}): ${input.taskId}`, "--", ...discoveredFiles],
+    { cwd: repositoryRoot, timeoutMs: 30_000 },
+  );
   if (committed.exitCode !== 0) throw new Error(`Falha ao criar checkpoint de ${input.taskId}: ${committed.stderr}`);
-  return { committed: true, revision: await currentRevision(input.workspace) };
+  return { committed: true, revision: await currentRevision(input.workspace), discoveredFiles, unmatchedReportedFiles };
 }

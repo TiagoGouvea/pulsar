@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, realpath, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, test } from "vitest";
-import { checkpointFiles, currentRevision, inspectGitWorkspace } from "../../src/git/workspace.js";
+import { checkpointFiles, currentRevision, inspectGitWorkspace, workspaceChanges } from "../../src/git/workspace.js";
 import { runProcess } from "../../src/utils/process.js";
 
 describe("workspace Git", () => {
@@ -35,10 +35,14 @@ describe("workspace Git", () => {
     });
 
     await writeFile(path.join(workspace, "app.txt"), "changed\n");
+    expect(await workspaceChanges(workspace)).toEqual(["pulsar-codex/app.txt"]);
     const checkpoint = await checkpointFiles({
-      workspace, protectedRoot, runId: "run-test", taskId: "task-001", files: ["app.txt"],
+      workspace, protectedRoot, runId: "run-test", taskId: "task-001",
+      files: ["docs/HARNESS_COMMANDS.md", "app.txt (atualizado)"],
     });
     expect(checkpoint.committed).toBe(true);
+    expect(checkpoint.discoveredFiles).toEqual(["pulsar-codex/app.txt"]);
+    expect(checkpoint.unmatchedReportedFiles).toEqual(["docs/HARNESS_COMMANDS.md", "app.txt (atualizado)"]);
     const committedFiles = await runProcess(["git", "show", "--format=", "--name-only", "HEAD"], { cwd: repositoryRoot });
     expect(committedFiles.stdout.trim()).toBe("pulsar-codex/app.txt");
     const stagedFiles = await runProcess(["git", "diff", "--cached", "--name-only"], { cwd: repositoryRoot });

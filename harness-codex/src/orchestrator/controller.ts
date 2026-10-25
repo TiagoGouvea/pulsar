@@ -110,6 +110,7 @@ export class Orchestrator {
       this.store.setRunState(id, "running");
       this.store.setMilestoneState(id, milestoneId, "in_progress");
       const requirements = this.loadRequirements(id);
+      if (!(await this.recoverCompletedAttempts(id, milestoneId))) return id;
       let pending = this.store.listTasks(id).filter((row) => row.milestone_id === milestoneId && ["pending", "ready", "changes_requested", "failed"].includes(String(row.state)));
       while (pending.length > 0) {
         const control = this.applyControlCommands(id);
@@ -209,6 +210,47 @@ export class Orchestrator {
       createId("route"), runId, attemptId, candidate.alias, task.role, "implementation", Math.round(performance.now() - started), actualMicros, result.outcome, nowUtc(),
     );
     if (result.outcome !== "ready_for_verification") return this.handleFailure(runId, task, priorAttempts, failureSignature, result);
+    return this.verifyReadyResult(runId, task, result, candidate, attemptDirectory);
+  }
+
+  private async recoverCompletedAttempts(runId: string, milestoneId: string): Promise<boolean> {
+    const interrupted = this.store.listTasks(runId).filter((row) => row.milestone_id === milestoneId && row.state === "running");
+    for (const row of interrupted) {
+      const task = rowToTask(row);
+      const attempt = this.store.get<Record<string, unknown>>(
+        "SELECT * FROM attempts WHERE run_id=? AND task_id=? AND status='ready_for_verification' ORDER BY number DESC LIMIT 1",
+        runId, task.id,
+      );
+      if (!attempt || typeof attempt.result_json !== "string") {
+        this.store.setTaskState(runId, task.id, "blocked");
+        this.store.setRunState(runId, "blocked", { cause: "interrupted_attempt_requires_reconciliation", taskId: task.id });
+        return false;
+      }
+      const session = this.store.get<Record<string, unknown>>(
+        "SELECT model_key FROM sessions WHERE attempt_id=? AND independent=0 ORDER BY started_at LIMIT 1",
+        String(attempt.id),
+      );
+      if (typeof session?.model_key !== "string") throw new Error(`Sessão implementadora ausente para ${task.id}.`);
+      const candidate = this.catalog.get(session.model_key);
+      const result = JSON.parse(attempt.result_json) as ExecutionResult;
+      const attemptDirectory = path.join(
+        this.config.storage.root, "runs", runId, "tasks", task.id,
+        `attempt-${String(Number(attempt.number)).padStart(3, "0")}`,
+      );
+      await mkdir(attemptDirectory, { recursive: true });
+      this.store.event(runId, "task.recovery_resumed", "task", task.id, { attemptId: attempt.id, phase: "verification" });
+      if (!(await this.verifyReadyResult(runId, task, result, candidate, attemptDirectory))) return false;
+    }
+    return true;
+  }
+
+  private async verifyReadyResult(
+    runId: string,
+    task: Task,
+    result: ExecutionResult,
+    candidate: ReturnType<ModelCatalog["get"]>,
+    attemptDirectory: string,
+  ): Promise<boolean> {
     const checkpoint = await checkpointFiles({
       workspace: this.config.project.workspace, protectedRoot: HARNESS_ROOT, runId, taskId: task.id, files: result.changedFiles,
     });
