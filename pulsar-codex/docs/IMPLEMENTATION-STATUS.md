@@ -52,6 +52,20 @@ $ yarn dev
 
 - Dev server: **PASSED**
 - HMR: **PASSED**
+- Porta configurável via `PORT` (ex.: `PORT=3001 yarn dev`) quando a 3000 estiver ocupada.
+
+## Correções do Bloco de Verificação (25/10/2026)
+
+Durante a verificação do bloco foram identificadas e corrigidas as seguintes falhas:
+
+1. **Tema Tailwind não era gerado** — no Tailwind v4 o `tailwind.config.ts` só é carregado via `@config` no CSS. Adicionado `@config '../../tailwind.config.ts'` em `src/styles/globals.css`; utilitários (`bg-primary`, `px-gutter`, `text-on-surface`, `font-*`) agora constam no CSS de build com os valores do design oficial.
+2. **App em branco na inicialização** — `main.tsx` renderizava o `AppShell` (com `<Link>` no Header) fora do contexto do router. O `AppShell` agora é renderizado apenas pelo router (`routes.tsx`).
+3. **Suite de testes inexistente** — criados `tests/setup.ts` (jsdom stubs) e testes unitários de tokens, Button e AppShell (12 testes), além de smoke E2E de reflow em 390/430/1440 px (5 testes).
+4. **`vitest.config.ts` importava `@tailwindcss/vite` não instalado** — plugin removido (Tailwind é processado via PostCSS).
+5. **`.eslintignore` obsoleto (ESLint 9)** — removido; `ignores` movido para `eslint.config.js`.
+6. **Risco de overflow horizontal** — `width: 100vw` substituído por `width: 100%` + `min-height: 100dvh` em `html/body`.
+7. **`.gitignore` local ignorava arquivos essenciais** — `yarn.lock`, `vite.config.ts`, `vitest.config.ts`, `playwright.config.ts`, `tailwind.config.ts`, `eslint.config.js`, `prettier.config.js` e `index.html` agora são versionados; credenciais (`.env`, `secrets/`) seguem ignoradas.
+8. **Porta do dev server configurável** — `PORT` env com padrão 3000 (conflito detectado com outro processo na 3000).
 
 ## Estrutura de Arquivos
 

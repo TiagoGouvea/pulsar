@@ -32,7 +32,11 @@ Este comando instala todas as dependências listadas no `package.json`. O harnes
 yarn dev
 ```
 
-Inicia o dev server do Vite na porta 3000 com Hot Module Replacement (HMR) para desenvolvimento.
+Inicia o dev server do Vite na porta 3000 com Hot Module Replacement (HMR) para desenvolvimento. Quando a porta 3000 estiver ocupada por outro processo, use:
+
+```bash
+PORT=3001 yarn dev
+```
 
 ### 3. Build de Produção
 

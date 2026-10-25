@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@config '../../tailwind.config.ts';
 
 :root {
   /* Primary colors */
@@ -81,8 +82,10 @@
 @layer base {
   html,
   body {
-    width: 100vw;
+    /* 100% avoids horizontal overflow from classic scrollbars on wide screens */
+    width: 100%;
     min-height: 100vh;
+    min-height: 100dvh;
     margin: 0;
     padding: 0;
   }
