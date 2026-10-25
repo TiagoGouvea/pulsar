@@ -76,12 +76,12 @@ export const harnessConfigSchema = z.object({
   review: z.object({
     requireIndependentSession: z.boolean().default(true),
     preferDifferentModelFamily: z.boolean().default(true),
-    maxAttempts: z.number().int().min(1).max(10).default(7),
+    maxAttempts: z.number().int().min(1).max(10).default(9),
     viewportWidths: z.array(z.number().int().min(240).max(5120)).min(1).default([390, 768, 1440]),
   }).default({
     requireIndependentSession: true,
     preferDifferentModelFamily: true,
-    maxAttempts: 7,
+    maxAttempts: 9,
     viewportWidths: [390, 768, 1440],
   }),
   routing: z.object({

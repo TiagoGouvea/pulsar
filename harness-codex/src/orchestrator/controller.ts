@@ -439,6 +439,7 @@ export class Orchestrator {
       role: "functionalReviewer",
       state: "running",
     };
+    const declaredChangedFiles = this.implementerContext(runId, task)?.result.changedFiles ?? [];
     const priorCompletedFailures = this.store.all<Record<string, unknown>>(
       "SELECT result_json FROM attempts WHERE run_id=? AND task_id=? AND status='failed' AND result_json IS NOT NULL ORDER BY started_at",
       runId, reviewTask.id,
@@ -462,6 +463,8 @@ export class Orchestrator {
     const prompt = [
       reviewTask.description,
       `Critérios:\n${task.acceptanceCriteria.map((item) => `- ${item}`).join("\n")}`,
+      `Arquivos alterados declarados:\n${declaredChangedFiles.map((item) => `- ${item}`).join("\n") || "- nenhum"}`,
+      "Concentre a inspeção nesses arquivos e nas configurações diretamente relacionadas. Faça no máximo 8 chamadas de leitura e finalize a resposta.",
       "Use apenas ferramentas de leitura. Não considere a autoavaliação do implementador como evidência.",
       `Responda somente JSON. O campo taskId deve ser exatamente "${reviewTask.id}".`,
       "Inclua taskId, outcome, summary, changedFiles, claimedChecks, decisions, blockers e suggestedFollowUps.",

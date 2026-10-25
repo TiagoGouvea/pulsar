@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import type { ModelCandidate } from "../../src/domain/types.js";
-import { extractResult, localApiFor } from "../../src/executors/pi.js";
+import { extractResult, lastAssistantOutput, localApiFor } from "../../src/executors/pi.js";
 
 const result = {
   taskId: "task-001",
@@ -47,5 +47,14 @@ describe("protocolo local do Pi", () => {
     expect(localApiFor(localCandidate({ modelId: "mlx-community/gpt-oss-20b", family: "gpt-oss" })))
       .toBe("openai-responses");
     expect(localApiFor(localCandidate({}))).toBe("openai-completions");
+  });
+
+  test("usa o último bloco de raciocínio quando o provedor local não emite texto", () => {
+    const messages = [{
+      role: "assistant",
+      content: [{ type: "thinking", thinking: JSON.stringify(result) }],
+    }];
+    expect(lastAssistantOutput(messages)).toBe(JSON.stringify(result));
+    expect(lastAssistantOutput(messages, "resposta normal")).toBe("resposta normal");
   });
 });

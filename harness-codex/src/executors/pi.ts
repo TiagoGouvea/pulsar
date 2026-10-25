@@ -22,6 +22,25 @@ export function localApiFor(candidate: ModelCandidate): "openai-completions" | "
     : "openai-completions";
 }
 
+export function lastAssistantOutput(messages: readonly unknown[], preferredText?: string): string | undefined {
+  if (preferredText?.trim()) return preferredText.trim();
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    const value = messages[index];
+    if (!value || typeof value !== "object") continue;
+    const message = value as { role?: unknown; content?: unknown };
+    if (message.role !== "assistant" || !Array.isArray(message.content)) continue;
+    const thinking = message.content.flatMap((item) => {
+      if (!item || typeof item !== "object") return [];
+      const block = item as { type?: unknown; thinking?: unknown; redacted?: unknown };
+      return block.type === "thinking" && typeof block.thinking === "string" && block.redacted !== true
+        ? [block.thinking]
+        : [];
+    }).join("\n").trim();
+    if (thinking) return thinking;
+  }
+  return undefined;
+}
+
 class PiExecutionError extends Error {
   constructor(readonly phase: string, cause: unknown) {
     super(safeError(cause), { cause });
@@ -190,7 +209,7 @@ export class PiExecutor implements Executor {
       try { await session.prompt(request.prompt); }
       catch (error) { throw new PiExecutionError(timeoutState.triggered ? "timeout" : "provider_request", error); }
       if (timeoutState.triggered) throw new PiExecutionError("timeout", new Error(`Sessão excedeu ${request.timeoutMs} ms.`));
-      const initialResponse = session.getLastAssistantText();
+      const initialResponse = lastAssistantOutput(session.messages, session.getLastAssistantText());
       let rawResponse = initialResponse;
       const saveRawResponse = async (): Promise<void> => {
         const safeResponse = redact(rawResponse ?? "[EMPTY RESPONSE]", this.config.security.redactPatterns);
@@ -219,7 +238,7 @@ export class PiExecutor implements Executor {
         try { await session.prompt(repairPrompt); }
         catch (repairError) { throw new PiExecutionError(timedOut() ? "timeout" : "provider_request", repairError); }
         if (timedOut()) throw new PiExecutionError("timeout", new Error(`Sessão excedeu ${request.timeoutMs} ms.`));
-        const repairedResponse = session.getLastAssistantText();
+        const repairedResponse = lastAssistantOutput(session.messages, session.getLastAssistantText());
         rawResponse = [
           "[INITIAL RESPONSE]", initialResponse ?? "[EMPTY RESPONSE]",
           "", "[REPAIR RESPONSE]", repairedResponse ?? "[EMPTY RESPONSE]",

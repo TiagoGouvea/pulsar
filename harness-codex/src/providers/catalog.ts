@@ -80,7 +80,7 @@ export class ModelCatalog {
         && !primaryAliases.has(candidate.alias),
       ))
       .sort((left, right) => Number(right.modality === "local") - Number(left.modality === "local"));
-    const emergencyIndex = Math.min(attempt - candidates.length - 3, Math.max(0, emergency.length - 1));
+    const emergencyIndex = emergency.length > 0 ? (attempt - candidates.length - 3) % emergency.length : 0;
     const candidate = emergency[emergencyIndex] ?? candidates[primaryIndex];
     if (!candidate) throw new Error(`Nenhum revisor elegível para ${role}.`);
     return candidate;
