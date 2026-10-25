@@ -48,12 +48,14 @@ export function estimate(ctx: Ctx, w: WorkerSpec, role: string, rows = readLedge
   return hist.length ? sum(hist) / hist.length : TIER_EST[w.tier];
 }
 
+export const stageCap = (ctx: Ctx, stage: number) => ctx.budget.caps.byStage[String(stage)] ?? ctx.budget.caps.stage;
+
 /** First cap that the estimated call would break, or null. */
 export function breach(ctx: Ctx, w: WorkerSpec, est: number, s: { stage: number; featureId?: string }): Cap | null {
   const rows = readLedger(ctx);
   const c = ctx.budget.caps;
   if (spent(ctx, {}, rows) + est > c.run) return "run";
-  if (spent(ctx, { stage: s.stage }, rows) + est > c.stage) return "stage";
+  if (spent(ctx, { stage: s.stage }, rows) + est > stageCap(ctx, s.stage)) return "stage";
   const prov = providerOf(w);
   if (c.dailyByProvider[prov] !== undefined && spent(ctx, { provider: prov, day: today() }, rows) + est > c.dailyByProvider[prov]) return "provider";
   if (s.featureId && spent(ctx, { featureId: s.featureId }, rows) + est > c.feature) return "feature";
@@ -63,7 +65,7 @@ export function breach(ctx: Ctx, w: WorkerSpec, est: number, s: { stage: number;
 /** Highest usage ratio between run and current stage caps (drives alerts and prefer_cheap). */
 export function usageRatio(ctx: Ctx, stage: number) {
   const rows = readLedger(ctx);
-  return Math.max(spent(ctx, {}, rows) / ctx.budget.caps.run, spent(ctx, { stage }, rows) / ctx.budget.caps.stage);
+  return Math.max(spent(ctx, {}, rows) / ctx.budget.caps.run, spent(ctx, { stage }, rows) / stageCap(ctx, stage));
 }
 
 const table = (title: string, groups: Record<string, LedgerRow[]>) =>

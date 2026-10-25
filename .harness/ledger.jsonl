@@ -21,3 +21,5 @@
 {"ts":"2026-10-25T13:25:28.025Z","workerId":"gemini-pro","provider":"google","role":"doctor","stage":-1,"tokensIn":6836,"tokensOut":175,"costUsd":0,"billing":"subscription"}
 {"ts":"2026-10-25T13:25:29.460Z","workerId":"glm","provider":"openrouter","role":"doctor","stage":-1,"tokensIn":905,"tokensOut":3,"costUsd":0.000131207,"billing":"api"}
 {"ts":"2026-10-25T13:25:42.773Z","workerId":"local-gptoss","provider":"local","role":"doctor","stage":-1,"tokensIn":1392,"tokensOut":44,"costUsd":0,"billing":"local"}
+{"ts":"2026-10-25T13:28:47.623Z","workerId":"glm","provider":"zai","role":"smoke","stage":-1,"tokensIn":30144,"tokensOut":2265,"costUsd":0,"billing":"subscription"}
+{"ts":"2026-10-25T13:31:33.614Z","workerId":"glm","provider":"zai","role":"smoke","stage":-1,"tokensIn":20896,"tokensOut":3126,"costUsd":0,"billing":"subscription"}

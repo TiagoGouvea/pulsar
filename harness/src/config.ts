@@ -92,7 +92,8 @@ export const BudgetSchema = z.object({
   currency: z.string(),
   caps: z.object({
     run: z.number(),
-    stage: z.number(),
+    stage: z.number(),                                    // default per stage
+    byStage: z.record(z.string(), z.number()).default({}), // per-stage override, keyed by stage id
     feature: z.number(),
     dailyByProvider: z.record(z.string(), z.number()),
   }),

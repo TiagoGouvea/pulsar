@@ -1,7 +1,16 @@
 currency: USD
 caps:
-  run: 80             # execução inteira
-  stage: 20           # por etapa
+  run: 60             # projeto inteiro (soma de byStage = 60)
+  stage: 6            # padrão para etapas sem valor em byStage
+  byStage:            # por etapa (id em harness.config.yaml > stages); opcionais fora do escopo não gastam
+    "0": 8            # Setup: inicializador (opus), scaffold, design system
+    "1": 10           # Base: auth, security rules (implement_hard)
+    "2": 9            # Registro
+    "3": 12           # Insights: estatística (implement_hard)
+    "4": 5            # Curadoria
+    "5": 6            # PWA e push
+    "6": 4            # IA generativa
+    "7": 6            # Polimento
   feature: 3          # por feature (todas as tentativas + reviews)
   dailyByProvider:
     anthropic: 20

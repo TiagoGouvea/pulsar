@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { adapters } from "../src/adapters/index.js";
-import { costOf } from "../src/budget.js";
+import { costOf, stageCap } from "../src/budget.js";
 import { NoWorkerError, Runtime } from "../src/invoke.js";
 import { parseApprovalFiles } from "../src/checkpoint.js";
 import { enabledWorkers } from "../src/config.js";
@@ -94,6 +94,12 @@ describe("utilitários", () => {
     expect(extractJson('texto\n```json\n{"a":1}\n```\nmais\n```json\n{"b":2}\n```')).toEqual({ b: 2 });
     expect(extractJson('fim: {"pass": true, "score": 8, "issues": []}')).toEqual({ pass: true, score: 8, issues: [] });
     expect(extractJson("nada aqui")).toBeUndefined();
+  });
+
+  it("teto por etapa usa byStage e cai no padrão", async () => {
+    const { ctx } = await makeProject({ budget: { caps: { run: 60, stage: 5, byStage: { "3": 12 }, feature: 3, dailyByProvider: {} } } });
+    expect(stageCap(ctx, 3)).toBe(12);
+    expect(stageCap(ctx, 4)).toBe(5);
   });
 
   it("trechos da spec e critérios de aceite numerados", async () => {

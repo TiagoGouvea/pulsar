@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { createInterface } from "node:readline/promises";
 import { z } from "zod";
 import { FatalError, type WorkerSpec } from "./adapters/types.js";
-import { spent, usageRatio } from "./budget.js";
+import { spent, stageCap, usageRatio } from "./budget.js";
 import {
   addQuestion, addRisk, ApprovalSchema, type Approval, buildCheckpoint, checkpointDir, computeHash, deployPreview,
   freezeSpec, markAnswered, parseApprovalFiles, storedHash, writeSpecChange,
@@ -599,7 +599,7 @@ export class Orchestrator {
       `Fase: ${s.phase}${s.pausedFrom ? ` (de ${s.pausedFrom})` : ""} · Etapa ${s.stage} (${this.ctx.config.stages.find((x) => x.id === s.stage)?.name ?? "?"})`,
       `Etapa atual: ${count(stageFeatures(all, s.stage))}`,
       `Total: ${all.features.length} features — ${count(all.features)}`,
-      `Custo acumulado: US$ ${spent(this.ctx).toFixed(2)} / ${this.ctx.budget.caps.run} (etapa: US$ ${spent(this.ctx, { stage: s.stage }).toFixed(2)} / ${this.ctx.budget.caps.stage})`,
+      `Custo acumulado: US$ ${spent(this.ctx).toFixed(2)} / ${this.ctx.budget.caps.run} (etapa: US$ ${spent(this.ctx, { stage: s.stage }).toFixed(2)} / ${stageCap(this.ctx, s.stage)})`,
       `Próximo passo: ${next[s.phase]}`,
     ].join("\n");
   }

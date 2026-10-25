@@ -8,3 +8,5 @@
 {"id":"evt-8","ts":"2026-10-25T13:12:58.508Z","taskId":"smoke-deepseek","stage":-1,"role":"smoke","workerId":"deepseek","family":"deepseek","attempt":1,"outcome":"success","costUsd":0.0014168002200000002,"durationMs":5912}
 {"id":"evt-9","ts":"2026-10-25T13:17:52.238Z","taskId":"smoke-kimi","stage":-1,"role":"smoke","workerId":"kimi","family":"moonshot","attempt":1,"outcome":"success","costUsd":0.0026407851999999997,"durationMs":3530}
 {"id":"evt-10","ts":"2026-10-25T13:25:14.356Z","taskId":"smoke-codex-mid","stage":-1,"role":"smoke","workerId":"codex-mid","family":"openai","attempt":1,"outcome":"success","costUsd":0.203437,"durationMs":11000}
+{"id":"evt-11","ts":"2026-10-25T13:28:47.625Z","taskId":"smoke-glm","stage":-1,"role":"smoke","workerId":"glm","family":"zhipu","attempt":1,"outcome":"failure","costUsd":0,"durationMs":67638}
+{"id":"evt-12","ts":"2026-10-25T13:31:33.619Z","taskId":"smoke-glm","stage":-1,"role":"smoke","workerId":"glm","family":"zhipu","attempt":1,"outcome":"success","costUsd":0,"durationMs":76097}

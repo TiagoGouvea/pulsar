@@ -27,8 +27,12 @@ workers:
   gemini-pro:   { cli: agy,    model: gemini-3.8-flash-high, family: google, tier: high, vision: true, billing: subscription, concurrency: 2, timeoutMin: 45 }
   gemini-flash: { cli: agy,    model: gemini-3.8-flash-low,  family: google, tier: low,  vision: true, billing: subscription, concurrency: 3, timeoutMin: 20 }
   # --- Open source via assinatura / OpenRouter ---
-  # glm via OpenRouter (sem chave Z.ai). Plano GLM Coding: cli: claude, billing: subscription, env: { ANTHROPIC_BASE_URL: ZAI_ANTHROPIC_BASE_URL, ANTHROPIC_AUTH_TOKEN: ZAI_API_KEY }
-  glm:          { cli: pi,     model: "openrouter/z-ai/glm-5.3", family: zhipu, tier: mid, vision: false, billing: api, concurrency: 2, timeoutMin: 40 }
+  # glm via plano GLM Coding Lite da Z.ai (Claude Code apontado para o endpoint Anthropic da Z.ai; cota por 5h/semana).
+  # Sem plano: cli: pi, model: "openrouter/z-ai/glm-5.3", billing: api (e preço em prices.yaml).
+  # model "sonnet" é o alias do Claude Code mapeado para ZAI_MODEL (com o ID direto o Claude Code desliga as ferramentas).
+  glm:          { cli: claude, model: sonnet,             family: zhipu,     tier: mid,  vision: false, billing: subscription, concurrency: 2, timeoutMin: 40,
+                  env: { ANTHROPIC_BASE_URL: ZAI_ANTHROPIC_BASE_URL, ANTHROPIC_AUTH_TOKEN: ZAI_API_KEY,
+                         ANTHROPIC_DEFAULT_SONNET_MODEL: ZAI_MODEL, ANTHROPIC_DEFAULT_OPUS_MODEL: ZAI_MODEL, ANTHROPIC_DEFAULT_HAIKU_MODEL: ZAI_MODEL } }
   kimi:         { cli: pi,     model: "openrouter/moonshotai/kimi-k2.7-code", family: moonshot, tier: mid, vision: false, billing: api, concurrency: 2, timeoutMin: 40 }
   deepseek:     { cli: pi,     model: "openrouter/deepseek/deepseek-v4-pro", family: deepseek, tier: low, vision: false, billing: api, concurrency: 2, timeoutMin: 30 }
   # --- Locais (LM Studio, LMSTUDIO_BASE_URL, padrão http://localhost:1235/v1) ---

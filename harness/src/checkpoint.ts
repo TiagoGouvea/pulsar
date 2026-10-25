@@ -4,7 +4,7 @@ import { basename, join, relative } from "node:path";
 import { execa } from "execa";
 import { z } from "zod";
 import type { Ctx } from "./config.js";
-import { readLedger, spent } from "./budget.js";
+import { readLedger, spent, stageCap } from "./budget.js";
 import { loadFeatures, stageFeatures } from "./features.js";
 import { readEvents } from "./logger.js";
 import { gateEnv } from "./gates/browser.js";
@@ -123,7 +123,7 @@ export function buildCheckpoint(ctx: Ctx, c: CheckpointInput) {
     ...passing.map((f) => `- **${f.id}** ${f.title} — ${f.attempts} tentativa(s), US$ ${f.costUsd.toFixed(2)}${f.covers.length ? ` — critérios: ${f.covers.join(", ")}` : ""}\n${f.acceptance.map((a) => `  - [x] ${a}`).join("\n")}`),
     `\n## Bloqueadas (${blocked.length})\n`, ...blocked.map((f) => `- **${f.id}** ${f.title}: ${f.blockedReason ?? "-"}`),
     pending.length ? `\n## Pendentes (${pending.length})\n\n${pending.map((f) => `- ${f.id} ${f.title} [${f.status}]`).join("\n")}` : "",
-    `\n## Custo e tempo\n\n- Custo da etapa: US$ ${spent(ctx, { stage: c.stage }).toFixed(2)} (teto US$ ${ctx.budget.caps.stage})`,
+    `\n## Custo e tempo\n\n- Custo da etapa: US$ ${spent(ctx, { stage: c.stage }).toFixed(2)} (teto US$ ${stageCap(ctx, c.stage)})`,
     `- Custo acumulado: US$ ${spent(ctx, {}, readLedger(ctx)).toFixed(2)} (teto US$ ${ctx.budget.caps.run})`,
     `- Tempo decorrido: ${hours.toFixed(1)} h · chamadas registradas: ${evs.length}`,
     `\n## Workers (implementação)\n\n| Worker | Tentativas | Sucesso |\n|---|---|---|\n${Object.entries(byWorker).map(([w, s]) => `| ${w} | ${s.n} | ${Math.round((100 * s.ok) / s.n)}% |`).join("\n")}`,

@@ -35,10 +35,10 @@
     "falhasPorGate": {}
   },
   "glm|smoke|*": {
-    "tentativas": 1,
-    "sucessos": 1,
-    "custoMedio": 0.0019306290000000001,
-    "duracaoMedia": 3968,
+    "tentativas": 3,
+    "sucessos": 2,
+    "custoMedio": 0.0006435430000000001,
+    "duracaoMedia": 49234.333333333336,
     "falhasPorGate": {}
   },
   "kimi|smoke|*": {
