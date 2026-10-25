@@ -1,3 +1,5 @@
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { adapters } from "../src/adapters/index.js";
 import { costOf, stageCap } from "../src/budget.js";
@@ -6,7 +8,7 @@ import { parseApprovalFiles } from "../src/checkpoint.js";
 import { enabledWorkers } from "../src/config.js";
 import { codeRules, uiRules } from "../src/evaluator.js";
 import { addLesson, loadLessons, recordLessonOutcome, selectLessons } from "../src/learning.js";
-import { acceptanceCriteria, extractJson, specSection } from "../src/prompts.js";
+import { acceptanceCriteria, designRefs, extractJson, specSection } from "../src/prompts.js";
 import { candidates, loadStats, pick, recordStats } from "../src/router.js";
 import { makeProject } from "./helpers.js";
 
@@ -94,6 +96,16 @@ describe("utilitários", () => {
     expect(extractJson('texto\n```json\n{"a":1}\n```\nmais\n```json\n{"b":2}\n```')).toEqual({ b: 2 });
     expect(extractJson('fim: {"pass": true, "score": 8, "issues": []}')).toEqual({ pass: true, score: 8, issues: [] });
     expect(extractJson("nada aqui")).toBeUndefined();
+  });
+
+  it("design: mockups em subpastas, DESIGN.md como tokens quando não há tokens.json", async () => {
+    const { ctx } = await makeProject();
+    rmSync(join(ctx.repo, "design/tokens.json"));
+    for (const f of ["design/ds/DESIGN.md", "design/home/screen.png", "design/home/code.html", "design/.DS_Store"]) {
+      mkdirSync(join(ctx.repo, f, ".."), { recursive: true });
+      writeFileSync(join(ctx.repo, f), "x");
+    }
+    expect(designRefs(ctx)).toEqual({ screens: ["design/home/screen.png"], html: ["design/home/code.html"], tokens: "design/ds/DESIGN.md" });
   });
 
   it("teto por etapa usa byStage e cai no padrão", async () => {

@@ -3,11 +3,13 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { report } from "./budget.js";
 import { loadCtx } from "./config.js";
-import { doctor, formatDoctor, smoke } from "./doctor.js";
+import { execa } from "execa";
+import { designSyncCmd, doctor, formatDoctor, smoke } from "./doctor.js";
 import { defaultDeps, Orchestrator } from "./orchestrator.js";
 
 const USAGE = `uso: harness <comando> [opções]
   doctor [--no-auth] [--no-emulators]  verifica ambiente e configuração
+  sync-design                           copia project.designSource para o design/ do repo do projeto
   smoke [workerId...]                   microtarefa real com cada worker habilitado (prior do roteador)
   start                                 INIT + loop até o primeiro checkpoint
   resume                                continua do estado atual
@@ -42,6 +44,12 @@ async function main() {
       console.log(formatDoctor(r));
       process.exitCode = r.ok ? 0 : 1;
       return;
+    }
+    case "sync-design": {
+      if (!ctx.config.project.designSource) return console.log("project.designSource não configurado");
+      const [bin, ...args] = designSyncCmd(ctx, ctx.config.project.designSource);
+      await execa(bin, args, { stdio: "inherit" });
+      return console.log(`design copiado para ${args.at(-1)}; faça commit no repo do projeto`);
     }
     case "smoke": return console.log(await smoke(ctx, rest));
     case "start": return run(orch.start());

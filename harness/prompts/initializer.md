@@ -5,7 +5,7 @@ Você prepara o projeto Pulsar para ser construído feature por feature por outr
 ## Leia
 - Spec e arquitetura (alias -> arquivo):
 {{specFiles}}
-- `{{decisionsFile}}` (decisões do humano) e `design/` (mockups em `design/screens/*.png` e `design/tokens.json`).
+- `{{decisionsFile}}` (decisões do humano) e `{{designDir}}/` (uma pasta por tela com `screen.png` + `code.html`, tokens em `{{designTokens}}`, mapeamento tela × spec).
 
 ## Produza
 1. **`.harness/features.json`** no schema abaixo, cobrindo 100% dos critérios de aceite, organizado nestas etapas:
@@ -30,7 +30,7 @@ Você prepara o projeto Pulsar para ser construído feature por feature por outr
 3. **Scaffold do app (etapa 0)** em `app/`: Vite + React + TypeScript strict + Tailwind, Firebase (Auth, Firestore, Hosting) com emuladores, ESLint + Prettier, Vitest (com cobertura), Playwright (projeto `mobile` 375×812, alvo do app; `desktop` 1280×800 só para smoke: o app é somente mobile e no computador apenas estica/desempilha), `@axe-core/playwright`, `@firebase/rules-unit-testing`. Scripts obrigatórios no `app/package.json`:
    `build`, `lint`, `format:check`, `typecheck`, `test:unit`, `test:rules`, `test:e2e`, `test:visual`, `seed`, `e2e:serve` (sobe emuladores + seed + `vite preview` na porta 4173 e fica rodando).
 4. **`app/AGENTS.md`** e **`app/CLAUDE.md`** (mesmo conteúdo): regras de código, padrões, estrutura de pastas, convenções de teste, como rodar cada script.
-5. **Design system** a partir de `design/tokens.json` e dos mockups: tokens → CSS variables + tema do Tailwind + componentes base em `app/src/design/`: Button, Chip, Slider, NumberInput, Toggle, Card, Sheet, EyeToggle (`data-testid="eye-toggle"`), GroupBadge (Fator/Resultado), e o componente `<IndicatorLabel>` (único jeito de exibir nome/sigla de indicador). Página `/_design` (somente dev) mostrando tudo.
+5. **Design system** a partir de `{{designTokens}}`, dos mockups e do `code.html` de cada tela: tokens → CSS variables + tema do Tailwind + componentes base em `app/src/design/`: Button, Chip, Slider, NumberInput, Toggle, Card, Sheet, EyeToggle (`data-testid="eye-toggle"`), GroupBadge (Fator/Resultado), e o componente `<IndicatorLabel>` (único jeito de exibir nome/sigla de indicador). Página `/_design` (somente dev) mostrando tudo.
 6. **`app/{{routesFile}}`**: lista das rotas para os gates de navegador, ex. `[{"path": "/_design", "name": "design", "tags": ["ui"]}]`. Atualize quando novas telas surgirem.
 7. **`app/scripts/seed.ts`**: 30–60 dias de dados realistas com correlações plantadas e ruído; usa os nomes sentinela {{sentinels}} em indicadores e observações; **recusa rodar** sem `FIRESTORE_EMULATOR_HOST`, exceto `--demo` com `HARNESS_ALLOW_DEMO_SEED=1`. Só dados fictícios.
 8. Elementos que mostram nomes reais de propósito (editor aberto) recebem `data-privacy-allow`.

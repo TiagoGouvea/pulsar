@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, join, relative } from "node:path";
 import { execa } from "execa";
 import { z } from "zod";
@@ -8,14 +8,13 @@ import { readLedger, spent, stageCap } from "./budget.js";
 import { loadFeatures, stageFeatures } from "./features.js";
 import { readEvents } from "./logger.js";
 import { gateEnv } from "./gates/browser.js";
-import { hp, normText, readJson, readJsonl, writeJson } from "./state.js";
+import { hp, normText, readJson, readJsonl, walk, writeJson } from "./state.js";
 
 // ---------- spec/design hash and change detection ----------
 
 const files = (ctx: Ctx) => {
   const out = Object.values(ctx.config.project.specFiles).map((f) => join(ctx.repo, f));
-  const walk = (d: string): string[] => (existsSync(d) ? readdirSync(d).flatMap((n) => (statSync(join(d, n)).isDirectory() ? walk(join(d, n)) : [join(d, n)])) : []);
-  return [...out, ...walk(join(ctx.repo, ctx.config.project.designDir)).filter((f) => !f.endsWith(".DS_Store"))].sort();
+  return [...out, ...walk(join(ctx.repo, ctx.config.project.designDir))].sort();
 };
 
 export function computeHash(ctx: Ctx) {

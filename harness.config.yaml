@@ -8,6 +8,10 @@ project:
     arquitetura.md: docs/Pulsar_Arquitetura_e_Implementacao.md
   acceptanceSection: "10"        # seção da spec com os critérios de aceite (cobertura verificada pelo doctor)
   designDir: design
+  # fonte do design: Pulsar/design (uma pasta por tela com screen.png + code.html, DESIGN.md com tokens).
+  # `harness sync-design` espelha em <repo>/design; o doctor avisa se estiver desatualizado.
+  # A spec copiada lá dentro fica de fora: a fonte da verdade é docs/.
+  designSource: { from: ../design, exclude: [pulsar_especificacao_completa.md] }
   decisionsFile: DECISOES.md
   language: pt-BR
   mainBranch: main

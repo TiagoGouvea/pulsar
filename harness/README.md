@@ -33,6 +33,7 @@ Ao fim de cada etapa o processo **termina** em `AWAITING_APPROVAL` e notifica o 
 | Comando | Faz |
 |---|---|
 | `doctor [--no-auth] [--no-emulators]` | binários, `.env`, `<preencher>`, auth por provedor, Firebase, LM Studio, insumos, git, orçamento, disco |
+| `sync-design` | espelha `project.designSource` (Pulsar/design) em `<repo>/design` |
 | `smoke [workerId…]` | cria `hello.ts` + teste com cada worker; mede tempo/custo/sucesso |
 | `start` / `resume` | INIT + loop / continua do estado atual (também depois de crash ou pausa) |
 | `status` | fase, etapa, features por status, custo, próximo passo |
@@ -44,7 +45,8 @@ Ao fim de cada etapa o processo **termina** em `AWAITING_APPROVAL` e notifica o 
 ## Antes do primeiro `start` (checklist)
 
 - [ ] Em `../pulsar-claude/`: `docs/` com a spec e a arquitetura finais (`project.specFiles` em `harness.config.yaml` mapeia `spec.md`/`arquitetura.md` para os arquivos atuais)
-- [ ] Em `../pulsar-claude/`: `design/screens/*.png` (≥ 3 mockups), `design/tokens.json` e `DECISOES.md` (partir de `DECISOES.template.md`)
+- [ ] Design em `Pulsar/design` (fonte; uma pasta por tela com `screen.png` + `code.html`, `DESIGN.md` com tokens) espelhado com `./harness/bin/harness sync-design` em `../pulsar-claude/design` e commitado
+- [ ] Em `../pulsar-claude/`: `DECISOES.md` (partir de `DECISOES.template.md`)
 - [ ] `.env` a partir de `.env.example`: uma chave por provedor, dedicada ao harness; service account em `secrets/` (fora do git)
 - [ ] IDs `<preencher>` em `harness.config.yaml` (ou `enabled: false` no worker) e preços em `prices.yaml`
 - [ ] Limites duros nos consoles (OpenRouter por chave, Anthropic/OpenAI mensal, alertas GCP)

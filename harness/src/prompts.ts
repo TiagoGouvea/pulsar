@@ -1,10 +1,10 @@
-import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Ctx } from "./config.js";
 import type { Feature } from "./features.js";
 import { selectLessons } from "./learning.js";
-import { hp } from "./state.js";
+import { hp, walk } from "./state.js";
 
 export const HARNESS_DIR = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -54,10 +54,15 @@ export function acceptanceCriteria(ctx: Ctx) {
 
 const tail = (file: string, n: number) => (existsSync(file) ? readFileSync(file, "utf8").split("\n").slice(-n).join("\n") : "");
 
+/** Design inputs anywhere under designDir: mockup images, per-screen HTML and the tokens file (tokens.json or DESIGN.md). */
 export function designRefs(ctx: Ctx) {
-  const dir = join(ctx.repo, ctx.config.project.designDir, "screens");
-  const screens = existsSync(dir) ? readdirSync(dir).filter((f) => /\.(png|jpe?g|webp)$/i.test(f)).map((f) => join(ctx.config.project.designDir, "screens", f)) : [];
-  return { screens, tokens: join(ctx.config.project.designDir, "tokens.json") };
+  const files = [...walk(join(ctx.repo, ctx.config.project.designDir))].map((f) => relative(ctx.repo, f)).sort();
+  const find = (re: RegExp) => files.find((f) => re.test(f));
+  return {
+    screens: files.filter((f) => /\.(png|jpe?g|webp)$/i.test(f)),
+    html: files.filter((f) => f.endsWith(".html")),
+    tokens: find(/(^|\/)tokens\.json$/) ?? find(/(^|\/)DESIGN\.md$/) ?? join(ctx.config.project.designDir, "tokens.json"),
+  };
 }
 
 /** Standard context of a feature task. */
@@ -84,6 +89,8 @@ export function render(ctx: Ctx, role: string, vars: Record<string, string>, tag
     specFiles: Object.entries(ctx.config.project.specFiles).map(([a, f]) => `${a} -> ${f}`).join("\n"),
     decisionsFile: ctx.config.project.decisionsFile,
     appDir: ctx.config.project.appDir,
+    designDir: ctx.config.project.designDir,
+    designTokens: designRefs(ctx).tokens,
     ...vars,
     lessons,
   };

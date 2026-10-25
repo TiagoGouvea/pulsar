@@ -26,6 +26,10 @@ async function version(bin: string) {
   return r && r.exitCode === 0 ? String(r.stdout || r.stderr).split("\n")[0].trim() : undefined;
 }
 
+/** rsync that mirrors the external design folder into the project repo (last two args: from/ to/). */
+export const designSyncCmd = (ctx: Ctx, src: { from: string; exclude: string[] }) =>
+  ["rsync", "-a", "--delete", ...[".DS_Store", ...src.exclude].map((e) => `--exclude=${e}`), join(ctx.root, src.from) + "/", join(ctx.repo, ctx.config.project.designDir) + "/"];
+
 export async function doctor(ctx: Ctx, o: { auth?: boolean; emulators?: boolean } = {}): Promise<{ ok: boolean; checks: Check[] }> {
   const checks: Check[] = [];
   const add = (level: Level, item: string, detail: string) => checks.push({ level, item, detail });
@@ -117,7 +121,14 @@ export async function doctor(ctx: Ctx, o: { auth?: boolean; emulators?: boolean 
   for (const [alias, f] of Object.entries(ctx.config.project.specFiles)) add(existsSync(join(ctx.repo, f)) ? "ok" : "fail", `spec ${alias}`, f);
   const d = designRefs(ctx);
   add(existsSync(join(ctx.repo, d.tokens)) ? "ok" : "fail", "design tokens", d.tokens);
-  add(d.screens.length >= 3 ? "ok" : "fail", "mockups", `${d.screens.length} em ${ctx.config.project.designDir}/screens (mínimo 3)`);
+  add(d.screens.length >= 3 ? "ok" : "fail", "mockups", `${d.screens.length} imagens em ${ctx.config.project.designDir}/ (mínimo 3), ${d.html.length} HTML`);
+  const src = ctx.config.project.designSource;
+  if (src) {
+    const cmd = designSyncCmd(ctx, src);
+    const r = await sh(cmd[0], [...cmd.slice(1, -2), "-n", "--itemize-changes", ...cmd.slice(-2)]);
+    const pending = String(r.stdout).split("\n").filter(Boolean).length;
+    add(r.exitCode !== 0 ? "fail" : pending ? "warn" : "ok", "design sincronizado", r.exitCode !== 0 ? String(r.stderr).slice(-200) : pending ? `${pending} diferenças com ${src.from}: ${cmd.join(" ")} e commit no repo do projeto` : `igual a ${src.from}`);
+  }
   add(existsSync(join(ctx.repo, ctx.config.project.decisionsFile)) ? "ok" : "fail", "decisões", ctx.config.project.decisionsFile);
   const ac = acceptanceCriteria(ctx);
   add(ac.length ? "ok" : "fail", "critérios de aceite", `${ac.length} na seção ${ctx.config.project.acceptanceSection} da spec`);

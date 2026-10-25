@@ -45,6 +45,8 @@ export const ConfigSchema = z.object({
     specFiles: z.record(z.string(), z.string()),
     acceptanceSection: z.string().default("10"),
     designDir: z.string(),
+    // external design folder (relative to the harness root) mirrored into <repo>/<designDir>
+    designSource: z.object({ from: z.string(), exclude: z.array(z.string()).default([]) }).optional(),
     decisionsFile: z.string(),
     language: z.string(),
     mainBranch: z.string().default("main"),

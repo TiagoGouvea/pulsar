@@ -1,4 +1,4 @@
-import { appendFileSync, existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { z } from "zod";
 import type { Ctx } from "./config.js";
@@ -61,6 +61,17 @@ export function saveState(ctx: Ctx, s: State) {
 }
 
 /** Normalized text for dedup (lessons, questions). */
+/** Files under dir, recursively (skips build/vcs folders and .DS_Store). */
+export function* walk(dir: string): Generator<string> {
+  if (!existsSync(dir)) return;
+  for (const e of readdirSync(dir, { withFileTypes: true })) {
+    if (["node_modules", "dist", ".git", "coverage", "test-results", ".DS_Store"].includes(e.name)) continue;
+    const p = join(dir, e.name);
+    if (e.isDirectory()) yield* walk(p);
+    else yield p;
+  }
+}
+
 export const normText = (s: string) => s.toLowerCase().replace(/\W+/g, " ").trim();
 
 /** Promise queue: runs callbacks one at a time (merges, gates). */

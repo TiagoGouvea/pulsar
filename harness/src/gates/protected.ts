@@ -1,11 +1,11 @@
 // G7: acceptance tests are immutable for implementers.
 import { createHash } from "node:crypto";
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import type { Ctx } from "../config.js";
 import { loadFeatures } from "../features.js";
 import { git } from "../git.js";
-import { hp, readJson, writeJson } from "../state.js";
+import { hp, readJson, walk, writeJson } from "../state.js";
 
 interface Entry { sha256: string; asserts: number; featureId: string }
 type Registry = Record<string, Entry>;
@@ -29,15 +29,6 @@ export function registerProtected(ctx: Ctx, cwd: string, featureId: string, file
   writeJson(file(ctx), reg);
 }
 
-function* walk(dir: string): Generator<string> {
-  if (!existsSync(dir)) return;
-  for (const e of readdirSync(dir, { withFileTypes: true })) {
-    if (["node_modules", "dist", ".git", "coverage", "test-results"].includes(e.name)) continue;
-    const p = join(dir, e.name);
-    if (e.isDirectory()) yield* walk(p);
-    else yield p;
-  }
-}
 
 /** Checks tests of merged (passing) features plus the current feature's own tests. */
 export async function checkProtected(ctx: Ctx, cwd: string, featureId?: string): Promise<{ ok: boolean; output: string }> {
