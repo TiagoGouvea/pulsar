@@ -1,0 +1,65 @@
+{
+  "opus|smoke|*": {
+    "tentativas": 1,
+    "sucessos": 1,
+    "custoMedio": 0.06363680000000001,
+    "duracaoMedia": 11432,
+    "falhasPorGate": {}
+  },
+  "sonnet|smoke|*": {
+    "tentativas": 1,
+    "sucessos": 1,
+    "custoMedio": 0.028753800000000003,
+    "duracaoMedia": 8846,
+    "falhasPorGate": {}
+  },
+  "haiku|smoke|*": {
+    "tentativas": 1,
+    "sucessos": 1,
+    "custoMedio": 0.0034918699999999998,
+    "duracaoMedia": 15667,
+    "falhasPorGate": {}
+  },
+  "codex-top|smoke|*": {
+    "tentativas": 1,
+    "sucessos": 1,
+    "custoMedio": 0.34828440000000005,
+    "duracaoMedia": 16682,
+    "falhasPorGate": {}
+  },
+  "codex-mini|smoke|*": {
+    "tentativas": 1,
+    "sucessos": 1,
+    "custoMedio": 0.0124595,
+    "duracaoMedia": 8047,
+    "falhasPorGate": {}
+  },
+  "glm|smoke|*": {
+    "tentativas": 3,
+    "sucessos": 2,
+    "custoMedio": 0.0006435430000000001,
+    "duracaoMedia": 49234.333333333336,
+    "falhasPorGate": {}
+  },
+  "kimi|smoke|*": {
+    "tentativas": 2,
+    "sucessos": 2,
+    "custoMedio": 0.0026650399999999996,
+    "duracaoMedia": 7344,
+    "falhasPorGate": {}
+  },
+  "deepseek|smoke|*": {
+    "tentativas": 1,
+    "sucessos": 1,
+    "custoMedio": 0.0014168002200000002,
+    "duracaoMedia": 5912,
+    "falhasPorGate": {}
+  },
+  "codex-mid|smoke|*": {
+    "tentativas": 1,
+    "sucessos": 1,
+    "custoMedio": 0.203437,
+    "duracaoMedia": 11000,
+    "falhasPorGate": {}
+  }
+}

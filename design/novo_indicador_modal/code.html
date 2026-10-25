@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Space+Grotesk:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-primary": "#ffffff", "surface-variant": "#dae2fd", "tertiary": "#005b3d", "on-surface": "#131b2e", "secondary": "#0051d5", "secondary-container": "#316bf3", "inverse-surface": "#283044", "error": "#ba1a1a", "surface-bright": "#faf8ff", "on-secondary-fixed-variant": "#003ea8", "secondary-fixed-dim": "#b4c5ff", "surface": "#faf8ff", "on-secondary-fixed": "#00174b", "on-primary-fixed-variant": "#5a00c6", "on-tertiary-fixed-variant": "#005236", "inverse-on-surface": "#eef0ff", "on-primary-fixed": "#25005a", "on-tertiary-fixed": "#002113", "on-error": "#ffffff", "on-secondary-container": "#fefcff", "on-secondary": "#ffffff", "surface-container-lowest": "#ffffff", "inverse-primary": "#d2bbff", "surface-container-high": "#e2e7ff", "surface-container-low": "#f2f3ff", "error-container": "#ffdad6", "outline-variant": "#ccc3d8", "tertiary-fixed": "#6ffbbe", "on-tertiary": "#ffffff", "on-error-container": "#93000a", "primary-fixed": "#eaddff", "outline": "#7b7487", "on-background": "#131b2e", "surface-dim": "#d2d9f4", "tertiary-fixed-dim": "#4edea3", "secondary-fixed": "#dbe1ff", "background": "#faf8ff", "surface-tint": "#732ee4", "on-surface-variant": "#4a4455", "primary": "#630ed4", "surface-container-highest": "#dae2fd", "on-primary-container": "#ede0ff", "primary-container": "#7c3aed", "surface-container": "#eaedff", "on-tertiary-container": "#76ffc2", "primary-fixed-dim": "#d2bbff", "tertiary-container": "#007650" }, "borderRadius": { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" }, "spacing": { "space-md": "0.75rem", "space-xl": "2rem", "gutter": "1rem", "space-lg": "1.25rem", "space-xs": "0.25rem", "space-sm": "0.5rem", "margin-desktop": "2rem", "margin": "1rem", "gutter-desktop": "1.5rem" }, "fontFamily": { "body-md": ["Geist"], "headline-lg-mobile": ["Space Grotesk"], "body-lg": ["Geist"], "headline-md": ["Space Grotesk"], "label-code": ["Geist"], "label-md": ["Geist"], "body-sm": ["Geist"], "headline-lg": ["Space Grotesk"], "stat-display": ["Space Grotesk"], "label-lg": ["Geist"], "headline-xl": ["Space Grotesk"], "headline-xl-mobile": ["Space Grotesk"] }, "fontSize": { "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "headline-lg-mobile": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "headline-md": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "label-code": ["11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "600" }], "label-md": ["12px", { "lineHeight": "16px", "fontWeight": "500" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "600" }], "stat-display": ["32px", { "lineHeight": "36px", "letterSpacing": "-0.03em", "fontWeight": "700" }], "label-lg": ["14px", { "lineHeight": "20px", "fontWeight": "600" }], "headline-xl": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.03em", "fontWeight": "700" }], "headline-xl-mobile": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }] } } } };</script><style>@layer base{html,body{width:100%;margin:0;padding:0;background-color:#faf8ff;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head><body class="bg-surface text-on-surface font-body-md text-body-md antialiased min-h-screen flex flex-col"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(19,27,46,0.04)]"><div class="h-16 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="Pulsar Brand Icon" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1WdBuU0iz8QZfKfE4kBD1b-6q7KXcswo155qLk9IPXX2tIpDvoyuiqFLgl6crFb2arwwpyoQyJokJCbC3ISL-RU4T5wGN0NsLk_UWFaZ48cMi7ND6zOfBQEu5izwsuu-YNayhj_qrPYwebP4R1g_QoCKL1QZApxPHATkBTM12VZFSwXGsyQgu5fg88aN_Nr7p3vbYgU8hytyZyecwGWJfv8CY9AX5m1c1MioU4LN3Dga57FGegbj6MSiRY6"/><div class="flex items-center gap-1.5"><span class="font-headline-md text-headline-md text-on-surface tracking-tight">Pulsar</span><span class="px-2 py-0.5 rounded-full bg-surface-container-high text-primary font-label-code text-label-code uppercase tracking-wider">Beta V1</span></div></div><div class="flex items-center gap-space-sm"><button aria-label="Alternar modo discrição e siglas" class="min-h-[44px] min-w-[44px] px-2.5 py-1.5 rounded-full bg-surface-container flex items-center justify-center gap-1.5 text-on-surface-variant hover:text-on-surface active:scale-95 transition-transform duration-150" type="button"><span class="material-symbols-outlined text-[19px] text-secondary">visibility</span><span class="font-label-code text-label-code uppercase tracking-wider text-secondary">Siglas</span></button><a class="min-h-[44px] min-w-[44px] flex items-center justify-center" data-path="configuracoes-da-conta" href="#"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center ring-2 ring-primary-fixed/50"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></a></div></div></header><main class="flex-1 w-full bg-surface pt-16 pb-24"><div class="flex flex-col w-full relative min-w-0 pb-12">
+<!-- Fundo sutil com visão contextual da lista 'Meus Indicadores' para conferir profundidade de Sheet -->
+<div aria-hidden="true" class="w-full px-gutter opacity-20 pointer-events-none select-none flex flex-col gap-space-sm pt-2">
+<div class="flex justify-between items-center mb-1">
+<div class="h-6 w-32 bg-on-surface/15 rounded-full"></div>
+<div class="h-8 w-24 bg-primary/20 rounded-full"></div>
+</div>
+<div class="h-20 bg-surface-container rounded-lg w-full"></div>
+<div class="h-20 bg-surface-container-high rounded-lg w-full"></div>
+<div class="h-20 bg-surface-container rounded-lg w-full"></div>
+</div>
+<!-- Camada Overlay Dimmer Suave -->
+<div class="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-30 pointer-events-none"></div>
+<!-- Modal / Bottom Sheet Principal de Cadastro V1.1 -->
+<div class="relative z-40 w-full mt-[-6.5rem] bg-surface-container-lowest rounded-t-xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-300">
+<!-- Puxador tátil (Drag Pill) -->
+<div class="w-full flex items-center justify-center pt-3 pb-1">
+<span class="w-12 h-1 bg-outline-variant/60 rounded-full"></span>
+</div>
+<!-- Cabeçalho do Modal -->
+<div class="px-gutter pt-2 pb-space-md flex items-start justify-between">
+<div class="flex flex-col gap-1 pr-2">
+<div class="flex items-center gap-space-xs">
+<span class="w-2 h-2 rounded-full bg-primary-container animate-pulse"></span>
+<span class="font-label-code text-label-code uppercase tracking-wider text-primary">Protocolo V1.1</span>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface font-semibold tracking-tight">Novo Indicador</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">Configure uma variável biológica ou comportamental para alimentar suas correlações.</p>
+</div>
+<button aria-label="Fechar modal" class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:text-on-surface active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<!-- Formulário do Modal -->
+<div class="px-gutter flex flex-col gap-space-lg">
+<!-- 1. GRUPO DO INDICADOR (Fator vs Resultado) -->
+<div class="flex flex-col gap-2">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider font-semibold">1. Classificação Causal</label>
+<div class="grid grid-cols-2 p-1 bg-surface-container rounded-full gap-1">
+<!-- Opção Fator -->
+<button class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-full text-on-surface-variant transition-all duration-200" id="btn-fator" type="button">
+<span class="material-symbols-outlined text-[18px]">input</span>
+<div class="flex flex-col text-left">
+<span class="font-label-lg text-label-lg leading-none">Fator</span>
+<span class="font-label-code text-[9px] opacity-75">O que causei/ingeri</span>
+</div>
+</button>
+<!-- Opção Resultado (Ativo) -->
+<button class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-full bg-primary-container text-on-primary shadow-sm transition-all duration-200" id="btn-resultado" type="button">
+<span class="material-symbols-outlined text-[18px]">electric_bolt</span>
+<div class="flex flex-col text-left">
+<span class="font-label-lg text-label-lg leading-none">Resultado</span>
+<span class="font-label-code text-[9px] text-on-primary-container leading-none pt-0.5">O que percebi/medi</span>
+</div>
+</button>
+</div>
+<p class="font-body-sm text-body-sm text-primary font-medium px-1 flex items-center gap-1.5" id="group-caption">
+<span class="material-symbols-outlined text-[15px]">info</span>
+          Resultados alimentam o eixo vertical de sintomas, foco e biomarcadores.
+        </p>
+</div>
+<!-- 2. IDENTIFICAÇÃO BÁSICA -->
+<div class="flex flex-col gap-3">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider font-semibold">2. Identificação</label>
+<!-- Nome do Indicador -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-center px-1">
+<span class="font-label-md text-label-md text-on-surface font-medium">Nome do Indicador *</span>
+<span class="font-label-code text-label-code text-on-surface-variant">Obrigatório</span>
+</div>
+<div class="relative flex items-center">
+<input class="w-full h-12 bg-surface-container-low text-on-surface placeholder:text-on-surface-variant/50 px-4 rounded-full font-body-lg text-body-lg focus:outline-none focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary-container transition-all" placeholder="Ex: Nível de Energia ou Coenzima Q10" type="text" value="Disposição Matinal"/>
+<span class="material-symbols-outlined absolute right-4 text-primary text-[20px]">check_circle</span>
+</div>
+</div>
+<!-- Sigla e Ícone em Grid Compacto -->
+<div class="grid grid-cols-12 gap-space-sm items-start">
+<!-- Sigla (4 colunas) -->
+<div class="col-span-5 flex flex-col gap-1">
+<div class="flex justify-between px-1">
+<span class="font-label-md text-label-md text-on-surface font-medium">Sigla</span>
+<span class="font-label-code text-label-code text-primary">Modo Siglas</span>
+</div>
+<input class="w-full h-12 bg-surface-container-low text-on-surface font-stat-display text-center uppercase tracking-widest rounded-full focus:outline-none focus:ring-2 focus:ring-primary-container transition-all" maxlength="4" placeholder="EX: DIS" type="text" value="DSP"/>
+<span class="font-label-code text-[10px] text-on-surface-variant px-1 leading-tight">Usa 3 letras se vazia no modo sigla.</span>
+</div>
+<!-- Ícone / Emoji (7 colunas) -->
+<div class="col-span-7 flex flex-col gap-1">
+<div class="flex justify-between px-1">
+<span class="font-label-md text-label-md text-on-surface font-medium">Ícone / Emoji</span>
+<span class="font-label-code text-label-code text-on-surface-variant">Oculto em Siglas</span>
+</div>
+<div class="flex items-center gap-1.5 p-1 bg-surface-container-low rounded-full h-12 px-2 justify-between">
+<button class="w-8 h-8 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center text-[18px] shadow-sm transform scale-105" type="button">⚡</button>
+<button class="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-[18px]" type="button">☕</button>
+<button class="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-[18px]" type="button">🏃‍♂️</button>
+<button class="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-[18px]" type="button">💤</button>
+<button class="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-[18px]" type="button">🎯</button>
+</div>
+<span class="font-label-code text-[10px] text-on-surface-variant px-1 leading-tight">Oculto em telas compartilhadas.</span>
+</div>
+</div>
+</div>
+<!-- 3. TIPO DE RESPOSTA -->
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-center px-1">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider font-semibold">3. Tipo de Resposta</label>
+<span class="font-label-code text-label-code text-primary font-bold">Imutável após 1º registro</span>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<!-- Opção 1: Booleano -->
+<button class="p-3 rounded-lg bg-surface-container-low text-left flex flex-col gap-1 active:scale-[0.98] transition-all" type="button">
+<div class="flex items-center justify-between w-full">
+<span class="material-symbols-outlined text-secondary text-[20px]">toggle_on</span>
+<span class="w-4 h-4 rounded-full bg-surface-container flex items-center justify-center"></span>
+</div>
+<span class="font-label-lg text-label-lg text-on-surface">Booleano</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Sim / Não (ex: Treinou?)</span>
+</button>
+<!-- Opção 2: Escala 0-10 (SELECIONADO) -->
+<button class="p-3 rounded-lg bg-primary-fixed/40 text-left flex flex-col gap-1 shadow-sm active:scale-[0.98] transition-all relative overflow-hidden" type="button">
+<div class="absolute -right-2 -bottom-2 w-10 h-10 bg-primary/10 rounded-full"></div>
+<div class="flex items-center justify-between w-full">
+<span class="material-symbols-outlined text-primary text-[20px]">linear_scale</span>
+<span class="w-4 h-4 rounded-full bg-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary text-[12px]">check</span>
+</span>
+</div>
+<span class="font-label-lg text-label-lg text-primary font-bold">Escala 0–10</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Percepção subjetiva</span>
+</button>
+<!-- Opção 3: Número com Unidade -->
+<button class="p-3 rounded-lg bg-surface-container-low text-left flex flex-col gap-1 active:scale-[0.98] transition-all" type="button">
+<div class="flex items-center justify-between w-full">
+<span class="material-symbols-outlined text-tertiary text-[20px]">speed</span>
+<span class="w-4 h-4 rounded-full bg-surface-container flex items-center justify-center"></span>
+</div>
+<span class="font-label-lg text-label-lg text-on-surface">Número + Unidade</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">mg, horas, bpm, ml</span>
+</button>
+<!-- Opção 4: Opções Ordenadas -->
+<button class="p-3 rounded-lg bg-surface-container-low text-left flex flex-col gap-1 active:scale-[0.98] transition-all" type="button">
+<div class="flex items-center justify-between w-full">
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">segment</span>
+<span class="w-4 h-4 rounded-full bg-surface-container flex items-center justify-center"></span>
+</div>
+<span class="font-label-lg text-label-lg text-on-surface">Opções Ordenadas</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Ruim → Excelente</span>
+</button>
+</div>
+</div>
+<!-- 4. FREQUÊNCIA E AGREGAÇÃO -->
+<div class="p-3.5 bg-surface-container-low rounded-lg flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Frequência Diária</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Quantas vezes você avalia no dia?</span>
+</div>
+</div>
+<div class="grid grid-cols-2 p-1 bg-surface-container rounded-full gap-1">
+<button class="py-2 rounded-full font-label-md text-label-md bg-surface-container-lowest text-on-surface shadow-xs font-semibold" type="button">
+            1x ao dia (Único)
+          </button>
+<button class="py-2 rounded-full font-label-md text-label-md text-on-surface-variant" type="button">
+            Múltiplos registros
+          </button>
+</div>
+<!-- Seletor determinístico de agregação sugerida -->
+<div class="pt-1 flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-secondary text-[18px]">functions</span>
+<span class="font-body-sm text-body-sm text-on-surface font-medium">Agregação p/ Correlações:</span>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-surface-container-highest text-secondary font-label-code text-label-code uppercase tracking-wider font-bold">
+            Média Ponderada
+          </span>
+</div>
+</div>
+<!-- 5. CONFIGURAÇÃO ESPECÍFICA DE RESULTADO: DIREÇÃO DESEJÁVEL -->
+<div class="flex flex-col gap-2" id="resultado-direction-container">
+<div class="flex items-center justify-between px-1">
+<label class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider font-semibold">5. Direção Desejável</label>
+<span class="font-label-code text-label-code text-tertiary font-bold">Otimização</span>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<!-- Quanto maior, melhor (SELECIONADO) -->
+<button class="p-3 rounded-lg bg-surface-container-low text-left flex items-start gap-2.5 transition-all bg-tertiary/10" type="button">
+<div class="w-7 h-7 rounded-full bg-tertiary-fixed text-on-tertiary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[18px]">trending_up</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-tertiary font-bold">Maior é melhor</span>
+<span class="font-label-code text-[10px] text-on-surface-variant leading-tight">Energia, humor, foco</span>
+</div>
+</button>
+<!-- Quanto menor, melhor -->
+<button class="p-3 rounded-lg bg-surface-container-low text-left flex items-start gap-2.5 transition-all" type="button">
+<div class="w-7 h-7 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[18px]">trending_down</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-medium">Menor é melhor</span>
+<span class="font-label-code text-[10px] text-on-surface-variant leading-tight">Fadiga, dor, ansiedade</span>
+</div>
+</button>
+<!-- Sem preferência -->
+<button class="p-3 rounded-lg bg-surface-container-low text-left flex items-start gap-2.5 transition-all" type="button">
+<div class="w-7 h-7 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[18px]">horizontal_rule</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-medium">Sem preferência</span>
+<span class="font-label-code text-[10px] text-on-surface-variant leading-tight">Neutro / exploratório</span>
+</div>
+</button>
+<!-- Faixa ideal -->
+<button class="p-3 rounded-lg bg-surface-container-low text-left flex items-start gap-2.5 transition-all" type="button">
+<div class="w-7 h-7 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[18px]">tune</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-medium">Faixa Ideal</span>
+<span class="font-label-code text-[10px] text-on-surface-variant leading-tight">Ex: 7 a 9 pontos</span>
+</div>
+</button>
+</div>
+</div>
+<!-- 6. AVISO DE INTEGRIDADE METODOLÓGICA (REGRA V1.1) -->
+<div class="p-3 bg-surface-container-high/60 rounded-lg flex items-start gap-2.5">
+<div class="w-7 h-7 rounded-full bg-surface-container-lowest text-primary flex items-center justify-center shrink-0 shadow-xs">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+</div>
+<div class="flex flex-col gap-0.5">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Trava de Integridade Científica</span>
+<p class="font-body-sm text-[11px] text-on-surface-variant leading-relaxed">
+            Tipo de resposta, unidade e cálculo de agregação tornam-se <strong>definitivos após o primeiro registro</strong> para preservar o rigor da regressão estatística. O nome e sigla podem ser atualizados a qualquer momento.
+          </p>
+</div>
+</div>
+<!-- 7. BOTÕES DE AÇÃO NO RODAPÉ -->
+<div class="flex flex-col gap-2 pt-2 pb-6">
+<button class="w-full h-12 rounded-full bg-primary-container text-on-primary font-label-lg text-label-lg shadow-md hover:brightness-105 active:scale-[0.98] transition-all flex items-center justify-center gap-2" type="button">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+          Criar Indicador
+        </button>
+<button class="w-full h-11 rounded-full bg-surface-container text-on-surface-variant font-label-lg text-label-lg hover:text-on-surface active:scale-[0.98] transition-all flex items-center justify-center" type="button">
+          Cancelar
+        </button>
+</div>
+</div>
+</div>
+</div>
+<script>
+  (function() {
+    const btnFator = document.getElementById('btn-fator');
+    const btnResultado = document.getElementById('btn-resultado');
+    const caption = document.getElementById('group-caption');
+    const directionContainer = document.getElementById('resultado-direction-container');
+
+    if (btnFator && btnResultado) {
+      btnFator.addEventListener('click', function() {
+        btnFator.className = "flex items-center justify-center gap-2 py-2.5 px-3 rounded-full bg-secondary-container text-on-secondary shadow-sm transition-all duration-200";
+        btnResultado.className = "flex items-center justify-center gap-2 py-2.5 px-3 rounded-full text-on-surface-variant transition-all duration-200";
+        if (caption) {
+          caption.className = "font-body-sm text-body-sm text-secondary font-medium px-1 flex items-center gap-1.5";
+          caption.innerHTML = '<span class="material-symbols-outlined text-[15px]">info</span> Fatores são suas intervenções: hábitos, suplementos e rotinas.';
+        }
+        if (directionContainer) {
+          directionContainer.style.display = 'none';
+        }
+      });
+
+      btnResultado.addEventListener('click', function() {
+        btnResultado.className = "flex items-center justify-center gap-2 py-2.5 px-3 rounded-full bg-primary-container text-on-primary shadow-sm transition-all duration-200";
+        btnFator.className = "flex items-center justify-center gap-2 py-2.5 px-3 rounded-full text-on-surface-variant transition-all duration-200";
+        if (caption) {
+          caption.className = "font-body-sm text-body-sm text-primary font-medium px-1 flex items-center gap-1.5";
+          caption.innerHTML = '<span class="material-symbols-outlined text-[15px]">info</span> Resultados alimentam o eixo vertical de sintomas, foco e biomarcadores.';
+        }
+        if (directionContainer) {
+          directionContainer.style.display = 'flex';
+        }
+      });
+    }
+  })();
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-2px_12px_rgba(19,27,46,0.05)]" data-active-classes="text-primary font-semibold [&amp;_span.nav-indicator]:scale-100"><div class="flex items-center justify-around h-16 px-2 max-w-md mx-auto"><a class="flex flex-col items-center justify-center gap-1 min-h-[44px] min-w-[44px] flex-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="dashboard-insights" href="#"><div class="relative flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">ssid_chart</span><span class="nav-indicator absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-primary scale-0 transition-transform duration-200"></span></div><span class="font-label-md text-label-md tracking-tight">Dashboard</span></a><a class="flex flex-col items-center justify-center gap-1 min-h-[44px] min-w-[44px] flex-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="preenchimento-rapido" href="#"><div class="w-11 h-11 -mt-4 rounded-full bg-primary-container text-on-primary flex items-center justify-center shadow-[0_4px_12px_rgba(99,14,212,0.3)] active:scale-95 transition-transform"><span class="material-symbols-outlined text-[22px]">edit_note</span></div><span class="font-label-md text-label-md tracking-tight">Registrar</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-1 min-h-[44px] min-w-[44px] flex-1 transition-colors text-primary font-semibold [&amp;_span.nav-indicator]:scale-100" data-path="meus-indicadores" href="#"><div class="relative flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">tune</span><span class="nav-indicator absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-primary scale-0 transition-transform duration-200"></span></div><span class="font-label-md text-label-md tracking-tight">Indicadores</span></a><a class="flex flex-col items-center justify-center gap-1 min-h-[44px] min-w-[44px] flex-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="conclusoes-salvas" href="#"><div class="relative flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">lightbulb</span><span class="nav-indicator absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-primary scale-0 transition-transform duration-200"></span></div><span class="font-label-md text-label-md tracking-tight">Conclusões</span></a></div></nav></body></html>

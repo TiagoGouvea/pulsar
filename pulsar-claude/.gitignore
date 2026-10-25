@@ -1,0 +1,13 @@
+node_modules/
+.DS_Store
+.env
+.env.*
+!.env.example
+secrets/
+dist/
+coverage/
+test-results/
+playwright-report/
+# harness: worktrees and per-worktree scratch (state lives in ../harness-claude)
+.worktrees/
+.harness/

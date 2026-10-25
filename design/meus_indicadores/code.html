@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Space+Grotesk:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-primary": "#ffffff", "surface-variant": "#dae2fd", "tertiary": "#005b3d", "on-surface": "#131b2e", "secondary": "#0051d5", "secondary-container": "#316bf3", "inverse-surface": "#283044", "error": "#ba1a1a", "surface-bright": "#faf8ff", "on-secondary-fixed-variant": "#003ea8", "secondary-fixed-dim": "#b4c5ff", "surface": "#faf8ff", "on-secondary-fixed": "#00174b", "on-primary-fixed-variant": "#5a00c6", "on-tertiary-fixed-variant": "#005236", "inverse-on-surface": "#eef0ff", "on-primary-fixed": "#25005a", "on-tertiary-fixed": "#002113", "on-error": "#ffffff", "on-secondary-container": "#fefcff", "on-secondary": "#ffffff", "surface-container-lowest": "#ffffff", "inverse-primary": "#d2bbff", "surface-container-high": "#e2e7ff", "surface-container-low": "#f2f3ff", "error-container": "#ffdad6", "outline-variant": "#ccc3d8", "tertiary-fixed": "#6ffbbe", "on-tertiary": "#ffffff", "on-error-container": "#93000a", "primary-fixed": "#eaddff", "outline": "#7b7487", "on-background": "#131b2e", "surface-dim": "#d2d9f4", "tertiary-fixed-dim": "#4edea3", "secondary-fixed": "#dbe1ff", "background": "#faf8ff", "surface-tint": "#732ee4", "on-surface-variant": "#4a4455", "primary": "#630ed4", "surface-container-highest": "#dae2fd", "on-primary-container": "#ede0ff", "primary-container": "#7c3aed", "surface-container": "#eaedff", "on-tertiary-container": "#76ffc2", "primary-fixed-dim": "#d2bbff", "tertiary-container": "#007650" }, "borderRadius": { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" }, "spacing": { "space-md": "0.75rem", "space-xl": "2rem", "gutter": "1rem", "space-lg": "1.25rem", "space-xs": "0.25rem", "space-sm": "0.5rem", "margin-desktop": "2rem", "margin": "1rem", "gutter-desktop": "1.5rem" }, "fontFamily": { "body-md": ["Geist"], "headline-lg-mobile": ["Space Grotesk"], "body-lg": ["Geist"], "headline-md": ["Space Grotesk"], "label-code": ["Geist"], "label-md": ["Geist"], "body-sm": ["Geist"], "headline-lg": ["Space Grotesk"], "stat-display": ["Space Grotesk"], "label-lg": ["Geist"], "headline-xl": ["Space Grotesk"], "headline-xl-mobile": ["Space Grotesk"] }, "fontSize": { "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "headline-lg-mobile": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "headline-md": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "label-code": ["11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "600" }], "label-md": ["12px", { "lineHeight": "16px", "fontWeight": "500" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "600" }], "stat-display": ["32px", { "lineHeight": "36px", "letterSpacing": "-0.03em", "fontWeight": "700" }], "label-lg": ["14px", { "lineHeight": "20px", "fontWeight": "600" }], "headline-xl": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.03em", "fontWeight": "700" }], "headline-xl-mobile": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }] } } } };</script><style>@layer base{html,body{width:100%;margin:0;padding:0;background-color:#faf8ff;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head><body class="bg-surface text-on-surface font-body-md text-body-md antialiased min-h-screen flex flex-col"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(19,27,46,0.04)]"><div class="h-16 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="Pulsar Brand Icon" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1WdBuU0iz8QZfKfE4kBD1b-6q7KXcswo155qLk9IPXX2tIpDvoyuiqFLgl6crFb2arwwpyoQyJokJCbC3ISL-RU4T5wGN0NsLk_UWFaZ48cMi7ND6zOfBQEu5izwsuu-YNayhj_qrPYwebP4R1g_QoCKL1QZApxPHATkBTM12VZFSwXGsyQgu5fg88aN_Nr7p3vbYgU8hytyZyecwGWJfv8CY9AX5m1c1MioU4LN3Dga57FGegbj6MSiRY6"/><div class="flex items-center gap-1.5"><span class="font-headline-md text-headline-md text-on-surface tracking-tight">Pulsar</span><span class="px-2 py-0.5 rounded-full bg-surface-container-high text-primary font-label-code text-label-code uppercase tracking-wider">Beta V1</span></div></div><div class="flex items-center gap-space-sm"><button aria-label="Alternar modo discrição e siglas" class="min-h-[44px] min-w-[44px] px-2.5 py-1.5 rounded-full bg-surface-container flex items-center justify-center gap-1.5 text-on-surface-variant hover:text-on-surface active:scale-95 transition-transform duration-150" type="button"><span class="material-symbols-outlined text-[19px] text-secondary">visibility</span><span class="font-label-code text-label-code uppercase tracking-wider text-secondary">Siglas</span></button><a class="min-h-[44px] min-w-[44px] flex items-center justify-center" data-path="configuracoes-da-conta" href="#"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center ring-2 ring-primary-fixed/50"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></a></div></div></header><main class="flex-1 w-full bg-surface pt-16 pb-24"><div class="flex flex-col w-full px-gutter pb-8 gap-space-lg">
+<!-- Page Header & Hero Action -->
+<div class="flex flex-col gap-space-md pt-2">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex flex-col gap-1">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface tracking-tight">Meus Indicadores</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Personalize o que você monitora na sua rotina diária.</p>
+</div>
+<button aria-label="Informações sobre os indicadores" class="w-9 h-9 rounded-full bg-surface-container-high text-primary flex items-center justify-center shrink-0 shadow-sm active:scale-90 transition-transform" id="btn-quick-info">
+<span class="material-symbols-outlined text-[20px]">science</span>
+</button>
+</div>
+<!-- Primary Action: + Novo Indicador -->
+<button class="w-full h-12 rounded-full bg-primary-container text-on-primary font-label-lg text-label-lg flex items-center justify-center gap-space-sm shadow-md active:scale-[0.98] transition-transform" id="open-modal-btn">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+<span>Novo Indicador</span>
+</button>
+</div>
+<!-- Filter Pills / Navigation -->
+<div class="w-full overflow-x-auto pb-1 -mx-gutter px-gutter" style="scrollbar-width: none;">
+<div class="flex items-center gap-space-sm min-w-max">
+<button class="filter-tab px-4 py-2 rounded-full bg-primary text-on-primary font-label-md text-label-md tracking-tight shadow-sm transition-all" data-filter="todos">
+        Todos <span class="ml-1 opacity-90 text-[11px] font-semibold bg-white/20 px-1.5 py-0.5 rounded-full">7</span>
+</button>
+<button class="filter-tab px-4 py-2 rounded-full bg-surface-container text-on-surface-variant font-label-md text-label-md tracking-tight hover:text-on-surface transition-all" data-filter="fatores">
+        Fatores <span class="ml-1 text-[11px] font-semibold bg-secondary/10 text-secondary px-1.5 py-0.5 rounded-full">4</span>
+</button>
+<button class="filter-tab px-4 py-2 rounded-full bg-surface-container text-on-surface-variant font-label-md text-label-md tracking-tight hover:text-on-surface transition-all" data-filter="resultados">
+        Resultados <span class="ml-1 text-[11px] font-semibold bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">3</span>
+</button>
+<button class="filter-tab px-4 py-2 rounded-full bg-surface-container text-on-surface-variant font-label-md text-label-md tracking-tight hover:text-on-surface transition-all" data-filter="arquivados">
+        Arquivados <span class="ml-1 text-[11px] font-semibold bg-surface-dim text-on-surface-variant px-1.5 py-0.5 rounded-full">1</span>
+</button>
+</div>
+</div>
+<!-- GROUP 1: FATORES -->
+<section class="flex flex-col gap-space-md" id="section-fatores">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-full bg-secondary text-on-secondary flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[16px]">input</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md text-on-surface">Fatores</span>
+<span class="font-label-code text-label-code uppercase tracking-wider text-secondary">O que fiz, consumi ou vivi</span>
+</div>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-code text-label-code">4 Ativos</span>
+</div>
+<div class="flex flex-col gap-space-sm" id="list-fatores">
+<!-- Fator 1: Exercício Físico -->
+<div class="indicador-card rounded-2xl bg-surface-container-lowest p-space-md shadow-sm flex flex-col gap-space-sm transition-all">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="cursor-grab text-outline-variant hover:text-on-surface active:cursor-grabbing">
+<span class="material-symbols-outlined text-[20px]">drag_indicator</span>
+</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary/10 text-secondary font-label-code text-label-code tracking-wider uppercase">EXE</span>
+<h3 class="font-label-lg text-label-lg text-on-surface truncate">Exercício Físico</h3>
+</div>
+<div class="flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<button aria-label="Opções para Exercício Físico" class="menu-trigger w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-space-xs pt-1">
+<div class="px-2.5 py-1 rounded-full bg-surface-container-low text-on-surface-variant font-label-md text-label-md flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-secondary">toggle_on</span>
+<span>Booleano (Sim/Não)</span>
+</div>
+<div class="px-2.5 py-1 rounded-full bg-surface-container-low text-on-surface-variant font-label-md text-label-md flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-outline">schedule</span>
+<span>1x ao dia</span>
+</div>
+</div>
+</div>
+<!-- Fator 2: Café -->
+<div class="indicador-card rounded-2xl bg-surface-container-lowest p-space-md shadow-sm flex flex-col gap-space-sm transition-all">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="cursor-grab text-outline-variant hover:text-on-surface active:cursor-grabbing">
+<span class="material-symbols-outlined text-[20px]">drag_indicator</span>
+</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary/10 text-secondary font-label-code text-label-code tracking-wider uppercase">CAF</span>
+<h3 class="font-label-lg text-label-lg text-on-surface truncate">Café</h3>
+</div>
+<div class="flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<button aria-label="Opções para Café" class="menu-trigger w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-space-xs pt-1">
+<div class="px-2.5 py-1 rounded-full bg-surface-container-low text-on-surface-variant font-label-md text-label-md flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-secondary">pin</span>
+<span>Numérico (Xícaras)</span>
+</div>
+<div class="px-2.5 py-1 rounded-full bg-surface-container-low text-on-surface-variant font-label-md text-label-md flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-outline">repeat</span>
+<span>Múltiplos</span>
+</div>
+<div class="px-2.5 py-1 rounded-full bg-secondary-fixed/50 text-on-secondary-fixed font-label-code text-label-code">
+            Soma diária
+          </div>
+</div>
+</div>
+<!-- Fator 3: Coenzima Q10 -->
+<div class="indicador-card rounded-2xl bg-surface-container-lowest p-space-md shadow-sm flex flex-col gap-space-sm transition-all">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="cursor-grab text-outline-variant hover:text-on-surface active:cursor-grabbing">
+<span class="material-symbols-outlined text-[20px]">drag_indicator</span>
+</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary/10 text-secondary font-label-code text-label-code tracking-wider uppercase">Q10</span>
+<h3 class="font-label-lg text-label-lg text-on-surface truncate">Coenzima Q10</h3>
+</div>
+<div class="flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<button aria-label="Opções para Coenzima Q10" class="menu-trigger w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-space-xs pt-1">
+<div class="px-2.5 py-1 rounded-full bg-surface-container-low text-on-surface-variant font-label-md text-label-md flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-secondary">pin</span>
+<span>Numérico (mg)</span>
+</div>
+<div class="px-2.5 py-1 rounded-full bg-surface-container-low text-on-surface-variant font-label-md text-label-md flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-outline">schedule</span>
+<span>1x ao dia</span>
+</div>
+</div>
+</div>
+<!-- Fator 4: Qualidade do Sono -->
+<div class="indicador-card rounded-2xl bg-surface-container-lowest p-space-md shadow-sm flex flex-col gap-space-sm transition-all">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="cursor-grab text-outline-variant hover:text-on-surface active:cursor-grabbing">
+<span class="material-symbols-outlined text-[20px]">drag_indicator</span>
+</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary/10 text-secondary font-label-code text-label-code tracking-wider uppercase">SON</span>
+<h3 class="font-label-lg text-label-lg text-on-surface truncate">Qualidade do Sono</h3>
+</div>
+<div class="flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<button aria-label="Opções para Sono" class="menu-trigger w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-space-xs pt-1">
+<div class="px-2.5 py-1 rounded-full bg-surface-container-low text-on-surface-variant font-label-md text-label-md flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-secondary">format_list_bulleted</span>
+<span>Ordinal (Ruim → Excelente)</span>
+</div>
+<div class="px-2.5 py-1 rounded-full bg-surface-container-low text-on-surface-variant font-label-md text-label-md flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-outline">schedule</span>
+<span>1x ao dia</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- GROUP 2: RESULTADOS -->
+<section class="flex flex-col gap-space-md" id="section-resultados">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[16px]">output</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md text-on-surface">Resultados</span>
+<span class="font-label-code text-label-code uppercase tracking-wider text-primary">Como fiquei ou o que percebi</span>
+</div>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-primary-fixed text-on-primary-fixed font-label-code text-label-code">3 Ativos</span>
+</div>
+<div class="flex flex-col gap-space-sm" id="list-resultados">
+<!-- Resultado 1: Nível de Energia -->
+<div class="indicador-card rounded-2xl bg-surface-container-lowest p-space-md shadow-sm flex flex-col gap-space-sm transition-all">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="cursor-grab text-outline-variant hover:text-on-surface active:cursor-grabbing">
+<span class="material-symbols-outlined text-[20px]">drag_indicator</span>
+</span>
+<span class="px-2 py-0.5 rounded-full bg-primary/10 text-primary font-label-code text-label-code tracking-wider uppercase">ENE</span>
+<h3 class="font-label-lg text-label-lg text-on-surface truncate">Nível de Energia</h3>
+</div>
+<div class="flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<button aria-label="Opções para Energia" class="menu-trigger w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-space-xs pt-1">
+<div class="px-2.5 py-1 rounded-full bg-surface-container-low text-on-surface-variant font-label-md text-label-md flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-primary">linear_scale</span>
+<span>Escala 0–10</span>
+</div>
+<div class="px-2.5 py-1 rounded-full bg-tertiary/10 text-tertiary font-label-md text-label-md flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+<span>Quanto maior, melhor</span>
+</div>
+<div class="px-2.5 py-1 rounded-full bg-primary-fixed/50 text-on-primary-fixed font-label-code text-label-code">
+            Média
+          </div>
+</div>
+</div>
+<!-- Resultado 2: Concentração / Foco -->
+<div class="indicador-card rounded-2xl bg-surface-container-lowest p-space-md shadow-sm flex flex-col gap-space-sm transition-all">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="cursor-grab text-outline-variant hover:text-on-surface active:cursor-grabbing">
+<span class="material-symbols-outlined text-[20px]">drag_indicator</span>
+</span>
+<span class="px-2 py-0.5 rounded-full bg-primary/10 text-primary font-label-code text-label-code tracking-wider uppercase">CON</span>
+<h3 class="font-label-lg text-label-lg text-on-surface truncate">Concentração / Foco</h3>
+</div>
+<div class="flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<button aria-label="Opções para Foco" class="menu-trigger w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-space-xs pt-1">
+<div class="px-2.5 py-1 rounded-full bg-surface-container-low text-on-surface-variant font-label-md text-label-md flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-primary">linear_scale</span>
+<span>Escala 0–10</span>
+</div>
+<div class="px-2.5 py-1 rounded-full bg-primary-fixed/60 text-primary font-label-md text-label-md flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">track_changes</span>
+<span>Faixa ideal (7 a 10)</span>
+</div>
+<div class="px-2.5 py-1 rounded-full bg-primary-fixed/50 text-on-primary-fixed font-label-code text-label-code">
+            Média
+          </div>
+</div>
+</div>
+<!-- Resultado 3: Dor de Cabeça -->
+<div class="indicador-card rounded-2xl bg-surface-container-lowest p-space-md shadow-sm flex flex-col gap-space-sm transition-all">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="cursor-grab text-outline-variant hover:text-on-surface active:cursor-grabbing">
+<span class="material-symbols-outlined text-[20px]">drag_indicator</span>
+</span>
+<span class="px-2 py-0.5 rounded-full bg-primary/10 text-primary font-label-code text-label-code tracking-wider uppercase">DOR</span>
+<h3 class="font-label-lg text-label-lg text-on-surface truncate">Dor de Cabeça</h3>
+</div>
+<div class="flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<button aria-label="Opções para Dor de Cabeça" class="menu-trigger w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-space-xs pt-1">
+<div class="px-2.5 py-1 rounded-full bg-surface-container-low text-on-surface-variant font-label-md text-label-md flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-primary">toggle_on</span>
+<span>Booleano (Ocorreu?)</span>
+</div>
+<div class="px-2.5 py-1 rounded-full bg-secondary-fixed text-secondary font-label-md text-label-md flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">trending_down</span>
+<span>Quanto menor, melhor</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- COLLAPSIBLE SECTION: ARQUIVADOS -->
+<section class="flex flex-col gap-space-sm pt-2" id="section-arquivados">
+<button class="w-full flex items-center justify-between p-space-md rounded-2xl bg-surface-container hover:bg-surface-container-high transition-colors text-left" id="toggle-arquivados-btn">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-[20px] text-outline">inventory_2</span>
+<span class="font-headline-md text-headline-md text-on-surface">Arquivados</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-dim text-on-surface-variant font-label-code text-label-code">1</span>
+</div>
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant transition-transform duration-200" id="arquivados-arrow">expand_more</span>
+</button>
+<div class="flex flex-col gap-space-sm hidden" id="arquivados-content">
+<!-- Card Consumo de Açúcar -->
+<div class="rounded-2xl bg-surface-container-lowest/80 p-space-md shadow-sm flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-sm min-w-0">
+<span class="px-2 py-0.5 rounded-full bg-surface-dim text-outline font-label-code text-label-code tracking-wider uppercase">AÇU</span>
+<h3 class="font-label-lg text-label-lg text-on-surface-variant truncate">Consumo de Açúcar</h3>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-outline font-label-code text-label-code uppercase tracking-wider">Arquivado</span>
+</div>
+<div class="flex items-center justify-between pt-1">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Booleano • Desativado há 12 dias</span>
+<button class="px-3 py-1.5 rounded-full bg-primary-fixed text-primary font-label-md text-label-md flex items-center gap-1 active:scale-95 transition-transform" id="btn-restore">
+<span class="material-symbols-outlined text-[16px]">restore</span>
+<span>Restaurar</span>
+</button>
+</div>
+</div>
+<div class="p-space-sm rounded-xl bg-surface-container-low text-on-surface-variant font-body-sm text-body-sm flex items-start gap-2">
+<span class="material-symbols-outlined text-[18px] text-outline shrink-0 mt-0.5">info</span>
+<span>Indicadores arquivados não aparecem no preenchimento diário, mas mantêm seu histórico preservado nas análises de correlação.</span>
+</div>
+</div>
+</section>
+<!-- V1 Integrity Rules Explanatory Card -->
+<aside class="rounded-2xl bg-surface-container-high p-space-md flex flex-col gap-space-xs mt-2 shadow-sm">
+<div class="flex items-center gap-2 text-primary font-label-lg text-label-lg">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+<span>Regra de Integridade dos Dados</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+      Tipo de resposta, unidade de medida e agregação ficam travados após o primeiro registro para garantir rigor estatístico. Nome, sigla, ordem e direção permanecem sempre editáveis.
+    </p>
+</aside>
+<!-- ACTION SHEET / BOTTOM MODAL (Novo Indicador) -->
+<div class="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-200" id="modal-backdrop">
+<div class="absolute bottom-0 inset-x-0 max-w-md mx-auto bg-surface rounded-t-3xl p-space-lg flex flex-col gap-space-md shadow-xl transform translate-y-full transition-transform duration-300 max-h-[85vh] overflow-y-auto" id="modal-panel">
+<div class="w-12 h-1.5 rounded-full bg-outline-variant mx-auto mb-1"></div>
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<h2 class="font-headline-md text-headline-md text-on-surface">Novo Indicador</h2>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Crie uma métrica para correlacionar</span>
+</div>
+<button aria-label="Fechar" class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface" id="close-modal-btn">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<!-- Segmented Type Picker -->
+<div class="flex flex-col gap-1.5">
+<label class="font-label-md text-label-md text-on-surface-variant">Natureza da Métrica</label>
+<div class="grid grid-cols-2 p-1 rounded-full bg-surface-container gap-1">
+<button class="py-2 rounded-full bg-secondary text-on-secondary font-label-md text-label-md transition-all flex items-center justify-center gap-1.5 shadow-sm" id="modal-type-fator" type="button">
+<span class="material-symbols-outlined text-[16px]">input</span>
+<span>Fator (Causa)</span>
+</button>
+<button class="py-2 rounded-full text-on-surface-variant font-label-md text-label-md transition-all flex items-center justify-center gap-1.5" id="modal-type-resultado" type="button">
+<span class="material-symbols-outlined text-[16px]">output</span>
+<span>Resultado (Efeito)</span>
+</button>
+</div>
+</div>
+<!-- Form Inputs -->
+<div class="flex flex-col gap-space-sm">
+<div class="flex flex-col gap-1">
+<label class="font-label-md text-label-md text-on-surface">Nome do Indicador</label>
+<input class="w-full h-12 px-4 rounded-full bg-surface-container-lowest text-on-surface font-body-md text-body-md outline-none focus:ring-2 focus:ring-primary shadow-sm" placeholder="Ex: Meditação, Creatina, Ansiedade" type="text"/>
+</div>
+<div class="grid grid-cols-2 gap-space-sm">
+<div class="flex flex-col gap-1">
+<label class="font-label-md text-label-md text-on-surface">Sigla (3 letras)</label>
+<input class="w-full h-12 px-4 rounded-full bg-surface-container-lowest text-on-surface font-label-code text-label-code uppercase tracking-wider outline-none focus:ring-2 focus:ring-primary shadow-sm" maxlength="3" placeholder="MED" type="text"/>
+</div>
+<div class="flex flex-col gap-1">
+<label class="font-label-md text-label-md text-on-surface">Tipo de Entrada</label>
+<select class="w-full h-12 px-3 rounded-full bg-surface-container-lowest text-on-surface font-body-md text-body-md outline-none focus:ring-2 focus:ring-primary shadow-sm">
+<option>Booleano (Sim/Não)</option>
+<option>Escala (0 a 10)</option>
+<option>Numérico livre</option>
+<option>Ordinal (Qualitativo)</option>
+</select>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<label class="font-label-md text-label-md text-on-surface">Frequência Diária</label>
+<div class="flex items-center gap-2">
+<button class="flex-1 py-2 rounded-full bg-surface-container text-on-surface font-label-md text-label-md border-2 border-primary" type="button">1 vez ao dia</button>
+<button class="flex-1 py-2 rounded-full bg-surface-container-low text-on-surface-variant font-label-md text-label-md" type="button">Múltiplos registros</button>
+</div>
+</div>
+</div>
+<!-- Modal Footer -->
+<div class="flex items-center gap-space-sm pt-2">
+<button class="flex-1 h-12 rounded-full bg-surface-container text-on-surface font-label-lg text-label-lg active:scale-95 transition-transform" id="cancel-modal-btn" type="button">
+          Cancelar
+        </button>
+<button class="flex-1 h-12 rounded-full bg-primary text-on-primary font-label-lg text-label-lg shadow-md active:scale-95 transition-transform flex items-center justify-center gap-1" id="save-modal-btn" type="button">
+<span class="material-symbols-outlined text-[18px]">check</span>
+<span>Salvar</span>
+</button>
+</div>
+</div>
+</div>
+<!-- CONTEXT MENU SHEET FOR EDIT/ARCHIVE -->
+<div class="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-200" id="item-menu-sheet">
+<div class="absolute bottom-0 inset-x-0 max-w-md mx-auto bg-surface rounded-t-3xl p-space-lg flex flex-col gap-space-sm shadow-xl transform translate-y-full transition-transform duration-300" id="item-menu-panel">
+<div class="w-12 h-1.5 rounded-full bg-outline-variant mx-auto mb-1"></div>
+<div class="flex items-center justify-between pb-2">
+<span class="font-headline-md text-headline-md text-on-surface" id="menu-target-title">Opções do Indicador</span>
+<button class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant" id="close-item-menu">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<button class="w-full h-12 rounded-2xl bg-surface-container-lowest p-space-md flex items-center justify-between text-on-surface font-label-lg text-label-lg hover:bg-surface-container active:scale-[0.99] transition-all">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-[20px]">edit</span>
+<span>Editar Parâmetros</span>
+</div>
+<span class="material-symbols-outlined text-outline text-[18px]">chevron_right</span>
+</button>
+<button class="w-full h-12 rounded-2xl bg-surface-container-lowest p-space-md flex items-center justify-between text-error font-label-lg text-label-lg hover:bg-error-container/20 active:scale-[0.99] transition-all" id="btn-action-archive">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-error text-[20px]">inventory_2</span>
+<span>Arquivar Indicador</span>
+</div>
+<span class="material-symbols-outlined text-outline text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<script>
+  // DOM Elements
+  const openModalBtn = document.getElementById('open-modal-btn');
+  const closeModalBtn = document.getElementById('close-modal-btn');
+  const cancelModalBtn = document.getElementById('cancel-modal-btn');
+  const saveModalBtn = document.getElementById('save-modal-btn');
+  const modalBackdrop = document.getElementById('modal-backdrop');
+  const modalPanel = document.getElementById('modal-panel');
+
+  const toggleArquivadosBtn = document.getElementById('toggle-arquivados-btn');
+  const arquivadosContent = document.getElementById('arquivados-content');
+  const arquivadosArrow = document.getElementById('arquivados-arrow');
+
+  const filterTabs = document.querySelectorAll('.filter-tab');
+  const secFatores = document.getElementById('section-fatores');
+  const secResultados = document.getElementById('section-resultados');
+  const secArquivados = document.getElementById('section-arquivados');
+
+  const menuTriggers = document.querySelectorAll('.menu-trigger');
+  const itemMenuSheet = document.getElementById('item-menu-sheet');
+  const itemMenuPanel = document.getElementById('item-menu-panel');
+  const closeItemMenu = document.getElementById('close-item-menu');
+  const btnActionArchive = document.getElementById('btn-action-archive');
+  const btnRestore = document.getElementById('btn-restore');
+
+  // Modal Open / Close Logic
+  function openModal() {
+    modalBackdrop.classList.remove('hidden');
+    setTimeout(() => {
+      modalBackdrop.classList.remove('opacity-0');
+      modalPanel.classList.remove('translate-y-full');
+    }, 10);
+  }
+
+  function closeModal() {
+    modalBackdrop.classList.add('opacity-0');
+    modalPanel.classList.add('translate-y-full');
+    setTimeout(() => {
+      modalBackdrop.classList.add('hidden');
+    }, 200);
+  }
+
+  openModalBtn.addEventListener('click', openModal);
+  closeModalBtn.addEventListener('click', closeModal);
+  cancelModalBtn.addEventListener('click', closeModal);
+  saveModalBtn.addEventListener('click', () => {
+    closeModal();
+  });
+
+  // Modal Type Selector Toggle (Fator vs Resultado)
+  const typeFatorBtn = document.getElementById('modal-type-fator');
+  const typeResultadoBtn = document.getElementById('modal-type-resultado');
+
+  typeFatorBtn.addEventListener('click', () => {
+    typeFatorBtn.className = 'py-2 rounded-full bg-secondary text-on-secondary font-label-md text-label-md transition-all flex items-center justify-center gap-1.5 shadow-sm';
+    typeResultadoBtn.className = 'py-2 rounded-full text-on-surface-variant font-label-md text-label-md transition-all flex items-center justify-center gap-1.5';
+  });
+
+  typeResultadoBtn.addEventListener('click', () => {
+    typeResultadoBtn.className = 'py-2 rounded-full bg-primary text-on-primary font-label-md text-label-md transition-all flex items-center justify-center gap-1.5 shadow-sm';
+    typeFatorBtn.className = 'py-2 rounded-full text-on-surface-variant font-label-md text-label-md transition-all flex items-center justify-center gap-1.5';
+  });
+
+  // Collapsible Arquivados
+  toggleArquivadosBtn.addEventListener('click', () => {
+    const isHidden = arquivadosContent.classList.contains('hidden');
+    if (isHidden) {
+      arquivadosContent.classList.remove('hidden');
+      arquivadosArrow.style.transform = 'rotate(180deg)';
+    } else {
+      arquivadosContent.classList.add('hidden');
+      arquivadosArrow.style.transform = 'rotate(0deg)';
+    }
+  });
+
+  // Filter Tabs
+  filterTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      filterTabs.forEach(t => {
+        t.className = 'filter-tab px-4 py-2 rounded-full bg-surface-container text-on-surface-variant font-label-md text-label-md tracking-tight hover:text-on-surface transition-all';
+      });
+      tab.className = 'filter-tab px-4 py-2 rounded-full bg-primary text-on-primary font-label-md text-label-md tracking-tight shadow-sm transition-all';
+
+      const filter = tab.getAttribute('data-filter');
+      if (filter === 'todos') {
+        secFatores.classList.remove('hidden');
+        secResultados.classList.remove('hidden');
+        secArquivados.classList.remove('hidden');
+      } else if (filter === 'fatores') {
+        secFatores.classList.remove('hidden');
+        secResultados.classList.add('hidden');
+        secArquivados.classList.add('hidden');
+      } else if (filter === 'resultados') {
+        secFatores.classList.add('hidden');
+        secResultados.classList.remove('hidden');
+        secArquivados.classList.add('hidden');
+      } else if (filter === 'arquivados') {
+        secFatores.classList.add('hidden');
+        secResultados.classList.add('hidden');
+        secArquivados.classList.remove('hidden');
+        arquivadosContent.classList.remove('hidden');
+        arquivadosArrow.style.transform = 'rotate(180deg)';
+      }
+    });
+  });
+
+  // Context Menu for Items
+  menuTriggers.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const parentCard = btn.closest('.indicador-card');
+      const title = parentCard ? parentCard.querySelector('h3').textContent : 'Indicador';
+      document.getElementById('menu-target-title').textContent = title;
+
+      itemMenuSheet.classList.remove('hidden');
+      setTimeout(() => {
+        itemMenuSheet.classList.remove('opacity-0');
+        itemMenuPanel.classList.remove('translate-y-full');
+      }, 10);
+    });
+  });
+
+  function closeMenuSheet() {
+    itemMenuSheet.classList.add('opacity-0');
+    itemMenuPanel.classList.add('translate-y-full');
+    setTimeout(() => {
+      itemMenuSheet.classList.add('hidden');
+    }, 200);
+  }
+
+  closeItemMenu.addEventListener('click', closeMenuSheet);
+  itemMenuSheet.addEventListener('click', (e) => {
+    if (e.target === itemMenuSheet) closeMenuSheet();
+  });
+  btnActionArchive.addEventListener('click', closeMenuSheet);
+
+  if (btnRestore) {
+    btnRestore.addEventListener('click', () => {
+      btnRestore.textContent = 'Restaurado!';
+      btnRestore.classList.add('opacity-50');
+      setTimeout(() => {
+        btnRestore.innerHTML = '<span class="material-symbols-outlined text-[16px]">restore</span><span>Restaurar</span>';
+        btnRestore.classList.remove('opacity-50');
+      }, 1500);
+    });
+  }
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-2px_12px_rgba(19,27,46,0.05)]" data-active-classes="text-primary font-semibold [&amp;_span.nav-indicator]:scale-100"><div class="flex items-center justify-around h-16 px-2 max-w-md mx-auto"><a class="flex flex-col items-center justify-center gap-1 min-h-[44px] min-w-[44px] flex-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="dashboard-insights" href="#"><div class="relative flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">ssid_chart</span><span class="nav-indicator absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-primary scale-0 transition-transform duration-200"></span></div><span class="font-label-md text-label-md tracking-tight">Dashboard</span></a><a class="flex flex-col items-center justify-center gap-1 min-h-[44px] min-w-[44px] flex-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="preenchimento-rapido" href="#"><div class="w-11 h-11 -mt-4 rounded-full bg-primary-container text-on-primary flex items-center justify-center shadow-[0_4px_12px_rgba(99,14,212,0.3)] active:scale-95 transition-transform"><span class="material-symbols-outlined text-[22px]">edit_note</span></div><span class="font-label-md text-label-md tracking-tight">Registrar</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-1 min-h-[44px] min-w-[44px] flex-1 transition-colors text-primary font-semibold [&amp;_span.nav-indicator]:scale-100" data-path="meus-indicadores" href="#"><div class="relative flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">tune</span><span class="nav-indicator absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-primary scale-0 transition-transform duration-200"></span></div><span class="font-label-md text-label-md tracking-tight">Indicadores</span></a><a class="flex flex-col items-center justify-center gap-1 min-h-[44px] min-w-[44px] flex-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="conclusoes-salvas" href="#"><div class="relative flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">lightbulb</span><span class="nav-indicator absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-primary scale-0 transition-transform duration-200"></span></div><span class="font-label-md text-label-md tracking-tight">Conclusões</span></a></div></nav></body></html>

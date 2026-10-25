@@ -1,0 +1,124 @@
+project:
+  name: pulsar
+  repo: ../pulsar-claude        # repo do projeto (spec, design, DECISOES.md, app/); worktrees ficam lá
+  appDir: app
+  # alias -> arquivo. specRefs nas features usam o alias (ex.: "spec.md#4.4")
+  specFiles:
+    spec.md: docs/Pulsar_Especificacao_Completa.md
+    arquitetura.md: docs/Pulsar_Arquitetura_e_Implementacao.md
+  acceptanceSection: "10"        # seção da spec com os critérios de aceite (cobertura verificada pelo doctor)
+  designDir: design
+  # fonte do design: Pulsar/design (uma pasta por tela com screen.png + code.html, DESIGN.md com tokens).
+  # `harness sync-design` espelha em <repo>/design; o doctor avisa se estiver desatualizado.
+  # A spec copiada lá dentro fica de fora: a fonte da verdade é docs/.
+  designSource: { from: ../design, exclude: [pulsar_especificacao_completa.md] }
+  decisionsFile: DECISOES.md
+  language: pt-BR
+  mainBranch: main
+
+workers:
+  # --- Anthropic ---
+  fable:        { cli: claude, model: claude-fable-5-1,   family: anthropic, tier: high, vision: true,  billing: api, concurrency: 1, timeoutMin: 60, enabled: false }
+  opus:         { cli: claude, model: claude-opus-5-5,    family: anthropic, tier: high, vision: true,  billing: api, concurrency: 2, timeoutMin: 45 }
+  sonnet:       { cli: claude, model: claude-sonnet-5-5,  family: anthropic, tier: mid,  vision: true,  billing: api, concurrency: 3, timeoutMin: 40 }
+  haiku:        { cli: claude, model: claude-haiku-5-5,   family: anthropic, tier: low,  vision: true,  billing: api, concurrency: 3, timeoutMin: 15 }
+  # --- OpenAI ---
+  codex-top:    { cli: codex,  model: gpt-5.6-sol,        family: openai,    tier: high, vision: true,  billing: api, concurrency: 2, timeoutMin: 45 }
+  codex-mid:    { cli: codex,  model: gpt-5.6-terra,     family: openai,    tier: mid,  vision: true,  billing: api, concurrency: 2, timeoutMin: 40 }
+  codex-mini:   { cli: codex,  model: gpt-5.6-luna,       family: openai,    tier: low,  vision: false, billing: api, concurrency: 2, timeoutMin: 20 }
+  # --- Google ---
+  # via Antigravity CLI (agy); IDs de `agy models`. Login do agy, sem custo reportado -> billing: subscription
+  gemini-pro:   { cli: agy,    model: gemini-3.8-flash-high, family: google, tier: high, vision: true, billing: subscription, concurrency: 2, timeoutMin: 45 }
+  gemini-flash: { cli: agy,    model: gemini-3.8-flash-low,  family: google, tier: low,  vision: true, billing: subscription, concurrency: 3, timeoutMin: 20 }
+  # --- Open source via assinatura / OpenRouter ---
+  # glm via plano GLM Coding Lite da Z.ai (Claude Code apontado para o endpoint Anthropic da Z.ai; cota por 5h/semana).
+  # Sem plano: cli: pi, model: "openrouter/z-ai/glm-5.3", billing: api (e preço em prices.yaml).
+  # model "sonnet" é o alias do Claude Code mapeado para ZAI_MODEL (com o ID direto o Claude Code desliga as ferramentas).
+  glm:          { cli: claude, model: sonnet,             family: zhipu,     tier: mid,  vision: false, billing: subscription, concurrency: 2, timeoutMin: 40,
+                  env: { ANTHROPIC_BASE_URL: ZAI_ANTHROPIC_BASE_URL, ANTHROPIC_AUTH_TOKEN: ZAI_API_KEY,
+                         ANTHROPIC_DEFAULT_SONNET_MODEL: ZAI_MODEL, ANTHROPIC_DEFAULT_OPUS_MODEL: ZAI_MODEL, ANTHROPIC_DEFAULT_HAIKU_MODEL: ZAI_MODEL } }
+  kimi:         { cli: pi,     model: "openrouter/moonshotai/kimi-k2.7-code", family: moonshot, tier: mid, vision: false, billing: api, concurrency: 2, timeoutMin: 40 }
+  deepseek:     { cli: pi,     model: "openrouter/deepseek/deepseek-v4-pro", family: deepseek, tier: low, vision: false, billing: api, concurrency: 2, timeoutMin: 30 }
+  # --- Locais (LM Studio, LMSTUDIO_BASE_URL, padrão http://localhost:1235/v1) ---
+  local-gptoss: { cli: pi, model: "lmstudio/mlx-community/gpt-oss-20b",         family: openai, tier: local, vision: false, billing: local, concurrency: 1, timeoutMin: 30, maxContextTokens: 32000 }
+  local-coder:  { cli: pi, model: "lmstudio/qwen3-coder-30b-a3b-instruct-mlx",  family: qwen,   tier: local, vision: false, billing: local, concurrency: 1, timeoutMin: 40, maxContextTokens: 32000, requiresFreeRamGb: 18, enabled: false }   # não carrega com 24 GB
+  local-small:  { cli: pi, model: "lmstudio/qwen3.5-9b-mlx",                    family: qwen,   tier: local, vision: false, billing: local, concurrency: 1, timeoutMin: 15, maxContextTokens: 32000 }
+  # "lmstudio/<key>": key de GET /api/v1/models. O harness descarrega tudo, carrega só o modelo da chamada e o descarrega ao final.
+  # --- Testes ---
+  fake:         { cli: fake,   model: fake, family: local-other, tier: low, vision: true, billing: local, concurrency: 4, timeoutMin: 1, enabled: false }
+
+roles:
+  # Caros (opus, codex-top) só no initializer e em implement_hard; o volume vai para baratos, assinatura (agy) e locais.
+  initializer:     { pool: [opus],                              note: "decompõe spec, scaffold, design system" }
+  test_writer:     { pool: [sonnet, codex-mid],                 note: "escreve testes de aceite ANTES da implementação" }
+  implement:       { pool: [deepseek, glm, kimi, sonnet],       note: "features comuns" }
+  implement_hard:  { pool: [opus, codex-top],                   note: "estatística, security rules, sincronização, privacidade" }
+  review_code:     { pool: [gemini-pro, codex-mid, sonnet],     rule: different_family_from_implementer }
+  review_ui:       { pool: [gemini-pro, sonnet],                rule: different_family_from_implementer, requires: vision }
+  triage:          { pool: [local-small, gemini-flash, deepseek, haiku] }
+  approval_parser: { pool: [gemini-flash, haiku, local-small],  note: "converte APROVACAO.md/DUVIDAS.md em JSON" }
+  retro:           { pool: [sonnet] }
+  postmortem:      { pool: [sonnet] }
+
+routing:
+  explorationRate: 0.10        # 10% das tarefas testam worker fora do melhor histórico
+  escalateAfterFailures: 2     # implement -> implement_hard
+  maxAttemptsPerFeature: 5     # depois: bloqueia a feature e registra em DUVIDAS
+  hardTags: [statistics, security-rules, sync, privacy-mode]   # vão direto para implement_hard
+  tournament:
+    enabled: false               # dobra o custo das features críticas
+    tags: [statistics, security-rules, privacy-mode]   # features críticas
+    contenders: 2
+    judge: review_code
+
+loop:
+  maxParallelTasks: 2          # worktrees simultâneas (locais contam como exclusivos)
+  retroEveryNFeatures: 10
+  stopOnSpecChange: true
+  maxStageFixRounds: 3         # rodadas de correção quando a suíte completa da etapa falha
+
+stages:
+  - { id: 0, name: Setup }
+  - { id: 1, name: Base }
+  - { id: 2, name: Registro }
+  - { id: 3, name: Insights }
+  - { id: 4, name: Curadoria }
+  - { id: 5, name: PWA e push, optional: true }
+  - { id: 6, name: IA generativa, optional: true }
+  - { id: 7, name: Polimento }
+
+# Comandos rodam dentro de <worktree>/<appDir>. "builtin" = implementado pelo harness.
+# scope: feature (feature e fim de etapa) | stage (só fim de etapa)
+gates:
+  G1:  { name: install-build,  cmd: "yarn install --frozen-lockfile && yarn build" }
+  G2:  { name: lint-format,    cmd: "yarn lint && yarn format:check" }
+  G3:  { name: typecheck,      cmd: "yarn typecheck" }
+  G4:  { name: unit,           cmd: "yarn test:unit --coverage" }
+  G5:  { name: security-rules, cmd: "yarn test:rules", fromStage: 1 }
+  G6:  { name: e2e,            cmd: "yarn test:e2e" }
+  G7:  { name: protected-tests, builtin: protected }
+  G8:  { name: privacy-leak,   builtin: privacy, fromStage: 1 }
+  G9:  { name: a11y,           builtin: a11y }
+  G10: { name: mobile-layout,  builtin: layout }
+  G11: { name: visual-regression, cmd: "yarn test:visual", updateCmd: "yarn test:visual --update-snapshots", fromStage: 2 }
+  G12: { name: lighthouse,     builtin: lighthouse, scope: stage }
+  G13: { name: secrets,        builtin: secrets }
+
+browser:
+  # servidor usado pelos gates de navegador (G8/G9/G10/G12) e screenshots; deve subir emuladores + seed
+  serveCmd: "yarn e2e:serve"
+  baseUrl: "http://localhost:4173"
+  routesFile: e2e/routes.json      # criado pelo inicializador: [{ "path": "/", "name": "dashboard", "tags": ["ui"] }]
+  readyTimeoutSec: 120
+  sentinels: [ZQX_ENERGIA_7F3, ZQX_SONO_9K2, ZQX_FOCO_4M8, ZQX_OBS_NOTA_5T1]
+  lighthouse: { performance: 85, accessibility: 95 }
+
+preview:
+  enabled: true
+  buildCmd: "yarn build"
+  deployCmd: "firebase hosting:channel:deploy etapa-{stage} --expires 14d --project $FIREBASE_PROJECT_ID --json"
+  demoSeedCmd: "yarn seed --demo"   # exige HARNESS_ALLOW_DEMO_SEED=1
+
+notify:
+  webhookEnv: NOTIFY_WEBHOOK_URL   # POST JSON genérico (Telegram/e-mail/WhatsApp/Agento)
+  events: [checkpoint_ready, budget_80, budget_100, blocked, run_finished, crash]

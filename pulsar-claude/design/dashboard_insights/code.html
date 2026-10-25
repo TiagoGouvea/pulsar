@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Space+Grotesk:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-primary": "#ffffff", "surface-variant": "#dae2fd", "tertiary": "#005b3d", "on-surface": "#131b2e", "secondary": "#0051d5", "secondary-container": "#316bf3", "inverse-surface": "#283044", "error": "#ba1a1a", "surface-bright": "#faf8ff", "on-secondary-fixed-variant": "#003ea8", "secondary-fixed-dim": "#b4c5ff", "surface": "#faf8ff", "on-secondary-fixed": "#00174b", "on-primary-fixed-variant": "#5a00c6", "on-tertiary-fixed-variant": "#005236", "inverse-on-surface": "#eef0ff", "on-primary-fixed": "#25005a", "on-tertiary-fixed": "#002113", "on-error": "#ffffff", "on-secondary-container": "#fefcff", "on-secondary": "#ffffff", "surface-container-lowest": "#ffffff", "inverse-primary": "#d2bbff", "surface-container-high": "#e2e7ff", "surface-container-low": "#f2f3ff", "error-container": "#ffdad6", "outline-variant": "#ccc3d8", "tertiary-fixed": "#6ffbbe", "on-tertiary": "#ffffff", "on-error-container": "#93000a", "primary-fixed": "#eaddff", "outline": "#7b7487", "on-background": "#131b2e", "surface-dim": "#d2d9f4", "tertiary-fixed-dim": "#4edea3", "secondary-fixed": "#dbe1ff", "background": "#faf8ff", "surface-tint": "#732ee4", "on-surface-variant": "#4a4455", "primary": "#630ed4", "surface-container-highest": "#dae2fd", "on-primary-container": "#ede0ff", "primary-container": "#7c3aed", "surface-container": "#eaedff", "on-tertiary-container": "#76ffc2", "primary-fixed-dim": "#d2bbff", "tertiary-container": "#007650" }, "borderRadius": { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" }, "spacing": { "space-md": "0.75rem", "space-xl": "2rem", "gutter": "1rem", "space-lg": "1.25rem", "space-xs": "0.25rem", "space-sm": "0.5rem", "margin-desktop": "2rem", "margin": "1rem", "gutter-desktop": "1.5rem" }, "fontFamily": { "body-md": ["Geist"], "headline-lg-mobile": ["Space Grotesk"], "body-lg": ["Geist"], "headline-md": ["Space Grotesk"], "label-code": ["Geist"], "label-md": ["Geist"], "body-sm": ["Geist"], "headline-lg": ["Space Grotesk"], "stat-display": ["Space Grotesk"], "label-lg": ["Geist"], "headline-xl": ["Space Grotesk"], "headline-xl-mobile": ["Space Grotesk"] }, "fontSize": { "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "headline-lg-mobile": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "headline-md": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "label-code": ["11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "600" }], "label-md": ["12px", { "lineHeight": "16px", "fontWeight": "500" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "600" }], "stat-display": ["32px", { "lineHeight": "36px", "letterSpacing": "-0.03em", "fontWeight": "700" }], "label-lg": ["14px", { "lineHeight": "20px", "fontWeight": "600" }], "headline-xl": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.03em", "fontWeight": "700" }], "headline-xl-mobile": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }] } } } };</script><style>@layer base{html,body{width:100%;margin:0;padding:0;background-color:#faf8ff;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style></head><body class="bg-surface text-on-surface font-body-md text-body-md antialiased min-h-screen flex flex-col"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(19,27,46,0.04)]"><div class="h-16 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="Pulsar Brand Icon" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1WdBuU0iz8QZfKfE4kBD1b-6q7KXcswo155qLk9IPXX2tIpDvoyuiqFLgl6crFb2arwwpyoQyJokJCbC3ISL-RU4T5wGN0NsLk_UWFaZ48cMi7ND6zOfBQEu5izwsuu-YNayhj_qrPYwebP4R1g_QoCKL1QZApxPHATkBTM12VZFSwXGsyQgu5fg88aN_Nr7p3vbYgU8hytyZyecwGWJfv8CY9AX5m1c1MioU4LN3Dga57FGegbj6MSiRY6"/><div class="flex items-center gap-1.5"><span class="font-headline-md text-headline-md text-on-surface tracking-tight">Pulsar</span><span class="px-2 py-0.5 rounded-full bg-surface-container-high text-primary font-label-code text-label-code uppercase tracking-wider">Beta V1</span></div></div><div class="flex items-center gap-space-sm"><button aria-label="Alternar modo discrição e siglas" class="min-h-[44px] min-w-[44px] px-2.5 py-1.5 rounded-full bg-surface-container flex items-center justify-center gap-1.5 text-on-surface-variant hover:text-on-surface active:scale-95 transition-transform duration-150" type="button"><span class="material-symbols-outlined text-[19px] text-secondary">visibility</span><span class="font-label-code text-label-code uppercase tracking-wider text-secondary">Siglas</span></button><a class="min-h-[44px] min-w-[44px] flex items-center justify-center" data-path="configuracoes-da-conta" href="#"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center ring-2 ring-primary-fixed/50"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></a></div></div></header><main class="flex-1 w-full bg-surface pt-16 pb-24"><div class="flex flex-col w-full px-margin pb-6 gap-space-lg">
+<!-- Hero / Ação Rápida Superior -->
+<section class="flex flex-col w-full pt-2">
+<div class="flex items-center justify-between mb-space-xs">
+<span class="font-label-md text-label-md text-on-surface-variant font-medium flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-tertiary-container animate-pulse"></span>
+        Hoje, 24 de Outubro
+      </span>
+<span class="font-label-code text-label-code text-primary uppercase tracking-wider bg-surface-container-high px-2 py-0.5 rounded-full">
+        3 de 5 metas
+      </span>
+</div>
+<div class="flex items-baseline justify-between mb-space-md">
+<div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface font-semibold tracking-tight">
+          Olá, explorador
+        </h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+          Você já preencheu 3 registros hoje. Seu ritmo está consistente!
+        </p>
+</div>
+</div>
+<!-- Botão de Ação Primária -->
+<a class="w-full flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-primary via-primary-container to-secondary shadow-md active:scale-[0.99] transition-transform text-on-primary" data-path="registrar" href="#">
+<div class="flex items-center gap-space-md">
+<div class="w-12 h-12 rounded-full bg-on-primary/15 flex items-center justify-center backdrop-blur-sm">
+<span class="material-symbols-outlined text-[28px]">add</span>
+</div>
+<div class="flex flex-col text-left">
+<span class="font-headline-md text-headline-md leading-none text-on-primary">Registrar agora</span>
+<span class="font-body-sm text-body-sm text-on-primary/80 mt-1">Leva menos de 15 segundos</span>
+</div>
+</div>
+<div class="w-8 h-8 rounded-full bg-on-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px] text-on-primary">arrow_forward</span>
+</div>
+</a>
+</section>
+<!-- Resumo de Hoje (Estado Atual) -->
+<section class="flex flex-col w-full gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-[20px]">today</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">Resumo de hoje</h2>
+</div>
+<span class="font-label-code text-label-code text-on-surface-variant uppercase tracking-wider">
+        3 sincronizados
+      </span>
+</div>
+<!-- Grid de Fatores e Resultados Registrados -->
+<div class="grid grid-cols-3 gap-2">
+<!-- Card Fator 1 -->
+<div class="flex flex-col p-3 rounded-lg bg-secondary-fixed/30 shadow-sm relative overflow-hidden">
+<div class="flex items-center justify-between mb-1.5">
+<span class="font-label-code text-label-code px-1.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-semibold tracking-wide">
+            Fator
+          </span>
+<span class="material-symbols-outlined text-[16px] text-secondary">local_cafe</span>
+</div>
+<span class="font-label-md text-label-md text-on-secondary-fixed-variant truncate">Café</span>
+<span class="font-headline-md text-headline-md text-on-surface mt-0.5 truncate font-bold">2 xíc</span>
+<span class="font-label-code text-label-code text-secondary mt-1 tracking-widest uppercase">CAF...</span>
+</div>
+<!-- Card Fator 2 -->
+<div class="flex flex-col p-3 rounded-lg bg-secondary-fixed/30 shadow-sm relative overflow-hidden">
+<div class="flex items-center justify-between mb-1.5">
+<span class="font-label-code text-label-code px-1.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-semibold tracking-wide">
+            Fator
+          </span>
+<span class="material-symbols-outlined text-[16px] text-secondary">fitness_center</span>
+</div>
+<span class="font-label-md text-label-md text-on-secondary-fixed-variant truncate">Exercício</span>
+<span class="font-headline-md text-headline-md text-on-surface mt-0.5 truncate font-bold">Sim</span>
+<span class="font-label-code text-label-code text-secondary mt-1 tracking-widest uppercase">EXE...</span>
+</div>
+<!-- Card Resultado 1 -->
+<div class="flex flex-col p-3 rounded-lg bg-primary-fixed/40 shadow-sm relative overflow-hidden">
+<div class="flex items-center justify-between mb-1.5">
+<span class="font-label-code text-label-code px-1.5 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-semibold tracking-wide">
+            Resultado
+          </span>
+<span class="material-symbols-outlined text-[16px] text-primary">bolt</span>
+</div>
+<span class="font-label-md text-label-md text-on-primary-fixed-variant truncate">Energia</span>
+<span class="font-headline-md text-headline-md text-primary mt-0.5 truncate font-bold">7 / 10</span>
+<span class="font-label-code text-label-code text-primary mt-1 tracking-widest uppercase">ENE...</span>
+</div>
+</div>
+<!-- Dica ergonômica -->
+<div class="flex items-center gap-2 px-3 py-2 rounded-full bg-surface-container-low text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px] text-secondary">tune</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">
+        Preenchimento flexível: registre apenas o que quiser hoje.
+      </p>
+</div>
+</section>
+<!-- Seção de Insights & Possíveis Associações -->
+<section class="flex flex-col w-full gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-[20px]">insights</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">Descobertas do algoritmo</h2>
+</div>
+<span class="font-label-code text-label-code text-primary uppercase font-bold tracking-wider">
+        V1 Pearson
+      </span>
+</div>
+<!-- CARTÃO 1: Tipo 3 - Associação entre Fator e Resultado -->
+<article class="p-space-lg rounded-lg bg-surface-container-lowest shadow-sm flex flex-col gap-space-md">
+<!-- Tag de categoria & sigla de correlação -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container text-primary font-label-md text-label-md font-semibold">
+<span class="material-symbols-outlined text-[16px]">compare_arrows</span>
+            Possível associação
+          </span>
+<span class="font-label-code text-label-code text-secondary font-bold uppercase tracking-wider bg-secondary-fixed/30 px-2 py-0.5 rounded-full">
+            EXE... → ENE...
+          </span>
+</div>
+<span class="font-label-code text-label-code text-on-surface-variant">r = +0.68</span>
+</div>
+<!-- Frase de síntese -->
+<p class="font-headline-md text-headline-md text-on-surface font-semibold leading-snug">
+        Nos dias em que você registrou <span class="text-secondary font-bold">Exercício: Sim</span>, sua energia média foi <span class="text-primary font-bold">7,4 / 10</span>; nos dias com <span class="text-on-surface-variant font-medium">'Não'</span>, foi <span class="text-on-surface-variant font-semibold">5,8 / 10</span>.
+      </p>
+<!-- Mini-visualização: Barras comparativas -->
+<div class="p-3.5 rounded-lg bg-surface-container-low flex flex-col gap-2">
+<div class="flex items-center justify-between font-label-md text-label-md">
+<span class="flex items-center gap-1.5 text-on-surface font-medium">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+            Com Exercício (Sim)
+          </span>
+<span class="font-headline-md text-headline-md text-primary font-bold">7,4</span>
+</div>
+<!-- Barra 1 -->
+<div class="w-full h-3 rounded-full bg-surface-container overflow-hidden">
+<div class="h-full bg-gradient-to-r from-secondary to-primary-container rounded-full" style="width: 74%;"></div>
+</div>
+<div class="flex items-center justify-between font-label-md text-label-md mt-1">
+<span class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="w-2.5 h-2.5 rounded-full bg-outline-variant"></span>
+            Sem Exercício (Não)
+          </span>
+<span class="font-label-lg text-label-lg text-on-surface-variant font-semibold">5,8</span>
+</div>
+<!-- Barra 2 -->
+<div class="w-full h-3 rounded-full bg-surface-container overflow-hidden">
+<div class="h-full bg-outline-variant rounded-full" style="width: 58%;"></div>
+</div>
+</div>
+<!-- Base de dados & Disclaimer -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-1 text-on-surface-variant font-label-code text-label-code">
+<span class="material-symbols-outlined text-[14px]">dataset</span>
+<span>Base: 18 dias comparáveis • Janela de 30 dias</span>
+</div>
+<p class="font-body-sm text-body-sm text-outline italic">
+          * Correlação estatística preliminar. Não implica relação causal.
+        </p>
+</div>
+<!-- Ações do Card -->
+<div class="flex items-center justify-between pt-1">
+<a class="font-label-lg text-label-lg text-primary font-semibold flex items-center gap-1 hover:underline" data-path="conclusoes" href="#">
+<span>Entender análise</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</a>
+<!-- Botões de Feedback Tátil -->
+<div class="flex items-center gap-1.5 bg-surface-container-low p-1 rounded-full">
+<button aria-label="Curtir e salvar insight" class="w-9 h-9 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container active:scale-90 transition-transform" type="button">
+<span class="material-symbols-outlined text-[18px]">thumb_up</span>
+</button>
+<button aria-label="Dispensar insight" class="w-9 h-9 rounded-full flex items-center justify-center text-on-surface-variant hover:text-error hover:bg-surface-container active:scale-90 transition-transform" type="button">
+<span class="material-symbols-outlined text-[18px]">thumb_down</span>
+</button>
+</div>
+</div>
+</article>
+<!-- CARTÃO 2: Tipo 2 - Tendência de um Resultado (Últimos 7 dias) -->
+<article class="p-space-lg rounded-lg bg-surface-container-lowest shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container text-tertiary-container font-label-md text-label-md font-semibold">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+            Tendência dos últimos 7 dias
+          </span>
+<span class="font-label-code text-label-code text-primary font-bold uppercase tracking-wider bg-primary-fixed/40 px-2 py-0.5 rounded-full">
+            CON...
+          </span>
+</div>
+<span class="font-label-code text-label-code text-tertiary-container font-semibold">+1,2 pt</span>
+</div>
+<p class="font-body-lg text-body-lg text-on-surface">
+        Sua média de <span class="font-semibold text-primary">Concentração</span> subiu para <strong class="text-on-surface">7,8</strong> (+1,2 pt comparado à semana anterior).
+      </p>
+<!-- Mini Sparkline Vetorial SVG -->
+<div class="p-3 rounded-lg bg-surface-container-low flex flex-col gap-1.5">
+<div class="flex items-center justify-between font-label-code text-label-code text-on-surface-variant">
+<span>7 dias atrás</span>
+<span class="text-primary font-bold">Hoje (7,8)</span>
+</div>
+<div class="w-full h-14 relative flex items-center">
+<svg class="w-full h-full overflow-visible" fill="none" preserveaspectratio="none" viewbox="0 0 280 50">
+<defs>
+<lineargradient gradientunits="userSpaceOnUse" id="concGradient" x1="0" x2="0" y1="0" y2="50">
+<stop stop-color="#7c3aed" stop-opacity="0.35"></stop>
+<stop offset="100%" stop-color="#7c3aed" stop-opacity="0.0"></stop>
+</lineargradient>
+</defs>
+<!-- Área sombreada -->
+<path d="M0,38 L45,34 L90,30 L135,26 L180,20 L225,14 L280,6 L280,50 L0,50 Z" fill="url(#concGradient)"></path>
+<!-- Linha da tendência -->
+<path d="M0,38 L45,34 L90,30 L135,26 L180,20 L225,14 L280,6" stroke="#7c3aed" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+<!-- Pontos nos extremos -->
+<circle cx="0" cy="38" fill="#faf8ff" r="3" stroke="#7c3aed" stroke-width="2"></circle>
+<circle cx="280" cy="6" fill="#7c3aed" r="4.5" stroke="#faf8ff" stroke-width="2"></circle>
+</svg>
+</div>
+</div>
+<!-- Feedback e Interação -->
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-code text-label-code text-on-surface-variant">
+          Estabilidade calculada: Alta
+        </span>
+<div class="flex items-center gap-1.5 bg-surface-container-low p-1 rounded-full">
+<button aria-label="Curtir tendência" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary active:scale-90 transition-transform" type="button">
+<span class="material-symbols-outlined text-[17px]">thumb_up</span>
+</button>
+<button aria-label="Dispensar tendência" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-error active:scale-90 transition-transform" type="button">
+<span class="material-symbols-outlined text-[17px]">thumb_down</span>
+</button>
+</div>
+</div>
+</article>
+<!-- CARTÃO 3: Tipo 1 - Retrato e síntese do dia -->
+<article class="p-space-lg rounded-lg bg-surface-container-lowest shadow-sm flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container text-secondary font-label-md text-label-md font-semibold">
+<span class="material-symbols-outlined text-[16px]">pie_chart</span>
+          Retrato do dia
+        </span>
+<span class="font-label-code text-label-code text-secondary font-bold uppercase tracking-wider bg-secondary-fixed/30 px-2 py-0.5 rounded-full">
+          EXE...
+        </span>
+</div>
+<p class="font-body-lg text-body-lg text-on-surface">
+        Você registrou <strong class="text-secondary">Exercício</strong> em <span class="font-semibold text-on-surface">4 dos últimos 6 dias</span> com resposta.
+      </p>
+<!-- Mini indicador de frequência tátil -->
+<div class="flex items-center gap-1.5 py-1">
+<div class="flex-1 h-2 rounded-full bg-secondary"></div>
+<div class="flex-1 h-2 rounded-full bg-secondary"></div>
+<div class="flex-1 h-2 rounded-full bg-surface-container-highest"></div>
+<div class="flex-1 h-2 rounded-full bg-secondary"></div>
+<div class="flex-1 h-2 rounded-full bg-secondary"></div>
+<div class="flex-1 h-2 rounded-full bg-surface-container-highest"></div>
+</div>
+<!-- Feedback e Interação -->
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-code text-label-code text-on-surface-variant">Taxa de adesão: 67%</span>
+<div class="flex items-center gap-1.5 bg-surface-container-low p-1 rounded-full">
+<button aria-label="Aprovar retrato" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary active:scale-90 transition-transform" type="button">
+<span class="material-symbols-outlined text-[17px]">thumb_up</span>
+</button>
+<button aria-label="Descartar retrato" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-error active:scale-90 transition-transform" type="button">
+<span class="material-symbols-outlined text-[17px]">thumb_down</span>
+</button>
+</div>
+</div>
+</article>
+</section>
+<!-- Seção de Acesso Rápido e Salvamento de Conta -->
+<section class="flex flex-col w-full gap-space-md mt-1">
+<!-- Card Conclusões Salvas -->
+<a class="flex items-center justify-between p-4 rounded-xl bg-surface-container-high active:scale-[0.99] transition-transform" data-path="conclusoes" href="#">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">auto_awesome</span>
+</div>
+<div class="flex flex-col text-left">
+<span class="font-headline-md text-headline-md text-on-surface font-semibold leading-tight">Conclusões Salvas</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">3 descobertas ativas na sua timeline</span>
+</div>
+</div>
+<div class="flex items-center gap-1 text-primary font-label-lg text-label-lg font-semibold">
+<span>Ver todas</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</div>
+</a>
+<!-- Aviso Sutil: Conta Anônima Ativa -->
+<div class="p-4 rounded-xl bg-surface-container-low shadow-sm flex flex-col gap-3">
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-full bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">no_accounts</span>
+</div>
+<div class="flex flex-col">
+<h3 class="font-label-lg text-label-lg text-on-surface font-semibold">
+            Modo anônimo neste dispositivo
+          </h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+            Seus registros estão salvos apenas neste navegador. Vincule sua conta com segurança para nunca perder seu histórico científico.
+          </p>
+</div>
+</div>
+<div class="flex items-center justify-end gap-2 pt-1">
+<button class="px-4 py-2 rounded-full bg-surface-container text-on-surface-variant font-label-md text-label-md font-medium active:scale-95 transition-transform" type="button">
+          Lembrar depois
+        </button>
+<button class="px-5 py-2 rounded-full bg-secondary text-on-secondary font-label-md text-label-md font-semibold active:scale-95 transition-transform flex items-center gap-1.5 shadow-sm" type="button">
+<span class="material-symbols-outlined text-[16px]">sync</span>
+          Salvar conta
+        </button>
+</div>
+</div>
+</section>
+</div>
+<script>
+  // Microinterações nos botões de feedback tátil
+  document.querySelectorAll('button[aria-label^="Curtir"], button[aria-label^="Aprovar"]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      btn.classList.toggle('text-primary');
+      const icon = btn.querySelector('.material-symbols-outlined');
+      if (icon) {
+        icon.style.fontVariationSettings = icon.style.fontVariationSettings.includes("'FILL' 1") 
+          ? "'FILL' 0" 
+          : "'FILL' 1";
+      }
+    });
+  });
+
+  document.querySelectorAll('button[aria-label^="Dispensar"], button[aria-label^="Descartar"]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const card = btn.closest('article');
+      if (card) {
+        card.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+        card.style.opacity = '0.35';
+        card.style.transform = 'scale(0.97)';
+      }
+    });
+  });
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-2px_12px_rgba(19,27,46,0.05)]" data-active-classes="text-primary font-semibold [&amp;_span.nav-indicator]:scale-100"><div class="flex items-center justify-around h-16 px-2 max-w-md mx-auto"><a aria-current="page" class="flex flex-col items-center justify-center gap-1 min-h-[44px] min-w-[44px] flex-1 transition-colors text-primary font-semibold [&amp;_span.nav-indicator]:scale-100" data-path="dashboard" href="#"><div class="relative flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">ssid_chart</span><span class="nav-indicator absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-primary scale-0 transition-transform duration-200"></span></div><span class="font-label-md text-label-md tracking-tight">Dashboard</span></a><a class="flex flex-col items-center justify-center gap-1 min-h-[44px] min-w-[44px] flex-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="registrar" href="#"><div class="w-11 h-11 -mt-4 rounded-full bg-primary-container text-on-primary flex items-center justify-center shadow-[0_4px_12px_rgba(99,14,212,0.3)] active:scale-95 transition-transform"><span class="material-symbols-outlined text-[22px]">edit_note</span></div><span class="font-label-md text-label-md tracking-tight">Registrar</span></a><a class="flex flex-col items-center justify-center gap-1 min-h-[44px] min-w-[44px] flex-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="indicadores" href="#"><div class="relative flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">tune</span><span class="nav-indicator absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-primary scale-0 transition-transform duration-200"></span></div><span class="font-label-md text-label-md tracking-tight">Indicadores</span></a><a class="flex flex-col items-center justify-center gap-1 min-h-[44px] min-w-[44px] flex-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="conclusoes" href="#"><div class="relative flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">lightbulb</span><span class="nav-indicator absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-primary scale-0 transition-transform duration-200"></span></div><span class="font-label-md text-label-md tracking-tight">Conclusões</span></a></div></nav></body></html>

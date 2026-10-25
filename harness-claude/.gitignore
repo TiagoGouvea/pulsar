@@ -1,0 +1,18 @@
+node_modules/
+.DS_Store
+.env
+.env.*
+!.env.example
+secrets/
+.worktrees/
+dist/
+coverage/
+test-results/
+playwright-report/
+# raw logs (state stays versioned)
+.harness/runs/**/*.jsonl
+.harness/runs/**/*.log
+.harness/PAUSE
+.harness/*.tmp
+.harness/pi-agent/
+.harness/smoke/

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Space+Grotesk:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-primary": "#ffffff", "surface-variant": "#dae2fd", "tertiary": "#005b3d", "on-surface": "#131b2e", "secondary": "#0051d5", "secondary-container": "#316bf3", "inverse-surface": "#283044", "error": "#ba1a1a", "surface-bright": "#faf8ff", "on-secondary-fixed-variant": "#003ea8", "secondary-fixed-dim": "#b4c5ff", "surface": "#faf8ff", "on-secondary-fixed": "#00174b", "on-primary-fixed-variant": "#5a00c6", "on-tertiary-fixed-variant": "#005236", "inverse-on-surface": "#eef0ff", "on-primary-fixed": "#25005a", "on-tertiary-fixed": "#002113", "on-error": "#ffffff", "on-secondary-container": "#fefcff", "on-secondary": "#ffffff", "surface-container-lowest": "#ffffff", "inverse-primary": "#d2bbff", "surface-container-high": "#e2e7ff", "surface-container-low": "#f2f3ff", "error-container": "#ffdad6", "outline-variant": "#ccc3d8", "tertiary-fixed": "#6ffbbe", "on-tertiary": "#ffffff", "on-error-container": "#93000a", "primary-fixed": "#eaddff", "outline": "#7b7487", "on-background": "#131b2e", "surface-dim": "#d2d9f4", "tertiary-fixed-dim": "#4edea3", "secondary-fixed": "#dbe1ff", "background": "#faf8ff", "surface-tint": "#732ee4", "on-surface-variant": "#4a4455", "primary": "#630ed4", "surface-container-highest": "#dae2fd", "on-primary-container": "#ede0ff", "primary-container": "#7c3aed", "surface-container": "#eaedff", "on-tertiary-container": "#76ffc2", "primary-fixed-dim": "#d2bbff", "tertiary-container": "#007650" }, "borderRadius": { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" }, "spacing": { "space-md": "0.75rem", "space-xl": "2rem", "gutter": "1rem", "space-lg": "1.25rem", "space-xs": "0.25rem", "space-sm": "0.5rem", "margin-desktop": "2rem", "margin": "1rem", "gutter-desktop": "1.5rem" }, "fontFamily": { "body-md": ["Geist"], "headline-lg-mobile": ["Space Grotesk"], "body-lg": ["Geist"], "headline-md": ["Space Grotesk"], "label-code": ["Geist"], "label-md": ["Geist"], "body-sm": ["Geist"], "headline-lg": ["Space Grotesk"], "stat-display": ["Space Grotesk"], "label-lg": ["Geist"], "headline-xl": ["Space Grotesk"], "headline-xl-mobile": ["Space Grotesk"] }, "fontSize": { "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "headline-lg-mobile": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "headline-md": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "label-code": ["11px", { "lineHeight": "14px", "letterSpacing": "0.08em", "fontWeight": "600" }], "label-md": ["12px", { "lineHeight": "16px", "fontWeight": "500" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "600" }], "stat-display": ["32px", { "lineHeight": "36px", "letterSpacing": "-0.03em", "fontWeight": "700" }], "label-lg": ["14px", { "lineHeight": "20px", "fontWeight": "600" }], "headline-xl": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.03em", "fontWeight": "700" }], "headline-xl-mobile": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }] } } } };</script><style>@layer base{html,body{width:100%;margin:0;padding:0;background-color:#faf8ff;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head><body class="bg-surface text-on-surface font-body-md text-body-md antialiased min-h-screen flex flex-col"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(19,27,46,0.04)]"><div class="h-16 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="Pulsar Brand Icon" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1WdBuU0iz8QZfKfE4kBD1b-6q7KXcswo155qLk9IPXX2tIpDvoyuiqFLgl6crFb2arwwpyoQyJokJCbC3ISL-RU4T5wGN0NsLk_UWFaZ48cMi7ND6zOfBQEu5izwsuu-YNayhj_qrPYwebP4R1g_QoCKL1QZApxPHATkBTM12VZFSwXGsyQgu5fg88aN_Nr7p3vbYgU8hytyZyecwGWJfv8CY9AX5m1c1MioU4LN3Dga57FGegbj6MSiRY6"/><div class="flex items-center gap-1.5"><span class="font-headline-md text-headline-md text-on-surface tracking-tight">Pulsar</span><span class="px-2 py-0.5 rounded-full bg-surface-container-high text-primary font-label-code text-label-code uppercase tracking-wider">Beta V1</span></div></div><div class="flex items-center gap-space-sm"><button aria-label="Alternar modo discrição e siglas" class="min-h-[44px] min-w-[44px] px-2.5 py-1.5 rounded-full bg-surface-container flex items-center justify-center gap-1.5 text-on-surface-variant hover:text-on-surface active:scale-95 transition-transform duration-150" type="button"><span class="material-symbols-outlined text-[19px] text-secondary">visibility</span><span class="font-label-code text-label-code uppercase tracking-wider text-secondary">Siglas</span></button><a class="min-h-[44px] min-w-[44px] flex items-center justify-center" data-path="configuracoes-da-conta" href="#"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center ring-2 ring-primary-fixed/50"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></a></div></div></header><main class="flex-1 w-full bg-surface pt-16 pb-24"><div class="flex flex-col w-full px-gutter pb-8 space-y-space-lg">
+<!-- Sub-header context bar: Boas-vindas empíricas & status anônimo -->
+<div class="flex items-center justify-between pt-2">
+<div class="flex flex-col">
+<span class="font-label-code text-label-code uppercase tracking-wider text-outline">Laboratório Pessoal</span>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Bem-vindo ao Pulsar</h1>
+</div>
+<div class="flex items-center gap-1.5 bg-surface-container px-3 py-1.5 rounded-full shadow-sm">
+<span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+<span class="font-label-code text-label-code text-on-surface font-semibold tracking-normal">#PLS-9482</span>
+<span class="font-label-code text-label-code text-outline font-normal">| Dia 1</span>
+</div>
+</div>
+<!-- Card de Acolhimento & Propósito -->
+<div class="relative overflow-hidden bg-gradient-to-br from-surface-container-low via-surface-container-lowest to-surface-container-low p-space-lg rounded-lg shadow-sm">
+<div class="absolute -right-12 -top-12 w-36 h-36 rounded-full bg-primary-fixed/25 blur-2xl pointer-events-none"></div>
+<div class="flex items-start gap-space-md relative z-10">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary flex items-center justify-center shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[22px]">science</span>
+</div>
+<div class="flex-1 space-y-1">
+<h2 class="font-headline-md text-headline-md text-on-surface">Sua rotina, seus dados, suas conclusões</h2>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+          O Pulsar correlaciona rigorosamente o que você faz com o que você sente. Escolha abaixo as variáveis iniciais para iniciar sua série temporal ou crie uma do zero.
+        </p>
+</div>
+</div>
+</div>
+<!-- Bloco Principal: Sugestões de Criação Rápida (Seção 3.1) -->
+<div class="space-y-space-md">
+<div class="flex items-center justify-between px-1">
+<div class="flex items-center gap-2">
+<span class="font-label-code text-label-code uppercase text-on-surface-variant">Sugestões Científicas Iniciais</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high font-label-code text-label-code text-primary font-semibold">4 Prontas</span>
+</div>
+<span class="font-label-md text-label-md text-outline">Nenhum auto-criado</span>
+</div>
+<!-- Lista de 4 Sugestões divididas entre Fatores e Resultados -->
+<div class="space-y-space-sm" id="indicators-catalog">
+<!-- Fator 1: Exercício Físico -->
+<div class="group relative bg-surface-container-lowest p-space-md rounded-lg shadow-sm hover:shadow-md transition-all duration-200" id="card-exe">
+<div class="flex items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-11 h-11 rounded-full bg-secondary-fixed/50 text-secondary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[22px]">fitness_center</span>
+</div>
+<div class="min-w-0">
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-label-code text-label-code">EXE</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary/10 text-secondary font-label-code text-label-code uppercase tracking-wider">Fator</span>
+<span class="font-body-sm text-body-sm text-outline truncate">• 1x ao dia</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface truncate mt-0.5">Exercício Físico</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">Booleano (Sim / Não)</p>
+</div>
+</div>
+<button class="indicator-action shrink-0 px-3.5 py-2 rounded-full bg-secondary text-on-secondary font-label-lg text-label-lg active:scale-95 transition-all flex items-center gap-1.5 shadow-sm" onclick="toggleIndicator(this, 'EXE', 'Exercício Físico')">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span>Adicionar</span>
+</button>
+</div>
+</div>
+<!-- Fator 2: Café Expresso -->
+<div class="group relative bg-surface-container-lowest p-space-md rounded-lg shadow-sm hover:shadow-md transition-all duration-200" id="card-caf">
+<div class="flex items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-11 h-11 rounded-full bg-secondary-fixed/50 text-secondary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[22px]">coffee</span>
+</div>
+<div class="min-w-0">
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-label-code text-label-code">CAF</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary/10 text-secondary font-label-code text-label-code uppercase tracking-wider">Fator</span>
+<span class="font-body-sm text-body-sm text-outline truncate">• Múltiplos registros</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface truncate mt-0.5">Café Expresso</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">Numérico (Xícaras)</p>
+</div>
+</div>
+<button class="indicator-action shrink-0 px-3.5 py-2 rounded-full bg-secondary text-on-secondary font-label-lg text-label-lg active:scale-95 transition-all flex items-center gap-1.5 shadow-sm" onclick="toggleIndicator(this, 'CAF', 'Café Expresso')">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span>Adicionar</span>
+</button>
+</div>
+</div>
+<!-- Resultado 1: Nível de Energia -->
+<div class="group relative bg-surface-container-lowest p-space-md rounded-lg shadow-sm hover:shadow-md transition-all duration-200" id="card-ene">
+<div class="flex items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-11 h-11 rounded-full bg-primary-fixed/50 text-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[22px]">bolt</span>
+</div>
+<div class="min-w-0">
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-label-code text-label-code">ENE</span>
+<span class="px-2 py-0.5 rounded-full bg-primary/10 text-primary font-label-code text-label-code uppercase tracking-wider">Resultado</span>
+<span class="font-body-sm text-body-sm text-outline truncate">• Quanto maior, melhor</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface truncate mt-0.5">Nível de Energia</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">Escala 0 a 10</p>
+</div>
+</div>
+<button class="indicator-action shrink-0 px-3.5 py-2 rounded-full bg-primary-container text-on-primary font-label-lg text-label-lg active:scale-95 transition-all flex items-center gap-1.5 shadow-sm" onclick="toggleIndicator(this, 'ENE', 'Nível de Energia')">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span>Adicionar</span>
+</button>
+</div>
+</div>
+<!-- Resultado 2: Concentração / Foco -->
+<div class="group relative bg-surface-container-lowest p-space-md rounded-lg shadow-sm hover:shadow-md transition-all duration-200" id="card-con">
+<div class="flex items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="w-11 h-11 rounded-full bg-primary-fixed/50 text-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[22px]">psychology</span>
+</div>
+<div class="min-w-0">
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-label-code text-label-code">CON</span>
+<span class="px-2 py-0.5 rounded-full bg-primary/10 text-primary font-label-code text-label-code uppercase tracking-wider">Resultado</span>
+<span class="font-body-sm text-body-sm text-outline truncate">• Faixa ideal: 7 a 10</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface truncate mt-0.5">Concentração / Foco</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">Escala 0 a 10</p>
+</div>
+</div>
+<button class="indicator-action shrink-0 px-3.5 py-2 rounded-full bg-primary-container text-on-primary font-label-lg text-label-lg active:scale-95 transition-all flex items-center gap-1.5 shadow-sm" onclick="toggleIndicator(this, 'CON', 'Concentração / Foco')">
+<span class="material-symbols-outlined text-[18px]">add</span>
+<span>Adicionar</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Ação Primária Alternativa: Criar meu próprio indicador -->
+<div class="bg-surface-container-low p-space-lg rounded-lg space-y-3">
+<div class="space-y-1">
+<h3 class="font-headline-md text-headline-md text-on-surface">Quer rastrear algo específico?</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Personalize nome, unidade, tipo de resposta e frequência de coleta como preferir.</p>
+</div>
+<a class="w-full h-12 rounded-full bg-surface-container-highest text-primary font-label-lg text-label-lg flex items-center justify-center gap-2 active:scale-98 transition-all shadow-sm hover:bg-surface-variant" data-path="indicadores" href="#">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+<span>Criar meu próprio indicador</span>
+</a>
+</div>
+<!-- Preview Educativo de Insights (Seções 5.4 e 6.1) -->
+<div class="bg-surface-container-lowest p-space-lg rounded-lg shadow-sm space-y-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[22px]">insights</span>
+<h3 class="font-headline-md text-headline-md text-on-surface">Como os Insights funcionam?</h3>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-surface-container font-label-code text-label-code text-outline uppercase tracking-wider">Metodologia</span>
+</div>
+<!-- Mini visualização vetorial: Estado latente de correlação -->
+<div class="relative w-full h-24 bg-surface-container-low rounded-DEFAULT flex items-center justify-center overflow-hidden px-4">
+<!-- Linhas pontilhadas representando a calibração de correlação futura -->
+<svg class="w-full h-full" fill="none" preserveaspectratio="none" viewbox="0 0 320 80">
+<path d="M 0 50 Q 80 20, 160 55 T 320 30" fill="none" opacity="0.35" stroke="#0051d5" stroke-dasharray="4 4" stroke-width="2"></path>
+<path d="M 0 35 Q 90 65, 170 30 T 320 50" fill="none" opacity="0.45" stroke="#7c3aed" stroke-dasharray="4 4" stroke-width="2"></path>
+<circle cx="80" cy="35" fill="#0051d5" opacity="0.6" r="3"></circle>
+<circle cx="240" cy="40" fill="#7c3aed" opacity="0.6" r="3"></circle>
+</svg>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-low/90 via-transparent to-transparent flex items-end justify-center pb-2">
+<span class="font-label-code text-label-code text-on-surface-variant flex items-center gap-1.5 bg-surface-container-lowest/80 px-2.5 py-1 rounded-full backdrop-blur-sm shadow-xs">
+<span class="material-symbols-outlined text-[14px] text-primary">schedule</span>
+          Aguardando primeiros dados de registro
+        </span>
+</div>
+</div>
+<!-- Timeline Científica Explicativa -->
+<div class="space-y-space-sm font-body-sm text-body-sm text-on-surface-variant">
+<div class="flex items-start gap-2.5">
+<div class="w-5 h-5 rounded-full bg-surface-container text-on-surface font-label-code text-label-code flex items-center justify-center shrink-0 mt-0.5">1</div>
+<div>
+<span class="font-semibold text-on-surface">Dia 1:</span>
+<span> Retrato factual e visual imediato do seu preenchimento.</span>
+</div>
+</div>
+<div class="flex items-start gap-2.5">
+<div class="w-5 h-5 rounded-full bg-surface-container text-on-surface font-label-code text-label-code flex items-center justify-center shrink-0 mt-0.5">2</div>
+<div>
+<span class="font-semibold text-on-surface">A partir do Dia 2:</span>
+<span> Comparações descritivas entre seus dias de rotina.</span>
+</div>
+</div>
+<div class="flex items-start gap-2.5">
+<div class="w-5 h-5 rounded-full bg-surface-container-high text-primary font-label-code text-label-code flex items-center justify-center shrink-0 mt-0.5 font-bold">14</div>
+<div>
+<span class="font-semibold text-primary">A partir de 14 pares válidos:</span>
+<span> Primeiras correlações estatísticas (Pearson <span class="font-label-code text-label-code">r</span>) identificando causas prováveis.</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Aviso Sutil de Conta Anônima (Seção 3) -->
+<div class="bg-surface-container-low p-space-md rounded-lg flex items-start gap-space-sm">
+<div class="w-8 h-8 rounded-full bg-surface-container-high text-secondary flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">lock</span>
+</div>
+<div class="space-y-1">
+<h4 class="font-label-lg text-label-lg text-on-surface font-semibold">Seus dados estão protegidos localmente</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+        As medições ficam salvas apenas neste dispositivo. Conforme coletar suas primeiras variáveis, você poderá conectar sua conta com Google ou e-mail com 1 toque para backup na nuvem.
+      </p>
+</div>
+</div>
+<!-- Feedback Toast Container (Dinâmico para micro-interação) -->
+<div class="fixed bottom-20 left-1/2 -translate-x-1/2 z-40 bg-inverse-surface text-inverse-on-surface px-4 py-2.5 rounded-full shadow-lg flex items-center gap-2 opacity-0 pointer-events-none transition-all duration-300" id="feedback-toast">
+<span class="material-symbols-outlined text-tertiary-fixed-dim text-[18px]">check_circle</span>
+<span class="font-label-md text-label-md" id="toast-message">Indicador adicionado com sucesso!</span>
+</div>
+</div>
+<script>
+  function toggleIndicator(btn, code, name) {
+    const isAdded = btn.getAttribute('data-added') === 'true';
+    const toast = document.getElementById('feedback-toast');
+    const toastMsg = document.getElementById('toast-message');
+
+    if (!isAdded) {
+      btn.setAttribute('data-added', 'true');
+      btn.classList.remove('bg-secondary', 'bg-primary-container', 'text-on-secondary', 'text-on-primary');
+      btn.classList.add('bg-tertiary-container', 'text-on-tertiary');
+      btn.innerHTML = '<span class="material-symbols-outlined text-[18px]">check</span><span>Adicionado</span>';
+      
+      toastMsg.innerText = `"${code} • ${name}" pronto para ser registrado!`;
+    } else {
+      btn.setAttribute('data-added', 'false');
+      btn.classList.remove('bg-tertiary-container', 'text-on-tertiary');
+      const isFactor = code === 'EXE' || code === 'CAF';
+      if (isFactor) {
+        btn.classList.add('bg-secondary', 'text-on-secondary');
+      } else {
+        btn.classList.add('bg-primary-container', 'text-on-primary');
+      }
+      btn.innerHTML = '<span class="material-symbols-outlined text-[18px]">add</span><span>Adicionar</span>';
+      
+      toastMsg.innerText = `"${code}" removido da sua lista inicial.`;
+    }
+
+    // Exibe notificação de feedback haptico visual
+    toast.classList.remove('opacity-0', 'pointer-events-none');
+    toast.classList.add('opacity-100');
+    setTimeout(() => {
+      toast.classList.remove('opacity-100');
+      toast.classList.add('opacity-0', 'pointer-events-none');
+    }, 2400);
+  }
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-2px_12px_rgba(19,27,46,0.05)]" data-active-classes="text-primary font-semibold [&amp;_span.nav-indicator]:scale-100"><div class="flex items-center justify-around h-16 px-2 max-w-md mx-auto"><a class="flex flex-col items-center justify-center gap-1 min-h-[44px] min-w-[44px] flex-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="dashboard" href="#"><div class="relative flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">ssid_chart</span><span class="nav-indicator absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-primary scale-0 transition-transform duration-200"></span></div><span class="font-label-md text-label-md tracking-tight">Dashboard</span></a><a class="flex flex-col items-center justify-center gap-1 min-h-[44px] min-w-[44px] flex-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="registrar" href="#"><div class="w-11 h-11 -mt-4 rounded-full bg-primary-container text-on-primary flex items-center justify-center shadow-[0_4px_12px_rgba(99,14,212,0.3)] active:scale-95 transition-transform"><span class="material-symbols-outlined text-[22px]">edit_note</span></div><span class="font-label-md text-label-md tracking-tight">Registrar</span></a><a class="flex flex-col items-center justify-center gap-1 min-h-[44px] min-w-[44px] flex-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="indicadores" href="#"><div class="relative flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">tune</span><span class="nav-indicator absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-primary scale-0 transition-transform duration-200"></span></div><span class="font-label-md text-label-md tracking-tight">Indicadores</span></a><a class="flex flex-col items-center justify-center gap-1 min-h-[44px] min-w-[44px] flex-1 text-on-surface-variant hover:text-on-surface transition-colors" data-path="conclusoes" href="#"><div class="relative flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">lightbulb</span><span class="nav-indicator absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-primary scale-0 transition-transform duration-200"></span></div><span class="font-label-md text-label-md tracking-tight">Conclusões</span></a></div></nav></body></html>

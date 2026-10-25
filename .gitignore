@@ -1,11 +1,36 @@
+# Dependencies
 node_modules/
-dist/
-coverage/
-playwright-report/
-test-results/
-.harness/
+.pnp
+.pnp.js
+
+# Environment and secrets (never commit keys)
 .env
+.env.*
+!.env.example
+secrets/
 *-firebase-adminsdk-*.json
 *service-account*.json
-*.log
+
+# OS files
 .DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Build and test artifacts
+dist/
+build/
+coverage/
+test-results/
+playwright-report/
+*.log
+
+# Harness runtime and temporary state
+.worktrees/
+.harness/runs/**/*.jsonl
+.harness/runs/**/*.log
+.harness/PAUSE
+.harness/*.tmp
+.harness/pi-agent/
+.harness/smoke/
+.harness/state.sqlite*

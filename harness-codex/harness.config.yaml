@@ -1,0 +1,264 @@
+project:
+  id: pulsar-codex
+  workspace: ../pulsar-codex
+  specs:
+    - ./docs/Pulsar_Requisitos_Rastreaveis.md
+    - ./docs/Pulsar_Especificacao_Completa.md
+    - ./docs/Pulsar_Arquitetura_e_Implementacao.md
+    - ./docs/Pulsar_Preparacao_Antes_da_Implementacao.md
+  designDirectory: ../design
+  milestones:
+    - id: stage-a
+      title: Etapa A — Registro
+      objective: Entregar conta, indicadores e registro diário mobile.
+    - id: stage-b
+      title: Etapa B — Insights
+      objective: Entregar análises determinísticas, dashboard e timeline.
+    - id: stage-c
+      title: Etapa C — IA
+      objective: Entregar insights por IA com consentimento, privacidade e cotas.
+    - id: stage-d
+      title: Etapa D — PWA e lembretes
+      objective: Entregar instalação e notificações confiáveis.
+  profile: react-firebase
+  timezone: America/Sao_Paulo
+execution:
+  executor: pi
+  maxConcurrentTasks: 1
+  maxConcurrentLocalRequests: 1
+  maxAttemptsPerTask: 3
+  maxSameFailureCount: 2
+  taskTimeoutMinutes: 30
+  staleHeartbeatSeconds: 90
+  humanGate: every_milestone
+  allowProductionDeploy: false
+  continueWhileAwaitingHuman: false
+  allowBranchSwitch: false
+budget:
+  currency: USD
+  projectLimit: "60"
+  dailyLimit: "12"
+  milestoneLimit: null
+  milestoneLimits:
+    stage-a: "16"
+    stage-b: "13"
+    stage-c: "11"
+    stage-d: "8"
+  taskLimit: "4"
+  diagnosticsLimit: "1"
+  finalVerificationReservePercent: 20
+  warningThresholds:
+    - 50
+    - 75
+    - 90
+  automaticTopUp: false
+  unknownCostPolicy: block_paid_calls
+localInference:
+  baseUrl: http://localhost:1235/v1
+  maxLoadedModels: 1
+  initialContextTokens: 8192
+  maxOutputTokens: 2048
+  memoryPressureAction: unload_and_route_or_pause
+review:
+  requireIndependentSession: true
+  preferDifferentModelFamily: true
+  viewportWidths:
+    - 390
+    - 430
+    - 1440
+routing:
+  pools:
+    planner: [gemini-mid, sol-top, local-review]
+    testAuthor: [gemini-mid, qwen-code, sol-top]
+    implementer: [deepseek-code, qwen-code, local-qwen, glm-cheap]
+    hardImplementer: [sol-top, gemini-mid, local-coder, deepseek-code]
+    functionalReviewer: [gemini-mid, luna-cheap, local-review]
+    visualReviewer: [gemini-mid, glm-cheap]
+    securityReviewer: [sol-top, gemini-mid, local-review]
+    diagnostic: [luna-cheap, glm-cheap, deepseek-code, local-qwen]
+    learningAnalyst: [gemini-mid, local-review]
+  hardTaskPatterns:
+    - firestore|security rules|auth|privacidade|exclusão de conta
+    - estatística|correlação|significância|insight
+commands:
+  install:
+    - yarn
+    - install
+    - --immutable
+  dev:
+    - yarn
+    - dev
+  typecheck:
+    - yarn
+    - typecheck
+  lint:
+    - yarn
+    - lint
+  test:
+    - yarn
+    - test
+  build:
+    - yarn
+    - build
+  e2e:
+    - yarn
+    - test:e2e
+models:
+  - alias: sol-top
+    executor: pi
+    provider: openrouter
+    modelId: openai/gpt-6-sol
+    family: openai-gpt-6
+    modality: metered_api
+    capabilities: [text, tools, reasoning]
+    roles: [planner, implementer, testAuthor, securityReviewer]
+    enabled: true
+    contextTokens: 200000
+    maxOutputTokens: 8192
+    inputUsdPerMillion: "2"
+    outputUsdPerMillion: "10"
+    credentialEnv: OPENROUTER_API_KEY
+  - alias: gemini-mid
+    executor: pi
+    provider: openrouter
+    modelId: google/gemini-3.8-flash
+    family: google-gemini
+    modality: metered_api
+    capabilities: [text, vision, tools, reasoning]
+    roles: [planner, implementer, testAuthor, functionalReviewer, visualReviewer, securityReviewer, learningAnalyst]
+    enabled: true
+    contextTokens: 1000000
+    maxOutputTokens: 8192
+    inputUsdPerMillion: "0.75"
+    outputUsdPerMillion: "3.75"
+    credentialEnv: OPENROUTER_API_KEY
+  - alias: deepseek-code
+    executor: pi
+    provider: openrouter
+    modelId: deepseek/deepseek-v4-pro-0813
+    family: deepseek-v4
+    modality: metered_api
+    capabilities: [text, tools, reasoning]
+    roles: [implementer, diagnostic]
+    enabled: true
+    contextTokens: 131072
+    maxOutputTokens: 8192
+    inputUsdPerMillion: "0.5267"
+    outputUsdPerMillion: "1.58"
+    credentialEnv: OPENROUTER_API_KEY
+  - alias: qwen-code
+    executor: pi
+    provider: openrouter
+    modelId: qwen/qwen3-coder-next
+    family: qwen3
+    modality: metered_api
+    capabilities: [text, tools, reasoning]
+    roles: [implementer, testAuthor]
+    enabled: true
+    contextTokens: 262144
+    maxOutputTokens: 8192
+    inputUsdPerMillion: "0.12"
+    outputUsdPerMillion: "0.80"
+    credentialEnv: OPENROUTER_API_KEY
+  - alias: luna-cheap
+    executor: pi
+    provider: openrouter
+    modelId: openai/gpt-6-luna
+    family: openai-gpt-6
+    modality: metered_api
+    capabilities: [text, tools, reasoning]
+    roles: [diagnostic, functionalReviewer]
+    enabled: true
+    contextTokens: 200000
+    maxOutputTokens: 4096
+    inputUsdPerMillion: "0.10"
+    outputUsdPerMillion: "0.50"
+    credentialEnv: OPENROUTER_API_KEY
+  - alias: glm-cheap
+    executor: pi
+    provider: openrouter
+    modelId: z-ai/glm-5.3-flash
+    family: glm-5
+    modality: metered_api
+    capabilities: [text, tools, reasoning]
+    roles: [implementer, diagnostic, visualReviewer]
+    enabled: true
+    contextTokens: 131072
+    maxOutputTokens: 4096
+    inputUsdPerMillion: "0.075"
+    outputUsdPerMillion: "0.25"
+    credentialEnv: OPENROUTER_API_KEY
+  - alias: local-qwen
+    executor: pi
+    provider: lmstudio
+    modelId: qwen3.5-9b-mlx
+    endpoint: http://localhost:1235/v1
+    family: qwen3.5
+    modality: local
+    capabilities:
+      - text
+      - tools
+      - reasoning
+    roles:
+      - planner
+      - implementer
+      - testAuthor
+      - diagnostic
+      - learningAnalyst
+    enabled: true
+    contextTokens: 8192
+    maxOutputTokens: 2048
+  - alias: local-coder
+    executor: pi
+    provider: lmstudio
+    modelId: qwen3-coder-30b-a3b-instruct
+    endpoint: http://localhost:1235/v1
+    family: qwen3-coder
+    modality: local
+    capabilities:
+      - text
+      - tools
+      - reasoning
+    roles:
+      - implementer
+      - testAuthor
+      - diagnostic
+    enabled: true
+    contextTokens: 8192
+    maxOutputTokens: 2048
+  - alias: local-review
+    executor: pi
+    provider: lmstudio
+    modelId: mlx-community/gpt-oss-20b
+    endpoint: http://localhost:1235/v1
+    family: gpt-oss
+    modality: local
+    capabilities:
+      - text
+      - tools
+      - reasoning
+    roles:
+      - planner
+      - diagnostic
+      - functionalReviewer
+      - visualReviewer
+      - securityReviewer
+      - learningAnalyst
+    enabled: true
+    contextTokens: 8192
+    maxOutputTokens: 2048
+storage:
+  root: ./.harness
+  retentionDays: 30
+dashboard:
+  host: 127.0.0.1
+  port: 4317
+security:
+  allowedCommands:
+    - yarn
+    - node
+    - git
+    - rg
+    - npx
+  trustMode: workspace_process
+  redactPatterns: []
