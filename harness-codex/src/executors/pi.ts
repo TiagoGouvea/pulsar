@@ -11,16 +11,24 @@ import type { Executor } from "./types.js";
 
 const resultKeys = ["taskId", "outcome", "summary", "changedFiles", "claimedChecks", "decisions", "blockers", "suggestedFollowUps"];
 
-function extractResult(text: string | undefined, taskId: string): ExecutionResult {
+export function extractResult(
+  text: string | undefined,
+  taskId: string,
+  acceptedTaskIds: string[] = [taskId],
+): ExecutionResult {
   if (!text) throw new Error("A sessão Pi terminou sem resposta textual.");
   const fenced = /```(?:json)?\s*([\s\S]*?)```/i.exec(text)?.[1];
   const first = text.indexOf("{");
   const last = text.lastIndexOf("}");
   const raw = fenced ?? (first >= 0 && last > first ? text.slice(first, last + 1) : text);
   const parsed = JSON.parse(raw) as Record<string, unknown>;
-  if (!resultKeys.every((key) => key in parsed) || parsed.taskId !== taskId) {
+  if (!resultKeys.every((key) => key in parsed) || typeof parsed.taskId !== "string") {
     throw new Error("Resultado do Pi não atende ao contrato estruturado da tarefa.");
   }
+  if (!acceptedTaskIds.includes(parsed.taskId)) {
+    throw new Error(`Resultado do Pi retornou taskId inesperado: ${parsed.taskId}.`);
+  }
+  parsed.taskId = taskId;
   return parsed as unknown as ExecutionResult;
 }
 
@@ -87,7 +95,10 @@ export class PiExecutor implements Executor {
     const timeout = setTimeout(() => { void session.abort(); }, request.timeoutMs);
     try {
       await session.prompt(request.prompt);
-      const result = extractResult(session.getLastAssistantText(), request.task.id);
+      const result = extractResult(
+        session.getLastAssistantText(), request.task.id,
+        request.acceptedResultTaskIds ?? [request.task.id],
+      );
       const stats = session.getSessionStats();
       result.usage = {
         inputTokens: stats.tokens.input,

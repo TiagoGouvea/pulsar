@@ -26,7 +26,10 @@ describe("roteamento de modelos", () => {
     const first = catalog.select("implementer", ["text", "tools"], { seed: "same", attempt: 1 });
     const second = catalog.select("implementer", ["text", "tools"], { seed: "same", attempt: 2 });
     expect(second.alias).not.toBe(first.alias);
-    expect(catalog.selectReviewer("functionalReviewer", first, "same").family).not.toBe(first.family);
+    const firstReviewer = catalog.selectReviewer("functionalReviewer", first, "same", 1);
+    const secondReviewer = catalog.selectReviewer("functionalReviewer", first, "same", 2);
+    expect(firstReviewer.family).not.toBe(first.family);
+    expect(secondReviewer.alias).not.toBe(firstReviewer.alias);
     expect(catalog.isHardTask("Revisar privacidade dos dados")).toBe(true);
   });
 });

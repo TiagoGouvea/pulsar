@@ -18,6 +18,7 @@ import { createId, nowUtc, parseUsdToMicros, safeError, sha256, writeJson } from
 import { invalidateStaleVerifications, verifyCommands } from "../verification/commands.js";
 
 const HARNESS_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+type ReviewDecision = "passed" | "changes_requested" | "retryable_failure" | "paused";
 
 function rowToTask(row: Record<string, unknown>): Task {
   return {
@@ -284,6 +285,35 @@ export class Orchestrator {
     return attemptId;
   }
 
+  private reviewRequiresRetry(runId: string, taskId: string): boolean {
+    const attempt = this.store.get<Record<string, unknown>>(
+      "SELECT result_json FROM attempts WHERE run_id=? AND task_id=? AND status='failed' ORDER BY started_at DESC LIMIT 1",
+      runId, `${taskId}-review`,
+    );
+    if (typeof attempt?.result_json !== "string") return false;
+    try {
+      const result = JSON.parse(attempt.result_json) as ExecutionResult;
+      return result.outcome === "failed" && result.blockers.includes("pi_execution_failed");
+    } catch {
+      return false;
+    }
+  }
+
+  private applyReviewDecision(runId: string, taskId: string, decision: ReviewDecision): boolean {
+    if (decision === "passed") {
+      this.store.setTaskState(runId, taskId, "passed");
+      return true;
+    }
+    if (decision === "changes_requested") {
+      this.store.setTaskState(runId, taskId, "changes_requested");
+      return true;
+    }
+    if (decision === "paused") return false;
+    this.store.setTaskState(runId, taskId, "verifying");
+    this.store.setRunState(runId, "blocked", { cause: "independent_review_execution_failed", taskId });
+    return false;
+  }
+
   private async recoverInterruptedWork(runId: string, milestoneId: string): Promise<boolean> {
     const interrupted = this.store.listTasks(runId).filter((row) => row.milestone_id === milestoneId && row.state === "running");
     for (const row of interrupted) {
@@ -299,7 +329,10 @@ export class Orchestrator {
       if (!(await this.verifyReadyResult(runId, task, context.result, context.candidate, context.attemptDirectory))) return false;
     }
 
-    const verifying = this.store.listTasks(runId).filter((row) => row.milestone_id === milestoneId && row.state === "verifying");
+    const verifying = this.store.listTasks(runId).filter((row) =>
+      row.milestone_id === milestoneId
+      && (row.state === "verifying" || (row.state === "blocked" && this.reviewRequiresRetry(runId, String(row.id)))),
+    );
     for (const row of verifying) {
       const task = rowToTask(row);
       const context = this.implementerContext(runId, task);
@@ -325,8 +358,9 @@ export class Orchestrator {
       this.store.event(runId, "task.recovery_resumed", "task", task.id, {
         attemptId: context.attempt.id, interruptedAttemptId, phase: "independent_review", revision,
       });
-      const reviewed = await this.reviewTask(runId, task, context.candidate, revision);
-      this.store.setTaskState(runId, task.id, reviewed ? "passed" : "changes_requested");
+      this.store.setTaskState(runId, task.id, "verifying");
+      const decision = await this.reviewTask(runId, task, context.candidate, revision);
+      if (!this.applyReviewDecision(runId, task.id, decision)) return false;
     }
     return true;
   }
@@ -352,11 +386,9 @@ export class Orchestrator {
       return true;
     }
     if (this.config.review.requireIndependentSession) {
-      const reviewed = await this.reviewTask(runId, task, candidate, verification.revision);
-      if (!reviewed) {
-        this.store.setTaskState(runId, task.id, "changes_requested");
-        return true;
-      }
+      const decision = await this.reviewTask(runId, task, candidate, verification.revision);
+      if (!this.applyReviewDecision(runId, task.id, decision)) return false;
+      return true;
     }
     this.store.setTaskState(runId, task.id, "passed");
     return true;
@@ -383,8 +415,7 @@ export class Orchestrator {
     );
   }
 
-  private async reviewTask(runId: string, task: Task, implementer: ReturnType<ModelCatalog["get"]>, revision: string): Promise<boolean> {
-    const candidate = this.catalog.selectReviewer("functionalReviewer", implementer, task.id);
+  private async reviewTask(runId: string, task: Task, implementer: ReturnType<ModelCatalog["get"]>, revision: string): Promise<ReviewDecision> {
     const reviewTask: Task = {
       ...task,
       id: `${task.id}-review`,
@@ -393,6 +424,23 @@ export class Orchestrator {
       role: "functionalReviewer",
       state: "running",
     };
+    const priorCompletedFailures = this.store.all<Record<string, unknown>>(
+      "SELECT result_json FROM attempts WHERE run_id=? AND task_id=? AND status='failed' AND result_json IS NOT NULL ORDER BY started_at",
+      runId, reviewTask.id,
+    ).filter((row) => {
+      try {
+        const result = JSON.parse(String(row.result_json)) as ExecutionResult;
+        return result.outcome === "failed" && result.blockers.includes("pi_execution_failed");
+      } catch {
+        return true;
+      }
+    }).length;
+    if (priorCompletedFailures >= this.config.review.maxAttempts) {
+      this.store.event(runId, "task.review_attempts_exhausted", "task", task.id, { attempts: priorCompletedFailures });
+      return "retryable_failure";
+    }
+    const reviewRound = priorCompletedFailures + 1;
+    const candidate = this.catalog.selectReviewer("functionalReviewer", implementer, task.id, reviewRound);
     const attemptId = createId("attempt");
     const outputDirectory = path.join(this.config.storage.root, "runs", runId, "tasks", task.id, "independent-review", attemptId);
     await mkdir(outputDirectory, { recursive: true });
@@ -400,7 +448,8 @@ export class Orchestrator {
       reviewTask.description,
       `Critérios:\n${task.acceptanceCriteria.map((item) => `- ${item}`).join("\n")}`,
       "Use apenas ferramentas de leitura. Não considere a autoavaliação do implementador como evidência.",
-      "Responda somente JSON com taskId, outcome, summary, changedFiles, claimedChecks, decisions, blockers, suggestedFollowUps.",
+      `Responda somente JSON. O campo taskId deve ser exatamente "${reviewTask.id}".`,
+      "Inclua taskId, outcome, summary, changedFiles, claimedChecks, decisions, blockers e suggestedFollowUps.",
     ].join("\n\n");
     const estimated = this.ledger.estimate(candidate, Math.ceil(prompt.length / 4), candidate.maxOutputTokens);
     const attemptNumber = Number(this.store.get<Record<string, unknown>>(
@@ -412,7 +461,7 @@ export class Orchestrator {
       reservationId = this.ledger.reserve(runId, task.id, candidate, estimated);
     } catch (error) {
       this.store.setRunState(runId, "paused_budget", { taskId: task.id, phase: "independent_review", error: safeError(error) });
-      return false;
+      return "paused";
     }
     this.store.run(
       "INSERT INTO attempts(id, run_id, task_id, number, executor, candidate_key, status, started_at) VALUES (?, ?, ?, ?, ?, ?, 'running', ?)",
@@ -431,6 +480,7 @@ export class Orchestrator {
       result = await executor.execute({
         runId, attemptId, task: reviewTask, workspace: this.config.project.workspace, prompt, candidate,
         timeoutMs: this.config.execution.reviewTimeoutMinutes * 60_000, outputDirectory, readOnly: true,
+        acceptedResultTaskIds: [reviewTask.id, task.id],
       });
     } finally {
       this.activeExecutor = undefined;
@@ -442,14 +492,18 @@ export class Orchestrator {
     this.finishProviderCall(providerCallId, result, uncertain, estimated, actualMicros);
     this.ledger.reconcile({ runId, taskId: task.id, reservationId, providerCallId, amountMicros: uncertain ? estimated : actualMicros, uncertain });
     this.store.run("UPDATE attempts SET status=?, result_json=?, finished_at=? WHERE id=?", result.outcome, JSON.stringify(result), nowUtc(), attemptId);
-    const passed = result.outcome === "ready_for_verification" && result.blockers.length === 0;
-    if (!passed) {
+    const decision: ReviewDecision = result.outcome === "ready_for_verification" && result.blockers.length === 0
+      ? "passed"
+      : result.outcome === "failed" && result.blockers.includes("pi_execution_failed")
+        ? "retryable_failure"
+        : "changes_requested";
+    if (decision !== "passed") {
       this.store.run(
         "INSERT INTO findings(id, run_id, severity, category, summary, evidence_path, state, created_at) VALUES (?, ?, 'major', 'independent_review', ?, ?, 'open', ?)",
         createId("finding"), runId, result.summary, path.join(outputDirectory, "result.json"), nowUtc(),
       );
     }
-    return passed;
+    return decision;
   }
 
   private handleFailure(runId: string, task: Task, previous: Record<string, unknown>[], signature: string | null, result: ExecutionResult): boolean {

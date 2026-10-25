@@ -145,6 +145,54 @@ describe("controlador", () => {
     } finally { orchestrator.close(); }
   });
 
+  test("recupera bloqueio causado por resposta inválida do revisor", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "harness-review-contract-"));
+    const config = await createTestConfig(root);
+    const orchestrator = new Orchestrator(config);
+    try {
+      const runId = await orchestrator.plan();
+      const task = orchestrator.store.listTasks(runId)[0];
+      if (!task) throw new Error("Tarefa de teste ausente.");
+      const taskId = String(task.id);
+      const now = new Date().toISOString();
+      const revision = await currentRevision(config.project.workspace);
+      const implementation = {
+        taskId, outcome: "ready_for_verification", summary: "Implementação válida.",
+        changedFiles: [], claimedChecks: [], decisions: [], blockers: [], suggestedFollowUps: [],
+      };
+      const invalidReview = {
+        taskId: `${taskId}-review`, outcome: "failed", summary: "Contrato JSON inválido.",
+        changedFiles: [], claimedChecks: [], decisions: [], blockers: ["pi_execution_failed"], suggestedFollowUps: [],
+      };
+      orchestrator.store.run(
+        "INSERT INTO attempts(id, run_id, task_id, number, executor, candidate_key, status, result_json, started_at, finished_at) VALUES ('attempt-valid-implementation', ?, ?, 1, 'fake', 'fake', 'ready_for_verification', ?, ?, ?)",
+        runId, taskId, JSON.stringify(implementation), now, now,
+      );
+      orchestrator.store.run(
+        "INSERT INTO sessions(id, attempt_id, role, model_key, independent, started_at, finished_at) VALUES ('session-valid-implementation', 'attempt-valid-implementation', 'implementer', 'fake', 0, ?, ?)",
+        now, now,
+      );
+      orchestrator.store.run(
+        "INSERT INTO verifier_runs(id, run_id, task_id, revision, verifier_id, verifier_version, status, started_at, finished_at) VALUES ('verification-before-invalid-review', ?, ?, ?, 'test', '1', 'passed', ?, ?)",
+        runId, taskId, revision, now, now,
+      );
+      orchestrator.store.run(
+        "INSERT INTO attempts(id, run_id, task_id, number, executor, candidate_key, status, result_json, started_at, finished_at) VALUES ('attempt-invalid-review', ?, ?, 1, 'fake', 'fake', 'failed', ?, ?, ?)",
+        runId, `${taskId}-review`, JSON.stringify(invalidReview), now, now,
+      );
+      orchestrator.store.setTaskState(runId, taskId, "blocked");
+      orchestrator.store.setRunState(runId, "blocked", { cause: "max_attempts", taskId });
+
+      await orchestrator.run(runId);
+
+      expect(orchestrator.store.getRun(runId)?.state).toBe("awaiting_human");
+      expect(orchestrator.store.listTasks(runId)[0]?.state).toBe("passed");
+      expect(orchestrator.store.all("SELECT id FROM attempts WHERE run_id=? AND task_id=?", runId, taskId)).toHaveLength(1);
+      expect(orchestrator.store.all("SELECT id FROM attempts WHERE run_id=? AND task_id=?", runId, `${taskId}-review`)).toHaveLength(2);
+      expect(orchestrator.store.listEvents(runId).some((event) => event.type === "task.recovery_resumed")).toBe(true);
+    } finally { orchestrator.close(); }
+  });
+
   test("fixa o branch durante a etapa e nunca o troca", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "harness-branch-"));
     const config = await createTestConfig(root);
