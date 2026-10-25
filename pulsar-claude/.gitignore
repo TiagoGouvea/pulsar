@@ -8,6 +8,8 @@ dist/
 coverage/
 test-results/
 playwright-report/
+*-debug.log
+app/e2e/tmp-*
 # harness: worktrees and per-worktree scratch (state lives in ../harness-claude)
 .worktrees/
 .harness/

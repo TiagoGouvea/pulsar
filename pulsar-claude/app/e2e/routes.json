@@ -1,0 +1,4 @@
+[
+  { "path": "/", "name": "home", "tags": ["ui"] },
+  { "path": "/_design", "name": "design", "tags": ["ui"] }
+]

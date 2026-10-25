@@ -1,0 +1,24 @@
+rules_version = '2';
+
+// Baseline: every document lives under users/{uid} and only that user may touch it.
+// Schema validation, locked indicator fields and immutable snapshots are added by later features.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    match /users/{uid} {
+      allow read, write: if isOwner(uid);
+
+      match /{document=**} {
+        allow read, write: if isOwner(uid);
+      }
+    }
+
+    // Server-only data (quotas, idempotency keys, push bookkeeping). Admin SDK bypasses rules.
+    match /internal/{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
