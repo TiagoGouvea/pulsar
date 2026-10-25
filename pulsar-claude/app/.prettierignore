@@ -6,3 +6,5 @@ test-results
 functions/lib
 yarn.lock
 *.log
+# Formatted by the initializer; protected test must not be edited by implementors.
+src/design/__tests__/design-system.f002.test.tsx
