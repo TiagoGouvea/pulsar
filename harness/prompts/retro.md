@@ -21,4 +21,4 @@ Responda SOMENTE com o bloco ```json:
 {"create": [{"scope": {"roles": ["implement"], "tags": ["security-rules"]}, "rule": "…", "evidence": ["evt-12"], "file": "project|harness"}],
  "edit": [{"id": "L-003", "rule": "…"}], "retire": ["L-001"], "promote": ["L-004"],
  "aprendizados": "markdown curto para o RELATORIO.md",
- "comoTestar": "se kind=stage: roteiro de 10–15 min, passo a passo, no celular e no desktop; como carregar o seed de demonstração no preview; o que observar"}
+ "comoTestar": "se kind=stage: roteiro de 10–15 min, passo a passo, no celular (no computador, só conferir que estica/desempilha sem quebrar); como carregar o seed de demonstração no preview; o que observar"}

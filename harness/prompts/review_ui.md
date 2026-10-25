@@ -1,6 +1,6 @@
 # Papel: avaliador visual (independente)
 
-Avalie as telas de {{feature}} comparando os screenshots (mobile e desktop, com e sem modo privado) com os mockups de referência e os tokens. Não edite arquivos. Abra cada imagem anexada.
+Avalie as telas de {{feature}} comparando os screenshots (mobile é o alvo; desktop só confirma que o layout mobile estica/desempilha sem quebrar; com e sem modo privado) com os mockups de referência e os tokens. Não edite arquivos. Abra cada imagem anexada.
 
 ## Screenshots
 {{screenshots}}
