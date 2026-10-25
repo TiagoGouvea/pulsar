@@ -1,4 +1,4 @@
-import { readdir, readFile, stat } from "node:fs/promises";
+import { readdir, readFile, realpath, stat } from "node:fs/promises";
 import path from "node:path";
 import { runProcess } from "../utils/process.js";
 import { sha256 } from "../utils/core.js";
@@ -11,23 +11,35 @@ export async function isGitRepository(workspace: string): Promise<boolean> {
 
 export interface GitWorkspaceInfo {
   repositoryRoot: string | null;
+  commonGitDirectory: string | null;
   branch: string | null;
   sharedWithProtectedRoot: boolean;
+  linkedWorktree: boolean;
+}
+
+async function gitDirectory(cwd: string, argument: "--git-dir" | "--git-common-dir"): Promise<string | null> {
+  const result = await runProcess(["git", "rev-parse", argument], { cwd, timeoutMs: 3_000 });
+  if (result.exitCode !== 0) return null;
+  const resolved = path.resolve(cwd, result.stdout.trim());
+  return realpath(resolved).catch(() => resolved);
 }
 
 export async function inspectGitWorkspace(workspace: string, protectedRoot?: string): Promise<GitWorkspaceInfo> {
   const repository = await runProcess(["git", "rev-parse", "--show-toplevel"], { cwd: workspace, timeoutMs: 3_000 });
   if (repository.exitCode !== 0) {
-    return { repositoryRoot: null, branch: null, sharedWithProtectedRoot: false };
+    return { repositoryRoot: null, commonGitDirectory: null, branch: null, sharedWithProtectedRoot: false, linkedWorktree: false };
   }
   const repositoryRoot = path.resolve(repository.stdout.trim());
+  const gitDir = await gitDirectory(workspace, "--git-dir");
+  const commonGitDirectory = await gitDirectory(workspace, "--git-common-dir");
   const current = await runProcess(["git", "branch", "--show-current"], { cwd: workspace, timeoutMs: 3_000 });
   const branch = current.exitCode === 0 && current.stdout.trim() ? current.stdout.trim() : null;
-  if (!protectedRoot) return { repositoryRoot, branch, sharedWithProtectedRoot: false };
-  const protectedRepository = await runProcess(["git", "rev-parse", "--show-toplevel"], { cwd: protectedRoot, timeoutMs: 3_000 });
-  const sharedWithProtectedRoot = protectedRepository.exitCode === 0
-    && path.resolve(protectedRepository.stdout.trim()) === repositoryRoot;
-  return { repositoryRoot, branch, sharedWithProtectedRoot };
+  const linkedWorktree = Boolean(gitDir && commonGitDirectory && gitDir !== commonGitDirectory);
+  if (!protectedRoot) return { repositoryRoot, commonGitDirectory, branch, sharedWithProtectedRoot: false, linkedWorktree };
+  const protectedCommonGitDirectory = await gitDirectory(protectedRoot, "--git-common-dir");
+  const sharedWithProtectedRoot = Boolean(commonGitDirectory && protectedCommonGitDirectory
+    && commonGitDirectory === protectedCommonGitDirectory);
+  return { repositoryRoot, commonGitDirectory, branch, sharedWithProtectedRoot, linkedWorktree };
 }
 
 export async function currentRevision(workspace: string): Promise<string> {

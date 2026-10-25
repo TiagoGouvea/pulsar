@@ -113,6 +113,14 @@ export async function gitWorkspaceChecks(config: HarnessConfig, harnessRoot = HA
     ...(!git.sharedWithProtectedRoot ? { remediation: "Use a raiz compartilhada do monorepo Pulsar, sem repositórios Git aninhados." } : {}),
   });
   checks.push({
+    id: "git.worktree",
+    status: "pass",
+    scope: "global",
+    importance: "informational",
+    summary: git.linkedWorktree ? "Worktree vinculado reconhecido sem alterar branches." : "Workspace no worktree principal.",
+    evidence: `worktree=${git.repositoryRoot}; commonGitDir=${git.commonGitDirectory ?? "n/a"}`,
+  });
+  checks.push({
     id: "git.branch",
     status: git.branch ? "pass" : "block",
     scope: "stage",

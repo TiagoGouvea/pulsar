@@ -32,7 +32,7 @@ yarn harness report --config harness.config.yaml --run <runId>
 
 ## Política de branches
 
-O harness nunca cria, troca ou remove branches. O branch corrente é fixado ao iniciar cada etapa e precisa permanecer o mesmo até sua verificação e aprovação. Para usar um branch por etapa: aprove a etapa atual, crie ou selecione manualmente o próximo branch e só então retome a run. Uma execução serial não precisa de worktree.
+O harness nunca cria, troca ou remove branches. O branch corrente é fixado ao iniciar cada etapa e precisa permanecer o mesmo até sua verificação e aprovação. Para usar um branch por etapa: aprove a etapa atual, crie ou selecione manualmente o próximo branch e só então retome a run. Worktrees criados manualmente são reconhecidos e preservados, mas não são gerenciados pelo harness.
 
 ## Estrutura do Módulo
 

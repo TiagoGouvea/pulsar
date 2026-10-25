@@ -25,4 +25,4 @@ Fluxo manual entre etapas:
 2. Criar ou selecionar manualmente o branch da próxima etapa.
 3. Executar `resume`; o novo branch será fixado para essa etapa.
 
-Não é necessário worktree para a execução serial configurada. Worktrees só seriam úteis para trabalho simultâneo em branches diferentes, cenário que este harness não executa automaticamente.
+Não é necessário worktree para a execução serial configurada. Um worktree criado manualmente pode ser mantido: o doctor o reconhece pelo `git-common-dir`, registra seu branch corrente e nunca troca branches. O harness não cria, remove nem reorganiza worktrees automaticamente.

@@ -29,7 +29,10 @@ describe("workspace Git", () => {
     await runProcess(["git", "add", "harness-codex/harness.txt"], { cwd: repositoryRoot });
 
     const git = await inspectGitWorkspace(workspace, protectedRoot);
-    expect(git).toEqual({ repositoryRoot: await realpath(repositoryRoot), branch: "main", sharedWithProtectedRoot: true });
+    expect(git).toEqual({
+      repositoryRoot: await realpath(repositoryRoot), commonGitDirectory: path.join(await realpath(repositoryRoot), ".git"),
+      branch: "main", sharedWithProtectedRoot: true, linkedWorktree: false,
+    });
 
     await writeFile(path.join(workspace, "app.txt"), "changed\n");
     const checkpoint = await checkpointFiles({
@@ -73,5 +76,29 @@ describe("workspace Git", () => {
     expect((await inspectGitWorkspace(workspace)).branch).toBe("main");
     const branches = await runProcess(["git", "branch", "--format=%(refname:short)"], { cwd: workspace });
     expect(branches.stdout.trim()).toBe("main");
+  });
+
+  test("reconhece worktree vinculado como o mesmo repositório sem trocar branch", async () => {
+    const repositoryRoot = await mkdtemp(path.join(os.tmpdir(), "pulsar worktree "));
+    const harnessRoot = path.join(repositoryRoot, "harness-codex");
+    const applicationDirectory = path.join(repositoryRoot, "pulsar-codex");
+    const linkedRoot = `${repositoryRoot}-linked`;
+    await mkdir(harnessRoot);
+    await mkdir(applicationDirectory);
+    await runProcess(["git", "init", "-b", "main"], { cwd: repositoryRoot });
+    await runProcess(["git", "config", "user.name", "Harness Test"], { cwd: repositoryRoot });
+    await runProcess(["git", "config", "user.email", "harness@example.invalid"], { cwd: repositoryRoot });
+    await writeFile(path.join(applicationDirectory, "app.txt"), "initial\n");
+    await runProcess(["git", "add", "."], { cwd: repositoryRoot });
+    await runProcess(["git", "commit", "-m", "initial"], { cwd: repositoryRoot });
+    await runProcess(["git", "worktree", "add", "-b", "stage-a", linkedRoot], { cwd: repositoryRoot });
+
+    const linkedWorkspace = path.join(linkedRoot, "pulsar-codex");
+    const git = await inspectGitWorkspace(linkedWorkspace, harnessRoot);
+
+    expect(git.sharedWithProtectedRoot).toBe(true);
+    expect(git.linkedWorktree).toBe(true);
+    expect(git.branch).toBe("stage-a");
+    expect((await inspectGitWorkspace(applicationDirectory)).branch).toBe("main");
   });
 });

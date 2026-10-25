@@ -22,6 +22,7 @@ describe("doctor Git", () => {
 
     expect(checks.find((check) => check.id === "git.repository")?.status).toBe("pass");
     expect(checks.find((check) => check.id === "git.shared-repository")?.status).toBe("pass");
+    expect(checks.find((check) => check.id === "git.worktree")?.status).toBe("pass");
     expect(checks.find((check) => check.id === "git.branch")?.evidence).toBe("stage-a");
     expect(checks.find((check) => check.id === "git.branch-policy")?.status).toBe("pass");
   });
