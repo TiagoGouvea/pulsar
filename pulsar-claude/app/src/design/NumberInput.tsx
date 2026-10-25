@@ -43,7 +43,7 @@ export function NumberInput({ label, value, onChange, unit, step = 1, min, max }
             const n = parseDecimal(text);
             onChange(n === null ? null : clamp(n));
           }}
-          className="w-full bg-transparent text-center font-stat-display text-stat-display text-on-surface focus:outline-none"
+          className="h-11 w-full bg-transparent text-center font-stat-display text-stat-display text-on-surface focus:outline-none"
         />
         {unit && (
           <span className="font-label-code text-label-code text-on-surface-variant uppercase">{unit}</span>

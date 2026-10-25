@@ -24,11 +24,15 @@ export function Toggle({ label, description, checked, onChange, disabled }: Togg
         aria-label={label}
         disabled={disabled}
         onClick={() => onChange(!checked)}
-        className={`relative h-7 w-12 shrink-0 rounded-full transition-colors disabled:opacity-50 ${checked ? 'bg-primary-container' : 'bg-outline-variant'}`}
+        className="flex h-11 w-12 shrink-0 items-center disabled:opacity-50"
       >
         <span
-          className={`absolute top-1 left-1 h-5 w-5 rounded-full bg-surface-container-lowest shadow-level-1 transition-transform ${checked ? 'translate-x-5' : ''}`}
-        />
+          className={`relative h-7 w-12 rounded-full transition-colors ${checked ? 'bg-primary-container' : 'bg-outline-variant'}`}
+        >
+          <span
+            className={`absolute top-1 left-1 h-5 w-5 rounded-full bg-surface-container-lowest shadow-level-1 transition-transform ${checked ? 'translate-x-5' : ''}`}
+          />
+        </span>
       </button>
     </label>
   );

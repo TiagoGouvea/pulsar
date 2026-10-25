@@ -40,7 +40,11 @@ export function Slider({
         </div>
       )}
       {count <= MAX_PILLS ? (
-        <div role="radiogroup" aria-label={label} className="flex items-center justify-between gap-0.5 py-1">
+        <div
+          role="radiogroup"
+          aria-label={label}
+          className="flex items-center justify-between gap-0.5 overflow-x-auto py-1"
+        >
           {Array.from({ length: count }, (_, i) => Number((min + i * step).toFixed(6))).map((n) => (
             <button
               key={n}
@@ -48,7 +52,7 @@ export function Slider({
               role="radio"
               aria-checked={value === n}
               onClick={() => onChange(n)}
-              className={`flex h-11 min-w-0 flex-1 items-center justify-center rounded-full font-label-code text-label-code transition-transform active:scale-90 ${value === n ? `${selected} font-headline-md text-headline-md shadow-md` : 'bg-surface-container text-on-surface-variant'}`}
+              className={`flex h-11 min-w-[44px] flex-1 items-center justify-center rounded-full font-label-code text-label-code transition-transform active:scale-90 ${value === n ? `${selected} font-headline-md text-headline-md shadow-md` : 'bg-surface-container text-on-surface-variant'}`}
             >
               {n}
             </button>
