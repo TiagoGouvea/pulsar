@@ -222,7 +222,7 @@ localInference:
 review:
   requireIndependentSession: true
   preferDifferentModelFamily: true
-  maxAttempts: 2
+  maxAttempts: 3
   viewportWidths: [390, 430, 1440]
 
 commands:
