@@ -49,19 +49,24 @@ export function config(over: Record<string, any> = {}) {
 
 export const SPEC = "# Spec\n\n## 4. Indicadores\n\n### 4.4 Siglas\nTexto 4.4.\n\n## 10. Critérios de aceite\n\n- [ ] Critério A\n- [ ] Critério B\n";
 
-export async function makeProject(o: { config?: Record<string, any>; budget?: Record<string, any> } = {}) {
-  const root = mkdtempSync(join(tmpdir(), "harness-test-"));
-  const w = (f: string, c: string) => { mkdirSync(join(root, f, ".."), { recursive: true }); writeFileSync(join(root, f), c); };
-  w("harness.config.yaml", stringify(config(o.config)));
-  w("budget.yaml", stringify({ currency: "USD", caps: { run: 100, stage: 50, feature: 20, dailyByProvider: {} }, alerts: [0.5, 0.8, 1.0], onSoftLimit: "prefer_cheap", onHardLimit: "pause_and_checkpoint", ...o.budget }));
-  w("docs/spec.md", SPEC);
-  w("design/tokens.json", "{}");
-  w("DECISOES.md", "# Decisões\n");
-  w(".gitignore", ".worktrees/\n.harness/runs/**/*.jsonl\n");
-  await git(root, "init", "-q", "-b", "main");
-  await git(root, "add", "-A");
-  await git(root, "commit", "-qm", "init");
-  return { root, ctx: loadCtx(root) };
+/** `sub`: harness and project are sibling subfolders of one shared repo (monorepo), with another folder next to them. */
+export async function makeProject(o: { config?: Record<string, any>; budget?: Record<string, any>; sub?: boolean } = {}) {
+  const top = mkdtempSync(join(tmpdir(), "harness-test-"));
+  const root = o.sub ? join(top, "harness") : top, repo = o.sub ? join(top, "proj") : top;
+  const w = (dir: string, f: string, c: string) => { mkdirSync(join(dir, f, ".."), { recursive: true }); writeFileSync(join(dir, f), c); };
+  const cfg = config(o.config);
+  if (o.sub) Object.assign(cfg.project, { repo: "../proj" });
+  w(root, "harness.config.yaml", stringify(cfg));
+  w(root, "budget.yaml", stringify({ currency: "USD", caps: { run: 100, stage: 50, feature: 20, dailyByProvider: {} }, alerts: [0.5, 0.8, 1.0], onSoftLimit: "prefer_cheap", onHardLimit: "pause_and_checkpoint", ...o.budget }));
+  w(repo, "docs/spec.md", SPEC);
+  w(repo, "design/tokens.json", "{}");
+  w(repo, "DECISOES.md", "# Decisões\n");
+  w(top, ".gitignore", ".worktrees/\n.harness/runs/**/*.jsonl\n");
+  if (o.sub) w(top, "other/keep.txt", "outro agente\n");
+  await git(top, "init", "-q", "-b", "main");
+  await git(top, "add", "-A");
+  await git(top, "commit", "-qm", "init");
+  return { root, top, repo, ctx: loadCtx(root) };
 }
 
 /** Default script: the initializer writes features.json; test writers write a test per feature. */

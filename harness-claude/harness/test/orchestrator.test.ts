@@ -29,7 +29,8 @@ describe("orquestrador (adapter fake)", () => {
     approveFile(root, 1, "Status: aprovado\n");
     expect(await o.approve()).toBe("DONE");
     expect(loadFeatures(ctx).features.every((f) => f.status === "passing")).toBe(true);
-    expect(await git(root, "tag")).toContain("etapa-1-aprovada");
+    expect(await git(root, "branch", "--format=%(refname:short)")).toBe("main");   // never creates branches
+    expect(await git(root, "tag")).toBe("");
     expect(existsSync(join(root, "app/src/F-1.02-implement.ts")) || (await git(root, "show", "main:app/AGENTS.md")).length > 0).toBe(true);
     expect(loadState(ctx)!.postmortemDone).toBe(true);
   });
@@ -123,13 +124,13 @@ describe("orquestrador (adapter fake)", () => {
     await expect(orch(ctx).start()).rejects.toThrow("fake crash");
     expect(loadState(ctx)!.phase).toBe("CRASHED");
     expect(feature(root, "F-0.01").status).toBe("in_progress");
-    expect((await listWorktrees(root)).map((w) => w.branch)).toContain("feat/F-0.01");
+    expect(await listWorktrees(root)).toContain("F-0.01");
     expect(await orch(ctx).resume()).toBe("AWAITING_APPROVAL");
     const f = feature(root, "F-0.01");
     expect(f.status).toBe("passing");
     expect(f.attempts).toBe(1);
     expect(implEvents(ctx, "F-0.01")).toHaveLength(1);
-    expect((await listWorktrees(root)).map((w) => w.branch)).toEqual(["stage/0"]);
+    expect(await listWorktrees(root)).toEqual(["stage-0"]);
   });
 
   it("8. mudança no hash da spec → PAUSED_SPEC_CHANGE → approve continua", async () => {
@@ -192,7 +193,7 @@ describe("orquestrador (adapter fake)", () => {
     expect(await orch(ctx, d).start()).toBe("AWAITING_APPROVAL");
     expect(loadFeatures(ctx).features.every((f) => f.status === "passing")).toBe(true);
     expect(maxActive).toBe(2);
-    const log = await git(root, "log", "--oneline", "stage/0");
+    const log = await git(root, "log", "--oneline", "main");
     for (let i = 1; i <= 4; i++) expect(log).toContain(`feat(F-0.0${i})`);
     expect(readEvents(ctx).filter((e) => e.role === "retro").length).toBeGreaterThanOrEqual(2);
   });
@@ -211,7 +212,23 @@ describe("orquestrador (adapter fake)", () => {
     const judgeEv = evs.find((e) => e.role === "review_code")!;
     expect(["anthropic", "openai"]).not.toContain(judgeEv.family);
     expect(feature(ctx.root, "F-0.01").status).toBe("passing");
-    expect((await listWorktrees(ctx.root)).map((w) => w.branch)).toEqual(["stage/0"]);
+    expect(await listWorktrees(ctx.root)).toEqual(["stage-0"]);
+  });
+
+  it("repo compartilhado: projeto em subpasta, 1 commit por feature na branch atual, nada fora da pasta", async () => {
+    const { top, repo, ctx } = await makeProject({ sub: true });
+    await git(top, "checkout", "-q", "-b", "etapa-0");
+    writeFileSync(join(top, "other/keep.txt"), "trabalho pendente do outro agente\n");
+    setFakeScript(script([{ id: "F-0.01", stage: 0 }, { id: "F-0.02", stage: 0 }]));
+    expect(await orch(ctx).start()).toBe("AWAITING_APPROVAL");
+    expect(await git(top, "branch", "--show-current")).toBe("etapa-0");
+    expect((await git(top, "branch", "--format=%(refname:short)")).split("\n").sort()).toEqual(["etapa-0", "main"]);
+    const subjects = await git(top, "log", "--format=%s", "main..etapa-0");
+    expect(subjects).toContain("feat(F-0.01)");
+    expect(subjects).not.toContain("wip(");
+    expect(await git(top, "log", "--name-only", "--format=", "main..etapa-0", "--", ".", ":(exclude)proj", ":(exclude)harness")).toBe("");
+    expect(readFileSync(join(top, "other/keep.txt"), "utf8")).toContain("pendente");
+    expect(existsSync(join(repo, "app/e2e/F-0.02.spec.ts"))).toBe(true);
   });
 
   it("12. approve converte respostas do humano em features de ajuste e decisões", async () => {
@@ -228,7 +245,7 @@ describe("orquestrador (adapter fake)", () => {
     const adj = feature(root, "F-0.adj-01");
     expect(adj.acceptance).toEqual(["botão ≥ 56px"]);
     expect(adj.status).toBe("passing");
-    expect(await git(root, "show", "stage/0:DECISOES.md")).toContain("usar 4h");
+    expect(await git(root, "show", "main:DECISOES.md")).toContain("usar 4h");
     expect(loadLessons(ctx, "project").some((l) => l.rule.includes("usar 4h"))).toBe(true);
     expect(readFileSync(join(root, "checkpoints/etapa-0/DUVIDAS.md"), "utf8")).not.toContain("Virada do dia");
     expect(readJsonl(hp(ctx, "inbox", "questions.jsonl"))[0].featureId).toBe("F-0.01");

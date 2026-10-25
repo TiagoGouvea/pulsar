@@ -1,6 +1,6 @@
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { homedir, platform, totalmem } from "node:os";
-import { join } from "node:path";
+import { join, relative } from "node:path";
 import { execa } from "execa";
 import { z } from "zod";
 import { baseEnv } from "./adapters/exec.js";
@@ -140,10 +140,13 @@ export async function doctor(ctx: Ctx, o: { auth?: boolean; emulators?: boolean 
 
   // git
   try {
-    add((await g.isClean(ctx.repo)) ? "ok" : "fail", "git limpo", (await g.isClean(ctx.repo)) ? "sem mudanças pendentes" : "faça commit das mudanças antes do start");
+    const top = await g.git(ctx.repo, "rev-parse", "--show-toplevel");
+    const dir = relative(top, realpathSync(ctx.repo)) || ".";
+    add(dir === "." ? "ok" : "info", "git repo", dir === "." ? top : `${dir}/ dentro do repo compartilhado ${top}; worktrees e commits só tocam ${dir}/`);
+    add((await g.isClean(ctx.repo)) ? "ok" : "fail", "git limpo", (await g.isClean(ctx.repo)) ? `sem mudanças pendentes em ${dir}/` : `faça commit das mudanças em ${dir}/ antes do start`);
     add((await g.hasRemote(ctx.repo)) ? "ok" : "warn", "git remoto", (await g.hasRemote(ctx.repo)) ? "configurado" : "nenhum remote (git remote add origin …)");
     const b = await g.currentBranch(ctx.repo);
-    add(b === ctx.config.project.mainBranch ? "ok" : "warn", "git branch", b === ctx.config.project.mainBranch ? b : `checkout atual é ${b}; as etapas aprovadas são mescladas em ${ctx.config.project.mainBranch}`);
+    add(b ? "ok" : "fail", "git branch", b ? `${b}: o harness commita nela (1 commit por feature) e nunca cria nem troca branch` : "detached HEAD: faça checkout da branch da etapa");
   } catch (e) {
     add("fail", "git", (e as Error).message);
   }

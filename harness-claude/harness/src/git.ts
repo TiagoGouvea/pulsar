@@ -14,46 +14,32 @@ const tryGit = (cwd: string, ...a: string[]) => git(cwd, ...a).then(() => true, 
 
 export const wtPath = (root: string, name: string) => join(root, ".worktrees", name);
 export const head = (cwd: string) => git(cwd, "rev-parse", "HEAD");
-export const branchExists = (root: string, b: string) => tryGit(root, "rev-parse", "--verify", "--quiet", `refs/heads/${b}`);
 export const currentBranch = (root: string) => git(root, "branch", "--show-current");
 
-export async function ensureBranch(root: string, name: string, from: string) {
-  if (!(await branchExists(root, name))) await git(root, "branch", name, from);
-}
-
-/** Creates (or reuses) a worktree in .worktrees/<name> on `branch`, created from `base` if missing. */
-export async function addWorktree(root: string, name: string, branch: string, base: string) {
+/** Detached worktree in .worktrees/<name> at `base` (never creates or switches branches). Returns the project dir
+ *  inside it: the repo may be a subfolder of a monorepo. */
+export async function addWorktree(root: string, name: string, base: string) {
   const path = wtPath(root, name);
-  if (existsSync(path)) return path;
-  if (await branchExists(root, branch)) await git(root, "worktree", "add", path, branch);
-  else await git(root, "worktree", "add", "-b", branch, path, base);
-  return path;
+  if (!existsSync(path)) await git(root, "worktree", "add", "--detach", path, base);
+  return join(path, relative(await git(root, "rev-parse", "--show-toplevel"), realpathSync(root)));
 }
 
-export async function removeWorktree(root: string, path: string, deleteBranch?: string) {
-  if (existsSync(path)) await tryGit(root, "worktree", "remove", "--force", path);
+export async function removeWorktree(root: string, name: string) {
+  if (existsSync(wtPath(root, name))) await tryGit(root, "worktree", "remove", "--force", wtPath(root, name));
   await tryGit(root, "worktree", "prune");
-  if (deleteBranch) await tryGit(root, "branch", "-D", deleteBranch);
 }
 
+/** Names of the harness worktrees (under .worktrees/). */
 export async function listWorktrees(root: string) {
-  const out = await git(root, "worktree", "list", "--porcelain");
-  const real = realpathSync(root);   // git reports resolved paths (/private/var/... on macOS)
-  return out.split("\n\n").map((b) => ({
-    path: b.match(/^worktree (.+)$/m)?.[1] ?? "",
-    branch: b.match(/^branch refs\/heads\/(.+)$/m)?.[1],
-  })).filter((w) => relative(real, w.path).startsWith(".worktrees"));
+  const base = join(realpathSync(root), ".worktrees");   // git reports resolved paths (/private/var/... on macOS)
+  return (await git(root, "worktree", "list", "--porcelain")).split("\n\n")
+    .map((b) => relative(base, b.match(/^worktree (.+)$/m)?.[1] ?? "")).filter((n) => n && !n.startsWith(".."));
 }
 
-/** Removes orphan feature worktrees (and their branches) left by a crash. Keeps stage worktrees. */
+/** Removes orphan feature worktrees left by a crash. Keeps stage worktrees. */
 export async function pruneOrphans(root: string, keep: (name: string) => boolean) {
-  const removed: string[] = [];
-  for (const w of await listWorktrees(root)) {
-    const name = relative(join(realpathSync(root), ".worktrees"), w.path);
-    if (keep(name)) continue;
-    await removeWorktree(root, w.path, w.branch);
-    removed.push(name);
-  }
+  const removed = (await listWorktrees(root)).filter((n) => !keep(n));
+  for (const n of removed) await removeWorktree(root, n);
   return removed;
 }
 
@@ -72,21 +58,31 @@ export async function resetHard(cwd: string, ref: string) {
   await git(cwd, "clean", "-fd", ...EXCL);
 }
 
-export const diff = (cwd: string, base: string) => git(cwd, "diff", base, "HEAD", ...EXCL);
+export const diff = (cwd: string, base: string) => git(cwd, "diff", "--relative", base, "HEAD", ...EXCL);
 export const changedFiles = async (cwd: string, base: string) =>
-  (await git(cwd, "diff", "--name-only", base, "HEAD", ...EXCL)).split("\n").filter(Boolean);
+  (await git(cwd, "diff", "--relative", "--name-only", base, "HEAD", ...EXCL)).split("\n").filter(Boolean);
 
-/** Brings the latest stage branch into the feature branch. On conflict the markers are left for the worker. */
-export async function integrate(cwd: string, stageBranch: string) {
-  if (await tryGit(cwd, "merge", "--no-edit", stageBranch)) return { ok: true };
+/** Brings the latest commits of `branch` into the worktree. On conflict the markers are left for the worker. */
+export async function integrate(cwd: string, branch: string) {
+  if (await tryGit(cwd, "merge", "--no-edit", branch)) return { ok: true };
   return { ok: false, conflict: await git(cwd, "diff", "--name-only", "--diff-filter=U") };
 }
 
-/** Merges `branch` into the branch checked out at `cwd` (no fast-forward). Aborts on conflict. */
-export async function mergeNoFf(cwd: string, branch: string, msg: string) {
-  if (await tryGit(cwd, "merge", "--no-ff", "-m", msg, branch)) return true;
-  await tryGit(cwd, "merge", "--abort");
-  return false;
+/** Squashes the worktree's work into one commit on top of `branch` and fast-forwards the root checkout, which must
+ *  have `branch` checked out. Never switches branches; retries when someone else commits meanwhile. */
+export async function land(root: string, cwd: string, branch: string, msg: string): Promise<{ ok: boolean; conflict?: string }> {
+  for (let i = 1; ; i++) {
+    const integ = await integrate(cwd, branch);
+    if (!integ.ok) return integ;
+    await git(cwd, "reset", "--soft", await git(root, "rev-parse", branch));
+    if (await tryGit(cwd, "diff", "--cached", "--quiet")) return { ok: true };
+    await git(cwd, "commit", "--no-verify", "-m", msg);
+    const now = await currentBranch(root);
+    if (now !== branch) throw new Error(`a branch do repo mudou de "${branch}" para "${now || "detached"}"; o harness nunca troca de branch: volte para ${branch} e rode harness resume`);
+    if (await tryGit(root, "merge", "--ff-only", "--quiet", await head(cwd))) return { ok: true };
+    if (i === 5) throw new Error(`não consegui avançar ${branch} (mudanças locais conflitantes em ${root}?)`);
+    await new Promise((r) => setTimeout(r, 1000 * i));
+  }
 }
 
 /** Commits only the given paths (orchestrator state snapshots: .harness, checkpoints). */
@@ -99,13 +95,5 @@ export async function commitPaths(cwd: string, paths: string[], msg: string) {
   return head(cwd);
 }
 
-/** Merges `branch` into `main` without disturbing the root checkout when it is on another branch. */
-export async function mergeToMain(root: string, main: string, branch: string, msg: string) {
-  if ((await currentBranch(root)) === main) return mergeNoFf(root, branch, msg);
-  const tmp = await addWorktree(root, "main-merge", main, main);
-  try { return await mergeNoFf(tmp, branch, msg); } finally { await removeWorktree(root, tmp); }
-}
-
-export const tag = (root: string, name: string) => git(root, "tag", "-f", name);
 export const isClean = async (root: string) => (await git(root, "status", "--porcelain", ...EXCL)) === "";
 export const hasRemote = async (root: string) => (await git(root, "remote")).length > 0;

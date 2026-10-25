@@ -1,6 +1,6 @@
 project:
   name: pulsar
-  repo: ../pulsar-claude        # repo do projeto (spec, design, DECISOES.md, app/); worktrees ficam lá
+  repo: ../pulsar-claude        # projeto (spec, design, DECISOES.md, app/); subpasta do monorepo Pulsar/. Worktrees detached em .worktrees/
   appDir: app
   # alias -> arquivo. specRefs nas features usam o alias (ex.: "spec.md#4.4")
   specFiles:
@@ -14,7 +14,7 @@ project:
   designSource: { from: ../design, exclude: [pulsar_especificacao_completa.md] }
   decisionsFile: DECISOES.md
   language: pt-BR
-  mainBranch: main
+  mainBranch: main               # só referência para o diff do gate de segredos no fim da etapa; o harness nunca mescla nela
 
 workers:
   # --- Anthropic ---

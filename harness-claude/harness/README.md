@@ -5,7 +5,7 @@ Harness autônomo e multi-modelo que **constrói o app Pulsar** feature por feat
 ## Duas pastas
 
 - **`harness-claude/`** (esta): a fábrica: código do harness, `harness.config.yaml`, `budget.yaml`, `.env`/`secrets/`, estado em `.harness/` e `checkpoints/`.
-- **`../pulsar-claude/`** (`project.repo`): o projeto, um repo git próprio com `docs/` (spec), `design/`, `DECISOES.md` e `app/`. Worktrees, branches `stage/N`/`feat/*`, merges e tags acontecem nele.
+- **`../pulsar-claude/`** (`project.repo`): o projeto, com `docs/` (spec), `design/`, `DECISOES.md` e `app/`. Pode ser um repo próprio ou uma subpasta de um repo compartilhado (hoje: o monorepo `Pulsar/`, junto com o harness do Codex). O harness **nunca cria, troca ou mescla branches nem cria tags**: trabalha na branch que estiver em checkout.
 
 ## Fluxo do humano
 
@@ -28,7 +28,7 @@ Ao fim de cada etapa o processo **termina** em `AWAITING_APPROVAL` e notifica o 
 3. Em `APROVACAO.md`, escreva `Status: aprovado` ou `Status: ajustes` com a lista de ajustes.
 4. `./harness/bin/harness approve` (mostra o resumo e pede confirmação y/n).
    - Ajustes viram features `F-N.adj-XX` na mesma etapa e o harness continua.
-   - Aprovado sem ajustes: `stage/N` é mesclado em `main`, tag `etapa-N-aprovada`, segue para a etapa N+1.
+   - Aprovado sem ajustes: segue para a etapa N+1 na branch em checkout. Merge para `main` e a branch da próxima etapa são com você (crie/troque a branch **antes** do `approve`).
 
 | Comando | Faz |
 |---|---|
@@ -52,13 +52,13 @@ Ao fim de cada etapa o processo **termina** em `AWAITING_APPROVAL` e notifica o 
 - [ ] Limites duros nos consoles (OpenRouter por chave, Anthropic/OpenAI mensal, alertas GCP)
 - [ ] `yarn`, `java`, `firebase-tools`, `gemini` instalados; `npx playwright install chromium`
 - [ ] LM Studio com os modelos locais (ou desabilite `local-*`)
-- [ ] Repo do projeto com remote; trabalhar com o checkout em `main` (as etapas aprovadas são mescladas nele)
+- [ ] Repo do projeto com remote; checkout na branch da etapa (criada por você; o harness commita nela)
 - [ ] `doctor` verde e `smoke` revisado
 
 ## Como funciona
 
 - **Estado em arquivos** (`.harness/`): `state.json` (máquina de estados), `features.json`, `events.jsonl`, `ledger.jsonl`, `routing-stats.json`, `protected.json`, `inbox/`, `lessons/`, `runs/<taskId>/` (prompt, transcript, gate report, veredito). Escrita atômica (tmp + rename).
-- **Git** (no repo do projeto): cada feature roda em `.worktrees/<id>` na branch `feat/<id>` criada de `stage/N`; aprovada, é mesclada (`--no-ff`) em `stage/N` via `.worktrees/stage-N`. Commits do harness usam a identidade `pulsar-harness`.
+- **Git**: cada feature roda numa worktree **detached** em `<projeto>/.worktrees/<id>` (sem branch), a partir da ponta da branch em checkout; tentativas e rollbacks ficam só lá. Aprovada, vira **um commit** `feat(<id>): título` na branch em checkout (squash + fast-forward, serializado, com retry se outro agente commitar no meio). Só a pasta do projeto entra nesses commits. Se a branch em checkout mudar durante a execução, o harness para com erro. Commits do harness usam a identidade `pulsar-harness`.
 - **Ciclo por feature**: testes de aceite (test_writer, depois protegidos por hash) → implementação (router escolhe o worker; `hard`/tags críticas e após 2 falhas → `implement_hard`; torneio nas tags críticas) → gates G1–G13 → triage em caso de falha → avaliador de código de outra família → avaliador visual (tag `ui`) → merge. Após 5 tentativas: `blocked` + DUVIDAS/RISCOS.
 - **Gates**: comandos do app em `harness.config.yaml > gates` (yarn); embutidos: G7 (testes protegidos), G8 (sentinelas de privacidade), G9 (axe), G10 (overflow/alvos 44px), G12 (Lighthouse), G13 (segredos no diff). Os gates de navegador sobem `browser.serveCmd` e carregam o Playwright do próprio app. Rodam serializados (emuladores e portas compartilhados).
 - **Roteamento**: bandit (sucesso suavizado ÷ custo ÷ duração) com `explorationRate`; respeita família, visão, disponibilidade (LM Studio), concorrência, exclusividade dos locais e `prefer_cheap` acima de 80% do orçamento.

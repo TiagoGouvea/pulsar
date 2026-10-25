@@ -55,7 +55,8 @@ export const defaultDeps = (): Deps => ({
 export class Orchestrator {
   rt: Runtime;
   state!: State;
-  private merge = mutex();   // serializes merges into the stage branch
+  private merge = mutex();   // serializes landings on the current branch
+  private branch = "";       // branch checked out in the repo; the human creates/switches it, the harness only commits on it
   private fatal?: unknown;
 
   constructor(public ctx: Ctx, public deps: Deps = defaultDeps()) {
@@ -88,6 +89,7 @@ export class Orchestrator {
 
   /** Main loop. Ends (process exits) at AWAITING_APPROVAL, DONE or any PAUSED_* state. */
   async run(): Promise<Phase> {
+    await this.useBranch();
     try {
       await this.recover();
       for (;;) {
@@ -128,12 +130,25 @@ export class Orchestrator {
     this.set(phase);
   }
   private specChanged = () => this.ctx.config.loop.stopOnSpecChange && !!storedHash(this.ctx) && storedHash(this.ctx) !== computeHash(this.ctx);
-  private stageBranch = (s = this.state.stage) => `stage/${s}`;
   private appAbs = (wt: string) => join(wt, this.ctx.config.project.appDir);
 
+  private async useBranch() {
+    this.branch = await g.currentBranch(this.ctx.repo);
+    if (!this.branch) throw new Error("o repo do projeto está em detached HEAD: faça checkout da branch da etapa (o harness nunca cria nem troca branch)");
+  }
+
+  /** Detached worktree for stage-level work, always at the tip of the current branch. */
   private async stageWt(s = this.state.stage) {
-    await g.ensureBranch(this.ctx.repo, this.stageBranch(s), this.ctx.config.project.mainBranch);
-    return g.addWorktree(this.ctx.repo, `stage-${s}`, this.stageBranch(s), this.ctx.config.project.mainBranch);
+    const wt = await g.addWorktree(this.ctx.repo, `stage-${s}`, this.branch);
+    await g.resetHard(wt, this.branch);
+    return wt;
+  }
+
+  /** Commits the worktree and lands it as one commit on the current branch. */
+  private async commitToBranch(wt: string, msg: string) {
+    await g.commitAll(wt, msg);
+    const r = await this.merge(() => g.land(this.ctx.repo, wt, this.branch, msg));
+    if (!r.ok) throw new Error(`conflito ao levar "${msg}" para ${this.branch}: ${r.conflict}`);
   }
 
   /** Crash recovery: in_progress -> failing, orphan worktrees removed (attempts are only counted when finished). */
@@ -177,7 +192,7 @@ export class Orchestrator {
     const ctx = this.ctx;
     if (this.deps.doctor && !(await this.deps.doctor(ctx))) throw new Error("harness doctor falhou: corrija os itens críticos antes do start");
     freezeSpec(ctx);
-    const wt = await g.addWorktree(ctx.repo, "init", this.stageBranch(0), ctx.config.project.mainBranch);
+    const wt = await g.addWorktree(ctx.repo, "init", this.branch);
     this.clearInbox(wt);
     const ac = acceptanceCriteria(ctx);
     const acText = ac.map((a) => `${a.id}: ${a.text}`).join("\n");
@@ -201,8 +216,8 @@ export class Orchestrator {
     for (const f of file.features) Object.assign(f, { status: "failing", attempts: 0, history: [], costUsd: 0 });
     file.specHash = storedHash(ctx);
     saveFeatures(ctx, file);
-    await g.commitAll(wt, "chore(init): scaffold do app, design system e decisões");
-    await g.removeWorktree(ctx.repo, wt);
+    await this.commitToBranch(wt, "chore(init): scaffold do app, design system e decisões");
+    await g.removeWorktree(ctx.repo, "init");
     this.progress(`INIT concluído: ${file.features.length} features`);
     this.state.stage = this.firstStageFrom(0) ?? 0;
     this.set("STAGE_RUNNING");
@@ -255,14 +270,14 @@ export class Orchestrator {
     updateFeature(this.ctx, f.id, (x) => { x.status = "blocked"; x.blockedReason = reason; });
     addQuestion(this.ctx, { featureId: f.id, pergunta: `A feature ${f.id} (${f.title}) foi bloqueada: ${reason}. Como devemos seguir?`, escolhido: "seguir com as demais features", alternativas: ["ajustar a spec/critérios", "simplificar a feature", "aceitar sem ela nesta etapa"], impacto: "a feature não está no preview" });
     addRisk(this.ctx, { featureId: f.id, risco: `feature bloqueada: ${reason}`, probabilidade: "alta", impacto: "médio", sugestao: "responder em DUVIDAS.md ou pedir ajuste" });
-    if (wt) await g.removeWorktree(this.ctx.repo, wt);   // branch feat/<id> kept for inspection
+    if (wt) await g.removeWorktree(this.ctx.repo, f.id);   // attempts stay in .harness/runs/<id>
     this.progress(`${f.id} BLOQUEADA: ${reason}`);
     await notify(this.ctx, "blocked", `${f.id} bloqueada: ${reason}`);
   }
 
   private async runFeature(f0: Feature) {
     const ctx = this.ctx;
-    const wt = await g.addWorktree(ctx.repo, f0.id, `feat/${f0.id}`, this.stageBranch(f0.stage));
+    const wt = await g.addWorktree(ctx.repo, f0.id, this.branch);
     try {
       await this.featureLoop(f0, wt);
     } catch (e) {
@@ -302,8 +317,8 @@ export class Orchestrator {
       if (f.attempts >= cfg.maxAttemptsPerFeature) return this.block(f, `limite de ${cfg.maxAttemptsPerFeature} tentativas atingido`, wt);
       const attempt = f.attempts + 1;
       const role = this.roleFor(f);
-      const integ = await g.integrate(wt, this.stageBranch(f.stage));
-      if (!integ.ok) diag = `Há conflitos de merge com a branch da etapa nos arquivos:\n${integ.conflict}\nResolva os marcadores <<<<<<< mantendo as duas funcionalidades.\n\n${diag}`;
+      const integ = await g.integrate(wt, this.branch);
+      if (!integ.ok) diag = `Há conflitos de merge com a branch ${this.branch} nos arquivos:\n${integ.conflict}\nResolva os marcadores <<<<<<< mantendo as duas funcionalidades.\n\n${diag}`;
       const lessonIds = selectLessons(ctx, role, f.tags).map((l) => l.id);
       const prompt = render(ctx, role, featureVars(ctx, f, { diagnostic: diag || "(primeira tentativa)", attempt: String(attempt) }), f.tags);
       this.clearInbox(wt);
@@ -318,7 +333,7 @@ export class Orchestrator {
       if (res.outcome !== "success") {
         diag = `A tentativa anterior terminou com "${res.outcome}". Final da resposta:\n${res.result.finalText.slice(-1500)}`;
       } else {
-        gates = await this.deps.runGates(ctx, wt, { stage: f.stage, mode: "feature", base: ctx.config.project.mainBranch, featureId: f.id });
+        gates = await this.deps.runGates(ctx, wt, { stage: f.stage, mode: "feature", base: this.branch, featureId: f.id });
         writeJson(hp(ctx, "runs", f.id, `gate-report-${attempt}.json`), gates);
         if (gates.failed.includes("G7")) {
           outcome = "protected_violation";
@@ -328,7 +343,7 @@ export class Orchestrator {
           outcome = "failure";
           diag = await this.triage(f, gates, res, attempt, wt);
         } else {
-          verdicts.push(await reviewCode({ ctx, rt: this.rt, f, feature: f, cwd: wt, attempt, implementerFamily: res.worker.family, diff: await g.diff(wt, this.stageBranch(f.stage)), gates }));
+          verdicts.push(await reviewCode({ ctx, rt: this.rt, f, feature: f, cwd: wt, attempt, implementerFamily: res.worker.family, diff: await g.diff(wt, this.branch), gates }));
           if (verdicts[0].pass && f.tags.includes("ui")) {
             const shots = await this.deps.capture(ctx, this.appAbs(wt), hp(ctx, "runs", f.id, `screens-${attempt}`), (r) => !r.tags?.length || r.tags.some((t) => f.tags.includes(t)));
             if (shots.length) verdicts.push(await reviewUi({ ctx, rt: this.rt, f, title: f.title, cwd: wt, attempt, implementerFamily: res.worker.family, screenshots: shots }));
@@ -352,10 +367,9 @@ export class Orchestrator {
       });
       if (outcome !== "success") continue;
 
-      const stageWt = await this.stageWt(f.stage);
-      const merged = await this.merge(() => g.mergeNoFf(stageWt, `feat/${f.id}`, `feat(${f.id}): ${f.title}`));
-      if (!merged) { diag = "O merge na branch da etapa conflitou; integre as mudanças recentes da etapa."; continue; }
-      await g.removeWorktree(ctx.repo, wt, `feat/${f.id}`);
+      const landed = await this.merge(() => g.land(ctx.repo, wt, this.branch, `feat(${f.id}): ${f.title}`));
+      if (!landed.ok) { diag = `Conflito de merge com mudanças recentes de ${this.branch} nos arquivos:\n${landed.conflict}\nResolva os marcadores <<<<<<< mantendo as duas funcionalidades.`; continue; }
+      await g.removeWorktree(ctx.repo, f.id);
       updateFeature(ctx, f.id, (x) => { x.status = "passing"; });
       this.progress(`${f.id} passing — ${f.title} (worker ${res.worker.id}, ${attempt} tentativa(s), US$ ${spent(ctx, { featureId: f.id }).toFixed(2)})`);
       this.state.featuresSinceRetro++;
@@ -390,25 +404,25 @@ export class Orchestrator {
     }
     if (chosen.length < 2) return this.rt.invoke({ role: "implement_hard", taskId: f.id, featureId: f.id, stage: f.stage, attempt: 1, cwd: wt, prompt, schema: WorkerFinal, tags: f.tags, deferEvent: true });
     const runs = await Promise.all(chosen.map(async (w, i) => {
-      const cwt = await g.addWorktree(ctx.repo, `${f.id}-c${i}`, `feat/${f.id}-c${i}`, testsBase);
+      const cwt = await g.addWorktree(ctx.repo, `${f.id}-c${i}`, testsBase);
       this.clearInbox(cwt);
       const res = await this.rt.invoke({ role: "implement_hard", taskId: f.id, featureId: f.id, stage: f.stage, attempt: 1, cwd: cwt, prompt, schema: WorkerFinal, tags: f.tags, workerId: w.id, deferEvent: true });
       this.harvestInbox(cwt, f.id);
       await g.commitAll(cwt, `wip(${f.id}): candidato ${i} (${w.id})`);
-      const gates = res.outcome === "success" ? await this.deps.runGates(ctx, cwt, { stage: f.stage, mode: "feature", base: ctx.config.project.mainBranch, featureId: f.id }) : undefined;
-      return { i, w, cwt, res, ok: !!gates?.ok, diff: await g.diff(cwt, testsBase) };
+      const gates = res.outcome === "success" ? await this.deps.runGates(ctx, cwt, { stage: f.stage, mode: "feature", base: this.branch, featureId: f.id }) : undefined;
+      return { i, w, res, sha: await g.head(cwt), ok: !!gates?.ok, diff: await g.diff(cwt, testsBase) };
     }));
     const passing = runs.filter((r) => r.ok);
     const pool = passing.length ? passing : runs;
     const k = pool.length > 1 ? await judge({ ctx, rt: this.rt, f, feature: f, cwd: wt, attempt: 1, implementerFamily: pool[0].w.family, diffs: pool.map((r) => r.diff), families: pool.map((r) => r.w.family) }) : 0;
     const winner = pool[Math.min(k, pool.length - 1)];
-    await g.resetHard(wt, `feat/${f.id}-c${winner.i}`);
+    await g.resetHard(wt, winner.sha);
     for (const r of runs) {
       if (r !== winner) {
         logEvent(ctx, { taskId: f.id, featureId: f.id, stage: f.stage, role: "implement_hard", workerId: r.w.id, family: r.w.family, attempt: 1, outcome: "failure", tournament: "lost", costUsd: r.res.costUsd, durationMs: r.res.result.durationMs, tags: f.tags });
         recordStats(ctx, r.w.id, "implement_hard", f.tags, { success: false, costUsd: r.res.costUsd, durationMs: r.res.result.durationMs });
       }
-      await g.removeWorktree(ctx.repo, r.cwt, `feat/${f.id}-c${r.i}`);
+      await g.removeWorktree(ctx.repo, `${f.id}-c${r.i}`);
     }
     return winner.res;
   }
@@ -421,7 +435,7 @@ export class Orchestrator {
     const gates = await this.deps.runGates(ctx, wt, { stage: s, mode: "stage", base: ctx.config.project.mainBranch });
     writeJson(hp(ctx, "runs", `stage-${s}`, `gate-report-${this.state.stageFixRounds}.json`), gates);
     const canFix = this.state.stageFixRounds < ctx.config.loop.maxStageFixRounds;
-    let suiteNote = gates.ok ? "Todos os gates obrigatórios passaram na branch da etapa." : `Gates falhando: ${gates.failed.join(", ")}`;
+    let suiteNote = gates.ok ? `Todos os gates obrigatórios passaram em ${this.branch}.` : `Gates falhando: ${gates.failed.join(", ")}`;
     if (!gates.ok) {
       if (canFix) return this.addFixFeature(s, `Suíte completa da etapa falhou nos gates ${gates.failed.join(", ")}`, gates.results.filter((r) => !r.ok).map((r) => `${r.id}: ${r.output.slice(-1500)}`).join("\n\n"), ["regression"]);
       addRisk(ctx, { risco: `suíte da etapa ${s} falhando após ${this.state.stageFixRounds} rodadas: ${gates.failed.join(", ")}`, probabilidade: "alta", impacto: "alto", sugestao: "revisar manualmente antes de aprovar" });
@@ -457,7 +471,7 @@ export class Orchestrator {
     this.set("STAGE_RUNNING");
   }
 
-  /** Promoted lessons become part of app/AGENTS.md on the stage branch. */
+  /** Promoted lessons become part of app/AGENTS.md on the current branch. */
   private async syncPromotedLessons(stageWt: string) {
     const ls = promotedLessons(this.ctx);
     const f = join(this.appAbs(stageWt), "AGENTS.md");
@@ -465,7 +479,7 @@ export class Orchestrator {
     const marker = "## Lições promovidas pelo harness";
     const base = readFileSync(f, "utf8").split(marker)[0].trimEnd();
     writeFileSync(f, `${base}\n\n${marker}\n\n${ls.map((l) => `- ${l.rule} (${l.id})`).join("\n")}\n`);
-    await g.commitAll(stageWt, "docs(agents): lições promovidas pelo harness");
+    await this.commitToBranch(stageWt, "docs(agents): lições promovidas pelo harness");
   }
 
   private async publishCheckpoint() {
@@ -491,6 +505,7 @@ export class Orchestrator {
       return this.run();
     }
     if (this.state.phase !== "AWAITING_APPROVAL") return `nada para aprovar (fase ${this.state.phase})`;
+    await this.useBranch();
     const s = this.state.stage;
     const dir = checkpointDir(ctx, s);
     const aprovacao = readFileSync(join(dir, "APROVACAO.md"), "utf8"), duvidas = existsSync(join(dir, "DUVIDAS.md")) ? readFileSync(join(dir, "DUVIDAS.md"), "utf8") : "";
@@ -510,7 +525,7 @@ export class Orchestrator {
     if (a.respostasDuvidas.length) {
       const decisions = join(wt, ctx.config.project.decisionsFile);
       appendFileSync(decisions, `\n\n## Respostas do checkpoint da etapa ${s}\n\n${a.respostasDuvidas.map((r) => `- ${r.id}${r.pergunta ? ` (${r.pergunta})` : ""}: ${r.resposta}`).join("\n")}\n`);
-      await g.commitAll(wt, `docs(decisoes): respostas do checkpoint da etapa ${s}`);
+      await this.commitToBranch(wt, `docs(decisoes): respostas do checkpoint da etapa ${s}`);
       for (const r of a.respostasDuvidas) addLesson(ctx, { rule: `Decisão do humano: ${r.pergunta ? `${r.pergunta} → ` : ""}${r.resposta}`, evidence: [`checkpoints/etapa-${s}/DUVIDAS.md#${r.id}`] });
       markAnswered(ctx, a.respostasDuvidas.map((r) => r.id));
     }
@@ -530,12 +545,10 @@ export class Orchestrator {
     const visual = ctx.config.gates.G11;
     if (visual?.updateCmd && s >= visual.fromStage) {
       await this.deps.runGates({ ...ctx, config: { ...ctx.config, gates: { G11: { ...visual, cmd: visual.updateCmd } } } }, wt, { stage: s, mode: "stage" });
-      await g.commitAll(wt, `test(visual): baseline aprovada na etapa ${s}`);
+      await this.commitToBranch(wt, `test(visual): baseline aprovada na etapa ${s}`);
     }
-    if (!(await g.mergeToMain(ctx.repo, ctx.config.project.mainBranch, this.stageBranch(s), `merge: etapa ${s} aprovada`))) throw new Error(`merge de ${this.stageBranch(s)} em ${ctx.config.project.mainBranch} conflitou`);
-    await g.tag(ctx.repo, `etapa-${s}-aprovada`);
-    await g.removeWorktree(ctx.repo, wt);
-    this.progress(`etapa ${s} aprovada e mesclada em ${ctx.config.project.mainBranch}`);
+    await g.removeWorktree(ctx.repo, `stage-${s}`);
+    this.progress(`etapa ${s} aprovada (commits em ${this.branch}; merge e branches da próxima etapa ficam com o humano)`);
     const next = this.firstStageFrom(s + 1);
     Object.assign(this.state, { stage: next ?? s, stageFixRounds: 0, budgetAlerts: [] });
     this.set(next === undefined ? "DONE" : "STAGE_RUNNING");
