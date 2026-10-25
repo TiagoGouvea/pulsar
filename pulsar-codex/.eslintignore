@@ -1,0 +1,16 @@
+node_modules
+dist
+build
+.git
+.gitignore
+yarn.lock
+.env
+.env.*
+.prettierrc
+eslint.config.js
+prettier.config.js
+tailwind.config.ts
+playwright.config.ts
+vitest.config.ts
+vite.config.ts
+index.html
