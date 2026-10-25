@@ -41,19 +41,19 @@ describe("orçamento", () => {
   test("aplica o teto específico da etapa", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "harness-budget-"));
     const config = await createTestConfig(root, { projectLimit: "10" });
-    config.budget.milestoneLimits["stage-a"] = "0.5";
+    config.budget.milestoneLimits["0-setup"] = "0.5";
     const store = new StateStore(config.storage.root);
     try {
       store.upsertProject({ id: config.project.id, workspace: config.project.workspace, profile: "generic", timezone: "UTC" });
       store.createRun({ id: "r", projectId: config.project.id, configPath: config.configPath, configHash: "h" });
-      store.createMilestone("r", { id: "stage-a", title: "A", objective: "A", position: 1 });
+      store.createMilestone("r", { id: "0-setup", title: "Setup", objective: "Setup", position: 1 });
       store.saveTask({
-        id: "t", runId: "r", milestoneId: "stage-a", title: "T", description: "T", state: "pending",
-        role: "implementer", requirementIds: ["REQ-A-001"], dependencies: [], acceptanceCriteria: ["ok"], plannedFiles: [], maxAttempts: 2,
+        id: "t", runId: "r", milestoneId: "0-setup", title: "T", description: "T", state: "pending",
+        role: "implementer", requirementIds: ["REQ-0-001"], dependencies: [], acceptanceCriteria: ["ok"], plannedFiles: [], maxAttempts: 2,
       });
       const ledger = new BudgetLedger(store, config);
       ledger.reserve("r", "t", paid, 400_000n);
-      expect(() => ledger.reserve("r", "t", paid, 200_000n)).toThrow(/stage-a/);
+      expect(() => ledger.reserve("r", "t", paid, 200_000n)).toThrow(/0-setup/);
     } finally { store.close(); }
   });
 });

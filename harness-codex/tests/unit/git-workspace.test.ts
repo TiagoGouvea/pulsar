@@ -91,14 +91,14 @@ describe("workspace Git", () => {
     await writeFile(path.join(applicationDirectory, "app.txt"), "initial\n");
     await runProcess(["git", "add", "."], { cwd: repositoryRoot });
     await runProcess(["git", "commit", "-m", "initial"], { cwd: repositoryRoot });
-    await runProcess(["git", "worktree", "add", "-b", "stage-a", linkedRoot], { cwd: repositoryRoot });
+    await runProcess(["git", "worktree", "add", "-b", "0-setup", linkedRoot], { cwd: repositoryRoot });
 
     const linkedWorkspace = path.join(linkedRoot, "pulsar-codex");
     const git = await inspectGitWorkspace(linkedWorkspace, harnessRoot);
 
     expect(git.sharedWithProtectedRoot).toBe(true);
     expect(git.linkedWorktree).toBe(true);
-    expect(git.branch).toBe("stage-a");
+    expect(git.branch).toBe("0-setup");
     expect((await inspectGitWorkspace(applicationDirectory)).branch).toBe("main");
   });
 });

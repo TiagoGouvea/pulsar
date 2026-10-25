@@ -8,18 +8,30 @@ project:
     - ./docs/Pulsar_Preparacao_Antes_da_Implementacao.md
   designDirectory: ../design
   milestones:
-    - id: stage-a
-      title: Etapa A — Registro
-      objective: Entregar conta, indicadores e registro diário mobile.
-    - id: stage-b
-      title: Etapa B — Insights
-      objective: Entregar análises determinísticas, dashboard e timeline.
-    - id: stage-c
-      title: Etapa C — IA
-      objective: Entregar insights por IA com consentimento, privacidade e cotas.
-    - id: stage-d
-      title: Etapa D — PWA e lembretes
-      objective: Entregar instalação e notificações confiáveis.
+    - id: 0-setup
+      title: "Etapa 0 — Setup"
+      objective: Entregar scaffold do app, design system e decisões técnicas registradas.
+    - id: 1-base
+      title: "Etapa 1 — Base"
+      objective: Entregar autenticação, isolamento por usuário e Security Rules.
+    - id: 2-registro
+      title: "Etapa 2 — Registro"
+      objective: Entregar indicadores e registro diário mobile.
+    - id: 3-insights
+      title: "Etapa 3 — Insights"
+      objective: Entregar motor estatístico determinístico e dashboard.
+    - id: 4-curadoria
+      title: "Etapa 4 — Curadoria"
+      objective: Entregar conclusões salvas e feedback dos insights.
+    - id: 5-pwa-push
+      title: "Etapa 5 — PWA e push"
+      objective: Entregar instalação e lembrete diário das 20:00.
+    - id: 6-ia-generativa
+      title: "Etapa 6 — IA generativa"
+      objective: Entregar textos dos insights via Firebase com consentimento, privacidade e cotas.
+    - id: 7-polimento
+      title: "Etapa 7 — Polimento"
+      objective: Entregar ajustes finais, acessibilidade, robustez e qualidade da V1.
   profile: react-firebase
   timezone: America/Sao_Paulo
 execution:
@@ -40,13 +52,17 @@ budget:
   dailyLimit: "12"
   milestoneLimit: null
   milestoneLimits:
-    stage-a: "16"
-    stage-b: "13"
-    stage-c: "11"
-    stage-d: "8"
+    0-setup: "8"
+    1-base: "10"
+    2-registro: "9"
+    3-insights: "12"
+    4-curadoria: "5"
+    5-pwa-push: "6"
+    6-ia-generativa: "4"
+    7-polimento: "6"
   taskLimit: "4"
   diagnosticsLimit: "1"
-  finalVerificationReservePercent: 20
+  finalVerificationReservePercent: 0
   warningThresholds:
     - 50
     - 75

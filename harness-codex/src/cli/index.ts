@@ -160,8 +160,8 @@ program.command("review").requiredOption("--config <path>").requiredOption("--ru
 
 const feedback = program.command("feedback");
 feedback.command("import").requiredOption("--config <path>").requiredOption("--run <id>").requiredOption("--file <path>")
-  .option("--milestone <id>", "Marco", "stage-a")
-  .action(async (options: { config: string; run: string; file: string; milestone: string }) => withOrchestrator(options.config, async (orchestrator) => {
+  .option("--milestone <id>", "Marco; por padrão usa o primeiro configurado")
+  .action(async (options: { config: string; run: string; file: string; milestone?: string }) => withOrchestrator(options.config, async (orchestrator) => {
     console.log(await orchestrator.importFeedback(options.run, path.resolve(options.file), options.milestone));
   }));
 

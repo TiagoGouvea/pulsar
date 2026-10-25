@@ -25,4 +25,15 @@ Fluxo manual entre etapas:
 2. Criar ou selecionar manualmente o branch da próxima etapa.
 3. Executar `resume`; o novo branch será fixado para essa etapa.
 
+Ordem aprovada dos branches:
+
+1. `0-setup`
+2. `1-base`
+3. `2-registro`
+4. `3-insights`
+5. `4-curadoria`
+6. `5-pwa-push`
+7. `6-ia-generativa`
+8. `7-polimento`
+
 Não é necessário worktree para a execução serial configurada. Um worktree criado manualmente pode ser mantido: o doctor o reconhece pelo `git-common-dir`, registra seu branch corrente e nunca troca branches. O harness não cria, remove nem reorganiza worktrees automaticamente.

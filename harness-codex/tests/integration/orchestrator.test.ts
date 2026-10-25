@@ -53,7 +53,7 @@ describe("controlador", () => {
   test("fixa o branch durante a etapa e nunca o troca", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "harness-branch-"));
     const config = await createTestConfig(root);
-    await runProcess(["git", "init", "-b", "stage-a"], { cwd: config.project.workspace });
+    await runProcess(["git", "init", "-b", "0-setup"], { cwd: config.project.workspace });
     await runProcess(["git", "config", "user.name", "Harness Test"], { cwd: config.project.workspace });
     await runProcess(["git", "config", "user.email", "harness@example.invalid"], { cwd: config.project.workspace });
     await runProcess(["git", "commit", "--allow-empty", "-m", "initial"], { cwd: config.project.workspace });
@@ -61,10 +61,10 @@ describe("controlador", () => {
     try {
       const runId = await orchestrator.run();
       const milestone = orchestrator.store.listMilestones(runId)[0];
-      expect(milestone?.branch).toBe("stage-a");
+      expect(milestone?.branch).toBe("0-setup");
       await runProcess(["git", "switch", "-c", "outro-branch"], { cwd: config.project.workspace });
-      await expect(orchestrator.approve(runId, "stage-a", String(milestone?.revision), "human"))
-        .rejects.toThrow(/fixada no branch stage-a/);
+      await expect(orchestrator.approve(runId, "0-setup", String(milestone?.revision), "human"))
+        .rejects.toThrow(/fixada no branch 0-setup/);
       expect((await runProcess(["git", "branch", "--show-current"], { cwd: config.project.workspace })).stdout.trim()).toBe("outro-branch");
     } finally { orchestrator.close(); }
   });

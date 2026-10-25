@@ -179,9 +179,9 @@ project:
     - ./inputs/specification.md
   designDirectory: ./inputs/design
   milestones:
-    - id: stage-a
-      title: Etapa A
-      objective: Primeira entrega verificável.
+    - id: 0-setup
+      title: Etapa 0 — Setup
+      objective: Fundação verificável do projeto.
   profile: react-firebase
   timezone: America/Sao_Paulo
 

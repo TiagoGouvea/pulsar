@@ -4,13 +4,16 @@ O teto total do harness para desenvolver o Pulsar é **USD 60**. Custos do Fireb
 
 | Parcela | Teto | Entrega |
 |---|---:|---|
-| Etapa A — Registro | USD 16 | Base mobile, conta, indicadores, registros e segurança |
-| Etapa B — Insights | USD 13 | Estatística, dashboard e timeline |
-| Etapa C — IA | USD 11 | Consentimento, função, cota e fallback |
-| Etapa D — PWA | USD 8 | Instalação e lembrete diário |
-| Reserva final | USD 12 | Correções críticas, segurança e verificação final |
+| Etapa 0 — Setup (`0-setup`) | USD 8 | Inicialização com modelo top, scaffold, design system e decisões |
+| Etapa 1 — Base (`1-base`) | USD 10 | Autenticação, isolamento e Security Rules com modelos caros |
+| Etapa 2 — Registro (`2-registro`) | USD 9 | Indicadores e registro diário |
+| Etapa 3 — Insights (`3-insights`) | USD 12 | Estatística e dashboard com modelos caros |
+| Etapa 4 — Curadoria (`4-curadoria`) | USD 5 | Conclusões salvas e feedback |
+| Etapa 5 — PWA e push (`5-pwa-push`) | USD 6 | Instalação e lembrete das 20:00 |
+| Etapa 6 — IA generativa (`6-ia-generativa`) | USD 4 | Textos via Firebase, consentimento, cota e fallback |
+| Etapa 7 — Polimento (`7-polimento`) | USD 6 | Ajustes finais, verificação e qualidade |
 
-Os tetos das etapas somam USD 48. Os 20% restantes ficam protegidos pelo ledger como reserva final. O limite externo atual de USD 20 da credencial OpenRouter é uma proteção adicional: se não for ampliado, o provedor poderá interromper chamadas antes do teto total do projeto.
+Os tetos das oito etapas somam exatamente USD 60. Não há reserva percentual separada no ledger; a verificação final está incluída em `7-polimento`. O limite externo atual de USD 20 da credencial OpenRouter é uma proteção adicional: se não for ampliado, o provedor poderá interromper chamadas antes do teto total do projeto.
 
 ## Distribuição dos modelos
 

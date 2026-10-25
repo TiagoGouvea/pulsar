@@ -5,10 +5,12 @@ import { readSpecs } from "../state/inputs.js";
 
 const headingPattern = /^#{1,6}\s+(REQ-[A-Za-z0-9_-]+)(?:\s+\[(required|optional|out_of_scope)\])?\s*[-:]?\s*(.*)$/i;
 
-function milestoneFromRequirementId(id: string, config: HarnessConfig): string {
-  const stage = /^REQ-([A-Z])-/.exec(id)?.[1]?.toLowerCase();
-  const inferred = stage ? `stage-${stage}` : config.project.milestones[0]?.id;
-  if (!inferred || !config.project.milestones.some((item) => item.id === inferred)) {
+export function milestoneFromRequirementId(id: string, config: HarnessConfig): string {
+  const prefix = /^REQ-([A-Z0-9]+)-/.exec(id)?.[1]?.toLowerCase();
+  const inferred = prefix
+    ? config.project.milestones.find((item) => item.id === prefix || item.id.startsWith(`${prefix}-`) || item.id === `stage-${prefix}`)?.id
+    : config.project.milestones[0]?.id;
+  if (!inferred) {
     throw new Error(`Não foi possível associar ${id} a uma etapa configurada.`);
   }
   return inferred;

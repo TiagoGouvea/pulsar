@@ -368,24 +368,34 @@ service cloud.firestore {
 
 ## 11. Plano de implementação sugerido
 
-### Fase 0 — Pré-requisitos
-- Concluir `Pulsar_Preparacao_Antes_da_Implementacao.md`: projeto Firebase dev, acessos, design e assets, modelo de IA, billing/segredos e orçamento.
-- Definir e testar seed **reproduzível** com 30 dias para usuário de desenvolvimento.
+### Etapa 0 — Setup (`0-setup`)
+- Concluir os pré-requisitos, criar o scaffold React + TypeScript + Vite + Firebase e declarar comandos de instalação, teste e build.
+- Implementar tokens e componentes-base do design system mobile, registrar decisões técnicas e preparar o seed reproduzível de 30 dias.
 
-### Fase 1 — Fluxo principal
-- React + Vite + TS + yarn; Firestore Rules, Auth anônimo, conversão Google/link mágico.
-- Tutorial, sugestões, indicadores, agregações sugeridas e configuráveis, registro e exclusão.
-- Siglas/emoji, estado do olho, conta e exclusão integral de dados.
+### Etapa 1 — Base (`1-base`)
+- Implementar Auth anônimo, conversão Google/link mágico, onboarding, conta e exclusão integral.
+- Criar o isolamento por UID, as Security Rules iniciais e seus testes no emulador.
 
-### Fase 2 — Descobertas
-- Motor determinístico com limiares fechados e testes, dashboard, like/dislike e timeline.
-- Recálculo em inclusão/exclusão e abertura da primeira sessão do dia.
+### Etapa 2 — Registro (`2-registro`)
+- Implementar indicadores, agregações sugeridas/configuráveis, registro diário e exclusão.
+- Entregar siglas/emoji, estado do olho e regras específicas dos dados de indicadores e registros.
 
-### Fase 3 — IA
-- Aceite curto; callable Function, limite de uma chamada/dia, textos até 3 e fallback.
+### Etapa 3 — Insights (`3-insights`)
+- Implementar o motor determinístico com limiares fechados, testes e dashboard.
+- Recalcular após inclusão/exclusão e na abertura da primeira sessão do dia.
 
-### Fase 4 — Instalação e lembrete
-- PWA, convite pós-conversão, Web Push/FCM, job diário às 20h Brasília e testes Chrome/Safari.
+### Etapa 4 — Curadoria (`4-curadoria`)
+- Implementar like/dislike, snapshots imutáveis de conclusões e timeline privada.
+
+### Etapa 5 — PWA e push (`5-pwa-push`)
+- Implementar PWA, convite pós-conversão, Web Push/FCM, job diário às 20h Brasília e testes Chrome/Safari.
+
+### Etapa 6 — IA generativa (`6-ia-generativa`)
+- Implementar consentimento, callable Function, limite de uma chamada/dia, até três textos e fallback determinístico.
+
+### Etapa 7 — Polimento (`7-polimento`)
+- Corrigir regressões, acessibilidade, estados de interface, fidelidade visual e robustez dos fluxos integrados.
+- Validar build, preview Firebase e roteiro de aceite final sem publicação automática em produção.
 
 Critério transversal: validação visual humana do design; novos usuários criados durante testes, além do usuário do seed.
 

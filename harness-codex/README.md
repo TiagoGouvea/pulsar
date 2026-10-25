@@ -34,6 +34,8 @@ yarn harness report --config harness.config.yaml --run <runId>
 
 O harness nunca cria, troca ou remove branches. O branch corrente é fixado ao iniciar cada etapa e precisa permanecer o mesmo até sua verificação e aprovação. Para usar um branch por etapa: aprove a etapa atual, crie ou selecione manualmente o próximo branch e só então retome a run. Worktrees criados manualmente são reconhecidos e preservados, mas não são gerenciados pelo harness.
 
+Sequência: `0-setup`, `1-base`, `2-registro`, `3-insights`, `4-curadoria`, `5-pwa-push`, `6-ia-generativa`, `7-polimento`.
+
 ## Estrutura do Módulo
 
 * `src/orchestrator/`: Controlador principal e máquina de estados determinística.

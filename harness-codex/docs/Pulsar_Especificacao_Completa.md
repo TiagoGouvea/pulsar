@@ -442,13 +442,21 @@ A tela de preenchimento pode ser **painel expansível ou estado da própria home
 
 ## 11. Priorização de entrega
 
-**Etapa A — Registro:** acesso anônimo, conversão Google/link mágico, tutorial, indicadores, agregação, dados diários e exclusões, privacidade por siglas, Security Rules.
+**Etapa 0 — Setup (`0-setup`):** scaffold React/TypeScript/Vite/Firebase, estrutura de testes, decisões técnicas e design system mobile baseado nas referências oficiais.
 
-**Etapa B — Insights:** análise determinística com limiares exatos, dashboard, mini gráficos, like/dislike/timeline.
+**Etapa 1 — Base (`1-base`):** acesso anônimo, conversão Google/link mágico, onboarding, isolamento por UID, Security Rules e exclusão segura da conta.
 
-**Etapa C — IA:** consentimento, Cloud Function com quota de 1 chamada/dia/usuário, até 3 textos, fallback e orçamento.
+**Etapa 2 — Registro (`2-registro`):** indicadores, agregações, dados diários, exclusões de registros e privacidade visual por siglas.
 
-**Etapa D — PWA/lembrete:** instalação, convite pós-conversão, FCM, Cloud Scheduler diário às 20h Brasília, opt-in/opt-out, testes iPhone/Android.
+**Etapa 3 — Insights (`3-insights`):** análise determinística com limiares exatos, dashboard, mini gráficos e explicações verificáveis.
+
+**Etapa 4 — Curadoria (`4-curadoria`):** like/dislike, conclusões salvas e timeline de snapshots privados.
+
+**Etapa 5 — PWA e push (`5-pwa-push`):** instalação, convite pós-conversão, FCM, Cloud Scheduler diário às 20h Brasília, opt-in/opt-out e testes iPhone/Android.
+
+**Etapa 6 — IA generativa (`6-ia-generativa`):** consentimento, Cloud Function com quota de 1 chamada/dia/usuário, até 3 textos, fallback e orçamento.
+
+**Etapa 7 — Polimento (`7-polimento`):** acessibilidade, robustez, fidelidade visual, testes integrados, build e aceite final da V1.
 
 **Futuro opcional:** integrações externas, análises multivariadas/defasadas, exportação, novos idiomas e notificações mais sofisticadas.
 

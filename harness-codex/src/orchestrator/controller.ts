@@ -8,7 +8,7 @@ import { buildTaskContext } from "../context/builder.js";
 import { createExecutor } from "../executors/index.js";
 import type { Executor } from "../executors/types.js";
 import { checkpointFiles, currentRevision, inspectGitWorkspace } from "../git/workspace.js";
-import { createTasks, extractRequirements } from "../planning/requirements.js";
+import { createTasks, extractRequirements, milestoneFromRequirementId } from "../planning/requirements.js";
 import { ModelCatalog } from "../providers/catalog.js";
 import { writeBudgetReport, writeFinalReport, writeHumanReview, writePlan } from "../reports/generator.js";
 import { assertWorkspace } from "../security/workspace.js";
@@ -141,7 +141,7 @@ export class Orchestrator {
     return this.store.listRequirements(runId).map((row) => ({
       id: String(row.id), sourcePath: String(row.source_path), sourceSection: String(row.source_section),
       description: String(row.description), priority: row.priority as Requirement["priority"],
-      milestoneId: `stage-${(/^REQ-([A-Z])-/.exec(String(row.id))?.[1] ?? "a").toLowerCase()}`,
+      milestoneId: milestoneFromRequirementId(String(row.id), this.config),
       acceptanceCriteria: JSON.parse(String(row.acceptance_json)) as string[],
       risks: JSON.parse(String(row.risks_json)) as string[], dependencies: JSON.parse(String(row.dependencies_json)) as string[],
       verificationMethod: String(row.verification_method),
@@ -417,7 +417,8 @@ export class Orchestrator {
     }
   }
 
-  async importFeedback(runId: string, source: string, milestoneId = "stage-a"): Promise<string> {
+  async importFeedback(runId: string, source: string, milestoneId = this.config.project.milestones[0]?.id): Promise<string> {
+    if (!milestoneId) throw new Error("Nenhuma etapa configurada para receber feedback.");
     const content = await readFile(source, "utf8");
     if (!content.trim()) throw new Error("Feedback vazio.");
     await this.assertMilestoneBranch(runId, milestoneId);
@@ -432,7 +433,8 @@ export class Orchestrator {
     return destination;
   }
 
-  async importFeedbackContent(runId: string, content: string, milestoneId = "stage-a", actor = "dashboard-human"): Promise<string> {
+  async importFeedbackContent(runId: string, content: string, milestoneId = this.config.project.milestones[0]?.id, actor = "dashboard-human"): Promise<string> {
+    if (!milestoneId) throw new Error("Nenhuma etapa configurada para receber feedback.");
     if (!content.trim()) throw new Error("Feedback vazio.");
     await this.assertMilestoneBranch(runId, milestoneId);
     const directory = path.join(this.config.storage.root, "runs", runId, "milestones", milestoneId);

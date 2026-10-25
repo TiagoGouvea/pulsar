@@ -4,9 +4,9 @@ project:
   specs:
     - ./fixtures/demo-inputs/specification.md
   milestones:
-    - id: stage-a
-      title: Etapa A
-      objective: Primeira entrega verificável.
+    - id: 0-setup
+      title: Etapa 0 — Setup
+      objective: Fundação verificável do projeto.
   designDirectory: ./fixtures/demo-inputs/design
   profile: react-firebase
   timezone: America/Sao_Paulo

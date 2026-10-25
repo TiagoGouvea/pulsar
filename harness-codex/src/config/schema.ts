@@ -13,7 +13,7 @@ const roleSchema = z.enum([
 ]);
 
 const milestoneSchema = z.object({
-  id: z.string().regex(/^stage-[a-z0-9_-]+$/),
+  id: z.string().regex(/^[a-z0-9][a-z0-9_-]*$/),
   title: z.string().min(1),
   objective: z.string().min(1),
 });
@@ -27,7 +27,7 @@ export const harnessConfigSchema = z.object({
     specs: z.array(z.string().min(1)).min(1),
     designDirectory: z.string().min(1).optional(),
     milestones: z.array(milestoneSchema).min(1).default([
-      { id: "stage-a", title: "Etapa A — Registro", objective: "Entregar o núcleo de cadastro e registro diário." },
+      { id: "0-setup", title: "Etapa 0 — Setup", objective: "Entregar a fundação verificável do projeto." },
     ]),
     profile: z.string().min(1).default("generic"),
     timezone: z.string().min(1).default("America/Sao_Paulo"),

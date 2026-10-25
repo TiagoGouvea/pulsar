@@ -61,7 +61,8 @@ export async function startDashboard(config: HarnessConfig, runId: string): Prom
         }
         if (url.pathname === "/api/feedback") {
           if (typeof body.content !== "string" || body.content.length > 50_000) return json(response, 400, { error: "Feedback inválido." });
-          const milestoneId = typeof body.milestoneId === "string" ? body.milestoneId : "stage-a";
+          const milestoneId = typeof body.milestoneId === "string" ? body.milestoneId : config.project.milestones[0]?.id;
+          if (!milestoneId) return json(response, 400, { error: "Nenhuma etapa configurada." });
           const output = await orchestrator.importFeedbackContent(runId, body.content, milestoneId);
           return json(response, 200, { ok: true, output });
         }
@@ -101,7 +102,7 @@ document.querySelector('#tasks').innerHTML=d.tasks.map(t=>'<li><strong>'+esc(t.i
 document.querySelector('#events').innerHTML=d.events.map(e=>'<li>'+esc(e.created_at)+' — '+esc(e.type)+'</li>').join('');}
 document.querySelectorAll('[data-command]').forEach(b=>b.onclick=async()=>{await fetch('/api/control',{method:'POST',headers:{'content-type':'application/json','x-harness-token':token},body:JSON.stringify({command:b.dataset.command})});await refresh()});
 document.querySelector('#approve').onclick=async()=>{const m=window.currentStatus.milestones.find(x=>x.state==='awaiting_human');if(!m)return alert('Nenhum marco aguardando aceite.');const r=await fetch('/api/approve',{method:'POST',headers:{'content-type':'application/json','x-harness-token':token},body:JSON.stringify({milestoneId:m.id,revision:m.revision})});const d=await r.json();if(!r.ok)alert(d.error);await refresh()};
-document.querySelector('#send-feedback').onclick=async()=>{const content=document.querySelector('#feedback').value;const state=await fetch('/api/state',{headers:{'x-harness-token':token}}).then(r=>r.json());const milestoneId=state.milestones.find(m=>m.state!=='approved')?.id??'stage-a';const r=await fetch('/api/feedback',{method:'POST',headers:{'content-type':'application/json','x-harness-token':token},body:JSON.stringify({milestoneId,content})});const d=await r.json();if(!r.ok)alert(d.error);else document.querySelector('#feedback').value='';await refresh()};
+document.querySelector('#send-feedback').onclick=async()=>{const content=document.querySelector('#feedback').value;const state=await fetch('/api/state',{headers:{'x-harness-token':token}}).then(r=>r.json());const milestoneId=state.milestones.find(m=>m.state!=='approved')?.id;if(!milestoneId)return alert('Nenhuma etapa disponível.');const r=await fetch('/api/feedback',{method:'POST',headers:{'content-type':'application/json','x-harness-token':token},body:JSON.stringify({milestoneId,content})});const d=await r.json();if(!r.ok)alert(d.error);else document.querySelector('#feedback').value='';await refresh()};
 refresh();setInterval(refresh,3000);
 </script></main></body></html>`;
 }

@@ -18,6 +18,6 @@
 ## Limitações conhecidas
 
 - `workspace_process` limita por convenção/cwd, não por sandbox de sistema.
-- A decomposição determinística associa requisitos `REQ-A-*` a `stage-a` e assim por diante, com execução e aceite sequenciais por etapa.
+- A decomposição determinística associa requisitos `REQ-0-*`…`REQ-7-*` aos marcos `0-setup`…`7-polimento`, com execução e aceite sequenciais por etapa.
 - O parser determinístico exige cabeçalhos `REQ-*`; extração livre por modelo deve ser adicionada como tarefa orçada, nunca como fonte sem validação.
 - Limpeza automática por retenção e reconciliação tardia via APIs de billing são extensões futuras.
