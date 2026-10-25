@@ -189,7 +189,7 @@ export class Orchestrator {
     try {
       result = await executor.execute({
         runId, attemptId, task, workspace: this.config.project.workspace, prompt, candidate,
-        timeoutMs: this.config.execution.taskTimeoutMinutes * 60_000, outputDirectory: attemptDirectory,
+        timeoutMs: this.config.execution.implementationTimeoutMinutes * 60_000, outputDirectory: attemptDirectory,
       });
     } finally {
       this.activeExecutor = undefined;
@@ -430,7 +430,7 @@ export class Orchestrator {
     try {
       result = await executor.execute({
         runId, attemptId, task: reviewTask, workspace: this.config.project.workspace, prompt, candidate,
-        timeoutMs: this.config.execution.taskTimeoutMinutes * 60_000, outputDirectory, readOnly: true,
+        timeoutMs: this.config.execution.reviewTimeoutMinutes * 60_000, outputDirectory, readOnly: true,
       });
     } finally {
       this.activeExecutor = undefined;

@@ -39,6 +39,8 @@ export const harnessConfigSchema = z.object({
     maxAttemptsPerTask: z.number().int().min(1).max(10).default(3),
     maxSameFailureCount: z.number().int().min(1).max(5).default(2),
     taskTimeoutMinutes: z.number().positive().max(240).default(30),
+    implementationTimeoutMinutes: z.number().positive().max(60).default(15),
+    reviewTimeoutMinutes: z.number().positive().max(15).default(2),
     staleHeartbeatSeconds: z.number().int().min(15).default(90),
     humanGate: z.enum(["every_milestone", "selected_milestones", "final_only"]).default("every_milestone"),
     allowProductionDeploy: z.boolean().default(false),
