@@ -1,10 +1,12 @@
-# USD por 1M tokens, por workerId. Preencha com os preços atuais de cada provedor.
+# USD por 1M tokens, por workerId (preços de tabela, conferidos no OpenRouter em 2026-10-25).
 # Usado quando a CLI não reporta custo. Workers billing: subscription/local têm custo marginal 0.
 # O doctor falha se um worker habilitado com billing: api não tiver preço aqui.
-opus:         { input: "<preencher>", output: "<preencher>", cached: "<preencher>" }
-sonnet:       { input: "<preencher>", output: "<preencher>", cached: "<preencher>" }
-haiku:        { input: "<preencher>", output: "<preencher>", cached: "<preencher>" }
-codex-top:    { input: "<preencher>", output: "<preencher>", cached: "<preencher>" }
-codex-mini:   { input: "<preencher>", output: "<preencher>", cached: "<preencher>" }
-kimi:         { input: "<preencher>", output: "<preencher>" }
-deepseek:     { input: "<preencher>", output: "<preencher>" }
+fable:        { input: 10,   output: 50,   cached: 0.25 }
+opus:         { input: 4,    output: 20,   cached: 0.20 }
+sonnet:       { input: 2,    output: 10,   cached: 0.10 }
+haiku:        { input: 0.10, output: 0.50, cached: 0.01 }
+codex-top:    { input: 4,    output: 20,   cached: 0.40 }   # gpt-5.6-sol
+codex-mini:   { input: 0.20, output: 1.20, cached: 0.02 }   # gpt-5.6-luna
+glm:          { input: 0.08, output: 1.40, cached: 0.08 }   # z-ai/glm-5.3
+kimi:         { input: 0.67, output: 3.35, cached: 0.15 }   # moonshotai/kimi-k2.7-code
+deepseek:     { input: 0.21, output: 0.42, cached: 0.02 }   # deepseek/deepseek-v4-pro

@@ -19,17 +19,17 @@ workers:
   sonnet:       { cli: claude, model: claude-sonnet-5-5,  family: anthropic, tier: mid,  vision: true,  billing: api, concurrency: 3, timeoutMin: 40 }
   haiku:        { cli: claude, model: claude-haiku-5-5,   family: anthropic, tier: low,  vision: true,  billing: api, concurrency: 3, timeoutMin: 15 }
   # --- OpenAI ---
-  codex-top:    { cli: codex,  model: "<preencher>",      family: openai,    tier: high, vision: true,  billing: api, concurrency: 2, timeoutMin: 45 }
-  codex-mini:   { cli: codex,  model: "<preencher>",      family: openai,    tier: low,  vision: false, billing: api, concurrency: 2, timeoutMin: 20 }
+  codex-top:    { cli: codex,  model: gpt-5.6-sol,        family: openai,    tier: high, vision: true,  billing: api, concurrency: 2, timeoutMin: 45 }
+  codex-mini:   { cli: codex,  model: gpt-5.6-luna,       family: openai,    tier: low,  vision: false, billing: api, concurrency: 2, timeoutMin: 20 }
   # --- Google ---
   # via Antigravity CLI (agy); IDs de `agy models`. Login do agy, sem custo reportado -> billing: subscription
   gemini-pro:   { cli: agy,    model: gemini-3.8-flash-high, family: google, tier: high, vision: true, billing: subscription, concurrency: 2, timeoutMin: 45 }
   gemini-flash: { cli: agy,    model: gemini-3.8-flash-low,  family: google, tier: low,  vision: true, billing: subscription, concurrency: 3, timeoutMin: 20 }
   # --- Open source via assinatura / OpenRouter ---
-  glm:          { cli: claude, model: "<preencher>",      family: zhipu,     tier: mid,  vision: false, billing: subscription, concurrency: 2, timeoutMin: 40,
-                  env: { ANTHROPIC_BASE_URL: ZAI_ANTHROPIC_BASE_URL, ANTHROPIC_AUTH_TOKEN: ZAI_API_KEY } }
-  kimi:         { cli: pi,     model: "openrouter/<preencher>", family: moonshot, tier: mid, vision: false, billing: api, concurrency: 2, timeoutMin: 40 }
-  deepseek:     { cli: pi,     model: "openrouter/<preencher>", family: deepseek, tier: low, vision: false, billing: api, concurrency: 2, timeoutMin: 30 }
+  # glm via OpenRouter (sem chave Z.ai). Plano GLM Coding: cli: claude, billing: subscription, env: { ANTHROPIC_BASE_URL: ZAI_ANTHROPIC_BASE_URL, ANTHROPIC_AUTH_TOKEN: ZAI_API_KEY }
+  glm:          { cli: pi,     model: "openrouter/z-ai/glm-5.3", family: zhipu, tier: mid, vision: false, billing: api, concurrency: 2, timeoutMin: 40 }
+  kimi:         { cli: pi,     model: "openrouter/moonshotai/kimi-k2.7-code", family: moonshot, tier: mid, vision: false, billing: api, concurrency: 2, timeoutMin: 40 }
+  deepseek:     { cli: pi,     model: "openrouter/deepseek/deepseek-v4-pro", family: deepseek, tier: low, vision: false, billing: api, concurrency: 2, timeoutMin: 30 }
   # --- Locais (LM Studio, LMSTUDIO_BASE_URL, padrão http://localhost:1235/v1) ---
   local-gptoss: { cli: pi, model: "lmstudio/mlx-community/gpt-oss-20b",         family: openai, tier: local, vision: false, billing: local, concurrency: 1, timeoutMin: 30, maxContextTokens: 32000 }
   local-coder:  { cli: pi, model: "lmstudio/qwen3-coder-30b-a3b-instruct-mlx",  family: qwen,   tier: local, vision: false, billing: local, concurrency: 1, timeoutMin: 40, maxContextTokens: 32000, requiresFreeRamGb: 18 }

@@ -15,3 +15,4 @@ playwright-report/
 .harness/PAUSE
 .harness/*.tmp
 .harness/pi-agent/
+.harness/smoke/
