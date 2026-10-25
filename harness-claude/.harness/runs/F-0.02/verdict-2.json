@@ -1,0 +1,66 @@
+[
+  {
+    "kind": "code",
+    "pass": true,
+    "score": 8,
+    "issues": [
+      {
+        "severidade": "major",
+        "arquivo": "app/src/design/Sheet.tsx",
+        "descricao": "O diálogo modal não move, contém nem restaura o foco. Com aria-modal=true, o teclado ainda alcança elementos atrás do sheet.",
+        "sugestao": "Ao abrir, focar um elemento do sheet; implementar focus trap e restaurar o foco ao elemento que o abriu ao fechar."
+      }
+    ],
+    "workerId": "codex-mid"
+  },
+  {
+    "kind": "ui",
+    "pass": true,
+    "score": 7.6,
+    "issues": [
+      {
+        "severidade": "major",
+        "tela": "design-mobile (ENE, escala 0–10)",
+        "descricao": "A escala 0–10 é cortada em 375px: só aparecem os valores de 0 a 6. O 7 selecionado fica fora da área visível, e não há indicação de rolagem. No desktop o 9 e o 10 também são cortados.",
+        "sugestao": "Quebrar a escala em duas linhas (0–5 e 6–10), ou reduzir o tamanho dos botões para caberem 11 valores. Se mantiver rolagem horizontal, adicionar um fade na borda e rolar até o valor selecionado."
+      },
+      {
+        "severidade": "major",
+        "tela": "design-mobile (rótulos dos cartões)",
+        "descricao": "O rótulo de cada cartão é uma barra tingida que ocupa toda a largura e não leva o ícone de Fator ou Resultado. A distinção Fatores × Resultados nos cartões depende quase só da cor, índigo ou violeta. O ícone aparece apenas nos chips de grupo.",
+        "sugestao": "Incluir o ícone de Fator ou Resultado no rótulo do cartão e usar um chip com largura do conteúdo, no lugar da barra de largura total."
+      },
+      {
+        "severidade": "minor",
+        "tela": "design-mobile-privado",
+        "descricao": "Sem rolagem, o botão e o campo de valor da escala 0–10 ficam abaixo de 44px de altura útil, e o 'Con...' truncado perde o significado. O chip de grupo 'Con...' fica ambíguo.",
+        "sugestao": "Garantir alvos de pelo menos 44px. Para siglas, usar códigos fixos de 3 letras, não texto truncado."
+      },
+      {
+        "severidade": "minor",
+        "tela": "design-mobile (estados)",
+        "descricao": "A página não mostra os estados de vazio, carregando, erro e salvo. Também não há exemplo de insight ou de ação principal em destaque.",
+        "sugestao": "Adicionar exemplos de skeleton, estado vazio e feedback de salvo à página do design system."
+      },
+      {
+        "severidade": "minor",
+        "tela": "home (mobile e desktop)",
+        "descricao": "A home é só um título e um texto sobre fundo vazio, sem a ação 'Registrar agora', sem o cabeçalho com o toggle de siglas e sem navegação. No desktop o texto fica alinhado à esquerda no centro, em uma coluna larga.",
+        "sugestao": "Aceitável para o escopo de F-0.02. Mais adiante, centralizar uma coluna mobile com largura máxima."
+      }
+    ],
+    "porCriterio": {
+      "c1": 8,
+      "c2": 7,
+      "c3": 6,
+      "c4": 7,
+      "c5": 8,
+      "c6": 6,
+      "c7": 8,
+      "c8": 7,
+      "c9": 7,
+      "c10": 8
+    },
+    "workerId": "sonnet"
+  }
+]

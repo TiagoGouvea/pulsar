@@ -18,15 +18,50 @@
         "<html lang=\"pt-BR\"> e nenhuma outra língua de interface",
         "Import de firebase ou react em src/stats/ falha no lint"
       ],
-      "tests": [],
-      "protectedTests": [],
+      "tests": [
+        "app/src/__tests__/scaffold.test.ts"
+      ],
+      "protectedTests": [
+        "app/src/__tests__/scaffold.test.ts"
+      ],
       "tags": [],
       "difficulty": "easy",
       "dependsOn": [],
-      "status": "failing",
-      "attempts": 0,
-      "costUsd": 0,
-      "history": []
+      "status": "passing",
+      "attempts": 3,
+      "costUsd": 0.7927358996799999,
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement",
+          "workerId": "sonnet",
+          "outcome": "failure",
+          "failedGates": [
+            "G4",
+            "G10"
+          ],
+          "eventId": "evt-25",
+          "ts": "2026-10-25T16:12:01.968Z"
+        },
+        {
+          "attempt": 2,
+          "role": "implement",
+          "workerId": "kimi",
+          "outcome": "invalid_json",
+          "failedGates": [],
+          "eventId": "evt-26",
+          "ts": "2026-10-25T16:12:17.775Z"
+        },
+        {
+          "attempt": 3,
+          "role": "implement_hard",
+          "workerId": "opus",
+          "outcome": "success",
+          "failedGates": [],
+          "eventId": "evt-28",
+          "ts": "2026-10-25T16:14:19.978Z"
+        }
+      ]
     },
     {
       "id": "F-0.02",
@@ -46,8 +81,12 @@
         "GroupBadge distingue Fator e Resultado por texto, não só por cor",
         "Controles interativos têm alvo de toque >= 44px e rótulo acessível"
       ],
-      "tests": [],
-      "protectedTests": [],
+      "tests": [
+        "app/src/design/__tests__/design-system.f002.test.tsx"
+      ],
+      "protectedTests": [
+        "app/src/design/__tests__/design-system.f002.test.tsx"
+      ],
       "tags": [
         "ui"
       ],
@@ -55,10 +94,31 @@
       "dependsOn": [
         "F-0.01"
       ],
-      "status": "failing",
-      "attempts": 0,
-      "costUsd": 0,
-      "history": []
+      "status": "passing",
+      "attempts": 2,
+      "costUsd": 1.51565202616,
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement",
+          "workerId": "deepseek",
+          "outcome": "failure",
+          "failedGates": [
+            "G2"
+          ],
+          "eventId": "evt-33",
+          "ts": "2026-10-25T16:17:39.770Z"
+        },
+        {
+          "attempt": 2,
+          "role": "implement",
+          "workerId": "kimi",
+          "outcome": "success",
+          "failedGates": [],
+          "eventId": "evt-38",
+          "ts": "2026-10-25T16:22:48.732Z"
+        }
+      ]
     },
     {
       "id": "F-0.04",
@@ -91,10 +151,20 @@
       "dependsOn": [
         "F-0.01"
       ],
-      "status": "failing",
-      "attempts": 0,
-      "costUsd": 0,
-      "history": []
+      "status": "passing",
+      "attempts": 1,
+      "costUsd": 1.0575354000000001,
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement_hard",
+          "workerId": "opus",
+          "outcome": "success",
+          "failedGates": [],
+          "eventId": "evt-31",
+          "ts": "2026-10-25T16:17:26.627Z"
+        }
+      ]
     },
     {
       "id": "F-0.05",
@@ -126,10 +196,29 @@
         "F-0.04",
         "F-0.03"
       ],
-      "status": "failing",
-      "attempts": 0,
-      "costUsd": 0,
-      "history": []
+      "status": "in_progress",
+      "attempts": 2,
+      "costUsd": 0.48178760785999997,
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement",
+          "workerId": "deepseek",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "eventId": "evt-40",
+          "ts": "2026-10-25T16:23:33.480Z"
+        },
+        {
+          "attempt": 2,
+          "role": "implement",
+          "workerId": "deepseek",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "eventId": "evt-45",
+          "ts": "2026-10-25T16:27:07.138Z"
+        }
+      ]
     },
     {
       "id": "F-0.06",
@@ -163,10 +252,20 @@
       "dependsOn": [
         "F-0.02"
       ],
-      "status": "failing",
-      "attempts": 0,
-      "costUsd": 0,
-      "history": []
+      "status": "in_progress",
+      "attempts": 1,
+      "costUsd": 0.7633134000000001,
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement_hard",
+          "workerId": "opus",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "eventId": "evt-42",
+          "ts": "2026-10-25T16:25:20.745Z"
+        }
+      ]
     },
     {
       "id": "F-0.07",
@@ -236,10 +335,20 @@
       "dependsOn": [
         "F-0.04"
       ],
-      "status": "failing",
-      "attempts": 0,
-      "costUsd": 0,
-      "history": []
+      "status": "passing",
+      "attempts": 1,
+      "costUsd": 0.63438016208,
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement",
+          "workerId": "deepseek",
+          "outcome": "success",
+          "failedGates": [],
+          "eventId": "evt-35",
+          "ts": "2026-10-25T16:20:03.807Z"
+        }
+      ]
     },
     {
       "id": "F-1.01",

@@ -1,0 +1,12 @@
+{
+  "app/src/__tests__/scaffold.test.ts": {
+    "sha256": "e842dfbb25de8297d22f936618c0431600692da3141e7edd5f0e1bb3254c5ec2",
+    "asserts": 9,
+    "featureId": "F-0.01"
+  },
+  "app/src/design/__tests__/design-system.f002.test.tsx": {
+    "sha256": "7c1b0b88e55923daaac26fa47e06fc37d758336891e7f3645e4656532b68d80a",
+    "asserts": 17,
+    "featureId": "F-0.02"
+  }
+}

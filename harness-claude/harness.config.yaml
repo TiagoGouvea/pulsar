@@ -28,8 +28,12 @@ workers:
   codex-mini:   { cli: codex,  model: gpt-5.6-luna,       family: openai,    tier: low,  vision: false, billing: api, concurrency: 2, timeoutMin: 20 }
   # --- Google ---
   # via Antigravity CLI (agy); IDs de `agy models`. Login do agy, sem custo reportado -> billing: subscription
-  gemini-pro:   { cli: agy,    model: gemini-3.8-flash-high, family: google, tier: high, vision: true, billing: subscription, concurrency: 2, timeoutMin: 45 }
-  gemini-flash: { cli: agy,    model: gemini-3.8-flash-low,  family: google, tier: low,  vision: true, billing: subscription, concurrency: 3, timeoutMin: 20 }
+  # desligados em 2026-10-25: cota individual do agy esgotada ("Resets in 144h"); religar quando voltar
+  gemini-pro:   { cli: agy,    model: gemini-3.8-flash-high, family: google, tier: high, vision: true, billing: subscription, concurrency: 2, timeoutMin: 45, enabled: false }
+  gemini-flash: { cli: agy,    model: gemini-3.8-flash-low,  family: google, tier: low,  vision: true, billing: subscription, concurrency: 3, timeoutMin: 20, enabled: false }
+  # mesmos modelos via OpenRouter (pi), pagos por token
+  gemini-pro-or:   { cli: pi, model: "openrouter/google/gemini-3.8-flash",      family: google, tier: high, vision: true, billing: api, concurrency: 2, timeoutMin: 45 }
+  gemini-flash-or: { cli: pi, model: "openrouter/google/gemini-3.1-flash-lite", family: google, tier: low,  vision: true, billing: api, concurrency: 3, timeoutMin: 20 }
   # --- Open source via assinatura / OpenRouter ---
   # glm via plano GLM Coding Lite da Z.ai (Claude Code apontado para o endpoint Anthropic da Z.ai; cota por 5h/semana).
   # Sem plano: cli: pi, model: "openrouter/z-ai/glm-5.3", billing: api (e preço em prices.yaml).
@@ -53,10 +57,10 @@ roles:
   test_writer:     { pool: [sonnet, codex-mid],                 note: "escreve testes de aceite ANTES da implementação" }
   implement:       { pool: [deepseek, glm, kimi, sonnet],       note: "features comuns" }
   implement_hard:  { pool: [opus, codex-top],                   note: "estatística, security rules, sincronização, privacidade" }
-  review_code:     { pool: [gemini-pro, codex-mid, sonnet],     rule: different_family_from_implementer }
-  review_ui:       { pool: [gemini-pro, sonnet],                rule: different_family_from_implementer, requires: vision }
-  triage:          { pool: [local-small, gemini-flash, deepseek, haiku] }
-  approval_parser: { pool: [gemini-flash, haiku, local-small],  note: "converte APROVACAO.md/DUVIDAS.md em JSON" }
+  review_code:     { pool: [gemini-pro-or, gemini-pro, codex-mid, sonnet],     rule: different_family_from_implementer }
+  review_ui:       { pool: [gemini-pro, gemini-pro-or, sonnet],                rule: different_family_from_implementer, requires: vision }
+  triage:          { pool: [local-small, gemini-flash, gemini-flash-or, deepseek, haiku] }
+  approval_parser: { pool: [gemini-flash, gemini-flash-or, haiku, local-small],  note: "converte APROVACAO.md/DUVIDAS.md em JSON" }
   retro:           { pool: [sonnet] }
   postmortem:      { pool: [sonnet] }
 

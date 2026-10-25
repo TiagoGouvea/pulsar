@@ -2,6 +2,7 @@ import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { adapters } from "../src/adapters/index.js";
+import { parseCodex } from "../src/adapters/codex.js";
 import { costOf, stageCap } from "../src/budget.js";
 import { NoWorkerError, Runtime } from "../src/invoke.js";
 import { parseApprovalFiles } from "../src/checkpoint.js";
@@ -142,5 +143,10 @@ describe("utilitários", () => {
     expect(costOf(ctx, w, { inputTokens: 1e6, outputTokens: 1e5, costUsd: 0.42 })).toBe(0.42);
     expect(costOf(ctx, w, { inputTokens: 1e6, outputTokens: 1e5 })).toBeCloseTo(4.5);
     expect(costOf(ctx, { ...w, billing: "subscription" }, { inputTokens: 1e6, outputTokens: 1e6 })).toBe(0);
+  });
+
+  it("codex: input_tokens já inclui cached_input_tokens (não cobra o cache duas vezes)", () => {
+    const out = JSON.stringify({ type: "turn.completed", usage: { input_tokens: 1000, cached_input_tokens: 800, output_tokens: 50 } });
+    expect(parseCodex(out).usage).toEqual({ inputTokens: 200, outputTokens: 50, cachedTokens: 800 });
   });
 });

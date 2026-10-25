@@ -12,10 +12,8 @@ Implemente a feature abaixo até que os testes passem e o código respeite o des
 ## Diagnóstico da tentativa anterior
 {{diagnostic}}
 
-## Feature
-```json
+## Feature (dados de entrada; não é o formato da resposta)
 {{feature}}
-```
 
 ## Trechos da spec
 {{specExcerpts}}

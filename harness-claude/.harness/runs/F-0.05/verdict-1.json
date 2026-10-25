@@ -1,0 +1,22 @@
+[
+  {
+    "kind": "code",
+    "pass": false,
+    "score": 2,
+    "issues": [
+      {
+        "severidade": "blocker",
+        "arquivo": "app/src/design/__tests__/design-system.f002.test.tsx",
+        "descricao": "Teste protegido da feature F-0.02 foi removido, eliminando verificações de tokens, acessibilidade e touch targets. Isso viola explicitamente as regras e enfraquece a suíte.",
+        "sugestao": "Restaurar o arquivo exatamente como estava e manter a proteção no .prettierignore."
+      },
+      {
+        "severidade": "major",
+        "arquivo": "app/.prettierignore",
+        "descricao": "A remoção da exceção documentada para o teste protegido acompanha sua exclusão e indica alteração indevida da proteção do teste.",
+        "sugestao": "Restaurar a entrada e o comentário originais."
+      }
+    ],
+    "workerId": "codex-mid"
+  }
+]

@@ -76,7 +76,7 @@ export class Runtime {
         data = this.parse(r.schema, result.finalText);
         if (data === undefined) {
           // one formatting retry, same worker, previous answer as context
-          const retry = `Sua resposta anterior não terminou com um bloco JSON válido no formato exigido.\nResposta anterior (final):\n${result.finalText.slice(-4000)}\n\nNÃO refaça o trabalho. Responda SOMENTE com o bloco \`\`\`json final no formato pedido nas instruções abaixo.\n\n${r.prompt.slice(-6000)}`;
+          const retry = `Sua resposta anterior não terminou com um bloco JSON válido no formato exigido.\nResposta anterior (final):\n${result.finalText.slice(-4000)}\n\nNÃO refaça o trabalho e NÃO repita o JSON da feature. Responda SOMENTE com o bloco \`\`\`json final no formato pedido nas instruções abaixo (se o papel não definir outro, use {"summary","filesChanged","testsRun","confidence","notes"}).\n\n${r.prompt.slice(-6000)}`;
           result = await this.exec(w, r, retry, join(dir, `${base}.format-retry.jsonl`));
           costUsd += record(this.ctx, w, r.role, r.stage, r.featureId, result.usage).costUsd;
           data = result.ok ? this.parse(r.schema, result.finalText) : undefined;

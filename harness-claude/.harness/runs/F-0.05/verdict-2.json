@@ -1,0 +1,34 @@
+[
+  {
+    "kind": "code",
+    "pass": false,
+    "score": 6,
+    "issues": [
+      {
+        "severidade": "major",
+        "arquivo": "pulsar-claude/app/e2e/routes.spec.ts",
+        "descricao": "O bloco 'Diff' do prompt veio vazio e o Bash foi negado, então não consegui confirmar pelo git quais arquivos a feature alterou nem se há mudanças fora do escopo. A avaliação se baseia apenas na leitura dos arquivos (playwright.config.ts, e2e/routes.json, e2e/support.ts, e2e/routes.spec.ts, e2e/visual.spec.ts, scripts em app/package.json), que existem e batem com o escopo da feature.",
+        "sugestao": "Reenviar o diff real (git diff da branch da feature contra a base) para validar escopo, arquivos protegidos e ausência de .skip/.only."
+      },
+      {
+        "severidade": "major",
+        "arquivo": "pulsar-claude/app/e2e/routes.spec.ts",
+        "descricao": "Os critérios de aceite de execução (e2e:serve subindo emuladores e preview, axe e overflow em 375 e 1280, test:visual gerando capturas) não foram comprovados: não há evidência de execução dos testes nem dos scripts, e o gate G6 aparece como ok sem saída anexa.",
+        "sugestao": "Anexar a saída de yarn e2e:serve, yarn test:e2e e yarn test:visual, ou registrar que não foram executados."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "pulsar-claude/app/e2e/routes.spec.ts",
+        "descricao": "A verificação de sentinelas ZQX_* roda com o olho no estado padrão, sem acionar o EyeToggle para fechá-lo. Assim o teste pode passar sem exercitar o cenário de privacidade que a regra exige (olho fechado).",
+        "sugestao": "Adicionar uma asserção com o olho fechado (data-testid=\"eye-toggle\") antes de checar as sentinelas, ou documentar que o estado padrão já é fechado."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "pulsar-claude/app/playwright.config.ts",
+        "descricao": "A opção webServer.gracefulShutdown depende de uma versão do Playwright mais nova que o range ^1.53.0 declarado; se não for suportada, o typecheck ou a execução falha. Também não confirmei se o tsconfig aceita o import com 'with { type: \"json\" }' em support.ts.",
+        "sugestao": "Confirmar a versão instalada do @playwright/test e rodar yarn typecheck; ajustar a versão mínima se necessário."
+      }
+    ],
+    "workerId": "haiku"
+  }
+]

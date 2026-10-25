@@ -1,0 +1,119 @@
+{
+  "ok": false,
+  "mode": "feature",
+  "stage": 0,
+  "failed": [
+    "G4",
+    "G10"
+  ],
+  "results": [
+    {
+      "id": "G1",
+      "name": "install-build",
+      "required": true,
+      "durationMs": 8385,
+      "ok": true,
+      "output": "\" is incompatible with this module.\ninfo \"@rollup/rollup-linux-ppc64-musl@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-linux-ppc64-musl@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-linux-riscv64-gnu@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-linux-riscv64-gnu@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-linux-riscv64-gnu@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-linux-riscv64-musl@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-linux-riscv64-musl@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-linux-riscv64-musl@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-linux-s390x-gnu@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-linux-s390x-gnu@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-linux-s390x-gnu@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-linux-x64-gnu@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-linux-x64-gnu@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-linux-x64-gnu@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-linux-x64-musl@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-linux-x64-musl@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-linux-x64-musl@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-openbsd-x64@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-openbsd-x64@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-openbsd-x64@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-openharmony-arm64@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-openharmony-arm64@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-win32-arm64-msvc@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-win32-arm64-msvc@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-win32-ia32-msvc@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-win32-ia32-msvc@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-win32-ia32-msvc@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-win32-x64-gnu@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-win32-x64-gnu@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-win32-x64-gnu@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-win32-x64-msvc@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-win32-x64-msvc@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-win32-x64-msvc@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\n[4/5] Linking dependencies...\nwarning \" > @axe-core/playwright@4.14.0\" has unmet peer dependency \"playwright-core@>= 1.0.0\".\n[5/5] Building fresh packages...\nDone in 6.35s.\nyarn run v1.23.0-20220130.1630\n$ vite build\n\u001b[36mvite v7.3.7 \u001b[32mbuilding client environment for production...\u001b[36m\u001b[39m\ntransforming...\n\u001b[32m✓\u001b[39m 57 modules transformed.\nrendering chunks...\ncomputing gzip size...\n\u001b[2mdist/\u001b[22m\u001b[32mindex.html                                                  \u001b[39m\u001b[1m\u001b[2m    0.46 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m │ gzip:   0.30 kB\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mspace-grotesk-vietnamese-wght-normal-D0rl6rjA.woff2  \u001b[39m\u001b[1m\u001b[2m    6.71 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mgeist-cyrillic-ext-wght-normal-DjL33-gN.woff2        \u001b[39m\u001b[1m\u001b[2m    7.42 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mgeist-vietnamese-wght-normal-6IgcOCM7.woff2          \u001b[39m\u001b[1m\u001b[2m    8.00 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mgeist-cyrillic-wght-normal-BEAKL7Jp.woff2            \u001b[39m\u001b[1m\u001b[2m   15.08 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mgeist-latin-ext-wght-normal-DC-KSUi6.woff2           \u001b[39m\u001b[1m\u001b[2m   16.51 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mspace-grotesk-latin-ext-wght-normal-D9tNdqV9.woff2   \u001b[39m\u001b[1m\u001b[2m   18.94 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mspace-grotesk-latin-wght-normal-BhU9QXUp.woff2       \u001b[39m\u001b[1m\u001b[2m   22.29 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mgeist-latin-wght-normal-BgDaEnEv.woff2               \u001b[39m\u001b[1m\u001b[2m   29.40 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mmaterial-symbols-outlined-BDRtoJUL.woff2             \u001b[39m\u001b[1m\u001b[2m3,627.18 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[35mindex-BoiYD31t.css                                   \u001b[39m\u001b[1m\u001b[2m   25.81 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m │ gzip:   5.66 kB\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[36mDesignPage-CrXaAAL1.js                               \u001b[39m\u001b[1m\u001b[2m   13.26 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m │ gzip:   4.01 kB\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[36mindex-mGpJRfVp.js                                    \u001b[39m\u001b[1m\u001b[2m  316.69 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m │ gzip: 101.22 kB\u001b[22m\n\u001b[32m✓ built in 505ms\u001b[39m\nDone in 1.71s."
+    },
+    {
+      "id": "G2",
+      "name": "lint-format",
+      "required": true,
+      "durationMs": 1941,
+      "ok": true,
+      "output": "yarn run v1.23.0-20220130.1630\n$ eslint . --max-warnings=0\nDone in 0.92s.\nyarn run v1.23.0-20220130.1630\n$ prettier --check .\nChecking formatting...\nAll matched files use Prettier code style!\nDone in 0.73s."
+    },
+    {
+      "id": "G3",
+      "name": "typecheck",
+      "required": true,
+      "durationMs": 1326,
+      "ok": true,
+      "output": "yarn run v1.23.0-20220130.1630\n$ tsc --noEmit -p tsconfig.json\nDone in 1.18s."
+    },
+    {
+      "id": "G4",
+      "name": "unit",
+      "required": true,
+      "durationMs": 531,
+      "ok": false,
+      "output": "yarn run v1.23.0-20220130.1630\n$ vitest run --coverage --coverage\nfile:///Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-0.01/pulsar-claude/app/node_modules/vitest/dist/chunks/cac.BfaZ95xE.js:1269\n\t\t\tthrow new Error(`Expected a single value for option \"${command}\", received [${received}]`);\n\t\t\t      ^\n\nError: Expected a single value for option \"--coverage \", received [true, true]\n    at transform (file:///Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-0.01/pulsar-claude/app/node_modules/vitest/dist/chunks/cac.BfaZ95xE.js:1269:10)\n    at setDotProp (file:///Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-0.01/pulsar-claude/app/node_modules/vitest/dist/chunks/cac.BfaZ95xE.js:207:22)\n    at CAC.mri (file:///Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-0.01/pulsar-claude/app/node_modules/vitest/dist/chunks/cac.BfaZ95xE.js:591:9)\n    at CAC.parse (file:///Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-0.01/pulsar-claude/app/node_modules/vitest/dist/chunks/cac.BfaZ95xE.js:508:27)\n    at file:///Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-0.01/pulsar-claude/app/node_modules/vitest/dist/cli.js:27:13\n    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async node:internal/modules/esm/loader:647:26\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)\n\nNode.js v24.22.1\nerror Command failed with exit code 1.\ninfo Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command."
+    },
+    {
+      "id": "G5",
+      "name": "security-rules",
+      "ok": true,
+      "required": true,
+      "skipped": "a partir da etapa 1",
+      "durationMs": 0,
+      "output": ""
+    },
+    {
+      "id": "G6",
+      "name": "e2e",
+      "required": true,
+      "durationMs": 10448,
+      "ok": true,
+      "output": "yarn run v1.23.0-20220130.1630\n$ playwright test --grep-invert @visual\n\nRunning 4 tests using 4 workers\n\n  ✓  4 [desktop] › e2e/routes.spec.ts:8:3 › route home (/) passes browser gates (1.2s)\n  ✓  1 [mobile] › e2e/routes.spec.ts:8:3 › route home (/) passes browser gates (1.2s)\n  ✓  3 [desktop] › e2e/routes.spec.ts:8:3 › route design (/_design) passes browser gates (1.7s)\n  ✓  2 [mobile] › e2e/routes.spec.ts:8:3 › route design (/_design) passes browser gates (1.7s)\n\n  4 passed (9.8s)\nDone in 10.30s."
+    },
+    {
+      "id": "G7",
+      "name": "protected-tests",
+      "required": true,
+      "durationMs": 4,
+      "ok": true,
+      "output": "testes protegidos íntegros"
+    },
+    {
+      "id": "G8",
+      "name": "privacy-leak",
+      "ok": true,
+      "required": true,
+      "skipped": "a partir da etapa 1",
+      "durationMs": 0,
+      "output": ""
+    },
+    {
+      "id": "G9",
+      "name": "a11y",
+      "required": true,
+      "durationMs": 10129,
+      "ok": true,
+      "output": "zero violações serious/critical"
+    },
+    {
+      "id": "G10",
+      "name": "mobile-layout",
+      "required": true,
+      "durationMs": 10696,
+      "ok": false,
+      "output": "design/w320: alvo de toque 144x36 < 44px: <input inputmode=\"decimal\" placeholder=\"—\" class=\"w-full bg-transparent text-cen\ndesign/w320: alvo de toque 23x44 < 44px: <button type=\"button\" role=\"radio\" aria-checked=\"false\" class=\"flex h-11 min-w-0\ndesign/w320: alvo de toque 23x44 < 44px: <button type=\"button\" role=\"radio\" aria-checked=\"false\" class=\"flex h-11 min-w-0\ndesign/w320: alvo de toque 23x44 < 44px: <button type=\"button\" role=\"radio\" aria-checked=\"false\" class=\"flex h-11 min-w-0\ndesign/w320: alvo de toque 23x44 < 44px: <button type=\"button\" role=\"radio\" aria-checked=\"false\" class=\"flex h-11 min-w-0\ndesign/w320: alvo de toque 23x44 < 44px: <button type=\"button\" role=\"radio\" aria-checked=\"false\" class=\"flex h-11 min-w-0\ndesign/w320: alvo de toque 23x44 < 44px: <button type=\"button\" role=\"radio\" aria-checked=\"false\" class=\"flex h-11 min-w-0\ndesign/w320: alvo de toque 23x44 < 44px: <button type=\"button\" role=\"radio\" aria-checked=\"false\" class=\"flex h-11 min-w-0\ndesign/w320: alvo de toque 23x44 < 44px: <button type=\"button\" role=\"radio\" aria-checked=\"true\" class=\"flex h-11 min-w-0 \ndesign/w320: alvo de toque 23x44 < 44px: <button type=\"button\" role=\"radio\" aria-checked=\"false\" class=\"flex h-11 min-w-0\ndesign/w320: alvo de toque 23x44 < 44px: <button type=\"button\" role=\"radio\" aria-checked=\"false\" class=\"flex h-11 min-w-0\ndesign/w320: alvo de toque 23x44 < 44px: <button type=\"button\" role=\"radio\" aria-checked=\"false\" class=\"flex h-11 min-w-0\ndesign/w320: alvo de toque 48x28 < 44px: <button type=\"button\" role=\"switch\" aria-checked=\"false\" aria-label=\"Lembrete di\ndesign/w375: alvo de toque 187x36 < 44px: <input inputmode=\"decimal\" placeholder=\"—\" class=\"w-full bg-transparent text-cen\ndesign/w375: alvo de toque 26x44 < 44px: <button type=\"button\" role=\"radio\" aria-checked=\"false\" class=\"flex h-11 min-w-0\ndesign/w375: alvo de toque 26x44 < 44px: <button type=\"button\" role=\"radio\" aria-checked=\"false\" class=\"flex h-11 min-w-0\ndesign/w375: alvo de toque 26x44 < 44px: <button type=\"button\" role=\"radio\" aria-checked=\"false\" class=\"flex h-11 min-w-0\ndesign/w375: alvo de toque 26x44 < 44px: <button type=\"button\" role=\"radio\" aria-checked=\"false\" class=\"flex h-11 min-w-0\ndesign/w375: alvo de toque 26x44 < 44px: <button type=\"button\" role=\"radio\" aria-checked=\"false\" class=\"flex h-11 min-w-0\ndesign/w375: alvo de toque 26x44 < 44px: <button type=\"button\" role=\"radio\" aria-checked=\"false\" class=\"flex h-11 min-w-0\ndesign/w375: alvo de toque 26x44 < 44px: <button type=\"button\" role=\"radio\" aria-checked=\"false\" class=\"flex h-11 min-w-0\ndesign/w375: alvo de toque 26x44 < 44px: <button type=\"button\" role=\"radio\" aria-checked=\"true\" class=\"flex h-11 min-w-0 \ndesign/w375: alvo de toque 26x44 < 44px: <button type=\"button\" role=\"radio\" aria-checked=\"false\" class=\"flex h-11 min-w-0\ndesign/w375: alvo de toque 26x44 < 44px: <button type=\"button\" role=\"radio\" aria-checked=\"false\" class=\"flex h-11 min-w-0\ndesign/w375: alvo de toque 26x44 < 44px: <button type=\"button\" role=\"radio\" aria-checked=\"false\" class=\"flex h-11 min-w-0\ndesign/w375: alvo de toque 48x28 < 44px: <button type=\"button\" role=\"switch\" aria-checked=\"false\" aria-label=\"Lembrete di\ndesign/w414: alvo de toque 226x36 < 44px: <input inputmode=\"decimal\" placeholder=\"—\" class=\"w-full bg-transparent text-cen\ndesign/w414: alvo de toque 30x44 < 44px: <button type=\"button\" role=\"radio\" aria-checked=\"false\" class=\"flex h-11 min-w-0\ndesign/w414: alvo de toque 30x44 < 44px: <button type=\"button\" role=\"radio\" aria-checked=\"false\" class=\"flex h-11 min-w-0\ndesign/w414: alvo de toque 30x44 < 44px: <button type=\"button\" role=\"radio\" aria-checked=\"false\" class=\"flex h-11 min-w-0\ndesign/w414: alvo de toque 30x44 < 44px: <button type=\"button\" role=\"radio\" aria-checked=\"false\" class=\"flex h-11 min-w-0\ndesign/w414: alvo de toque 30x44 < 44px: <button type=\"button\" role=\"radio\" aria-checked=\"false\" class=\"flex h-11 min-w-0\ndesign/w414: alvo de toque 30x44 < 44px: <button type=\"button\" role=\"radio\" aria-checked=\"false\" class=\"flex h-11 min-w-0\ndesign/w414: alvo de toque 30x44 < 44px: <button type=\"button\" role=\"radio\" aria-checked=\"false\" class=\"flex h-11 min-w-0\ndesign/w414: alvo de toque 30x44 < 44px: <button type=\"button\" role=\"radio\" aria-checked=\"true\" class=\"flex h-11 min-w-0 \ndesign/w414: alvo de toque 30x44 < 44px: <button type=\"button\" role=\"radio\" aria-checked=\"false\" class=\"flex h-11 min-w-0\ndesign/w414: alvo de toque 30x44 < 44px: <button type=\"button\" role=\"radio\" aria-checked=\"false\" class=\"flex h-11 min-w-0\ndesign/w414: alvo de toque 30x44 < 44px: <button type=\"button\" role=\"radio\" aria-checked=\"false\" class=\"flex h-11 min-w-0\ndesign/w414: alvo de toque 48x28 < 44px: <button type=\"button\" role=\"switch\" aria-checked=\"false\" aria-label=\"Lembrete di"
+    },
+    {
+      "id": "G11",
+      "name": "visual-regression",
+      "ok": true,
+      "required": true,
+      "skipped": "a partir da etapa 2",
+      "durationMs": 0,
+      "output": ""
+    },
+    {
+      "id": "G12",
+      "name": "lighthouse",
+      "ok": true,
+      "required": true,
+      "skipped": "só no fim de etapa",
+      "durationMs": 0,
+      "output": ""
+    },
+    {
+      "id": "G13",
+      "name": "secrets",
+      "required": true,
+      "durationMs": 25,
+      "ok": true,
+      "output": "nenhum segredo no diff"
+    }
+  ]
+}

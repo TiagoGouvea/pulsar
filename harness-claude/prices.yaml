@@ -10,3 +10,5 @@ codex-mid:    { input: 2,    output: 12,   cached: 0.20 }   # gpt-5.6-terra
 codex-mini:   { input: 0.20, output: 1.20, cached: 0.02 }   # gpt-5.6-luna
 kimi:         { input: 0.67, output: 3.35, cached: 0.15 }   # moonshotai/kimi-k2.7-code
 deepseek:     { input: 0.21, output: 0.42, cached: 0.02 }   # deepseek/deepseek-v4-pro
+gemini-pro-or:   { input: 0.825, output: 4.125, cached: 0.08 }   # google/gemini-3.8-flash (OpenRouter)
+gemini-flash-or: { input: 0.25,  output: 1.50,  cached: 0.025 }  # google/gemini-3.1-flash-lite (OpenRouter)

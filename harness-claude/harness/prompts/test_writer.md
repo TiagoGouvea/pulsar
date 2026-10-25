@@ -9,10 +9,8 @@ Escreva os testes de aceite da feature abaixo **antes** da implementação.
 - Asserts verificam comportamento observável, não detalhes de implementação.
 - Para privacidade, use os nomes sentinela do seed e verifique DOM visível, `aria-*`, `title` e tooltips.
 
-## Feature
-```json
+## Feature (dados de entrada; não é o formato da resposta)
 {{feature}}
-```
 
 ## Trechos da spec
 {{specExcerpts}}

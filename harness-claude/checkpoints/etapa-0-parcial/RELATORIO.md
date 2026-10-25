@@ -2,24 +2,50 @@
 
 **Preview:** não publicado
 
-## Features entregues (0/0)
+## Features entregues (4/7)
 
+- **F-0.01** Scaffold: Vite, TypeScript, Tailwind, lint e Vitest — 3 tentativa(s), US$ 0.79 — critérios: AC-20
+  - [x] yarn build, lint, format:check, typecheck e test:unit rodam a partir de app/
+  - [x] <html lang="pt-BR"> e nenhuma outra língua de interface
+  - [x] Import de firebase ou react em src/stats/ falha no lint
+- **F-0.02** Tokens e componentes base do design system — 2 tentativa(s), US$ 1.52 — critérios: AC-17
+  - [x] Cores, tipografia, raios e espaçamentos vêm de tokens (sem hex soltos nos componentes)
+  - [x] GroupBadge distingue Fator e Resultado por texto, não só por cor
+  - [x] Controles interativos têm alvo de toque >= 44px e rótulo acessível
+- **F-0.04** Firebase com emuladores e regras-base por UID — 1 tentativa(s), US$ 1.06 — critérios: AC-04
+  - [x] yarn test:rules sobe o emulador do Firestore e roda tests/rules
+  - [x] firestore.rules nega acesso entre UIDs e a internal/
+  - [x] Build de produção não aponta para emuladores
+- **F-0.03** Seed sintético do usuário de desenvolvimento — 1 tentativa(s), US$ 0.63 — critérios: AC-21
+  - [x] Seed gera exatamente 30 dias sintéticos terminando hoje (firstDate = hoje - 29; nenhum registro fora dessa janela)
+  - [x] Seed é determinístico para a mesma data
+  - [x] Cobre Não explícito vs ausência, 0 vs ausência, múltiplos por dia, valor extremo, indicador arquivado e sem sigla
+  - [x] Exercício -> energia com diferença >= 1,5 ponto plantada; sono -> foco monotônico com >= 16 dias pareados; café x dor sem relação
+  - [x] Recusa rodar fora do emulador sem opt-in explícito
 
 ## Bloqueadas (0)
 
 
+## Pendentes (3)
+
+- F-0.05 Playwright, gates de navegador e e2e:serve [in_progress]
+- F-0.06 Modo privado: PrivacyContext, EyeToggle e IndicatorLabel [in_progress]
+- F-0.07 Página /_design (somente dev/emulador) [failing]
 
 ## Custo e tempo
 
-- Custo da etapa: US$ 4.71 (teto US$ 8)
-- Custo acumulado: US$ 5.71 (teto US$ 60)
-- Tempo decorrido: 0.0 h · chamadas registradas: 1
+- Custo da etapa: US$ 13.92 (teto US$ 14)
+- Custo acumulado: US$ 14.93 (teto US$ 66)
+- Tempo decorrido: 1.1 h · chamadas registradas: 33
 
 ## Workers (implementação)
 
 | Worker | Tentativas | Sucesso |
 |---|---|---|
-
+| sonnet | 1 | 0% |
+| kimi | 2 | 50% |
+| opus | 3 | 67% |
+| deepseek | 4 | 25% |
 
 
 

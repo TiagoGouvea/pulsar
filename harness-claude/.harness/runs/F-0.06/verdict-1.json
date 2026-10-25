@@ -1,0 +1,22 @@
+[
+  {
+    "kind": "code",
+    "pass": false,
+    "score": 5,
+    "issues": [
+      {
+        "severidade": "major",
+        "arquivo": "app/src/pages/DesignPage.tsx",
+        "descricao": "Com o olho fechado, nomes de indicadores ainda vazam por `NumberInput label=\"Café\"` e `Slider label=\"Energia\"` (inclusive em nomes acessíveis). Isso viola a regra de que nome/sigla/emoji só sejam exibidos via `IndicatorLabel`; o e2e só verifica `[data-indicator-label]` e não detecta o vazamento.",
+        "sugestao": "Derivar também os rótulos dos controles pela regra de privacidade, sem passar nomes reais diretamente; ampliar o e2e para validar o texto da página inteira, exceto elementos com `data-privacy-allow`."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/privacy/label.ts",
+        "descricao": "`abbreviationOf` usa `trim()` e não exibe a sigla exatamente como digitada, contrariando DECISOES.md.",
+        "sugestao": "Use a sigla fornecida sem transformá-la; trate ausência no ponto de validação ou somente quando ela for `null`/vazia conforme o contrato definido."
+      }
+    ],
+    "workerId": "codex-mid"
+  }
+]
