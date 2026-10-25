@@ -5,6 +5,7 @@ import {
   Chip,
   EyeToggle,
   GroupBadge,
+  Icon,
   IndicatorLabel,
   NumberInput,
   Sheet,
@@ -19,6 +20,22 @@ const samples = {
   energy: { name: 'Nível de Energia', abbreviation: 'ENE', emoji: '⚡' },
   focus: { name: 'Concentração', abbreviation: null, emoji: null },
 };
+
+const colorTokens = [
+  { name: 'Primária · resultados', className: 'bg-primary-container' },
+  { name: 'Secundária · fatores', className: 'bg-secondary' },
+  { name: 'Terciária · positivo', className: 'bg-tertiary-container' },
+  { name: 'Alerta · baixa confiança', className: 'bg-warning' },
+  { name: 'Erro', className: 'bg-error' },
+  { name: 'Superfície', className: 'bg-surface-container' },
+] as const;
+
+const iconSamples = [
+  { name: 'input', label: 'Fator' },
+  { name: 'insights', label: 'Resultado' },
+  { name: 'analytics', label: 'Análise' },
+  { name: 'check_circle', label: 'Registrado' },
+] as const;
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -50,6 +67,25 @@ export default function DesignPage() {
         </div>
         <EyeToggle />
       </header>
+
+      <Section title="Tokens">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-space-sm">
+          {colorTokens.map((token) => (
+            <div
+              key={token.name}
+              className="flex min-w-0 items-center gap-2 rounded-md bg-surface-container-lowest p-2 shadow-level-1"
+            >
+              <span aria-hidden="true" className={`h-8 w-8 shrink-0 rounded-full ${token.className}`} />
+              <span className="font-label-md text-label-md text-on-surface-variant">{token.name}</span>
+            </div>
+          ))}
+        </div>
+        <Card>
+          <p className="font-headline-md text-headline-md">Título de seção</p>
+          <p className="font-body-lg text-body-lg">Texto de leitura e controles</p>
+          <p className="font-label-code text-label-code tracking-wider uppercase">ENE · 7,4</p>
+        </Card>
+      </Section>
 
       <Section title="Grupos e indicadores">
         <div className="flex flex-wrap items-center gap-2">
@@ -85,6 +121,20 @@ export default function DesignPage() {
         </div>
       </Section>
 
+      <Section title="Ícones">
+        <div className="flex flex-wrap gap-2">
+          {iconSamples.map((icon) => (
+            <span
+              key={icon.name}
+              className="inline-flex min-h-11 items-center gap-2 rounded-full bg-surface-container px-3 font-label-md text-label-md"
+            >
+              <Icon name={icon.name} className="text-[20px]" />
+              {icon.label}
+            </span>
+          ))}
+        </div>
+      </Section>
+
       <Section title="Cartões e controles">
         <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-space-lg">
           <Card>
@@ -105,12 +155,19 @@ export default function DesignPage() {
           </Card>
           <Card>
             <IndicatorLabel indicator={samples.coffee} variant="badge" group="factor" />
-            <NumberInput label="Café" unit="xícaras" value={cups} onChange={setCups} min={0} step={0.5} />
+            <NumberInput
+              label="Quantidade do fator"
+              unit="xícaras"
+              value={cups}
+              onChange={setCups}
+              min={0}
+              step={0.5}
+            />
           </Card>
           <Card>
             <IndicatorLabel indicator={samples.energy} variant="badge" group="result" />
             <Slider
-              label="Energia"
+              label="Escala do resultado"
               value={scale}
               onChange={setScale}
               minLabel="0 (Esgotado)"

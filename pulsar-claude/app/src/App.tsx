@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { createBrowserRouter, RouterProvider, type RouteObject } from 'react-router';
 import { emulatorsEnabled } from './lib/env';
 import { HomePlaceholder } from './pages/HomePlaceholder';
+import { PrivacyProvider } from './privacy/PrivacyContext';
 
 const DesignPage = lazy(() => import('./pages/DesignPage'));
 
@@ -24,5 +25,9 @@ const routes: RouteObject[] = [
 const router = createBrowserRouter(routes);
 
 export function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <PrivacyProvider>
+      <RouterProvider router={router} />
+    </PrivacyProvider>
+  );
 }
