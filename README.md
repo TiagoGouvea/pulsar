@@ -12,7 +12,7 @@ Este repositório reúne **duas abordagens paralelas e independentes** de desenv
 pulsar/
 ├── docs/             # Especificação funcional e arquitetura oficial do produto
 ├── design/           # Telas de referência (PNG), layouts (HTML) e design tokens
-├── observer-agy/     # Relatórios técnicos e avaliações comparativas entre os harnesses
+├── observer-agy/     # Relatórios técnicos, checkpoints e análises comparativas
 │
 ├── harness-claude/   # Fábrica autônoma implementada pelo Claude
 ├── pulsar-claude/    # Aplicação web desenvolvida pelo harness-claude
@@ -31,6 +31,23 @@ pulsar/
 | **Codex** | [`harness-codex/`](harness-codex/) | [`pulsar-codex/`](pulsar-codex/) | Orquestrador com Pi SDK, banco transacional em SQLite, verificação por comandos e painel web local. |
 
 Consulte o `README.md` dentro de cada pasta de harness para instruções detalhadas de execução, variáveis de ambiente e comandos de controle.
+
+---
+
+## Etapas de Desenvolvimento e Branches
+
+Para registrar a evolução cronológica do projeto e permitir comparação precisa entre as duas abordagens, **cada etapa possui uma branch dedicada**. Ao fim de cada ciclo, o resumo detalhado (features entregues, métricas, custos e aprendizados) é documentado em [`observer-agy/`](observer-agy/).
+
+| Etapa | Branch | Escopo Principal |
+| :---: | :--- | :--- |
+| **0** | `0-setup` | Scaffold Vite + React + TS, emuladores Firebase e tokens do design system |
+| **1** | `1-base` | Autenticação, CRUD de indicadores, modo privado e Security Rules |
+| **2** | `2-registro` | Painel de registro rápido mobile (fatores e resultados) e feedback |
+| **3** | `3-insights` | Agregação diária, correlações estatísticas, dashboard e mini gráficos |
+| **4** | `4-curadoria` | Timeline de descobertas, hipóteses, like/dislike e deduplicação |
+| **5** | `5-pwa-push` | Suporte PWA, instalação no celular e lembretes por push |
+| **6** | `6-ia-generativa` | Síntese de insights por IA com consentimento e preservação de privacidade |
+| **7** | `7-polimento` | Acessibilidade (a11y), performance, estados de erro/vazio e revisão visual |
 
 ---
 
