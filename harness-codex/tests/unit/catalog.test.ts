@@ -13,12 +13,13 @@ describe("roteamento de modelos", () => {
       { alias: "cheap-a", executor: "pi", provider: "p", modelId: "a", family: "family-a", modality: "local", capabilities: ["text", "tools"], roles: ["implementer"], enabled: true, contextTokens: 8192, maxOutputTokens: 1024 },
       { alias: "cheap-b", executor: "pi", provider: "p", modelId: "b", family: "family-b", modality: "local", capabilities: ["text", "tools"], roles: ["implementer", "functionalReviewer"], enabled: true, contextTokens: 8192, maxOutputTokens: 1024 },
       { alias: "review-c", executor: "pi", provider: "p", modelId: "c", family: "family-c", modality: "local", capabilities: ["text", "tools"], roles: ["functionalReviewer"], enabled: true, contextTokens: 8192, maxOutputTokens: 1024 },
+      { alias: "diagnostic-d", executor: "pi", provider: "p", modelId: "d", family: "family-d", modality: "local", capabilities: ["text", "tools"], roles: ["diagnostic"], enabled: true, contextTokens: 8192, maxOutputTokens: 1024 },
     ];
     config.routing = {
       pools: {
         planner: ["cheap-a"], testAuthor: ["cheap-a"], implementer: ["cheap-a", "cheap-b"], hardImplementer: ["cheap-b"],
         functionalReviewer: ["cheap-b", "review-c"], visualReviewer: ["review-c"], securityReviewer: ["review-c"],
-        diagnostic: ["cheap-a"], learningAnalyst: ["review-c"],
+        diagnostic: ["diagnostic-d", "cheap-a"], learningAnalyst: ["review-c"],
       },
       hardTaskPatterns: ["privacidade"],
     };
@@ -29,9 +30,11 @@ describe("roteamento de modelos", () => {
     const firstReviewer = catalog.selectReviewer("functionalReviewer", first, "same", 1);
     const secondReviewer = catalog.selectReviewer("functionalReviewer", first, "same", 2);
     const finalFallbackReviewer = catalog.selectReviewer("functionalReviewer", first, "same", 3);
+    const emergencyReviewer = catalog.selectReviewer("functionalReviewer", first, "same", 5);
     expect(firstReviewer.family).not.toBe(first.family);
     expect(secondReviewer.alias).not.toBe(firstReviewer.alias);
     expect(finalFallbackReviewer.alias).toBe(secondReviewer.alias);
+    expect(emergencyReviewer.alias).toBe("diagnostic-d");
     expect(catalog.isHardTask("Revisar privacidade dos dados")).toBe(true);
   });
 });

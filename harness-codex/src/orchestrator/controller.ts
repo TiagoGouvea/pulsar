@@ -360,7 +360,7 @@ export class Orchestrator {
         attemptId: context.attempt.id, interruptedAttemptId, phase: "independent_review", revision,
       });
       this.store.setTaskState(runId, task.id, "verifying");
-      const decision = await this.reviewTask(runId, task, context.candidate, revision);
+      const decision = await this.reviewTaskWithFallbacks(runId, task, context.candidate, revision);
       if (!this.applyReviewDecision(runId, task.id, decision)) return false;
     }
     return true;
@@ -387,7 +387,7 @@ export class Orchestrator {
       return true;
     }
     if (this.config.review.requireIndependentSession) {
-      const decision = await this.reviewTask(runId, task, candidate, verification.revision);
+      const decision = await this.reviewTaskWithFallbacks(runId, task, candidate, verification.revision);
       if (!this.applyReviewDecision(runId, task.id, decision)) return false;
       return true;
     }
@@ -518,6 +518,29 @@ export class Orchestrator {
         "INSERT INTO findings(id, run_id, severity, category, summary, evidence_path, state, created_at) VALUES (?, ?, 'major', 'independent_review', ?, ?, 'open', ?)",
         createId("finding"), runId, result.summary, path.join(outputDirectory, "result.json"), nowUtc(),
       );
+    }
+    return decision;
+  }
+
+  private async reviewTaskWithFallbacks(
+    runId: string,
+    task: Task,
+    implementer: ReturnType<ModelCatalog["get"]>,
+    revision: string,
+  ): Promise<ReviewDecision> {
+    let decision: ReviewDecision = "retryable_failure";
+    for (let fallback = 0; fallback < this.config.review.maxAttempts; fallback += 1) {
+      decision = await this.reviewTask(runId, task, implementer, revision);
+      if (decision !== "retryable_failure") return decision;
+      const failures = this.store.all<Record<string, unknown>>(
+        "SELECT id FROM attempts WHERE run_id=? AND task_id=? AND status='failed' AND result_json IS NOT NULL",
+        runId, `${task.id}-review`,
+      ).length;
+      if (failures >= this.config.review.maxAttempts) return decision;
+      this.store.event(runId, "task.review_fallback", "task", task.id, {
+        completedFailures: failures,
+        remainingAttempts: this.config.review.maxAttempts - failures,
+      });
     }
     return decision;
   }

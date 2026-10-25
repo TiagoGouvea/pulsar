@@ -58,9 +58,30 @@ export class ModelCatalog {
     const candidates = this.config.review.preferDifferentModelFamily
       ? ordered.filter((candidate) => candidate.family !== implementer.family)
       : ordered;
-    const candidate = candidates.length
-      ? candidates[(hashSeed(seed) + Math.min(Math.max(0, attempt - 1), candidates.length - 1)) % candidates.length]
-      : ordered[0];
+    if (!candidates.length) {
+      const candidate = ordered[0];
+      if (!candidate) throw new Error(`Nenhum revisor elegível para ${role}.`);
+      return candidate;
+    }
+    const primaryIndex = (hashSeed(seed) + Math.min(Math.max(0, attempt - 1), candidates.length - 1)) % candidates.length;
+    if (attempt <= candidates.length + 2) return candidates[primaryIndex] as ModelCandidate;
+
+    const primaryAliases = new Set(ordered.map((candidate) => candidate.alias));
+    const diagnosticAliases = this.config.routing?.pools.diagnostic ?? [];
+    const emergency = diagnosticAliases
+      .map((alias) => this.config.models.find((candidate) => candidate.alias === alias))
+      .filter((candidate): candidate is ModelCandidate => Boolean(
+        candidate
+        && candidate.enabled
+        && candidate.executor === this.config.execution.executor
+        && candidate.family !== implementer.family
+        && candidate.capabilities.includes("text")
+        && candidate.capabilities.includes("tools")
+        && !primaryAliases.has(candidate.alias),
+      ))
+      .sort((left, right) => Number(right.modality === "local") - Number(left.modality === "local"));
+    const emergencyIndex = Math.min(attempt - candidates.length - 3, Math.max(0, emergency.length - 1));
+    const candidate = emergency[emergencyIndex] ?? candidates[primaryIndex];
     if (!candidate) throw new Error(`Nenhum revisor elegível para ${role}.`);
     return candidate;
   }
