@@ -36,7 +36,7 @@ export async function listWorktrees(root: string) {
     .map((b) => relative(base, b.match(/^worktree (.+)$/m)?.[1] ?? "")).filter((n) => n && !n.startsWith(".."));
 }
 
-/** Removes orphan feature worktrees left by a crash. Keeps stage worktrees. */
+/** Removes orphan feature worktrees left by a crash (`keep` decides which survive). */
 export async function pruneOrphans(root: string, keep: (name: string) => boolean) {
   const removed = (await listWorktrees(root)).filter((n) => !keep(n));
   for (const n of removed) await removeWorktree(root, n);

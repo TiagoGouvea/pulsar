@@ -61,5 +61,12 @@
     "custoMedio": 0.203437,
     "duracaoMedia": 11000,
     "falhasPorGate": {}
+  },
+  "opus|initializer|*": {
+    "tentativas": 1,
+    "sucessos": 0,
+    "custoMedio": 4.706536000000001,
+    "duracaoMedia": 1015916,
+    "falhasPorGate": {}
   }
 }

@@ -1,0 +1,12 @@
+{
+  "phase": "PAUSED_BUDGET",
+  "stage": 0,
+  "featuresSinceRetro": 0,
+  "stageFixRounds": 0,
+  "budgetAlerts": [
+    0.5
+  ],
+  "postmortemDone": false,
+  "updatedAt": "2026-10-25T15:21:44.728Z",
+  "pausedFrom": "INIT"
+}

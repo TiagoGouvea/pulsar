@@ -29,3 +29,4 @@
 {"ts":"2026-10-25T14:09:07.769Z","workerId":"glm","provider":"zai","role":"doctor","stage":-1,"tokensIn":3859,"tokensOut":3,"costUsd":0,"billing":"subscription"}
 {"ts":"2026-10-25T14:09:10.309Z","workerId":"kimi","provider":"openrouter","role":"doctor","stage":-1,"tokensIn":1367,"tokensOut":27,"costUsd":0.0010079804,"billing":"api"}
 {"ts":"2026-10-25T14:09:27.395Z","workerId":"local-gptoss","provider":"local","role":"doctor","stage":-1,"tokensIn":1392,"tokensOut":19,"costUsd":0,"billing":"local"}
+{"ts":"2026-10-25T15:21:44.717Z","workerId":"opus","provider":"anthropic","role":"initializer","stage":0,"tokensIn":224111,"tokensOut":101365,"costUsd":4.706536000000001,"billing":"api"}

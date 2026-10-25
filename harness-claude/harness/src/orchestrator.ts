@@ -154,7 +154,7 @@ export class Orchestrator {
   /** Crash recovery: in_progress -> failing, orphan worktrees removed (attempts are only counted when finished). */
   private async recover() {
     const reset = resetInProgress(this.ctx);
-    const removed = await g.pruneOrphans(this.ctx.repo, (n) => n.startsWith("stage-"));
+    const removed = await g.pruneOrphans(this.ctx.repo, (n) => n === "init" || n.startsWith("stage-"));   // init keeps its partial scaffold for the next round
     if (reset.length || removed.length) log(`retomada: features reiniciadas [${reset}] worktrees removidas [${removed}]`);
   }
 

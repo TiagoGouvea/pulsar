@@ -10,3 +10,4 @@
 {"id":"evt-10","ts":"2026-10-25T13:25:14.356Z","taskId":"smoke-codex-mid","stage":-1,"role":"smoke","workerId":"codex-mid","family":"openai","attempt":1,"outcome":"success","costUsd":0.203437,"durationMs":11000}
 {"id":"evt-11","ts":"2026-10-25T13:28:47.625Z","taskId":"smoke-glm","stage":-1,"role":"smoke","workerId":"glm","family":"zhipu","attempt":1,"outcome":"failure","costUsd":0,"durationMs":67638}
 {"id":"evt-12","ts":"2026-10-25T13:31:33.619Z","taskId":"smoke-glm","stage":-1,"role":"smoke","workerId":"glm","family":"zhipu","attempt":1,"outcome":"success","costUsd":0,"durationMs":76097}
+{"id":"evt-13","ts":"2026-10-25T15:21:44.719Z","taskId":"init","stage":0,"role":"initializer","workerId":"opus","family":"anthropic","attempt":1,"outcome":"failure","tokens":{"in":224111,"out":101365},"costUsd":4.706536000000001,"durationMs":1015916}
