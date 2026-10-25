@@ -35,7 +35,14 @@ program.command("init")
     console.log(`Configuração criada: ${path.resolve(options.output)}`);
   });
 
-program.command("doctor").description("Verifica a máquina sem chamar modelos").action(async () => printChecks(await doctor()));
+program.command("doctor").description("Verifica a máquina e, com --config, o Git sem chamar modelos")
+  .option("--config <path>")
+  .action(async (options: { config?: string }) => {
+    const config = options.config ? await loadConfig(options.config) : undefined;
+    const checks = await doctor(config);
+    printChecks(checks);
+    if (checks.some((check) => check.status === "block" && check.importance === "required")) process.exitCode = 2;
+  });
 
 program.command("preflight")
   .description("Valida configuração, ambiente e candidatos")

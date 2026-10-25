@@ -151,6 +151,16 @@ export class StateStore {
     this.event(runId, `milestone.${state}`, "milestone", milestoneId, { revision });
   }
 
+  pinMilestoneBranch(runId: string, milestoneId: string, branch: string): string {
+    this.run(
+      "UPDATE milestones SET branch=COALESCE(branch, ?), updated_at=? WHERE run_id=? AND id=?",
+      branch, nowUtc(), runId, milestoneId,
+    );
+    const milestone = this.get<Row>("SELECT branch FROM milestones WHERE run_id=? AND id=?", runId, milestoneId);
+    if (typeof milestone?.branch !== "string") throw new Error(`Não foi possível fixar o branch da etapa ${milestoneId}.`);
+    return milestone.branch;
+  }
+
   saveTask(task: Task): void {
     const now = nowUtc();
     this.run(

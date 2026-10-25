@@ -1,6 +1,6 @@
 # Regras locais para agentes
 
-- O projeto-base é `/Users/tiagogouvea/www/treinamento/Pulsar`. Ele contém dois harnesses independentes; este agente opera exclusivamente o Harness Codex.
+- O projeto-base e raiz do monorepo é `/Users/tiagogouvea/www/treinamento/Pulsar`. Ele contém duas trilhas independentes; este agente opera exclusivamente a trilha Codex.
 - Trabalhe somente nesta pasta, em seus descendentes e no projeto alvo `../pulsar-codex`.
 - A leitura de `../design` está explicitamente autorizada para consultar as referências visuais. Não altere essa pasta.
 - Não leia, altere ou catalogue o outro harness nem outras pastas irmãs.

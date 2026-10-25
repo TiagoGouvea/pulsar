@@ -13,6 +13,9 @@ describe("estado durável", () => {
       store.upsertProject({ id: "p", workspace: "/tmp/p", profile: "generic", timezone: "UTC" });
       store.createRun({ id: "r", projectId: "p", configPath: "/tmp/c", configHash: "h" });
       expect(store.listEvents("r")).toHaveLength(1);
+      store.createMilestone("r", { id: "stage-a", title: "A", objective: "A", position: 1 });
+      expect(store.pinMilestoneBranch("r", "stage-a", "feature/stage-a")).toBe("feature/stage-a");
+      expect(store.pinMilestoneBranch("r", "stage-a", "outro-branch")).toBe("feature/stage-a");
       expect(() => createLesson(store, {
         projectId: "p", scope: "project", tags: ["test"], observation: "x",
         recommendedAction: "y", evidenceIds: [], confidence: "supported", applicability: {},

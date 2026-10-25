@@ -390,7 +390,7 @@ Evidências em diretório privado por execução, com metadados/hashes e políti
 
 Segredos e dumps sensíveis não devem entrar nesses arquivos. `routing-stats.json` é uma projeção do banco, não outra fonte de verdade.
 
-Usar branch própria por execução e commits por incrementos aprovados. Por padrão, código de projeto é editado sequencialmente. Worktrees podem ser extensão; paralelismo exige isolamento e integração testada.
+O harness nunca cria, troca ou remove branches. O responsável seleciona manualmente o branch de cada etapa; o orquestrador fixa esse branch até a verificação e aprovação da etapa. Depois da aprovação, o responsável pode criar ou selecionar o branch seguinte antes de retomar. A execução sequencial não requer worktree; worktrees ficam restritos a eventual paralelismo explicitamente coordenado e não são gerenciados pelo harness.
 
 Preservar mudanças pré-existentes. Não usar reset/clean destrutivos para limpar tarefas. Checkpoint inclui commit e estado dirty quando houver; evidência deve usar hash da árvore efetivamente testada, incluindo arquivos não commitados relevantes.
 

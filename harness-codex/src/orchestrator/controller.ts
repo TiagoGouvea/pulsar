@@ -7,7 +7,7 @@ import { BudgetLedger } from "../budget/ledger.js";
 import { buildTaskContext } from "../context/builder.js";
 import { createExecutor } from "../executors/index.js";
 import type { Executor } from "../executors/types.js";
-import { checkpointFiles, currentRevision, prepareExecutionBranch } from "../git/workspace.js";
+import { checkpointFiles, currentRevision, inspectGitWorkspace } from "../git/workspace.js";
 import { createTasks, extractRequirements } from "../planning/requirements.js";
 import { ModelCatalog } from "../providers/catalog.js";
 import { writeBudgetReport, writeFinalReport, writeHumanReview, writePlan } from "../reports/generator.js";
@@ -62,8 +62,8 @@ export class Orchestrator {
       configHash: sha256(await readFile(this.config.configPath)),
     });
     await captureInputs(this.config, this.store, runId);
-    const branch = await prepareExecutionBranch(this.config.project.workspace, runId, HARNESS_ROOT, this.config.execution.allowBranchSwitch);
-    this.store.event(runId, `git.branch_${branch.status}`, "run", runId, branch);
+    const git = await inspectGitWorkspace(this.config.project.workspace, HARNESS_ROOT);
+    this.store.event(runId, "git.workspace_inspected", "run", runId, git);
     return runId;
   }
 
@@ -98,7 +98,6 @@ export class Orchestrator {
     }
     const heartbeat = setInterval(() => this.store.heartbeat(id, owner, this.config.execution.staleHeartbeatSeconds), Math.max(5_000, this.config.execution.staleHeartbeatSeconds * 500));
     try {
-      await this.reconcileRevision(id);
       const activeMilestone = this.store.listMilestones(id).find((row) => row.state !== "approved");
       if (!activeMilestone) {
         this.store.setRunState(id, "completed");
@@ -106,6 +105,8 @@ export class Orchestrator {
         return id;
       }
       const milestoneId = String(activeMilestone.id);
+      await this.assertMilestoneBranch(id, milestoneId);
+      await this.reconcileRevision(id);
       this.store.setRunState(id, "running");
       this.store.setMilestoneState(id, milestoneId, "in_progress");
       const requirements = this.loadRequirements(id);
@@ -378,9 +379,31 @@ export class Orchestrator {
     if (invalidated) this.store.event(runId, "workspace.changed", "run", runId, { revision, invalidated });
   }
 
+  private async assertMilestoneBranch(runId: string, milestoneId: string): Promise<void> {
+    const git = await inspectGitWorkspace(this.config.project.workspace, HARNESS_ROOT);
+    if (!git.repositoryRoot) {
+      this.store.event(runId, "git.branch_unmanaged", "milestone", milestoneId, { workspace: this.config.project.workspace });
+      return;
+    }
+    if (!git.branch) throw new Error("Execução em HEAD destacado não é permitida. Selecione manualmente um branch antes de retomar.");
+    const milestone = this.store.get<Record<string, unknown>>(
+      "SELECT branch FROM milestones WHERE run_id=? AND id=?", runId, milestoneId,
+    );
+    if (!milestone) throw new Error("Marco inexistente.");
+    const existingBranch = typeof milestone.branch === "string" ? milestone.branch : null;
+    const expected = existingBranch ?? this.store.pinMilestoneBranch(runId, milestoneId, git.branch);
+    if (!existingBranch) {
+      this.store.event(runId, "git.branch_pinned", "milestone", milestoneId, { branch: expected, repositoryRoot: git.repositoryRoot });
+    }
+    if (expected !== git.branch) {
+      throw new Error(`A etapa ${milestoneId} está fixada no branch ${expected}; branch atual: ${git.branch}. Retorne manualmente ao branch correto.`);
+    }
+  }
+
   async approve(runId: string, milestoneId: string, revision: string, actor: string): Promise<void> {
     const milestone = this.store.get<Record<string, unknown>>("SELECT * FROM milestones WHERE run_id=? AND id=?", runId, milestoneId);
     if (!milestone) throw new Error("Marco inexistente.");
+    await this.assertMilestoneBranch(runId, milestoneId);
     const current = await currentRevision(this.config.project.workspace);
     if (revision !== milestone.revision || revision !== current) throw new Error("A revisão mudou; execute novamente as verificações antes de aprovar.");
     this.store.createApproval({ runId, milestoneId, revision, decision: "approved", actor, scope: "milestone" });
@@ -397,6 +420,7 @@ export class Orchestrator {
   async importFeedback(runId: string, source: string, milestoneId = "stage-a"): Promise<string> {
     const content = await readFile(source, "utf8");
     if (!content.trim()) throw new Error("Feedback vazio.");
+    await this.assertMilestoneBranch(runId, milestoneId);
     const directory = path.join(this.config.storage.root, "runs", runId, "milestones", milestoneId);
     await mkdir(directory, { recursive: true });
     const destination = path.join(directory, `human-feedback-${Date.now()}.md`);
@@ -410,6 +434,7 @@ export class Orchestrator {
 
   async importFeedbackContent(runId: string, content: string, milestoneId = "stage-a", actor = "dashboard-human"): Promise<string> {
     if (!content.trim()) throw new Error("Feedback vazio.");
+    await this.assertMilestoneBranch(runId, milestoneId);
     const directory = path.join(this.config.storage.root, "runs", runId, "milestones", milestoneId);
     await mkdir(directory, { recursive: true });
     const destination = path.join(directory, `human-feedback-${Date.now()}.md`);

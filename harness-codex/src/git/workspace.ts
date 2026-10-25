@@ -9,12 +9,36 @@ export async function isGitRepository(workspace: string): Promise<boolean> {
   return result.exitCode === 0 && result.stdout.trim() === "true";
 }
 
+export interface GitWorkspaceInfo {
+  repositoryRoot: string | null;
+  branch: string | null;
+  sharedWithProtectedRoot: boolean;
+}
+
+export async function inspectGitWorkspace(workspace: string, protectedRoot?: string): Promise<GitWorkspaceInfo> {
+  const repository = await runProcess(["git", "rev-parse", "--show-toplevel"], { cwd: workspace, timeoutMs: 3_000 });
+  if (repository.exitCode !== 0) {
+    return { repositoryRoot: null, branch: null, sharedWithProtectedRoot: false };
+  }
+  const repositoryRoot = path.resolve(repository.stdout.trim());
+  const current = await runProcess(["git", "branch", "--show-current"], { cwd: workspace, timeoutMs: 3_000 });
+  const branch = current.exitCode === 0 && current.stdout.trim() ? current.stdout.trim() : null;
+  if (!protectedRoot) return { repositoryRoot, branch, sharedWithProtectedRoot: false };
+  const protectedRepository = await runProcess(["git", "rev-parse", "--show-toplevel"], { cwd: protectedRoot, timeoutMs: 3_000 });
+  const sharedWithProtectedRoot = protectedRepository.exitCode === 0
+    && path.resolve(protectedRepository.stdout.trim()) === repositoryRoot;
+  return { repositoryRoot, branch, sharedWithProtectedRoot };
+}
+
 export async function currentRevision(workspace: string): Promise<string> {
   if (!(await isGitRepository(workspace))) return `nogit:${await directoryFingerprint(workspace)}`;
-  const head = await runProcess(["git", "rev-parse", "HEAD"], { cwd: workspace, timeoutMs: 3_000 });
-  const status = await runProcess(["git", "status", "--porcelain=v1", "-z", "--untracked-files=all"], { cwd: workspace, timeoutMs: 5_000 });
-  const diff = await runProcess(["git", "diff", "--binary", "HEAD"], { cwd: workspace, timeoutMs: 10_000 });
-  return `${head.exitCode === 0 ? head.stdout.trim() : "unborn"}:${sha256(status.stdout + diff.stdout)}`;
+  const repository = await runProcess(["git", "rev-parse", "--show-toplevel"], { cwd: workspace, timeoutMs: 3_000 });
+  const relativeWorkspace = path.relative(repository.stdout.trim(), workspace).split(path.sep).join("/");
+  const treeReference = relativeWorkspace ? `HEAD:${relativeWorkspace}` : "HEAD^{tree}";
+  const tree = await runProcess(["git", "rev-parse", treeReference], { cwd: workspace, timeoutMs: 3_000 });
+  const status = await runProcess(["git", "status", "--porcelain=v1", "-z", "--untracked-files=all", "--", "."], { cwd: workspace, timeoutMs: 5_000 });
+  const diff = await runProcess(["git", "diff", "--binary", "HEAD", "--", "."], { cwd: workspace, timeoutMs: 10_000 });
+  return `${tree.exitCode === 0 ? tree.stdout.trim() : "unborn"}:${sha256(status.stdout + diff.stdout)}`;
 }
 
 async function directoryFingerprint(root: string): Promise<string> {
@@ -31,27 +55,6 @@ async function directoryFingerprint(root: string): Promise<string> {
   }
   await walk(root);
   return sha256(pieces.sort().join("\n"));
-}
-
-export async function prepareExecutionBranch(workspace: string, runId: string, protectedRoot: string, allowBranchSwitch: boolean): Promise<{ status: "created" | "skipped"; detail: string }> {
-  const repository = await runProcess(["git", "rev-parse", "--show-toplevel"], { cwd: workspace, timeoutMs: 3_000 });
-  if (repository.exitCode !== 0) return { status: "skipped", detail: "Workspace ainda não é um repositório Git." };
-  const repositoryRoot = repository.stdout.trim();
-  if (path.resolve(repositoryRoot) === path.resolve(protectedRoot)) {
-    return { status: "skipped", detail: "Fixture/repositório do harness: branch não foi alterada." };
-  }
-  if (!allowBranchSwitch) {
-    const current = await runProcess(["git", "branch", "--show-current"], { cwd: workspace, timeoutMs: 3_000 });
-    return { status: "skipped", detail: `Troca automática desativada; branch atual: ${current.stdout.trim() || "detached"}.` };
-  }
-  const branch = `harness/${runId}`;
-  const current = await runProcess(["git", "branch", "--show-current"], { cwd: workspace, timeoutMs: 3_000 });
-  if (current.stdout.trim() === branch) return { status: "created", detail: branch };
-  const exists = await runProcess(["git", "show-ref", "--verify", `refs/heads/${branch}`], { cwd: workspace, timeoutMs: 3_000 });
-  const command = exists.exitCode === 0 ? ["git", "switch", branch] : ["git", "switch", "-c", branch];
-  const switched = await runProcess(command, { cwd: workspace, timeoutMs: 10_000 });
-  if (switched.exitCode !== 0) throw new Error(`Não foi possível preparar a branch ${branch}: ${switched.stderr}`);
-  return { status: "created", detail: branch };
 }
 
 export async function checkpointFiles(input: {
@@ -71,9 +74,9 @@ export async function checkpointFiles(input: {
   if (!relativeFiles.length) return { committed: false, revision: await currentRevision(input.workspace) };
   const added = await runProcess(["git", "add", "--", ...relativeFiles], { cwd: input.workspace, timeoutMs: 10_000 });
   if (added.exitCode !== 0) throw new Error(`Falha no checkpoint de ${input.taskId}: ${added.stderr}`);
-  const empty = await runProcess(["git", "diff", "--cached", "--quiet"], { cwd: input.workspace, timeoutMs: 3_000 });
+  const empty = await runProcess(["git", "diff", "--cached", "--quiet", "--", ...relativeFiles], { cwd: input.workspace, timeoutMs: 3_000 });
   if (empty.exitCode === 0) return { committed: false, revision: await currentRevision(input.workspace) };
-  const committed = await runProcess(["git", "commit", "-m", `harness(${input.runId}): ${input.taskId}`], { cwd: input.workspace, timeoutMs: 30_000 });
+  const committed = await runProcess(["git", "commit", "--only", "-m", `harness(${input.runId}): ${input.taskId}`, "--", ...relativeFiles], { cwd: input.workspace, timeoutMs: 30_000 });
   if (committed.exitCode !== 0) throw new Error(`Falha ao criar checkpoint de ${input.taskId}: ${committed.stderr}`);
   return { committed: true, revision: await currentRevision(input.workspace) };
 }

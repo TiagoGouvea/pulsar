@@ -1,16 +1,19 @@
 import { access, constants, statfs } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { chromium } from "@playwright/test";
 import type { HarnessConfig } from "../config/schema.js";
 import type { CheckResult } from "../domain/types.js";
+import { inspectGitWorkspace } from "../git/workspace.js";
 import { probeCandidate } from "../providers/probes.js";
 import { safeError, writeJson } from "../utils/core.js";
 import { commandAvailable, runProcess } from "../utils/process.js";
 
 const requiredCommands = ["node", "yarn", "git", "rg"];
+const HARNESS_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
-export async function doctor(): Promise<CheckResult[]> {
+export async function doctor(config?: HarnessConfig): Promise<CheckResult[]> {
   const checks: CheckResult[] = [];
   checks.push({
     id: "machine.platform",
@@ -47,11 +50,12 @@ export async function doctor(): Promise<CheckResult[]> {
     evidence: "A capacidade nominal não garante que um modelo local e o navegador caibam simultaneamente.",
     remediation: "Descarregue modelos locais ou use um candidato remoto autorizado se houver pressão/swap persistente.",
   });
+  if (config) checks.push(...await gitWorkspaceChecks(config));
   return checks;
 }
 
 export async function preflight(config: HarnessConfig): Promise<CheckResult[]> {
-  const checks = await doctor();
+  const checks = await doctor(config);
   for (const target of [config.project.workspace, ...config.project.specs, ...(config.project.designDirectory ? [config.project.designDirectory] : [])]) {
     try {
       await access(target, constants.R_OK);
@@ -83,6 +87,48 @@ export async function preflight(config: HarnessConfig): Promise<CheckResult[]> {
     checks.push(...await probeCandidate(config, candidate));
   }
   if (config.project.profile.includes("firebase")) checks.push(...firebaseChecklist());
+  return checks;
+}
+
+export async function gitWorkspaceChecks(config: HarnessConfig, harnessRoot = HARNESS_ROOT): Promise<CheckResult[]> {
+  const git = await inspectGitWorkspace(config.project.workspace, harnessRoot);
+  const checks: CheckResult[] = [];
+  checks.push({
+    id: "git.repository",
+    status: git.repositoryRoot ? "pass" : "block",
+    scope: "global",
+    importance: "required",
+    summary: git.repositoryRoot ? "Workspace pertence a um repositório Git." : "Workspace não pertence a um repositório Git.",
+    evidence: git.repositoryRoot ?? config.project.workspace,
+    ...(!git.repositoryRoot ? { remediation: "Inicialize ou selecione o monorepo antes de executar o harness." } : {}),
+  });
+  if (!git.repositoryRoot) return checks;
+  checks.push({
+    id: "git.shared-repository",
+    status: git.sharedWithProtectedRoot ? "pass" : "block",
+    scope: "global",
+    importance: "required",
+    summary: git.sharedWithProtectedRoot ? "Harness e aplicação compartilham o mesmo monorepo." : "Harness e aplicação estão em repositórios diferentes.",
+    evidence: git.repositoryRoot,
+    ...(!git.sharedWithProtectedRoot ? { remediation: "Use a raiz compartilhada do monorepo Pulsar, sem repositórios Git aninhados." } : {}),
+  });
+  checks.push({
+    id: "git.branch",
+    status: git.branch ? "pass" : "block",
+    scope: "stage",
+    importance: "required",
+    summary: git.branch ? `Branch corrente preservado: ${git.branch}.` : "HEAD destacado não é permitido.",
+    evidence: git.branch ?? "detached",
+    ...(!git.branch ? { remediation: "Selecione manualmente o branch da etapa antes de executar." } : {}),
+  });
+  checks.push({
+    id: "git.branch-policy",
+    status: "pass",
+    scope: "global",
+    importance: "required",
+    summary: "O harness não cria, troca ou remove branches.",
+    evidence: "O branch atual é fixado por etapa; mudanças são exclusivamente manuais.",
+  });
   return checks;
 }
 

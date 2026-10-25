@@ -277,4 +277,9 @@ export const migrations: Migration[] = [
       CREATE INDEX idx_commands_run_state ON control_commands(run_id, state);
     `,
   },
+  {
+    version: 2,
+    name: "pin_branch_per_milestone",
+    sql: "ALTER TABLE milestones ADD COLUMN branch TEXT;",
+  },
 ];

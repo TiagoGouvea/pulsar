@@ -4,6 +4,7 @@ import path from "node:path";
 import { describe, expect, test } from "vitest";
 import { Orchestrator } from "../../src/orchestrator/controller.js";
 import { createTestConfig } from "../helpers/config.js";
+import { runProcess } from "../../src/utils/process.js";
 
 describe("controlador", () => {
   test("executa fake, verifica e pausa no gate sem duplicar tarefas", async () => {
@@ -46,6 +47,25 @@ describe("controlador", () => {
       const runId = await orchestrator.run();
       expect(orchestrator.store.getRun(runId)?.state).toBe("blocked");
       expect(orchestrator.store.listTasks(runId).some((task) => task.state === "passed")).toBe(false);
+    } finally { orchestrator.close(); }
+  });
+
+  test("fixa o branch durante a etapa e nunca o troca", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "harness-branch-"));
+    const config = await createTestConfig(root);
+    await runProcess(["git", "init", "-b", "stage-a"], { cwd: config.project.workspace });
+    await runProcess(["git", "config", "user.name", "Harness Test"], { cwd: config.project.workspace });
+    await runProcess(["git", "config", "user.email", "harness@example.invalid"], { cwd: config.project.workspace });
+    await runProcess(["git", "commit", "--allow-empty", "-m", "initial"], { cwd: config.project.workspace });
+    const orchestrator = new Orchestrator(config);
+    try {
+      const runId = await orchestrator.run();
+      const milestone = orchestrator.store.listMilestones(runId)[0];
+      expect(milestone?.branch).toBe("stage-a");
+      await runProcess(["git", "switch", "-c", "outro-branch"], { cwd: config.project.workspace });
+      await expect(orchestrator.approve(runId, "stage-a", String(milestone?.revision), "human"))
+        .rejects.toThrow(/fixada no branch stage-a/);
+      expect((await runProcess(["git", "branch", "--show-current"], { cwd: config.project.workspace })).stdout.trim()).toBe("outro-branch");
     } finally { orchestrator.close(); }
   });
 });

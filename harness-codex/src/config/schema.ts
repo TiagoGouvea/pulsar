@@ -43,7 +43,7 @@ export const harnessConfigSchema = z.object({
     humanGate: z.enum(["every_milestone", "selected_milestones", "final_only"]).default("every_milestone"),
     allowProductionDeploy: z.boolean().default(false),
     continueWhileAwaitingHuman: z.boolean().default(false),
-    allowBranchSwitch: z.boolean().default(false),
+    allowBranchSwitch: z.literal(false).default(false),
   }),
   budget: z.object({
     currency: z.literal("USD").default("USD"),
