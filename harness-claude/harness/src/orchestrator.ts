@@ -191,8 +191,19 @@ export class Orchestrator {
   private async init() {
     const ctx = this.ctx;
     if (this.deps.doctor && !(await this.deps.doctor(ctx))) throw new Error("harness doctor falhou: corrija os itens críticos antes do start");
-    freezeSpec(ctx);
     const wt = await g.addWorktree(ctx.repo, "init", this.branch);
+    if (!loadFeatures(ctx).features.length) await this.decompose(wt);   // already saved: a crash hit the commit below
+    await this.commitToBranch(wt, "chore(init): scaffold do app, design system e decisões");
+    await g.removeWorktree(ctx.repo, "init");
+    this.progress(`INIT concluído: ${loadFeatures(ctx).features.length} features`);
+    this.state.stage = this.firstStageFrom(0) ?? 0;
+    this.set("STAGE_RUNNING");
+  }
+
+  /** Initializer rounds (scaffold + features.json) reviewed by another family; saves features.json. */
+  private async decompose(wt: string) {
+    const ctx = this.ctx;
+    freezeSpec(ctx);
     this.clearInbox(wt);
     const ac = acceptanceCriteria(ctx);
     const acText = ac.map((a) => `${a.id}: ${a.text}`).join("\n");
@@ -216,11 +227,6 @@ export class Orchestrator {
     for (const f of file.features) Object.assign(f, { status: "failing", attempts: 0, history: [], costUsd: 0 });
     file.specHash = storedHash(ctx);
     saveFeatures(ctx, file);
-    await this.commitToBranch(wt, "chore(init): scaffold do app, design system e decisões");
-    await g.removeWorktree(ctx.repo, "init");
-    this.progress(`INIT concluído: ${file.features.length} features`);
-    this.state.stage = this.firstStageFrom(0) ?? 0;
-    this.set("STAGE_RUNNING");
   }
 
   private firstStageFrom(min: number) {
