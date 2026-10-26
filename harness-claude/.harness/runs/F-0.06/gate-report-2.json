@@ -1,0 +1,116 @@
+{
+  "ok": true,
+  "mode": "feature",
+  "stage": 0,
+  "failed": [],
+  "results": [
+    {
+      "id": "G1",
+      "name": "install-build",
+      "required": true,
+      "durationMs": 6810,
+      "ok": true,
+      "output": "\" is incompatible with this module.\ninfo \"@rollup/rollup-linux-ppc64-musl@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-linux-ppc64-musl@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-linux-riscv64-gnu@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-linux-riscv64-gnu@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-linux-riscv64-gnu@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-linux-riscv64-musl@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-linux-riscv64-musl@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-linux-riscv64-musl@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-linux-s390x-gnu@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-linux-s390x-gnu@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-linux-s390x-gnu@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-linux-x64-gnu@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-linux-x64-gnu@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-linux-x64-gnu@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-linux-x64-musl@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-linux-x64-musl@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-linux-x64-musl@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-openbsd-x64@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-openbsd-x64@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-openbsd-x64@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-openharmony-arm64@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-openharmony-arm64@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-win32-arm64-msvc@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-win32-arm64-msvc@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-win32-ia32-msvc@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-win32-ia32-msvc@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-win32-ia32-msvc@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-win32-x64-gnu@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-win32-x64-gnu@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-win32-x64-gnu@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-win32-x64-msvc@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-win32-x64-msvc@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-win32-x64-msvc@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\n[4/5] Linking dependencies...\nwarning \" > @axe-core/playwright@4.14.0\" has unmet peer dependency \"playwright-core@>= 1.0.0\".\n[5/5] Building fresh packages...\nDone in 4.85s.\nyarn run v1.23.0-20220130.1630\n$ vite build\n\u001b[36mvite v7.3.7 \u001b[32mbuilding client environment for production...\u001b[36m\u001b[39m\ntransforming...\n\u001b[32m✓\u001b[39m 57 modules transformed.\nrendering chunks...\ncomputing gzip size...\n\u001b[2mdist/\u001b[22m\u001b[32mindex.html                                                  \u001b[39m\u001b[1m\u001b[2m    0.46 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m │ gzip:   0.30 kB\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mspace-grotesk-vietnamese-wght-normal-D0rl6rjA.woff2  \u001b[39m\u001b[1m\u001b[2m    6.71 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mgeist-cyrillic-ext-wght-normal-DjL33-gN.woff2        \u001b[39m\u001b[1m\u001b[2m    7.42 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mgeist-vietnamese-wght-normal-6IgcOCM7.woff2          \u001b[39m\u001b[1m\u001b[2m    8.00 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mgeist-cyrillic-wght-normal-BEAKL7Jp.woff2            \u001b[39m\u001b[1m\u001b[2m   15.08 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mgeist-latin-ext-wght-normal-DC-KSUi6.woff2           \u001b[39m\u001b[1m\u001b[2m   16.51 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mspace-grotesk-latin-ext-wght-normal-D9tNdqV9.woff2   \u001b[39m\u001b[1m\u001b[2m   18.94 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mspace-grotesk-latin-wght-normal-BhU9QXUp.woff2       \u001b[39m\u001b[1m\u001b[2m   22.29 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mgeist-latin-wght-normal-BgDaEnEv.woff2               \u001b[39m\u001b[1m\u001b[2m   29.40 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mmaterial-symbols-outlined-BDRtoJUL.woff2             \u001b[39m\u001b[1m\u001b[2m3,627.18 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[35mindex-CHTX6CBv.css                                   \u001b[39m\u001b[1m\u001b[2m   26.16 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m │ gzip:   5.74 kB\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[36mDesignPage-DhXfJsPJ.js                               \u001b[39m\u001b[1m\u001b[2m   13.35 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m │ gzip:   4.02 kB\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[36mindex-DBTzNtEC.js                                    \u001b[39m\u001b[1m\u001b[2m  316.69 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m │ gzip: 101.22 kB\u001b[22m\n\u001b[32m✓ built in 554ms\u001b[39m\nDone in 1.65s."
+    },
+    {
+      "id": "G2",
+      "name": "lint-format",
+      "required": true,
+      "durationMs": 1889,
+      "ok": true,
+      "output": "yarn run v1.23.0-20220130.1630\n$ eslint . --max-warnings=0\nDone in 0.73s.\nyarn run v1.23.0-20220130.1630\n$ prettier --check .\nChecking formatting...\nAll matched files use Prettier code style!\nDone in 0.85s."
+    },
+    {
+      "id": "G3",
+      "name": "typecheck",
+      "required": true,
+      "durationMs": 1457,
+      "ok": true,
+      "output": "yarn run v1.23.0-20220130.1630\n$ tsc --noEmit -p tsconfig.json\nDone in 1.28s."
+    },
+    {
+      "id": "G4",
+      "name": "unit",
+      "required": true,
+      "durationMs": 1550,
+      "ok": true,
+      "output": "yarn run v1.23.0-20220130.1630\n$ vitest run --coverage\n\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv3.2.7 \u001b[39m\u001b[90m/Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-0.06/pulsar-claude/app\u001b[39m\n      \u001b[2mCoverage enabled with \u001b[22m\u001b[33mv8\u001b[39m\n\n \u001b[32m✓\u001b[39m src/privacy/__tests__/label.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m scripts/__tests__/seed-data.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 5\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/lib/__tests__/firebase.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 80\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/design/__tests__/IndicatorLabel.test.tsx \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 69\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/design/__tests__/design-system.f002.test.tsx \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 90\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/scaffold.test.ts \u001b[2m(\u001b[22m\u001b[2m14 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 360\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m lint boundary for src/stats\u001b[2m > \u001b[22mrejects import { initializeApp } from 'firebase/app'; (firebase subpath) \u001b[33m 307\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m6 passed\u001b[39m\u001b[22m\u001b[90m (6)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m36 passed\u001b[39m\u001b[22m\u001b[90m (36)\u001b[39m\n\u001b[2m   Start at \u001b[22m 15:08:41\n\u001b[2m   Duration \u001b[22m 867ms\u001b[2m (transform 117ms, setup 618ms, collect 264ms, tests 607ms, environment 1.30s, prepare 312ms)\u001b[22m\n\n\u001b[34m % \u001b[39m\u001b[2mCoverage report from \u001b[22m\u001b[33mv8\u001b[39m\n\n=============================== Coverage summary ===============================\nStatements   : 73.94% ( 562/760 )\nBranches     : 79.46% ( 89/112 )\nFunctions    : 66.66% ( 26/39 )\nLines        : 73.94% ( 562/760 )\n================================================================================\nDone in 1.38s."
+    },
+    {
+      "id": "G5",
+      "name": "security-rules",
+      "ok": true,
+      "required": true,
+      "skipped": "a partir da etapa 1",
+      "durationMs": 0,
+      "output": ""
+    },
+    {
+      "id": "G6",
+      "name": "e2e",
+      "required": true,
+      "durationMs": 9909,
+      "ok": true,
+      "output": "yarn run v1.23.0-20220130.1630\n$ playwright test --grep-invert @visual\n\nRunning 4 tests using 4 workers\n\n  ✓  2 [desktop] › e2e/routes.spec.ts:8:3 › route home (/) passes browser gates (870ms)\n  ✓  1 [mobile] › e2e/routes.spec.ts:8:3 › route home (/) passes browser gates (874ms)\n  ✓  4 [desktop] › e2e/routes.spec.ts:8:3 › route design (/_design) passes browser gates (1.4s)\n  ✓  3 [mobile] › e2e/routes.spec.ts:8:3 › route design (/_design) passes browser gates (1.4s)\n\n  4 passed (9.2s)\nDone in 9.75s."
+    },
+    {
+      "id": "G7",
+      "name": "protected-tests",
+      "required": true,
+      "durationMs": 2,
+      "ok": true,
+      "output": "testes protegidos íntegros"
+    },
+    {
+      "id": "G8",
+      "name": "privacy-leak",
+      "ok": true,
+      "required": true,
+      "skipped": "a partir da etapa 1",
+      "durationMs": 0,
+      "output": ""
+    },
+    {
+      "id": "G9",
+      "name": "a11y",
+      "required": true,
+      "durationMs": 10128,
+      "ok": true,
+      "output": "zero violações serious/critical"
+    },
+    {
+      "id": "G10",
+      "name": "mobile-layout",
+      "required": true,
+      "durationMs": 10643,
+      "ok": true,
+      "output": "sem overflow e alvos ≥ 44px em 320/375/414"
+    },
+    {
+      "id": "G11",
+      "name": "visual-regression",
+      "ok": true,
+      "required": true,
+      "skipped": "a partir da etapa 2",
+      "durationMs": 0,
+      "output": ""
+    },
+    {
+      "id": "G12",
+      "name": "lighthouse",
+      "ok": true,
+      "required": true,
+      "skipped": "só no fim de etapa",
+      "durationMs": 0,
+      "output": ""
+    },
+    {
+      "id": "G13",
+      "name": "secrets",
+      "required": true,
+      "durationMs": 24,
+      "ok": true,
+      "output": "nenhum segredo no diff"
+    }
+  ]
+}

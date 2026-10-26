@@ -1,0 +1,119 @@
+{
+  "ok": false,
+  "mode": "feature",
+  "stage": 0,
+  "failed": [
+    "G2",
+    "G4"
+  ],
+  "results": [
+    {
+      "id": "G1",
+      "name": "install-build",
+      "required": true,
+      "durationMs": 10646,
+      "ok": true,
+      "output": "\" is incompatible with this module.\ninfo \"@rollup/rollup-linux-ppc64-musl@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-linux-ppc64-musl@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-linux-riscv64-gnu@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-linux-riscv64-gnu@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-linux-riscv64-gnu@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-linux-riscv64-musl@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-linux-riscv64-musl@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-linux-riscv64-musl@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-linux-s390x-gnu@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-linux-s390x-gnu@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-linux-s390x-gnu@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-linux-x64-gnu@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-linux-x64-gnu@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-linux-x64-gnu@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-linux-x64-musl@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-linux-x64-musl@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-linux-x64-musl@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-openbsd-x64@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-openbsd-x64@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-openbsd-x64@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-openharmony-arm64@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-openharmony-arm64@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-win32-arm64-msvc@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-win32-arm64-msvc@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-win32-ia32-msvc@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-win32-ia32-msvc@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-win32-ia32-msvc@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-win32-x64-gnu@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-win32-x64-gnu@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-win32-x64-gnu@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-win32-x64-msvc@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-win32-x64-msvc@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-win32-x64-msvc@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\n[4/5] Linking dependencies...\nwarning \" > @axe-core/playwright@4.14.0\" has unmet peer dependency \"playwright-core@>= 1.0.0\".\n[5/5] Building fresh packages...\nDone in 7.69s.\nyarn run v1.23.0-20220130.1630\n$ vite build\n\u001b[36mvite v7.3.7 \u001b[32mbuilding client environment for production...\u001b[36m\u001b[39m\ntransforming...\n\u001b[32m✓\u001b[39m 57 modules transformed.\nrendering chunks...\ncomputing gzip size...\n\u001b[2mdist/\u001b[22m\u001b[32mindex.html                                                  \u001b[39m\u001b[1m\u001b[2m    0.46 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m │ gzip:   0.29 kB\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mspace-grotesk-vietnamese-wght-normal-D0rl6rjA.woff2  \u001b[39m\u001b[1m\u001b[2m    6.71 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mgeist-cyrillic-ext-wght-normal-DjL33-gN.woff2        \u001b[39m\u001b[1m\u001b[2m    7.42 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mgeist-vietnamese-wght-normal-6IgcOCM7.woff2          \u001b[39m\u001b[1m\u001b[2m    8.00 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mgeist-cyrillic-wght-normal-BEAKL7Jp.woff2            \u001b[39m\u001b[1m\u001b[2m   15.08 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mgeist-latin-ext-wght-normal-DC-KSUi6.woff2           \u001b[39m\u001b[1m\u001b[2m   16.51 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mspace-grotesk-latin-ext-wght-normal-D9tNdqV9.woff2   \u001b[39m\u001b[1m\u001b[2m   18.94 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mspace-grotesk-latin-wght-normal-BhU9QXUp.woff2       \u001b[39m\u001b[1m\u001b[2m   22.29 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mgeist-latin-wght-normal-BgDaEnEv.woff2               \u001b[39m\u001b[1m\u001b[2m   29.40 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mmaterial-symbols-outlined-BDRtoJUL.woff2             \u001b[39m\u001b[1m\u001b[2m3,627.18 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[35mindex-BiN5-Cx7.css                                   \u001b[39m\u001b[1m\u001b[2m   26.60 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m │ gzip:   5.82 kB\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[36mDesignPage-CRT3Dt0-.js                               \u001b[39m\u001b[1m\u001b[2m   14.96 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m │ gzip:   4.38 kB\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[36mindex-D_8uzdrd.js                                    \u001b[39m\u001b[1m\u001b[2m  316.69 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m │ gzip: 101.22 kB\u001b[22m\n\u001b[32m✓ built in 944ms\u001b[39m\nDone in 2.44s."
+    },
+    {
+      "id": "G2",
+      "name": "lint-format",
+      "required": true,
+      "durationMs": 3054,
+      "ok": false,
+      "output": "yarn run v1.23.0-20220130.1630\n$ eslint . --max-warnings=0\nDone in 1.42s.\nyarn run v1.23.0-20220130.1630\n$ prettier --check .\nChecking formatting...\n[\u001b[33mwarn\u001b[39m] src/pages/DesignPage.tsx\n[\u001b[33mwarn\u001b[39m] Code style issues found in the above file. Run Prettier with --write to fix.\nerror Command failed with exit code 1.\ninfo Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command."
+    },
+    {
+      "id": "G3",
+      "name": "typecheck",
+      "required": true,
+      "durationMs": 2070,
+      "ok": true,
+      "output": "yarn run v1.23.0-20220130.1630\n$ tsc --noEmit -p tsconfig.json\nDone in 1.84s."
+    },
+    {
+      "id": "G4",
+      "name": "unit",
+      "required": true,
+      "durationMs": 3076,
+      "ok": false,
+      "output": " \u001b[36m</pre>\u001b[39m\n    \u001b[36m<p>\u001b[39m\n      \u001b[0m💿 Hey developer 👋\u001b[0m\n    \u001b[36m</p>\u001b[39m\n    \u001b[36m<p>\u001b[39m\n      \u001b[0mYou can provide a way better UX than this when your app throws errors by providing your own \u001b[0m\n      \u001b[36m<code\u001b[39m\n        \u001b[33mstyle\u001b[39m=\u001b[32m\"padding: 2px 4px; background-color: rgba(200, 200, 200, 0.5);\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[0mErrorBoundary\u001b[0m\n      \u001b[36m</code>\u001b[39m\n      \u001b[0m or\u001b[0m\n      \u001b[0m \u001b[0m\n      \u001b[36m<code\u001b[39m\n        \u001b[33mstyle\u001b[39m=\u001b[32m\"padding: 2px 4px; background-color: rgba(200, 200, 200, 0.5);\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[0merrorElement\u001b[0m\n      \u001b[36m</code>\u001b[39m\n      \u001b[0m prop on your route.\u001b[0m\n    \u001b[36m</p>\u001b[39m\n  \u001b[36m</div>\u001b[39m\n\u001b[36m</body>\u001b[39m\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[36m<h2>\u001b[39m\n      \u001b[0mUnexpected Application Error!\u001b[0m\n    \u001b[36m</h2>\u001b[39m\n    \u001b[36m<h3\u001b[39m\n      \u001b[33mstyle\u001b[39m=\u001b[32m\"font-style: italic;\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[0musePrivacy must be used inside &lt;PrivacyProvider&gt;\u001b[0m\n    \u001b[36m</h3>\u001b[39m\n    \u001b[36m<pre\u001b[39m\n      \u001b[33mstyle\u001b[39m=\u001b[32m\"padding: 0.5rem; background-color: rgba(200, 200, 200, 0.5);\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[0mError: usePrivacy must be used inside &lt;PrivacyProvider&gt;\n    at usePrivacy (/Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-0.07/pulsar-claude/app/src/privacy/PrivacyContext.tsx:23:19)\n    at EyeToggle (/Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-0.07/pulsar-claude/app/src/design/EyeToggle.tsx:6:43)\n    at Object.react_stack_bottom_frame (/Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-0.07/pulsar-claude/app/node_modules/react-dom/cjs/react-dom-client.development.js:28571:20)\n    at renderWithHooks (/Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-0.07/pulsar-claude/app/node_modules/react-dom/cjs/react-dom-client.development.js:8030:22)\n    at updateFunctionComponent (/Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-0.07/pulsar-claude/app/node_modules/react-dom/cjs/react-dom-client.development.js:10569:19)\n    at beginWork (/Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-0.07/pulsar-claude/app/node_modules/react-dom/cjs/react-dom-client.development.js:12205:18)\n    at runWithFiberInDEV (/Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-0.07/pulsar-claude/app/node_modules/react-dom/cjs/react-dom-client.development.js:1048:13)\n    at performUnitOfWork (/Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-0.07/pulsar-claude/app/node_modules/react-dom/cjs/react-dom-client.development.js:19176:22)\n    at workLoopSync (/Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-0.07/pulsar-claude/app/node_modules/react-dom/cjs/react-dom-client.development.js:19004:41)\n    at renderRootSync (/Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-0.07/pulsar-claude/app/node_modules/react-dom/cjs/react-dom-client.development.js:18985:11)\u001b[0m\n    \u001b[36m</pre>\u001b[39m\n    \u001b[36m<p>\u001b[39m\n      \u001b[0m💿 Hey developer 👋\u001b[0m\n    \u001b[36m</p>\u001b[39m\n    \u001b[36m<p>\u001b[39m\n      \u001b[0mYou can provide a way better UX than this when your app throws errors by providing your own \u001b[0m\n      \u001b[36m<code\u001b[39m\n        \u001b[33mstyle\u001b[39m=\u001b[32m\"padding: 2px 4px; background-color: rgba(200, 200, 200, 0.5);\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[0mErrorBoundary\u001b[0m\n      \u001b[36m</code>\u001b[39m\n      \u001b[0m or\u001b[0m\n      \u001b[0m \u001b[0m\n      \u001b[36m<code\u001b[39m\n        \u001b[33mstyle\u001b[39m=\u001b[32m\"padding: 2px 4px; background-color: rgba(200, 200, 200, 0.5);\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[0merrorElement\u001b[0m\n      \u001b[36m</code>\u001b[39m\n      \u001b[0m prop on your route.\u001b[0m\n    \u001b[36m</p>\u001b[39m\n  \u001b[36m</div>\u001b[39m\n\u001b[36m</body>\u001b[39m\n\u001b[36m \u001b[2m❯\u001b[22m usePrivacy src/privacy/PrivacyContext.tsx:\u001b[2m23:19\u001b[22m\u001b[39m\n    \u001b[90m 21| \u001b[39m\u001b[35mexport\u001b[39m \u001b[35mfunction\u001b[39m \u001b[34musePrivacy\u001b[39m()\u001b[33m:\u001b[39m \u001b[33mPrivacyState\u001b[39m {\n    \u001b[90m 22| \u001b[39m  \u001b[35mconst\u001b[39m ctx \u001b[33m=\u001b[39m \u001b[34museContext\u001b[39m(\u001b[33mPrivacyContext\u001b[39m)\u001b[33m;\u001b[39m\n    \u001b[90m 23| \u001b[39m  if (!ctx) throw new Error('usePrivacy must be used inside <PrivacyPr…\n    \u001b[90m   | \u001b[39m                  \u001b[31m^\u001b[39m\n    \u001b[90m 24| \u001b[39m  \u001b[35mreturn\u001b[39m ctx\u001b[33m;\u001b[39m\n    \u001b[90m 25| \u001b[39m}\n\u001b[90m \u001b[2m❯\u001b[22m EyeToggle src/design/EyeToggle.tsx:\u001b[2m6:43\u001b[22m\u001b[39m\n\u001b[90m \u001b[2m❯\u001b[22m Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:\u001b[2m28571:20\u001b[22m\u001b[39m\n\u001b[90m \u001b[2m❯\u001b[22m renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:\u001b[2m8030:22\u001b[22m\u001b[39m\n\u001b[90m \u001b[2m❯\u001b[22m updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:\u001b[2m10569:19\u001b[22m\u001b[39m\n\u001b[90m \u001b[2m❯\u001b[22m beginWork node_modules/react-dom/cjs/react-dom-client.development.js:\u001b[2m12205:18\u001b[22m\u001b[39m\n\u001b[90m \u001b[2m❯\u001b[22m runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:\u001b[2m1048:13\u001b[22m\u001b[39m\n\u001b[90m \u001b[2m❯\u001b[22m performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:\u001b[2m19176:22\u001b[22m\u001b[39m\n\u001b[90m \u001b[2m❯\u001b[22m workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:\u001b[2m19004:41\u001b[22m\u001b[39m\n\u001b[90m \u001b[2m❯\u001b[22m waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:\u001b[2m163:27\u001b[22m\u001b[39m\n\u001b[90m \u001b[2m❯\u001b[22m node_modules/@testing-library/dom/dist/query-helpers.js:\u001b[2m86:33\u001b[22m\u001b[39m\n\u001b[90m \u001b[2m❯\u001b[22m src/__tests__/designRoute.test.tsx:\u001b[2m20:25\u001b[22m\u001b[39m\n\n\u001b[31m\u001b[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯\u001b[22m\u001b[39m\n\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[31m1 failed\u001b[39m\u001b[22m\u001b[2m | \u001b[22m\u001b[1m\u001b[32m6 passed\u001b[39m\u001b[22m\u001b[90m (7)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[31m1 failed\u001b[39m\u001b[22m\u001b[2m | \u001b[22m\u001b[1m\u001b[32m37 passed\u001b[39m\u001b[22m\u001b[90m (38)\u001b[39m\n\u001b[2m   Start at \u001b[22m 15:12:06\n\u001b[2m   Duration \u001b[22m 2.15s\u001b[2m (transform 315ms, setup 1.25s, collect 718ms, tests 2.33s, environment 3.13s, prepare 566ms)\u001b[22m\n\nerror Command failed with exit code 1.\ninfo Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command."
+    },
+    {
+      "id": "G5",
+      "name": "security-rules",
+      "ok": true,
+      "required": true,
+      "skipped": "a partir da etapa 1",
+      "durationMs": 0,
+      "output": ""
+    },
+    {
+      "id": "G6",
+      "name": "e2e",
+      "required": true,
+      "durationMs": 12656,
+      "ok": true,
+      "output": "yarn run v1.23.0-20220130.1630\n$ playwright test --grep-invert @visual\n\nRunning 8 tests using 5 workers\n\n  ✓  1 [mobile] › e2e/design.spec.ts:5:1 › /_design shows abbreviations by default and names after opening the eye (767ms)\n  ✓  2 [desktop] › e2e/design.spec.ts:5:1 › /_design shows abbreviations by default and names after opening the eye (767ms)\n  ✓  4 [mobile] › e2e/routes.spec.ts:8:3 › route home (/) passes browser gates (1.1s)\n  ✓  3 [mobile] › e2e/design.spec.ts:32:1 › /_design has no horizontal overflow with the eye open (1.1s)\n  ✓  5 [mobile] › e2e/routes.spec.ts:8:3 › route design (/_design) passes browser gates (1.6s)\n  ✓  6 [desktop] › e2e/design.spec.ts:32:1 › /_design has no horizontal overflow with the eye open (880ms)\n  ✓  7 [desktop] › e2e/routes.spec.ts:8:3 › route home (/) passes browser gates (830ms)\n  ✓  8 [desktop] › e2e/routes.spec.ts:8:3 › route design (/_design) passes browser gates (1.3s)\n\n  8 passed (11.7s)\nDone in 12.45s."
+    },
+    {
+      "id": "G7",
+      "name": "protected-tests",
+      "required": true,
+      "durationMs": 2,
+      "ok": true,
+      "output": "testes protegidos íntegros"
+    },
+    {
+      "id": "G8",
+      "name": "privacy-leak",
+      "ok": true,
+      "required": true,
+      "skipped": "a partir da etapa 1",
+      "durationMs": 0,
+      "output": ""
+    },
+    {
+      "id": "G9",
+      "name": "a11y",
+      "required": true,
+      "durationMs": 10199,
+      "ok": true,
+      "output": "zero violações serious/critical"
+    },
+    {
+      "id": "G10",
+      "name": "mobile-layout",
+      "required": true,
+      "durationMs": 10618,
+      "ok": true,
+      "output": "sem overflow e alvos ≥ 44px em 320/375/414"
+    },
+    {
+      "id": "G11",
+      "name": "visual-regression",
+      "ok": true,
+      "required": true,
+      "skipped": "a partir da etapa 2",
+      "durationMs": 0,
+      "output": ""
+    },
+    {
+      "id": "G12",
+      "name": "lighthouse",
+      "ok": true,
+      "required": true,
+      "skipped": "só no fim de etapa",
+      "durationMs": 0,
+      "output": ""
+    },
+    {
+      "id": "G13",
+      "name": "secrets",
+      "required": true,
+      "durationMs": 35,
+      "ok": true,
+      "output": "nenhum segredo no diff"
+    }
+  ]
+}

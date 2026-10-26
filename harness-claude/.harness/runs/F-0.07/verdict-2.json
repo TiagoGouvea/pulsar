@@ -1,0 +1,48 @@
+[
+  {
+    "kind": "code",
+    "pass": true,
+    "score": 8,
+    "issues": [
+      {
+        "severidade": "minor",
+        "arquivo": "app/e2e/design.spec.ts",
+        "descricao": "O teste de horizontal overflow usa o viewport padrão do Playwright (1280x720) mas não testa explicitamente em 375px como exigido pelo critério de aceite. A gate G10 (mobile-layout: ok) sugere que o harness verificou isso por fora, mas o teste e2e próprio não cobre ambas as larguras.",
+        "sugestao": "Adicionar um teste com page.setViewportSize({ width: 375, height: 812 }) (ou usar projects do Playwright config) para cobrir explicitamente a largura mobile."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/pages/DesignPage.tsx",
+        "descricao": "Os labels do NumberInput e Slider foram trocados de valores concretos ('Café', 'Energia') para genéricos ('Quantidade do fator', 'Escala do resultado'). Isso reduz a fidelidade do catálogo como referência de UI real, embora não afete funcionalidade.",
+        "sugestao": "Considerar manter os textos originais ou adicionar ambos (genérico como label secundário) para que o catálogo espelhe melhor o uso real."
+      }
+    ],
+    "workerId": "deepseek"
+  },
+  {
+    "kind": "ui",
+    "pass": true,
+    "score": 9.5,
+    "issues": [
+      {
+        "severidade": "minor",
+        "tela": "Design System Page",
+        "descricao": "The design page layout on very wide desktops might appear slightly sparse as it stretches the single-column layout without introducing a multi-column structure, though this is according to the constraints.",
+        "sugestao": "Acceptable as per instructions to not enforce desktop-specific layouts."
+      }
+    ],
+    "porCriterio": {
+      "c1": 10,
+      "c2": 10,
+      "c3": 10,
+      "c4": 9,
+      "c5": 10,
+      "c6": 9,
+      "c7": 10,
+      "c8": 9,
+      "c9": 10,
+      "c10": 10
+    },
+    "workerId": "gemini-flash-or"
+  }
+]

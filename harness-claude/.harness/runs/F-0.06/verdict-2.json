@@ -1,0 +1,66 @@
+[
+  {
+    "kind": "code",
+    "pass": true,
+    "score": 9,
+    "issues": [
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/design/EyeToggle.tsx",
+        "descricao": "O aria-label muda com o estado e o botão também usa aria-pressed. Leitores de tela podem anunciar o estado duas vezes, ou anunciar um estado contraditório.",
+        "sugestao": "Use um aria-label fixo, como 'Mostrar nomes dos indicadores', e deixe o aria-pressed indicar o estado."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/privacy/label.ts",
+        "descricao": "A regra da sigla ausente só trata sigla vazia ou com espaços. Nomes com menos de 3 letras recebem '...' mesmo sem truncamento. Isso segue a spec literalmente e é só uma observação.",
+        "sugestao": "Nenhuma ação necessária, a menos que a spec peça outro comportamento."
+      }
+    ],
+    "workerId": "sonnet"
+  },
+  {
+    "kind": "ui",
+    "pass": true,
+    "score": 7.8,
+    "issues": [
+      {
+        "severidade": "minor",
+        "tela": "design-mobile (privado e nomes)",
+        "descricao": "A escala 0–10 do indicador de Energia fica cortada na borda direita em 375px. Só aparecem os valores de 0 a 6, e não há sinal visual de rolagem horizontal. O valor 7, que está selecionado no desktop, fica escondido.",
+        "sugestao": "Quebrar a escala em duas linhas ou tornar os botões flexíveis para os 11 valores caberem. Se mantiver a rolagem, adicionar um fade ou um sinal de continuação na borda."
+      },
+      {
+        "severidade": "minor",
+        "tela": "design-mobile (privado)",
+        "descricao": "Com o modo privado ligado, as siglas (EXE, CAF, ENE e Con...) aparecem com as cores corretas e sem quebrar o layout. Mas \"Con...\" é uma sigla truncada, fora do padrão de 3 letras. Fatores e Resultados continuam diferenciados só por cor de fundo e fonte, e as etiquetas não têm ícone.",
+        "sugestao": "Usar siglas reais de 3 letras (CON). Nas etiquetas dos cartões, incluir o ícone de Fator ou de Resultado para a distinção não depender só da cor."
+      },
+      {
+        "severidade": "minor",
+        "tela": "design (switch de lembrete)",
+        "descricao": "O switch \"Lembrete diário\" aparece como um anel roxo-acinzentado largo, sem trilho nem estado desligado claro. Não lembra um toggle.",
+        "sugestao": "Desenhar trilho e polegar com estados ligado e desligado distintos, de acordo com os tokens."
+      },
+      {
+        "severidade": "minor",
+        "tela": "home (mobile e desktop)",
+        "descricao": "A home é um placeholder com título e frase, sem o EyeToggle. O botão do modo privado só aparece na página de design system, então a home não mostra a diferença entre privado e nomes. No desktop o bloco fica alinhado à esquerda, dentro de um contêiner centralizado.",
+        "sugestao": "Se a home precisar exibir o EyeToggle e as etiquetas nesta feature, incluí-los. Caso contrário, aceitar como está."
+      }
+    ],
+    "porCriterio": {
+      "c1": 8,
+      "c2": 7,
+      "c3": 7,
+      "c4": 7,
+      "c5": 8,
+      "c6": 6,
+      "c7": 8,
+      "c8": 7,
+      "c9": 9,
+      "c10": 8
+    },
+    "workerId": "sonnet"
+  }
+]

@@ -52,11 +52,11 @@ workers:
   fake:         { cli: fake,   model: fake, family: local-other, tier: low, vision: true, billing: local, concurrency: 4, timeoutMin: 1, enabled: false }
 
 roles:
-  # Caros (opus, codex-top) só no initializer e em implement_hard; o volume vai para baratos, assinatura (agy) e locais.
+  # Caros: opus no initializer e como reserva do implement_hard (sonnet primeiro); o volume vai para baratos, assinatura (agy) e locais.
   initializer:     { pool: [opus],                              note: "decompõe spec, scaffold, design system" }
   test_writer:     { pool: [sonnet, codex-mid],                 note: "escreve testes de aceite ANTES da implementação" }
   implement:       { pool: [deepseek, glm, kimi, sonnet],       note: "features comuns" }
-  implement_hard:  { pool: [opus, codex-top],                   note: "estatística, security rules, sincronização, privacidade" }
+  implement_hard:  { pool: [sonnet, opus],                        note: "estatística, security rules, sincronização, privacidade" }
   review_code:     { pool: [gemini-pro-or, gemini-pro, codex-mid, sonnet],     rule: different_family_from_implementer }
   review_ui:       { pool: [gemini-pro, gemini-pro-or, sonnet],                rule: different_family_from_implementer, requires: vision }
   triage:          { pool: [local-small, gemini-flash, gemini-flash-or, deepseek, haiku] }

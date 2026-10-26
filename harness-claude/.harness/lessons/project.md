@@ -12,9 +12,9 @@
   evidence:
     - evt-24
   added: 2026-10-25
-  hits: 9
-  helped: 4
-  helpedRate: 0.4444444444444444
+  hits: 13
+  helped: 7
+  helpedRate: 0.5384615384615384
   status: active
 - id: L-002
   scope:
@@ -30,7 +30,7 @@
   evidence:
     - evt-32
   added: 2026-10-25
-  hits: 2
-  helped: 1
-  helpedRate: 0.5
+  hits: 5
+  helped: 3
+  helpedRate: 0.6
   status: active

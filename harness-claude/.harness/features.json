@@ -196,9 +196,9 @@
         "F-0.04",
         "F-0.03"
       ],
-      "status": "in_progress",
-      "attempts": 2,
-      "costUsd": 0.48178760785999997,
+      "status": "passing",
+      "attempts": 3,
+      "costUsd": 1.06350600786,
       "history": [
         {
           "attempt": 1,
@@ -217,6 +217,15 @@
           "failedGates": [],
           "eventId": "evt-45",
           "ts": "2026-10-25T16:27:07.138Z"
+        },
+        {
+          "attempt": 3,
+          "role": "implement_hard",
+          "workerId": "codex-top",
+          "outcome": "success",
+          "failedGates": [],
+          "eventId": "evt-47",
+          "ts": "2026-10-25T18:08:38.807Z"
         }
       ]
     },
@@ -252,9 +261,9 @@
       "dependsOn": [
         "F-0.02"
       ],
-      "status": "in_progress",
-      "attempts": 1,
-      "costUsd": 0.7633134000000001,
+      "status": "passing",
+      "attempts": 2,
+      "costUsd": 1.0589049000000001,
       "history": [
         {
           "attempt": 1,
@@ -264,6 +273,15 @@
           "failedGates": [],
           "eventId": "evt-42",
           "ts": "2026-10-25T16:25:20.745Z"
+        },
+        {
+          "attempt": 2,
+          "role": "implement_hard",
+          "workerId": "codex-top",
+          "outcome": "success",
+          "failedGates": [],
+          "eventId": "evt-50",
+          "ts": "2026-10-25T18:09:52.102Z"
         }
       ]
     },
@@ -287,9 +305,14 @@
       ],
       "tests": [
         "app/e2e/routes.spec.ts",
+        "app/e2e/visual.spec.ts",
+        "app/e2e/design.spec.ts",
+        "app/src/__tests__/designRoute.test.tsx"
+      ],
+      "protectedTests": [
+        "app/e2e/routes.spec.ts",
         "app/e2e/visual.spec.ts"
       ],
-      "protectedTests": [],
       "tags": [
         "ui",
         "privacy-mode"
@@ -299,10 +322,32 @@
         "F-0.05",
         "F-0.06"
       ],
-      "status": "failing",
-      "attempts": 0,
-      "costUsd": 0,
-      "history": []
+      "status": "passing",
+      "attempts": 2,
+      "costUsd": 1.0905946546000003,
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement_hard",
+          "workerId": "codex-top",
+          "outcome": "failure",
+          "failedGates": [
+            "G2",
+            "G4"
+          ],
+          "eventId": "evt-53",
+          "ts": "2026-10-25T18:13:04.901Z"
+        },
+        {
+          "attempt": 2,
+          "role": "implement_hard",
+          "workerId": "opus",
+          "outcome": "success",
+          "failedGates": [],
+          "eventId": "evt-56",
+          "ts": "2026-10-25T18:16:06.118Z"
+        }
+      ]
     },
     {
       "id": "F-0.03",
@@ -2514,6 +2559,37 @@
         "F-7.02"
       ],
       "status": "failing",
+      "attempts": 0,
+      "costUsd": 0,
+      "history": []
+    },
+    {
+      "id": "F-0.fix-1",
+      "stage": 0,
+      "title": "Suíte completa da etapa falhou nos gates G12",
+      "description": "G12: design: performance 41 < 85",
+      "specRefs": [],
+      "covers": [],
+      "acceptance": [
+        "Todos os gates obrigatórios da etapa passam na suíte completa",
+        "Nenhum teste protegido é alterado"
+      ],
+      "tests": [],
+      "protectedTests": [
+        "app/src/__tests__/scaffold.test.ts",
+        "app/src/design/__tests__/design-system.f002.test.tsx",
+        "app/tests/rules/baseline.test.ts",
+        "app/e2e/routes.spec.ts",
+        "app/src/privacy/__tests__/label.test.ts",
+        "app/e2e/visual.spec.ts",
+        "app/scripts/__tests__/seed-data.test.ts"
+      ],
+      "tags": [
+        "regression"
+      ],
+      "difficulty": "hard",
+      "dependsOn": [],
+      "status": "in_progress",
       "attempts": 0,
       "costUsd": 0,
       "history": []

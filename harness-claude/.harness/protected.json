@@ -8,5 +8,15 @@
     "sha256": "7c1b0b88e55923daaac26fa47e06fc37d758336891e7f3645e4656532b68d80a",
     "asserts": 17,
     "featureId": "F-0.02"
+  },
+  "app/e2e/routes.spec.ts": {
+    "sha256": "7b21254849002d5415191628e3f0fe1be884fcf02c1664f957f7f486995e217e",
+    "asserts": 5,
+    "featureId": "F-0.07"
+  },
+  "app/e2e/visual.spec.ts": {
+    "sha256": "b08ae558a6f63140498585c3ed7d37a87caac27f0e83fe348c209af0117c48b2",
+    "asserts": 0,
+    "featureId": "F-0.07"
   }
 }
