@@ -38,7 +38,7 @@ execution:
   executor: pi
   maxConcurrentTasks: 1
   maxConcurrentLocalRequests: 1
-  maxAttemptsPerTask: 3
+  maxAttemptsPerTask: 4
   maxSameFailureCount: 2
   taskTimeoutMinutes: 30
   reviewTimeoutMinutes: 4

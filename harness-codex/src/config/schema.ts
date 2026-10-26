@@ -36,7 +36,7 @@ export const harnessConfigSchema = z.object({
     executor: z.enum(["pi", "fake"]).default("pi"),
     maxConcurrentTasks: z.number().int().min(1).max(8).default(1),
     maxConcurrentLocalRequests: z.literal(1).default(1),
-    maxAttemptsPerTask: z.number().int().min(1).max(10).default(3),
+    maxAttemptsPerTask: z.number().int().min(1).max(10).default(4),
     maxSameFailureCount: z.number().int().min(1).max(5).default(2),
     taskTimeoutMinutes: z.number().positive().max(240).default(30),
     implementationTimeoutMinutes: z.number().positive().max(60).default(15),

@@ -189,27 +189,39 @@ program.command("report").requiredOption("--config <path>").requiredOption("--ru
   try { console.log(await writeFinalReport(config, store, options.run)); } finally { store.close(); }
 });
 
-program.command("diagnostics").description("Mostra a última falha e seus artefatos técnicos")
+program.command("diagnostics").description("Mostra o evento de bloqueio e a tentativa relevante mais recente")
   .requiredOption("--config <path>").requiredOption("--run <id>").option("--task <id>")
   .action(async (options: { config: string; run: string; task?: string }) => {
     const config = await loadConfig(options.config);
     const store = new StateStore(config.storage.root);
     try {
-      const taskClause = options.task ? " AND (a.task_id=? OR a.task_id=?)" : "";
-      const params = options.task ? [options.run, options.task, `${options.task}-review`] : [options.run];
+      const blockedEvent = store.get<Record<string, unknown>>(
+        "SELECT payload_json FROM events WHERE run_id=? AND type='run.blocked' ORDER BY sequence DESC LIMIT 1",
+        options.run,
+      );
+      const blocker = typeof blockedEvent?.payload_json === "string"
+        ? JSON.parse(blockedEvent.payload_json) as Record<string, unknown>
+        : {};
+      const blockedTask = typeof blocker.taskId === "string" ? blocker.taskId : undefined;
+      const taskId = options.task ?? blockedTask;
+      const taskClause = taskId ? " AND (a.task_id=? OR a.task_id=?)" : "";
+      const failedOnly = blocker.cause === "max_attempts" ? "" : " AND a.status='failed'";
+      const params = taskId ? [options.run, taskId, `${taskId}-review`] : [options.run];
       const attempt = store.get<Record<string, unknown>>(
         `SELECT a.*, pc.provider, pc.model_id, pc.state AS provider_state
          FROM attempts a LEFT JOIN provider_calls pc ON pc.attempt_id=a.id
-         WHERE a.run_id=? AND a.status='failed'${taskClause}
+         WHERE a.run_id=?${failedOnly}${taskClause}
          ORDER BY a.started_at DESC LIMIT 1`,
         ...params,
       );
-      if (!attempt) throw new Error("Nenhuma tentativa falha encontrada.");
+      if (!attempt) throw new Error("Nenhuma tentativa relevante encontrada.");
       const result = typeof attempt.result_json === "string"
         ? JSON.parse(attempt.result_json) as Record<string, unknown>
         : null;
       console.log(JSON.stringify({
+        blocker,
         attemptId: attempt.id, taskId: attempt.task_id, number: attempt.number,
+        status: attempt.status,
         candidate: attempt.candidate_key, provider: attempt.provider, modelId: attempt.model_id,
         providerState: attempt.provider_state, startedAt: attempt.started_at, finishedAt: attempt.finished_at,
         summary: result?.summary ?? null, blockers: result?.blockers ?? [], diagnostics: result?.diagnostics ?? null,

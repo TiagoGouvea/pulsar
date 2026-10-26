@@ -11,7 +11,11 @@ describe("entrada estrutural da configuração", () => {
     const config = await createTestConfig(root);
     const operationalChange = {
       ...config,
-      execution: { ...config.execution, reviewTimeoutMinutes: 4 },
+      execution: {
+        ...config.execution,
+        reviewTimeoutMinutes: 4,
+        maxAttemptsPerTask: config.execution.maxAttemptsPerTask + 1,
+      },
     };
     const structuralChange = {
       ...config,

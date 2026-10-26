@@ -4,7 +4,7 @@ import type { HarnessConfig } from "../config/schema.js";
 import type { StateStore } from "./store.js";
 import { createId, hashFile, nowUtc, sha256, writeJson } from "../utils/core.js";
 
-const PLANNING_CONFIG_PATH_SUFFIX = "#planning";
+const PLANNING_CONFIG_PATH_SUFFIX = "#planning-v2";
 
 function planningConfigPath(config: HarnessConfig): string {
   return `${config.configPath}${PLANNING_CONFIG_PATH_SUFFIX}`;
@@ -21,7 +21,6 @@ export function planningConfigFingerprint(config: HarnessConfig): { sha256: stri
       profile: config.project.profile,
       timezone: config.project.timezone,
     },
-    maxAttemptsPerTask: config.execution.maxAttemptsPerTask,
   });
   return { sha256: sha256(serialized), sizeBytes: Buffer.byteLength(serialized) };
 }
@@ -84,8 +83,8 @@ export async function detectInputChanges(config: HarnessConfig, store: StateStor
   const fingerprint = planningConfigFingerprint(config);
   const fingerprintPath = planningConfigPath(config);
   const planningInput = store.get<Record<string, unknown>>(
-    "SELECT sha256 FROM input_versions WHERE run_id=? AND kind='planning_config' ORDER BY captured_at DESC LIMIT 1",
-    runId,
+    "SELECT sha256 FROM input_versions WHERE run_id=? AND kind='planning_config' AND path=? ORDER BY captured_at DESC LIMIT 1",
+    runId, fingerprintPath,
   );
   if (!planningInput || typeof planningInput.sha256 !== "string") {
     insertPlanningConfig(config, store, runId);

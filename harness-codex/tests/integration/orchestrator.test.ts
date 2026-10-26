@@ -64,6 +64,53 @@ describe("controlador", () => {
     } finally { resumedOrchestrator.close(); }
   });
 
+  test("retoma tarefa bloqueada quando o limite operacional aumenta e a revisão pede alterações", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "harness-attempt-capacity-"));
+    const config = await createTestConfig(root);
+    const planningOrchestrator = new Orchestrator(config);
+    const runId = await planningOrchestrator.plan();
+    const task = planningOrchestrator.store.listTasks(runId)[0];
+    if (!task) throw new Error("Tarefa de teste ausente.");
+    const taskId = String(task.id);
+    const now = new Date().toISOString();
+    const implementation = JSON.stringify({
+      taskId, outcome: "ready_for_verification", summary: "Rodada concluída.",
+      changedFiles: [], claimedChecks: [], decisions: [], blockers: [], suggestedFollowUps: [],
+    });
+    for (const number of [1, 2]) {
+      planningOrchestrator.store.run(
+        "INSERT INTO attempts(id, run_id, task_id, number, executor, candidate_key, status, result_json, started_at, finished_at) VALUES (?, ?, ?, ?, 'fake', 'fake', 'ready_for_verification', ?, ?, ?)",
+        `attempt-capacity-${number}`, runId, taskId, number, implementation, now, now,
+      );
+    }
+    planningOrchestrator.store.run(
+      "INSERT INTO attempts(id, run_id, task_id, number, executor, candidate_key, status, result_json, started_at, finished_at) VALUES ('review-capacity', ?, ?, 1, 'fake', 'fake', 'changes_requested', ?, ?, ?)",
+      runId, `${taskId}-review`, JSON.stringify({
+        taskId: `${taskId}-review`, outcome: "changes_requested", summary: "Ajuste necessário.",
+        changedFiles: [], claimedChecks: [], decisions: [], blockers: ["ajuste"], suggestedFollowUps: [],
+      }), now, now,
+    );
+    planningOrchestrator.store.setTaskState(runId, taskId, "blocked");
+    planningOrchestrator.store.setRunState(runId, "blocked", { cause: "max_attempts", taskId });
+    planningOrchestrator.close();
+
+    const resumedOrchestrator = new Orchestrator({
+      ...config,
+      execution: { ...config.execution, maxAttemptsPerTask: 3 },
+    });
+    try {
+      await resumedOrchestrator.run(runId);
+
+      expect(resumedOrchestrator.store.getRun(runId)?.state).toBe("awaiting_human");
+      expect(resumedOrchestrator.store.all(
+        "SELECT id FROM attempts WHERE run_id=? AND task_id=?",
+        runId, taskId,
+      )).toHaveLength(3);
+      expect(resumedOrchestrator.store.listEvents(runId)
+        .some((event) => event.type === "task.attempt_capacity_recovered")).toBe(true);
+    } finally { resumedOrchestrator.close(); }
+  });
+
   test("não aceita sucesso alegado quando verificador falha", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "harness-fail-"));
     const config = await createTestConfig(root, { testCommand: ["node", "-e", "process.exit(3)"] });

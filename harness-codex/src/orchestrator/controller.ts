@@ -60,6 +60,14 @@ export function countCurrentReviewFailures(attempts: Record<string, unknown>[]):
   return failures;
 }
 
+export function effectiveTaskAttemptLimit(taskLimit: number, configuredLimit: number): number {
+  return Math.max(taskLimit, configuredLimit);
+}
+
+export function reviewRequestedChanges(status: unknown): boolean {
+  return ["changes_requested", "needs_changes", "revisions_requested"].includes(String(status));
+}
+
 export class Orchestrator {
   readonly store: StateStore;
   private readonly catalog: ModelCatalog;
@@ -191,11 +199,12 @@ export class Orchestrator {
   private async executeTask(runId: string, task: Task, requirements: Requirement[]): Promise<boolean> {
     const priorAttempts = this.store.all<Record<string, unknown>>("SELECT * FROM attempts WHERE run_id=? AND task_id=? ORDER BY number", runId, task.id);
     const consumedAttempts = priorAttempts.filter(consumesTaskAttempt);
-    if (consumedAttempts.length >= task.maxAttempts) {
+    const maxAttempts = effectiveTaskAttemptLimit(task.maxAttempts, this.config.execution.maxAttemptsPerTask);
+    if (consumedAttempts.length >= maxAttempts) {
       this.store.setTaskState(runId, task.id, "blocked");
       this.store.setRunState(runId, "blocked", {
         cause: "max_attempts", taskId: task.id,
-        consumedAttempts: consumedAttempts.length, technicalFailures: priorAttempts.length - consumedAttempts.length,
+        consumedAttempts: consumedAttempts.length, technicalFailures: priorAttempts.length - consumedAttempts.length, maxAttempts,
       });
       return false;
     }
@@ -266,17 +275,18 @@ export class Orchestrator {
         runId, task.id,
       );
       const consumedAttempts = attempts.filter(consumesTaskAttempt).length;
-      if (consumedAttempts >= task.maxAttempts) continue;
+      const maxAttempts = effectiveTaskAttemptLimit(task.maxAttempts, this.config.execution.maxAttemptsPerTask);
+      if (consumedAttempts >= maxAttempts) continue;
       const review = this.store.get<Record<string, unknown>>(
         "SELECT status FROM attempts WHERE run_id=? AND task_id=? ORDER BY started_at DESC LIMIT 1",
         runId, `${task.id}-review`,
       );
-      if (review?.status !== "revisions_requested") continue;
+      if (!reviewRequestedChanges(review?.status)) continue;
       this.store.setTaskState(runId, task.id, "changes_requested");
       this.store.event(runId, "task.attempt_capacity_recovered", "task", task.id, {
         consumedAttempts,
         technicalFailures: attempts.length - consumedAttempts,
-        maxAttempts: task.maxAttempts,
+        maxAttempts,
       });
     }
   }
