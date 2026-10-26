@@ -126,6 +126,8 @@ describe("utilitários", () => {
     expect(a).toEqual({ aprovado: false, ajustes: ["Botão maior", "Cor do card"], respostasDuvidas: [{ id: "Q-2", pergunta: "Virada?", resposta: "4h" }] });
     expect(parseApprovalFiles("Status: (aprovado / ajustes)\n## Ajustes\n- \n", "").aprovado).toBe(false);
     expect(parseApprovalFiles("Status: aprovado\n", "").aprovado).toBe(true);
+    const d = "### Q-1\n**Pergunta:** Dias?\nA) 5 dias (padrão)\nB) 3 dias\nResposta: b, mas só no celular\n\n### Q-10\n**Pergunta:** Cor?\nA) azul (padrão)\nB) verde\nResposta: Bege\n";
+    expect(parseApprovalFiles("Status: aprovado\n", d).respostasDuvidas.map((r) => r.resposta)).toEqual(["3 dias — mas só no celular", "Bege"]);
   });
 
   it("regras de aprovação dos avaliadores", () => {

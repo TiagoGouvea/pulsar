@@ -6,7 +6,7 @@ import { FatalError, type WorkerSpec } from "./adapters/types.js";
 import { spent, stageCap, usageRatio } from "./budget.js";
 import {
   addQuestion, addRisk, ApprovalSchema, type Approval, buildCheckpoint, checkpointDir, computeHash, deployPreview,
-  freezeSpec, markAnswered, parseApprovalFiles, storedHash, writeSpecChange,
+  freezeSpec, markAnswered, parseApprovalFiles, resolveAnswer, storedHash, writeSpecChange,
 } from "./checkpoint.js";
 import type { Ctx } from "./config.js";
 import { formatIssues, judge, reviewCode, reviewFeatures, reviewUi, TriageSchema, type Verdict } from "./evaluator.js";
@@ -518,7 +518,7 @@ export class Orchestrator {
     let a: Approval = parseApprovalFiles(aprovacao, duvidas);
     try {
       const r = await this.rt.invoke({ role: "approval_parser", taskId: `approve-${s}`, stage: s, attempt: 1, cwd: ctx.root, prompt: render(ctx, "approval_parser", { aprovacao, duvidas }), schema: ApprovalSchema });
-      if (r.data) a = r.data;
+      if (r.data) a = { ...r.data, respostasDuvidas: r.data.respostasDuvidas.map((x) => ({ ...x, resposta: resolveAnswer(duvidas, x.id, x.resposta) })) };
     } catch (e) {
       if (!(e instanceof NoWorkerError)) throw e;
     }

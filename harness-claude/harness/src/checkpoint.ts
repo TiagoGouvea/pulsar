@@ -77,12 +77,13 @@ export function openQuestions(ctx: Ctx) {
     .filter((q) => q.pergunta && !done.has(q.id) && !seen.has(normText(q.pergunta)) && seen.add(normText(q.pergunta)));
 }
 
-const list = (v: unknown) => (Array.isArray(v) ? v.join("; ") : String(v ?? "-"));
 
-function duvidasMd(ctx: Ctx, stage: number) {
+export function duvidasMd(ctx: Ctx, stage: number) {
   const groups = Object.entries(openQuestions(ctx).reduce<Record<string, ReturnType<typeof openQuestions>>>((a, q) => ((a[q.featureId ?? "geral"] ??= []).push(q), a), {}));
-  return `# Dúvidas — etapa ${stage}\n\nResponda na linha \`Resposta:\` de cada item. Itens sem resposta mantêm o default escolhido.\n\n` +
-    (groups.map(([g, qs]) => `## ${g}\n\n` + qs.map((q) => `### ${q.id}\n**Pergunta:** ${q.pergunta}\n**Escolhido:** ${q.escolhido ?? "-"}\n**Alternativas:** ${list(q.alternativas)}\n**Impacto:** ${q.impacto ?? "-"}\nResposta: \n`).join("\n")).join("\n") || "Nenhuma dúvida aberta.\n");
+  const options = (q: Question) => [q.escolhido ?? "-", ...(Array.isArray(q.alternativas) ? q.alternativas : q.alternativas ? [String(q.alternativas)] : [])]
+    .map((o, i) => `${String.fromCharCode(65 + i)}) ${o}${i ? "" : " (padrão)"}`).join("\n");
+  return `# Dúvidas — etapa ${stage}\n\nResponda na linha \`Resposta:\` com a letra da opção (ex.: \`B\`) ou com texto livre. Itens sem resposta mantêm a opção A (padrão).\n\n` +
+    (groups.map(([g, qs]) => `## ${g}\n\n` + qs.map((q) => `### ${q.id}\n**Pergunta:** ${q.pergunta}\n**Impacto:** ${q.impacto ?? "-"}\n${options(q)}\nResposta: \n`).join("\n")).join("\n") || "Nenhuma dúvida aberta.\n");
 }
 
 function riscosMd(ctx: Ctx, stage: number) {
@@ -165,10 +166,18 @@ export const ApprovalSchema = z.object({
 export type Approval = z.infer<typeof ApprovalSchema>;
 
 /** Deterministic parser, used when no model is available or as a cross-check. */
+/** "B" or "B, but ..." -> the text of option B of that question in DUVIDAS.md (plus any remark); free text as is. */
+export function resolveAnswer(duvidas: string, id: string, resposta: string) {
+  const [, letter, rest] = resposta.trim().match(/^([A-Z])(?![\p{L}\d])[).:,\s-]*(.*)$/iu) ?? [];
+  const block = duvidas.split(new RegExp(`^###\\s*${id}\\s*$`, "m"))[1]?.split(/^###\s/m)[0] ?? "";
+  const opt = letter && block.match(new RegExp(`^${letter.toUpperCase()}\\)\\s*(.+?)(?: \\(padrão\\))?$`, "m"))?.[1];
+  return opt ? `${opt}${rest ? ` — ${rest}` : ""}` : resposta.trim();
+}
+
 export function parseApprovalFiles(aprovacao: string, duvidas: string): Approval {
   const status = aprovacao.match(/^Status:\s*(.+)$/im)?.[1]?.toLowerCase() ?? "";
   const ajustes = (aprovacao.split(/^##\s*Ajustes/im)[1] ?? "").split("\n").map((l) => l.match(/^\s*[-*]\s+(.+)$/)?.[1]?.trim()).filter((x): x is string => !!x);
   const respostasDuvidas = [...duvidas.matchAll(/^###\s*(Q-\d+)\n\*\*Pergunta:\*\*\s*(.*)\n[\s\S]*?^Resposta:[ \t]*(.*)$/gm)]
-    .filter((m) => m[3].trim()).map((m) => ({ id: m[1], pergunta: m[2], resposta: m[3].trim() }));
+    .filter((m) => m[3].trim()).map((m) => ({ id: m[1], pergunta: m[2], resposta: resolveAnswer(duvidas, m[1], m[3]) }));
   return { aprovado: /aprovad/.test(status) && !/ajuste/.test(status), ajustes, respostasDuvidas };
 }
