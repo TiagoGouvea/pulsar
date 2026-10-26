@@ -31,6 +31,16 @@ function rowToTask(row: Record<string, unknown>): Task {
   };
 }
 
+export function consumesTaskAttempt(row: Record<string, unknown>): boolean {
+  if (row.status !== "failed" || typeof row.result_json !== "string") return true;
+  try {
+    const result = JSON.parse(row.result_json) as ExecutionResult;
+    return !(result.outcome === "failed" && result.blockers.includes("pi_execution_failed"));
+  } catch {
+    return true;
+  }
+}
+
 export class Orchestrator {
   readonly store: StateStore;
   private readonly catalog: ModelCatalog;
@@ -112,6 +122,7 @@ export class Orchestrator {
       this.store.setMilestoneState(id, milestoneId, "in_progress");
       const requirements = this.loadRequirements(id);
       if (!(await this.recoverInterruptedWork(id, milestoneId))) return id;
+      this.recoverAttemptCapacity(id, milestoneId);
       let pending = this.store.listTasks(id).filter((row) => row.milestone_id === milestoneId && ["pending", "ready", "changes_requested", "failed"].includes(String(row.state)));
       while (pending.length > 0) {
         const control = this.applyControlCommands(id);
@@ -127,6 +138,14 @@ export class Orchestrator {
         const shouldContinue = await this.executeTask(id, task, requirements);
         if (!shouldContinue) return id;
         pending = this.store.listTasks(id).filter((row) => row.milestone_id === milestoneId && ["pending", "ready", "changes_requested", "failed"].includes(String(row.state)));
+      }
+      const incomplete = this.store.listTasks(id).filter((row) => row.milestone_id === milestoneId && row.state !== "passed");
+      if (incomplete.length > 0) {
+        this.store.setRunState(id, "blocked", {
+          cause: "incomplete_tasks",
+          taskIds: incomplete.map((row) => String(row.id)),
+        });
+        return id;
       }
       return await this.finishMilestone(id, milestoneId);
     } catch (error) {
@@ -152,9 +171,13 @@ export class Orchestrator {
 
   private async executeTask(runId: string, task: Task, requirements: Requirement[]): Promise<boolean> {
     const priorAttempts = this.store.all<Record<string, unknown>>("SELECT * FROM attempts WHERE run_id=? AND task_id=? ORDER BY number", runId, task.id);
-    if (priorAttempts.length >= task.maxAttempts) {
+    const consumedAttempts = priorAttempts.filter(consumesTaskAttempt);
+    if (consumedAttempts.length >= task.maxAttempts) {
       this.store.setTaskState(runId, task.id, "blocked");
-      this.store.setRunState(runId, "blocked", { cause: "max_attempts", taskId: task.id });
+      this.store.setRunState(runId, "blocked", {
+        cause: "max_attempts", taskId: task.id,
+        consumedAttempts: consumedAttempts.length, technicalFailures: priorAttempts.length - consumedAttempts.length,
+      });
       return false;
     }
     const attemptNumber = priorAttempts.length + 1;
@@ -213,6 +236,30 @@ export class Orchestrator {
     );
     if (result.outcome !== "ready_for_verification") return this.handleFailure(runId, task, priorAttempts, failureSignature, result);
     return this.verifyReadyResult(runId, task, result, candidate, attemptDirectory);
+  }
+
+  private recoverAttemptCapacity(runId: string, milestoneId: string): void {
+    const blocked = this.store.listTasks(runId).filter((row) => row.milestone_id === milestoneId && row.state === "blocked");
+    for (const row of blocked) {
+      const task = rowToTask(row);
+      const attempts = this.store.all<Record<string, unknown>>(
+        "SELECT status, result_json FROM attempts WHERE run_id=? AND task_id=? ORDER BY number",
+        runId, task.id,
+      );
+      const consumedAttempts = attempts.filter(consumesTaskAttempt).length;
+      if (consumedAttempts >= task.maxAttempts) continue;
+      const review = this.store.get<Record<string, unknown>>(
+        "SELECT status FROM attempts WHERE run_id=? AND task_id=? ORDER BY started_at DESC LIMIT 1",
+        runId, `${task.id}-review`,
+      );
+      if (review?.status !== "revisions_requested") continue;
+      this.store.setTaskState(runId, task.id, "changes_requested");
+      this.store.event(runId, "task.attempt_capacity_recovered", "task", task.id, {
+        consumedAttempts,
+        technicalFailures: attempts.length - consumedAttempts,
+        maxAttempts: task.maxAttempts,
+      });
+    }
   }
 
   private implementerContext(runId: string, task: Task): {
