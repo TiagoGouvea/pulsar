@@ -14,6 +14,8 @@ export const colors = {
   onPrimaryFixed: '#25005a',
   onPrimaryFixedVariant: '#5a00c6',
   onPrimaryContainer: '#ede0ff',
+  surfaceTint: '#732ee4',
+  inversePrimary: '#d2bbff',
 
   // Secondary - Blue
   secondary: '#0051d5',
@@ -57,6 +59,9 @@ export const colors = {
   onError: '#ffffff',
   onErrorContainer: '#93000a',
 
+  // Warning (amber, low-confidence states per official design)
+  warning: '#f59e0b',
+
   // Outline
   outline: '#7b7487',
 
@@ -67,7 +72,9 @@ export const colors = {
 
 // Border radius tokens
 export const borderRadius = {
+  sm: '0.5rem',
   DEFAULT: '1rem',
+  md: '1.5rem',
   lg: '2rem',
   xl: '3rem',
   full: '9999px'

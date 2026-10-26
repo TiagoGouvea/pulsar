@@ -92,6 +92,18 @@ Executa testes Playwright com configuração:
 - Screenshot em caso de falha
 - Video recording para debugging
 
+Quando a porta 3000 estiver ocupada, use:
+
+```bash
+PORT=3001 yarn test:e2e
+```
+
+Na primeira execução em uma máquina nova, instale os navegadores:
+
+```bash
+yarn playwright install firefox webkit
+```
+
 ### 7. Linting
 
 ```bash

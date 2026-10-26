@@ -21,6 +21,8 @@ const config: Config = {
         'on-primary-fixed-variant': '#5a00c6',
         'primary-container': '#7c3aed',
         'on-primary-container': '#ede0ff',
+        'surface-tint': '#732ee4',
+        'inverse-primary': '#d2bbff',
 
         // Secondary colors
         secondary: '#0051d5',
@@ -64,6 +66,9 @@ const config: Config = {
         'on-error': '#ffffff',
         'on-error-container': '#93000a',
 
+        // Warning (low-confidence states per official design)
+        warning: '#f59e0b',
+
         // Outline
         outline: '#7b7487',
 
@@ -72,7 +77,9 @@ const config: Config = {
         'on-surface': '#131b2e'
       },
       borderRadius: {
+        sm: '0.5rem',
         DEFAULT: '1rem',
+        md: '1.5rem',
         lg: '2rem',
         xl: '3rem',
         full: '9999px'

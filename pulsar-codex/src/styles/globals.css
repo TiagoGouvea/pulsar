@@ -11,6 +11,8 @@
   --on-primary-fixed: #25005a;
   --on-primary-fixed-variant: #5a00c6;
   --on-primary-container: #ede0ff;
+  --surface-tint: #732ee4;
+  --inverse-primary: #d2bbff;
 
   /* Secondary colors */
   --secondary: #0051d5;
@@ -54,6 +56,9 @@
   --on-error: #ffffff;
   --on-error-container: #93000a;
 
+  /* Warning (low-confidence states) */
+  --warning: #f59e0b;
+
   /* Outline */
   --outline: #7b7487;
 
@@ -62,7 +67,9 @@
   --on-surface: #131b2e;
 
   /* Border radius */
+  --border-radius-sm: 0.5rem;
   --border-radius-default: 1rem;
+  --border-radius-md: 1.5rem;
   --border-radius-lg: 2rem;
   --border-radius-xl: 3rem;
   --border-radius-full: 9999px;
@@ -232,7 +239,7 @@
     width: 100%;
     background-color: var(--surface-container);
     border: 1px solid var(--outline);
-    border-radius: 0.5rem;
+    border-radius: var(--border-radius-sm);
     padding-left: 0.75rem;
     padding-right: 0.75rem;
     padding-top: 0.5rem;
@@ -348,6 +355,7 @@
     font-weight: var(--stat-display-font-weight);
     color: var(--on-surface);
     line-height: 1;
+    font-variant-numeric: tabular-nums;
   }
 
   .headline-xl {

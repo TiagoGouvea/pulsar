@@ -66,6 +66,7 @@ Durante a verificação do bloco foram identificadas e corrigidas as seguintes f
 6. **Risco de overflow horizontal** — `width: 100vw` substituído por `width: 100%` + `min-height: 100dvh` em `html/body`.
 7. **`.gitignore` local ignorava arquivos essenciais** — `yarn.lock`, `vite.config.ts`, `vitest.config.ts`, `playwright.config.ts`, `tailwind.config.ts`, `eslint.config.js`, `prettier.config.js` e `index.html` agora são versionados; credenciais (`.env`, `secrets/`) seguem ignoradas.
 8. **Porta do dev server configurável** — `PORT` env com padrão 3000 (conflito detectado com outro processo na 3000).
+9. **Fidelidade de tokens ao design oficial** — adicionados `warning` (#f59e0b), `surface-tint` (#732ee4), `inverse-primary` (#d2bbff) e raios `sm`/`md` (0.5/1.5rem) declarados no design; `.stat-display` usa algarismos tabulares; `.input-field` consome o token `--border-radius-sm` em vez de valor fixo; removida chave duplicada `primary-container` no `tailwind.config.ts`.
 
 ## Estrutura de Arquivos
 

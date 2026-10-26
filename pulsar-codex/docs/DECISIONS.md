@@ -107,6 +107,10 @@ Baseado nas cores do design oficial exportado de Figma:
 - **Primary Container**: `#7c3aed`
 - **Secondary**: `#0051d5` (azul)
 - **Tertiary**: `#005b3d` (verde)
+- **Warning**: `#f59e0b` (âmbar, baixa confiança/amostras pequenas)
+- **Surface Tint**: `#732ee4` · **Inverse Primary**: `#d2bbff`
+
+**Autoridade da paleta:** o front matter do `design/pulsar_bio_analytics/DESIGN.md` é a fonte canônica dos tokens (cores, tipografia, raios e espaçamentos); cores nomeadas apenas na narrativa entram como tokens semânticos aditivos (ex.: `warning`). Valores numéricos usam algarismos tabulares (`font-variant-numeric: tabular-nums` em `.stat-display`), conforme a regra de Tabular Figures do design oficial. Raios `sm` (0.5rem) e `md` (1.5rem) do front matter também são expostos como tokens.
 
 ### Tipografia
 - **Headings**: Space Grotesk (Google Fonts)

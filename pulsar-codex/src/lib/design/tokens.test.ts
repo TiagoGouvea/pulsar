@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { colors, fontFamily, fontSize, screens, spacing } from './tokens';
+import { borderRadius, colors, fontFamily, fontSize, screens, spacing } from './tokens';
 
 const HEX_RE = /^#[0-9a-fA-F]{6}$/;
 
@@ -15,6 +15,13 @@ describe('design tokens', () => {
     for (const value of Object.values(colors)) {
       expect(value).toMatch(HEX_RE);
     }
+  });
+
+  it('carries the semantic warning and tonal tokens from the official design', () => {
+    expect(colors.warning).toBe('#f59e0b');
+    expect(colors.surfaceTint).toBe('#732ee4');
+    expect(colors.inversePrimary).toBe('#d2bbff');
+    expect(borderRadius).toMatchObject({ sm: '0.5rem', md: '1.5rem' });
   });
 
   it('provides the spacing scale aligned to the mobile gutter', () => {

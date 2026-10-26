@@ -1,52 +1,37 @@
 {
   "taskId": "task-001",
   "outcome": "ready_for_verification",
-  "summary": "Scaffold, design system e base mobile-only concluídos e verificados. Bloco de verificação corrigiu falhas reais: tema Tailwind v4 não era gerado (faltava @config no CSS), app ficava em branco (AppShell com <Link> fora do router), suite de testes inexistente (agora 12 unitários + 5 E2E de reflow), .eslintignore obsoleto, risco de overflow horizontal (100vw) e .gitignore que impedia versionar yarn.lock e configs de build. Comandos do harness executam: yarn lint, yarn test, yarn build, yarn test:e2e.",
+  "summary": "Scaffold, design system e base mobile-only do Pulsar concluídos e reverificados neste bloco. Stack React 19 + TypeScript 5.8 + Vite 6 + Firebase 11 + Tailwind CSS 4 (via @tailwindcss/postcss), com Vitest (jsdom) e Playwright (5 projetos de navegador). Interface pt-BR mobile-first com alvos de 390px e 430px; telas largas só refluem (largura fluida, blocos empilham, sem navegação/recursos exclusivos de desktop). Neste ciclo: fechadas lacunas de fidelidade com o design oficial (tokens warning/surface-tint/inverse-primary e raios sm/md do front matter, algarismos tabulares em .stat-display, .input-field consumindo token de raio, remoção de chave duplicada no tailwind.config.ts), instalados os navegadores firefox/webkit e documentada a variável PORT para E2E. Suíte completa verde: lint 0 avisos, 13 testes unitários, tsc + vite build, 25/25 E2E em chromium/firefox/webkit/Pixel 7/iPhone 15.",
   "changedFiles": [
-    "package.json",
-    "yarn.lock",
-    ".gitignore",
-    "index.html",
-    "vite.config.ts",
-    "vitest.config.ts",
-    "playwright.config.ts",
+    "src/lib/design/tokens.ts",
     "tailwind.config.ts",
-    "eslint.config.js",
-    ".eslintignore (removido)",
-    "src/main.tsx",
     "src/styles/globals.css",
-    "tests/setup.ts",
     "src/lib/design/tokens.test.ts",
-    "src/components/ui/Button.test.tsx",
-    "src/components/layout/AppShell.test.tsx",
-    "tests/e2e/mobile-reflow.spec.ts",
-    "HARNESS_COMMANDS.md",
+    "docs/DECISIONS.md",
     "docs/IMPLEMENTATION-STATUS.md",
-    "Fundação já existente deste bloco: src/components/ui/*, src/components/layout/*, src/pages/*, src/lib/firebase/*, src/lib/design/tokens.ts, src/routes.tsx, docs/DECISIONS.md"
+    "HARNESS_COMMANDS.md",
+    ".task-001-result.json"
   ],
   "claimedChecks": [
     "yarn lint: PASS (ESLint 9 flat config, 0 erros/warnings)",
-    "yarn test: PASS (Vitest, 3 arquivos, 12 testes)",
+    "yarn test: PASS (Vitest, 3 arquivos, 13 testes)",
     "yarn build: PASS (tsc sem erros + vite build ok)",
-    "yarn test:e2e (chromium): PASS (5 testes: sem overflow horizontal em 390px, 430px e 1440px; header operável por toque; sem navegação exclusiva de desktop)",
-    "Verificação de credenciais: .env e secrets/ ignorados pelo Git, não versionados"
+    "PORT=3001 yarn test:e2e: PASS (25/25 em chromium, firefox, webkit, Mobile Chrome/Pixel 7, Mobile Safari/iPhone 15: sem overflow horizontal em 390px, 430px e 1440px; header operável por toque; sem chrome exclusivo de desktop)",
+    "Credenciais não versionadas: .env e secrets/ ignorados pelo Git (git check-ignore confirma)"
   ],
   "decisions": [
-    "Stack: React 19 + TypeScript 5.8 + Vite 6 + Firebase 11 + Tailwind CSS 4 (via @tailwindcss/postcss)",
-    "Tailwind v4: tema carregado de tailwind.config.ts via @config em globals.css; utilitários do design oficial confirmados no CSS de build (bg-primary #630ed4, px-gutter 1rem, font Geist/Space Grotesk)",
-    "Mobile-first: alvos 390px e 430px (screens mobile/mobile-lg); em telas largas o conteúdo usa largura fluida e empilha, sem navegação ou recurso exclusivo de desktop",
-    "AppShell renderizado apenas pelo router (routes.tsx); Header com <Link> permanece dentro do contexto do router",
-    "Testes: Vitest (jsdom, setup com stubs de matchMedia/ResizeObserver) + Playwright (chromium com dev server próprio)",
-    "Porta do dev server configurável via PORT com padrão 3000 (conflito com processo externo na 3000 neste ambiente)",
-    "Lockfile e configs de build/teste versionados para instalação determinística; .env, .env.* e secrets/ permanecem fora do Git",
-    "ESLint 9: ignores no flat config; .eslintignore removido"
+    "Front matter do design/pulsar_bio_analytics/DESIGN.md é a fonte canônica dos tokens; cores nomeadas apenas na narrativa entram como tokens semânticos aditivos (ex.: warning #f59e0b)",
+    "Algarismos tabulares (font-variant-numeric: tabular-nums) aplicados a .stat-display conforme a regra de Tabular Figures do design",
+    "Raios sm (0.5rem) e md (1.5rem) do front matter expostos como tokens; .input-field consome --border-radius-sm em vez de valor fixo",
+    "E2E: PORT=3001 evita colisão com servidor externo na porta 3000 deste ambiente; navegadores firefox/webkit instalados via yarn playwright install",
+    "Manutenção das decisões anteriores do bloco (pipe Tailwind v4 via @config, AppShell só dentro do router, lockfile versionado, .env/secrets fora do Git)"
   ],
   "blockers": [],
   "suggestedFollowUps": [
     "Task-002: Security Rules do Firestore e estado do usuário",
-    "Task-002: Componentes de registro (Fatores/Resultados) reutilizando Button/Input/Chip",
+    "Task-002: Componentes de registro (Fatores/Resultados) reutilizando Button/Input/Chip/Toggle",
     "Task-003: Motor estatístico determinístico e dashboard de insights",
-    "Ampliar E2E para fluxo completo de onboarding e novos projetos mobile (Pixel 7 / iPhone 15)",
-    "Avaliar movimentação dos tokens de tipografia duplicados entre index.html e globals.css para fonte única de verdade"
+    "Ampliar E2E para o fluxo completo de onboarding e novos projetos mobile (Pixel 7 / iPhone 15)",
+    "Avaliar unificar os tokens de tipografia duplicados entre index.html e globals.css em fonte única de verdade"
   ]
 }
