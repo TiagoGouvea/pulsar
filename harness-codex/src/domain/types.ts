@@ -83,7 +83,7 @@ export interface ExecutionRequest {
 
 export interface ExecutionResult {
   taskId: string;
-  outcome: "ready_for_verification" | "blocked" | "failed";
+  outcome: "ready_for_verification" | "changes_requested" | "blocked" | "failed";
   summary: string;
   changedFiles: string[];
   claimedChecks: string[];

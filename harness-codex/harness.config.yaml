@@ -41,6 +41,7 @@ execution:
   maxAttemptsPerTask: 3
   maxSameFailureCount: 2
   taskTimeoutMinutes: 30
+  reviewTimeoutMinutes: 4
   staleHeartbeatSeconds: 90
   humanGate: every_milestone
   allowProductionDeploy: false

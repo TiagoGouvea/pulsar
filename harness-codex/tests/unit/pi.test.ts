@@ -40,6 +40,18 @@ describe("contrato estruturado do Pi", () => {
     expect(() => extractResult(JSON.stringify({ ...result, taskId: "task-999" }), "task-001"))
       .toThrow(/taskId inesperado/);
   });
+
+  test("normaliza aliases de solicitação de alterações", () => {
+    expect(extractResult(JSON.stringify({ ...result, outcome: "needs_changes" }), "task-001").outcome)
+      .toBe("changes_requested");
+    expect(extractResult(JSON.stringify({ ...result, outcome: "revisions_requested" }), "task-001").outcome)
+      .toBe("changes_requested");
+  });
+
+  test("rejeita outcome fora do contrato", () => {
+    expect(() => extractResult(JSON.stringify({ ...result, outcome: "talvez" }), "task-001"))
+      .toThrow(/outcome inesperado/);
+  });
 });
 
 describe("protocolo local do Pi", () => {

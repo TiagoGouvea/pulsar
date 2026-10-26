@@ -13,6 +13,12 @@ Background grava `controller.log` na pasta da run. Fechar o terminal não depend
 
 Bloqueios ficam no estado/eventos com causa. Corrija configuração ou dependência e use `resume`. Não apague `state.sqlite` para destravar: isso perde auditoria e reservas incertas.
 
+O índice de sucesso técnico por modelo fica em `model-performance.md`, `.json` e `.csv` dentro da pasta da run. Para atualizá-lo manualmente:
+
+```bash
+yarn harness models performance --config harness.config.yaml --run <runId>
+```
+
 O feedback humano é importado explicitamente e versionado. Editar silenciosamente `human-review.md` não aprova nada.
 
 ## Branch por etapa

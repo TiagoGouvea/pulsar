@@ -14,6 +14,104 @@ function csvValue(value: unknown): string {
   return `"${normalized.replaceAll('"', '""')}"`;
 }
 
+function textValue(value: unknown, fallback = "unknown"): string {
+  return typeof value === "string" || typeof value === "number" || typeof value === "bigint"
+    ? String(value)
+    : fallback;
+}
+
+export interface ModelPerformance {
+  alias: string;
+  provider: string;
+  modelId: string;
+  roles: string[];
+  calls: number;
+  technicalSuccesses: number;
+  technicalFailures: number;
+  incompleteCalls: number;
+  readyResults: number;
+  changesRequested: number;
+  blockedResults: number;
+  technicalSuccessRatePercent: number;
+  confirmedMicros: string;
+  uncertainMicros: string;
+}
+
+export function summarizeModelPerformance(calls: Record<string, unknown>[]): ModelPerformance[] {
+  const groups = new Map<string, Omit<ModelPerformance, "technicalSuccessRatePercent" | "roles"> & { roles: Set<string> }>();
+  for (const call of calls) {
+    const modelId = textValue(call.model_id);
+    const alias = textValue(call.alias, modelId);
+    const provider = textValue(call.provider);
+    const key = `${alias}\u0000${provider}\u0000${modelId}`;
+    const group = groups.get(key) ?? {
+      alias, provider, modelId, roles: new Set<string>(), calls: 0, technicalSuccesses: 0,
+      technicalFailures: 0, incompleteCalls: 0, readyResults: 0, changesRequested: 0,
+      blockedResults: 0, confirmedMicros: "0", uncertainMicros: "0",
+    };
+    group.calls += 1;
+    group.roles.add(textValue(call.role));
+    group.confirmedMicros = String(BigInt(group.confirmedMicros) + BigInt(Number(call.reported_micros ?? 0)));
+    group.uncertainMicros = String(BigInt(group.uncertainMicros) + BigInt(Number(call.uncertain_micros ?? 0)));
+    try {
+      if (typeof call.result_json !== "string") throw new Error("missing result");
+      const result = JSON.parse(call.result_json) as { outcome?: unknown; blockers?: unknown };
+      const blockers = Array.isArray(result.blockers) ? result.blockers : [];
+      if (result.outcome === "failed" && blockers.includes("pi_execution_failed")) {
+        group.technicalFailures += 1;
+      } else {
+        group.technicalSuccesses += 1;
+        if (result.outcome === "ready_for_verification") group.readyResults += 1;
+        else if (["changes_requested", "needs_changes", "revisions_requested"].includes(String(result.outcome))) group.changesRequested += 1;
+        else if (result.outcome === "blocked" || result.outcome === "failed") group.blockedResults += 1;
+      }
+    } catch {
+      group.incompleteCalls += 1;
+    }
+    groups.set(key, group);
+  }
+  return [...groups.values()].map((group) => ({
+    ...group,
+    roles: [...group.roles].sort(),
+    technicalSuccessRatePercent: group.calls === 0 ? 0 : Number(((group.technicalSuccesses / group.calls) * 100).toFixed(2)),
+  })).sort((left, right) => left.alias.localeCompare(right.alias));
+}
+
+export async function writeModelPerformanceReport(config: HarnessConfig, store: StateStore, runId: string): Promise<string> {
+  const calls = store.all<Record<string, unknown>>(
+    `SELECT s.model_key AS alias, s.role, pc.provider, pc.model_id, pc.reported_micros, pc.uncertain_micros, a.result_json
+     FROM provider_calls pc
+     JOIN attempts a ON a.id=pc.attempt_id
+     LEFT JOIN sessions s ON s.attempt_id=a.id
+     WHERE a.run_id=? ORDER BY pc.started_at`,
+    runId,
+  );
+  const performance = summarizeModelPerformance(calls);
+  const directory = runDirectory(config, runId);
+  await mkdir(directory, { recursive: true });
+  const output = path.join(directory, "model-performance.md");
+  const markdown = [
+    "# Desempenho dos modelos", "", `Run: ${runId}`, "",
+    "Sucesso técnico significa que o modelo concluiu a sessão e entregou uma resposta estruturada; não equivale à aprovação final da tarefa.", "",
+    "| Modelo | Papéis | Chamadas | Sucessos técnicos | Falhas técnicas | Incompletas | Índice | Prontos | Alterações |",
+    "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+    ...performance.map((item) => `| ${item.alias} | ${item.roles.join(", ")} | ${item.calls} | ${item.technicalSuccesses} | ${item.technicalFailures} | ${item.incompleteCalls} | ${item.technicalSuccessRatePercent}% | ${item.readyResults} | ${item.changesRequested} |`),
+    "",
+  ].join("\n");
+  await writeFile(output, markdown, { mode: 0o600 });
+  await writeJson(path.join(directory, "model-performance.json"), { runId, models: performance });
+  const csv = [
+    "alias,provider,model_id,roles,calls,technical_successes,technical_failures,incomplete_calls,technical_success_rate_percent,ready_results,changes_requested,blocked_results,confirmed_micros,uncertain_micros",
+    ...performance.map((item) => [
+      item.alias, item.provider, item.modelId, item.roles.join("|"), item.calls, item.technicalSuccesses,
+      item.technicalFailures, item.incompleteCalls, item.technicalSuccessRatePercent, item.readyResults,
+      item.changesRequested, item.blockedResults, item.confirmedMicros, item.uncertainMicros,
+    ].map(csvValue).join(",")),
+  ].join("\n");
+  await writeFile(path.join(directory, "model-performance.csv"), `${csv}\n`, { mode: 0o600 });
+  return output;
+}
+
 export async function writePlan(config: HarnessConfig, store: StateStore, runId: string): Promise<void> {
   const requirements = store.listRequirements(runId);
   const tasks = store.listTasks(runId);
@@ -66,6 +164,7 @@ export async function writeBudgetReport(config: HarnessConfig, store: StateStore
   const snapshot = ledger.snapshot(runId);
   const milestones = store.listMilestones(runId).map((item) => ({ id: String(item.id), snapshot: ledger.milestoneSnapshot(runId, String(item.id)) }));
   const calls = store.all<Record<string, unknown>>("SELECT provider, model_id, modality, state, input_tokens, output_tokens, reported_micros, uncertain_micros FROM provider_calls WHERE attempt_id IN (SELECT id FROM attempts WHERE run_id=?)", runId);
+  await writeModelPerformanceReport(config, store, runId);
   const markdown = [
     "# Orçamento", "", `Run: ${runId}`, "",
     `- Limite: ${snapshot.limitMicros == null ? "não definido (chamadas pagas bloqueadas)" : `USD ${formatMicros(snapshot.limitMicros)}`}`,

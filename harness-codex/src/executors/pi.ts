@@ -14,6 +14,11 @@ import { nowUtc, safeError, writeJson } from "../utils/core.js";
 import type { Executor } from "./types.js";
 
 const resultKeys = ["taskId", "outcome", "summary", "changedFiles", "claimedChecks", "decisions", "blockers", "suggestedFollowUps"];
+const resultOutcomes = new Set(["ready_for_verification", "changes_requested", "blocked", "failed"]);
+const outcomeAliases = new Map([
+  ["needs_changes", "changes_requested"],
+  ["revisions_requested", "changes_requested"],
+]);
 const MAX_RAW_RESPONSE_CHARS = 64_000;
 
 export function localApiFor(candidate: ModelCandidate): "openai-completions" | "openai-responses" {
@@ -96,6 +101,11 @@ export function extractResult(
   }
   if (!acceptedTaskIds.includes(parsed.taskId)) {
     throw new Error(`Resultado do Pi retornou taskId inesperado: ${parsed.taskId}.`);
+  }
+  if (typeof parsed.outcome !== "string") throw new Error("Resultado do Pi retornou outcome inválido.");
+  parsed.outcome = outcomeAliases.get(parsed.outcome) ?? parsed.outcome;
+  if (!resultOutcomes.has(parsed.outcome as string)) {
+    throw new Error(`Resultado do Pi retornou outcome inesperado: ${String(parsed.outcome)}.`);
   }
   parsed.taskId = taskId;
   return parsed as unknown as ExecutionResult;

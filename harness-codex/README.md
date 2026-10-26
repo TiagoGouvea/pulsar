@@ -20,6 +20,7 @@ yarn harness run --config harness.config.yaml
 # Monitoramento e controle
 yarn harness status --config harness.config.yaml --run <runId>
 yarn harness diagnostics --config harness.config.yaml --run <runId>
+yarn harness models performance --config harness.config.yaml --run <runId>
 yarn harness dashboard --config harness.config.yaml --run <runId>
 yarn harness pause --config harness.config.yaml --run <runId>
 yarn harness resume --config harness.config.yaml --run <runId>

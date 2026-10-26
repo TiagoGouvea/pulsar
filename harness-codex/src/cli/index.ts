@@ -11,7 +11,7 @@ import { Orchestrator } from "../orchestrator/controller.js";
 import { doctor, preflight, writePreflightReport } from "../preflight/doctor.js";
 import { probeCandidate } from "../providers/probes.js";
 import { loadLmStudioModel, unloadLmStudioModels } from "../providers/lmstudio.js";
-import { writeBudgetReport, writeFinalReport } from "../reports/generator.js";
+import { writeBudgetReport, writeFinalReport, writeModelPerformanceReport } from "../reports/generator.js";
 import { StateStore } from "../state/store.js";
 import { createId, ensureDirectory, nowUtc, safeError } from "../utils/core.js";
 import { captureVisualEvidence } from "../verification/visual.js";
@@ -82,6 +82,13 @@ models.command("unload").description("Descarrega modelos locais explicitamente")
     const result = await unloadLmStudioModels(await loadConfig(options.config));
     if (result.exitCode !== 0) throw new Error(result.stderr || result.stdout);
     console.log(result.stdout || "Modelos descarregados.");
+  });
+models.command("performance").description("Gera o índice de sucesso técnico por modelo")
+  .requiredOption("--config <path>").requiredOption("--run <id>")
+  .action(async (options: { config: string; run: string }) => {
+    const config = await loadConfig(options.config);
+    const store = new StateStore(config.storage.root);
+    try { console.log(await writeModelPerformanceReport(config, store, options.run)); } finally { store.close(); }
   });
 
 program.command("plan").description("Extrai requisitos e cria o plano rastreável")

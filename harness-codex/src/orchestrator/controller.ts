@@ -41,6 +41,25 @@ export function consumesTaskAttempt(row: Record<string, unknown>): boolean {
   }
 }
 
+export function isTechnicalExecutionFailure(row: Record<string, unknown>): boolean {
+  if (typeof row.result_json !== "string") return false;
+  try {
+    const result = JSON.parse(row.result_json) as ExecutionResult;
+    return result.outcome === "failed" && result.blockers.includes("pi_execution_failed");
+  } catch {
+    return true;
+  }
+}
+
+export function countCurrentReviewFailures(attempts: Record<string, unknown>[]): number {
+  let failures = 0;
+  for (const attempt of attempts) {
+    if (isTechnicalExecutionFailure(attempt)) failures += 1;
+    else failures = 0;
+  }
+  return failures;
+}
+
 export class Orchestrator {
   readonly store: StateStore;
   private readonly catalog: ModelCatalog;
@@ -347,6 +366,14 @@ export class Orchestrator {
     }
   }
 
+  private currentReviewFailures(runId: string, reviewTaskId: string): number {
+    const attempts = this.store.all<Record<string, unknown>>(
+      "SELECT result_json FROM attempts WHERE run_id=? AND task_id=? AND result_json IS NOT NULL ORDER BY started_at, number",
+      runId, reviewTaskId,
+    );
+    return countCurrentReviewFailures(attempts);
+  }
+
   private applyReviewDecision(runId: string, taskId: string, decision: ReviewDecision): boolean {
     if (decision === "passed") {
       this.store.setTaskState(runId, taskId, "passed");
@@ -453,10 +480,11 @@ export class Orchestrator {
   }
 
   private finishProviderCall(callId: string, result: ExecutionResult, uncertain: boolean, estimatedMicros: bigint, actualMicros: bigint): void {
+    const technicalFailure = result.outcome === "failed" && result.blockers.includes("pi_execution_failed");
     this.store.run(
       `UPDATE provider_calls SET state=?, provider_request_id=?, input_tokens=?, output_tokens=?, cached_tokens=?,
        reasoning_tokens=?, reported_micros=?, uncertain_micros=?, finished_at=? WHERE id=?`,
-      uncertain ? "uncertain" : result.outcome === "ready_for_verification" ? "completed" : "failed",
+      uncertain ? "uncertain" : technicalFailure ? "failed" : "completed",
       result.usage?.providerRequestId ?? null, result.usage?.inputTokens ?? null, result.usage?.outputTokens ?? null,
       result.usage?.cachedTokens ?? null, result.usage?.reasoningTokens ?? null, uncertain ? null : actualMicros,
       uncertain ? estimatedMicros : null, nowUtc(), callId,
@@ -487,17 +515,7 @@ export class Orchestrator {
       state: "running",
     };
     const declaredChangedFiles = this.implementerContext(runId, task)?.result.changedFiles ?? [];
-    const priorCompletedFailures = this.store.all<Record<string, unknown>>(
-      "SELECT result_json FROM attempts WHERE run_id=? AND task_id=? AND status='failed' AND result_json IS NOT NULL ORDER BY started_at",
-      runId, reviewTask.id,
-    ).filter((row) => {
-      try {
-        const result = JSON.parse(String(row.result_json)) as ExecutionResult;
-        return result.outcome === "failed" && result.blockers.includes("pi_execution_failed");
-      } catch {
-        return true;
-      }
-    }).length;
+    const priorCompletedFailures = this.currentReviewFailures(runId, reviewTask.id);
     if (priorCompletedFailures >= this.config.review.maxAttempts) {
       this.store.event(runId, "task.review_attempts_exhausted", "task", task.id, { attempts: priorCompletedFailures });
       return "retryable_failure";
@@ -514,6 +532,7 @@ export class Orchestrator {
       "Concentre a inspeção nesses arquivos e nas configurações diretamente relacionadas. Faça no máximo 8 chamadas de leitura e finalize a resposta.",
       "Use apenas ferramentas de leitura. Não considere a autoavaliação do implementador como evidência.",
       `Responda somente JSON. O campo taskId deve ser exatamente "${reviewTask.id}".`,
+      "Use outcome ready_for_verification para aprovação, changes_requested quando houver ajustes, ou failed somente se a revisão não puder ser concluída.",
       "Inclua taskId, outcome, summary, changedFiles, claimedChecks, decisions, blockers e suggestedFollowUps.",
     ].join("\n\n");
     const estimated = this.ledger.estimate(candidate, Math.ceil(prompt.length / 4), candidate.maxOutputTokens);
@@ -582,10 +601,7 @@ export class Orchestrator {
     for (let fallback = 0; fallback < this.config.review.maxAttempts; fallback += 1) {
       decision = await this.reviewTask(runId, task, implementer, revision);
       if (decision !== "retryable_failure") return decision;
-      const failures = this.store.all<Record<string, unknown>>(
-        "SELECT id FROM attempts WHERE run_id=? AND task_id=? AND status='failed' AND result_json IS NOT NULL",
-        runId, `${task.id}-review`,
-      ).length;
+      const failures = this.currentReviewFailures(runId, `${task.id}-review`);
       if (failures >= this.config.review.maxAttempts) return decision;
       this.store.event(runId, "task.review_fallback", "task", task.id, {
         completedFailures: failures,
