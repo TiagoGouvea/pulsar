@@ -5,16 +5,16 @@
       - implement
       - implement_hard
     tags: []
-  rule: "G4 (prioritário): Remova --coverage do script package.json (vitest 3.x já
-    ativa coverage via config block). G10: Aumente touch targets para ≥44px —
-    troque min-w-0 por min-w-[44px] nos radios do Slider, passe o switch de h-7
-    para h-11 e o input de h-9/py-2 para h-11."
+  rule: "Cobertura (G4): não passe --coverage no script do package.json se a
+    config do vitest já ativa coverage, para não duplicar a configuração. Touch
+    targets (G10): todo controle interativo (radios, switch, input) deve ter
+    pelo menos 44px, por exemplo min-w-[44px] e h-11."
   evidence:
     - evt-24
   added: 2026-10-25
-  hits: 13
-  helped: 7
-  helpedRate: 0.5384615384615384
+  hits: 15
+  helped: 8
+  helpedRate: 0.5333333333333333
   status: active
 - id: L-002
   scope:
@@ -23,14 +23,54 @@
       - implement_hard
     tags:
       - ui
-  rule: Inicializadores devem rodar Prettier --write nos arquivos que criam antes
-    de commitá-los. Para destravar esta feature, o orquestrador deve executar
-    format:fix nos arquivos protegidos ou relaxar temporariamente a proteção
-    para correção de formatação.
+  rule: Rode `yarn format:fix` (Prettier --write) nos arquivos que você criar ou
+    alterar antes de entregar. Isso evita falhas em format:check, como a G2 de
+    evt-33.
   evidence:
     - evt-32
   added: 2026-10-25
   hits: 5
   helped: 3
   helpedRate: 0.6
+  status: active
+- id: L-003
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - gates
+  rule: Antes de terminar, rode localmente os gates que costumam falhar
+    (format:check, lint, typecheck, test:unit, coverage). Falhas G2/G4 em
+    evt-25, evt-33 e evt-53 vieram de formatação ou configuração de coverage que
+    um yarn format:fix e um yarn test:unit teriam pego.
+  evidence:
+    - evt-25
+    - evt-33
+    - evt-53
+  added: 2026-10-26
+  hits: 0
+  helped: 0
+  helpedRate: null
+  status: active
+- id: L-004
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - review
+  rule: Implementações com deepseek e sonnet foram rejeitadas na revisão de código
+    em várias tentativas (evt-40, evt-45, evt-42, evt-58). Releia os critérios
+    de aceite da feature item por item e confira cada um no código antes de
+    entregar. Isso vale em especial para features de UI e de modo privado.
+  evidence:
+    - evt-40
+    - evt-42
+    - evt-45
+    - evt-58
+  added: 2026-10-26
+  hits: 0
+  helped: 0
+  helpedRate: null
   status: active

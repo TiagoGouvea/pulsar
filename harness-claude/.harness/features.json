@@ -2589,10 +2589,29 @@
       ],
       "difficulty": "hard",
       "dependsOn": [],
-      "status": "in_progress",
-      "attempts": 0,
-      "costUsd": 0,
-      "history": []
+      "status": "passing",
+      "attempts": 2,
+      "costUsd": 1.7135922999999997,
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement_hard",
+          "workerId": "sonnet",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "eventId": "evt-58",
+          "ts": "2026-10-26T10:45:21.587Z"
+        },
+        {
+          "attempt": 2,
+          "role": "implement_hard",
+          "workerId": "opus",
+          "outcome": "success",
+          "failedGates": [],
+          "eventId": "evt-60",
+          "ts": "2026-10-26T10:52:32.675Z"
+        }
+      ]
     }
   ]
 }

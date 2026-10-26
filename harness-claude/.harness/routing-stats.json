@@ -70,10 +70,10 @@
     "falhasPorGate": {}
   },
   "codex-mid|review_code|*": {
-    "tentativas": 9,
-    "sucessos": 9,
-    "custoMedio": 0.4621311555555556,
-    "duracaoMedia": 34557.555555555555,
+    "tentativas": 11,
+    "sucessos": 11,
+    "custoMedio": 0.3927431454545455,
+    "duracaoMedia": 31479.909090909092,
     "falhasPorGate": {}
   },
   "gemini-pro|review_code|*": {
@@ -115,10 +115,10 @@
     "falhasPorGate": {}
   },
   "opus|implement_hard|*": {
-    "tentativas": 4,
-    "sucessos": 3,
-    "custoMedio": 0.3382504,
-    "duracaoMedia": 76520,
+    "tentativas": 5,
+    "sucessos": 4,
+    "custoMedio": 0.5559181999999999,
+    "duracaoMedia": 134138,
     "falhasPorGate": {}
   },
   "sonnet|test_writer|ui": {
@@ -317,17 +317,17 @@
     "falhasPorGate": {}
   },
   "gemini-flash-or|review_ui|*": {
-    "tentativas": 1,
-    "sucessos": 1,
-    "custoMedio": 0.027189924999999997,
-    "duracaoMedia": 38878,
+    "tentativas": 2,
+    "sucessos": 2,
+    "custoMedio": 0.0268078875,
+    "duracaoMedia": 24082.5,
     "falhasPorGate": {}
   },
   "gemini-flash-or|review_ui|ui": {
-    "tentativas": 1,
-    "sucessos": 1,
-    "custoMedio": 0.027189924999999997,
-    "duracaoMedia": 38878,
+    "tentativas": 2,
+    "sucessos": 2,
+    "custoMedio": 0.0268078875,
+    "duracaoMedia": 24082.5,
     "falhasPorGate": {}
   },
   "gemini-flash-or|review_ui|privacy-mode": {
@@ -335,6 +335,41 @@
     "sucessos": 1,
     "custoMedio": 0.027189924999999997,
     "duracaoMedia": 38878,
+    "falhasPorGate": {}
+  },
+  "codex-mid|review_code|regression": {
+    "tentativas": 2,
+    "sucessos": 2,
+    "custoMedio": 0.08049709999999999,
+    "duracaoMedia": 17630.5,
+    "falhasPorGate": {}
+  },
+  "sonnet|implement_hard|*": {
+    "tentativas": 1,
+    "sucessos": 0,
+    "custoMedio": 0.1260087,
+    "duracaoMedia": 32217,
+    "falhasPorGate": {}
+  },
+  "sonnet|implement_hard|regression": {
+    "tentativas": 1,
+    "sucessos": 0,
+    "custoMedio": 0.1260087,
+    "duracaoMedia": 32217,
+    "falhasPorGate": {}
+  },
+  "opus|implement_hard|regression": {
+    "tentativas": 1,
+    "sucessos": 1,
+    "custoMedio": 1.4265893999999997,
+    "duracaoMedia": 364610,
+    "falhasPorGate": {}
+  },
+  "sonnet|retro|*": {
+    "tentativas": 1,
+    "sucessos": 1,
+    "custoMedio": 0.045774800000000004,
+    "duracaoMedia": 19433,
     "falhasPorGate": {}
   }
 }

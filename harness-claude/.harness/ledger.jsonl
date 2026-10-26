@@ -89,3 +89,10 @@
 {"ts":"2026-10-25T18:13:51.338Z","workerId":"opus","provider":"anthropic","role":"implement_hard","featureId":"F-0.07","stage":0,"tokensIn":24722,"tokensOut":2794,"costUsd":0.23201040000000003,"billing":"api"}
 {"ts":"2026-10-25T18:15:13.701Z","workerId":"deepseek","provider":"openrouter","role":"review_code","featureId":"F-0.07","stage":0,"tokensIn":10830,"tokensOut":5051,"costUsd":0.01007471832,"billing":"api"}
 {"ts":"2026-10-25T18:16:06.115Z","workerId":"gemini-flash-or","provider":"openrouter","role":"review_ui","featureId":"F-0.07","stage":0,"tokensIn":96402,"tokensOut":542,"costUsd":0.027189924999999997,"billing":"api"}
+{"ts":"2026-10-26T10:44:28.867Z","workerId":"sonnet","provider":"anthropic","role":"implement_hard","featureId":"F-0.fix-1","stage":0,"tokensIn":26893,"tokensOut":3776,"costUsd":0.1260087,"billing":"api"}
+{"ts":"2026-10-26T10:45:21.575Z","workerId":"codex-mid","provider":"openai","role":"review_code","featureId":"F-0.fix-1","stage":0,"tokensIn":15172,"tokensOut":172,"costUsd":0.032408,"billing":"api"}
+{"ts":"2026-10-26T10:51:26.249Z","workerId":"opus","provider":"anthropic","role":"implement_hard","featureId":"F-0.fix-1","stage":0,"tokensIn":68114,"tokensOut":24154,"costUsd":1.4265893999999997,"billing":"api"}
+{"ts":"2026-10-26T10:52:32.662Z","workerId":"codex-mid","provider":"openai","role":"review_code","featureId":"F-0.fix-1","stage":0,"tokensIn":35097,"tokensOut":2434,"costUsd":0.12858619999999998,"billing":"api"}
+{"ts":"2026-10-26T10:54:49.023Z","workerId":"gemini-flash-or","provider":"openrouter","role":"review_ui","stage":0,"tokensIn":49325,"tokensOut":695,"costUsd":0.01914385,"billing":"api"}
+{"ts":"2026-10-26T10:54:58.359Z","workerId":"gemini-flash-or","provider":"openrouter","role":"review_ui","stage":0,"tokensIn":27238,"tokensOut":315,"costUsd":0.007281999999999999,"billing":"api"}
+{"ts":"2026-10-26T10:55:17.799Z","workerId":"sonnet","provider":"anthropic","role":"retro","stage":0,"tokensIn":10816,"tokensOut":1759,"costUsd":0.045774800000000004,"billing":"api"}

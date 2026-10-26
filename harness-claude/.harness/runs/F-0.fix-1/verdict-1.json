@@ -1,0 +1,16 @@
+[
+  {
+    "kind": "code",
+    "pass": false,
+    "score": 0,
+    "issues": [
+      {
+        "severidade": "blocker",
+        "arquivo": "N/A",
+        "descricao": "O gate obrigatório G12 (Lighthouse) foi pulado; portanto não há evidência de que a regressão de performance (41 < 85) foi corrigida.",
+        "sugestao": "Executar o Lighthouse na suíte completa e corrigir a causa até atingir o limite exigido."
+      }
+    ],
+    "workerId": "codex-mid"
+  }
+]
