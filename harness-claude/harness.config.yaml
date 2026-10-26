@@ -111,7 +111,7 @@ gates:
 browser:
   # servidor usado pelos gates de navegador (G8/G9/G10/G12) e screenshots; deve subir emuladores + seed
   serveCmd: "yarn e2e:serve"
-  baseUrl: "http://localhost:4173"
+  baseUrl: "http://localhost:4792"
   routesFile: e2e/routes.json      # criado pelo inicializador: [{ "path": "/", "name": "dashboard", "tags": ["ui"] }]
   readyTimeoutSec: 120
   sentinels: [ZQX_ENERGIA_7F3, ZQX_SONO_9K2, ZQX_FOCO_4M8, ZQX_OBS_NOTA_5T1]

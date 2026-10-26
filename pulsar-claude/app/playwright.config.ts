@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const baseURL = process.env.E2E_BASE_URL ?? 'http://localhost:4173';
+const baseURL = process.env.E2E_BASE_URL ?? 'http://localhost:4792';
 
 // `mobile` is the real target. `desktop` is only a smoke check: the mobile layout must stretch without breaking.
 export default defineConfig({
