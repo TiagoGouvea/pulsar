@@ -40,6 +40,30 @@ describe("controlador", () => {
     } finally { orchestrator.close(); }
   });
 
+  test("cria baseline estrutural ao retomar uma run legada com ajuste operacional", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "harness-legacy-input-"));
+    const config = await createTestConfig(root);
+    const planningOrchestrator = new Orchestrator(config);
+    const runId = await planningOrchestrator.plan();
+    planningOrchestrator.store.run(
+      "DELETE FROM input_versions WHERE run_id=? AND kind='planning_config'",
+      runId,
+    );
+    planningOrchestrator.close();
+
+    const resumedOrchestrator = new Orchestrator({
+      ...config,
+      execution: { ...config.execution, reviewTimeoutMinutes: 4 },
+    });
+    try {
+      await resumedOrchestrator.run(runId);
+
+      expect(resumedOrchestrator.store.getRun(runId)?.state).toBe("awaiting_human");
+      expect(resumedOrchestrator.store.listEvents(runId)
+        .some((event) => event.type === "inputs.planning_config_baselined")).toBe(true);
+    } finally { resumedOrchestrator.close(); }
+  });
+
   test("não aceita sucesso alegado quando verificador falha", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "harness-fail-"));
     const config = await createTestConfig(root, { testCommand: ["node", "-e", "process.exit(3)"] });

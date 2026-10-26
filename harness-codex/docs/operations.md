@@ -13,6 +13,8 @@ Background grava `controller.log` na pasta da run. Fechar o terminal não depend
 
 Bloqueios ficam no estado/eventos com causa. Corrija configuração ou dependência e use `resume`. Não apague `state.sqlite` para destravar: isso perde auditoria e reservas incertas.
 
+Alterações operacionais em timeout, orçamento, modelos e roteamento podem ser aplicadas entre retomadas. Mudanças nas especificações, etapas, workspace, perfil do projeto ou limite de tentativas por tarefa exigem um novo planejamento. O arquivo de configuração completo continua registrado para auditoria.
+
 O índice de sucesso técnico por modelo fica em `model-performance.md`, `.json` e `.csv` dentro da pasta da run. Para atualizá-lo manualmente:
 
 ```bash
