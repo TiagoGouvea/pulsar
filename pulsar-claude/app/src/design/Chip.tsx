@@ -1,5 +1,5 @@
 import type { ButtonHTMLAttributes } from 'react';
-import { Icon } from './Icon';
+import { Icon, type IconName } from './Icon';
 
 export type Tone = 'factor' | 'result' | 'neutral';
 
@@ -12,7 +12,7 @@ const selectedTone: Record<Tone, string> = {
 interface ChipProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   selected?: boolean;
   tone?: Tone;
-  icon?: string;
+  icon?: IconName;
 }
 
 // Pill toggle used for Sim/Não, ordinal options and quick picks. Selection is exposed via aria-pressed.

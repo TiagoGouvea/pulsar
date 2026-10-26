@@ -1,5 +1,5 @@
 import type { ButtonHTMLAttributes } from 'react';
-import { Icon } from './Icon';
+import { Icon, type IconName } from './Icon';
 
 export type ButtonVariant = 'primary' | 'factor' | 'neutral' | 'ghost' | 'danger';
 
@@ -14,7 +14,7 @@ const variants: Record<ButtonVariant, string> = {
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: 'md' | 'lg';
-  icon?: string;
+  icon?: IconName;
   fullWidth?: boolean;
 }
 

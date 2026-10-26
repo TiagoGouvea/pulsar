@@ -22,7 +22,9 @@ Leia antes de qualquer mudança: `../docs/Pulsar_Especificacao_Completa.md` (spe
 src/
   design/      tokens.css (CSS variables + @theme do Tailwind) e componentes base:
                Button, Chip, Slider, NumberInput, Toggle, Card, Sheet, EyeToggle (data-testid="eye-toggle"),
-               GroupBadge (Fator/Resultado), Icon (Material Symbols), IndicatorLabel. Exporte em design/index.ts.
+               GroupBadge (Fator/Resultado), Icon (Material Symbols em SVG; ícone novo: adicione o nome
+               em scripts/icons.ts e rode `yarn icons`, nunca importe a fonte de 3,6 MB), IndicatorLabel.
+               Exporte em design/index.ts.
   privacy/     PrivacyContext (estado global do olho) e label.ts (regra nome ↔ sigla).
   stats/       estatística pura (agregação, comparações, tendências, associações, seleção de cartões, templates).
   lib/         firebase.ts (init + emuladores), env.ts, utilitários genéricos.

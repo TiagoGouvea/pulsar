@@ -7,7 +7,6 @@
 @import 'tailwindcss';
 @import '@fontsource-variable/geist/wght.css';
 @import '@fontsource-variable/space-grotesk/wght.css';
-@import 'material-symbols/outlined.css';
 
 @theme {
   /* Colors (Material-style roles used by the mockups) */
