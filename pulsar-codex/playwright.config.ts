@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const PORT = Number(process.env.PORT) || 3000;
+const PORT = Number(process.env.E2E_PORT) || 3100;
+const BASE_URL = `http://127.0.0.1:${PORT}`;
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -10,7 +11,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
   use: {
-    baseURL: `http://localhost:${PORT}`,
+    baseURL: BASE_URL,
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
     video: 'retain-on-failure'
@@ -40,8 +41,8 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'yarn dev',
-    url: `http://localhost:${PORT}`,
+    command: `yarn dev --host 127.0.0.1 --port ${PORT} --strictPort`,
+    url: BASE_URL,
     reuseExistingServer: !process.env.CI
   }
 });

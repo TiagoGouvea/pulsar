@@ -202,6 +202,14 @@ program.command("diagnostics").description("Mostra o evento de bloqueio e a tent
       const blocker = typeof blockedEvent?.payload_json === "string"
         ? JSON.parse(blockedEvent.payload_json) as Record<string, unknown>
         : {};
+      if (blocker.cause === "milestone_verification_failed") {
+        const verifier = store.get<Record<string, unknown>>(
+          "SELECT verifier_id, status, exit_code, output_path, started_at, finished_at FROM verifier_runs WHERE run_id=? AND status='failed' ORDER BY started_at DESC LIMIT 1",
+          options.run,
+        );
+        console.log(JSON.stringify({ blocker, verifier: verifier ?? null }, null, 2));
+        return;
+      }
       const blockedTask = typeof blocker.taskId === "string" ? blocker.taskId : undefined;
       const taskId = options.task ?? blockedTask;
       const taskClause = taskId ? " AND (a.task_id=? OR a.task_id=?)" : "";
@@ -288,6 +296,8 @@ function printRunOutcome(store: StateStore, runId: string, state: string): void 
   const cause = typeof payload.cause === "string" ? payload.cause : "causa não informada";
   const task = typeof payload.taskId === "string" ? ` (${payload.taskId})` : "";
   console.log(`Bloqueio: ${cause}${task}`);
+  if (typeof payload.command === "string") console.log(`Comando: ${payload.command}`);
+  if (typeof payload.outputPath === "string") console.log(`Log: ${payload.outputPath}`);
   console.log(`Diagnóstico: yarn harness diagnostics --config harness.config.yaml --run ${runId}`);
 }
 

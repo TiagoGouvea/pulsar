@@ -92,10 +92,10 @@ Executa testes Playwright com configuração:
 - Screenshot em caso de falha
 - Video recording para debugging
 
-Quando a porta 3000 estiver ocupada, use:
+O E2E usa a porta isolada `3100`. Para substituí-la, use:
 
 ```bash
-PORT=3001 yarn test:e2e
+E2E_PORT=3101 yarn test:e2e
 ```
 
 Na primeira execução em uma máquina nova, instale os navegadores:
@@ -120,6 +120,14 @@ yarn lint:fix
 ```
 
 Executa lint com auto-fix automático.
+
+### 8. Verificação de tipos
+
+```bash
+yarn typecheck
+```
+
+Executa `tsc --noEmit` para validar os tipos sem gerar arquivos.
 
 ## Variáveis de Ambiente
 
@@ -195,14 +203,15 @@ Para ver todos os erros de tipo antes do build.
 ### Fluxo Recomendado
 
 1. `yarn install` - Instalar dependências
-2. `yarn lint` - Verificar código
-3. `yarn test` - Executar testes
-4. `yarn build` - Criar build de produção
+2. `yarn typecheck` - Verificar tipos
+3. `yarn lint` - Verificar código
+4. `yarn test` - Executar testes
+5. `yarn build` - Criar build de produção
 
 ### Comando de Pipeline Completo
 
 ```bash
-yarn install && yarn lint && yarn test && yarn build
+yarn install && yarn typecheck && yarn lint && yarn test && yarn build
 ```
 
 ## Notas Importantes

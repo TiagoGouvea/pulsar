@@ -122,6 +122,31 @@ describe("controlador", () => {
     } finally { orchestrator.close(); }
   });
 
+  test("registra o comando e o log que bloquearam a verificação da etapa", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "harness-milestone-fail-"));
+    const config = await createTestConfig(root);
+    const orchestrator = new Orchestrator({
+      ...config,
+      commands: { ...config.commands, typecheck: ["node", "-e", "process.exit(7)"] },
+    });
+    try {
+      const runId = await orchestrator.run();
+      const event = orchestrator.store.get<Record<string, unknown>>(
+        "SELECT payload_json FROM events WHERE run_id=? AND type='run.blocked' ORDER BY sequence DESC LIMIT 1",
+        runId,
+      );
+      const payload = JSON.parse(String(event?.payload_json)) as Record<string, unknown>;
+
+      expect(orchestrator.store.getRun(runId)?.state).toBe("blocked");
+      expect(payload).toMatchObject({
+        cause: "milestone_verification_failed",
+        command: "typecheck",
+        exitCode: 7,
+      });
+      expect(String(payload.outputPath)).toMatch(/typecheck\.log$/);
+    } finally { orchestrator.close(); }
+  });
+
   test("retoma na verificação sem repetir uma tentativa implementadora concluída", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "harness-recovery-"));
     const config = await createTestConfig(root);

@@ -645,8 +645,14 @@ export class Orchestrator {
     const revision = verification.revision;
     this.store.run("UPDATE runs SET revision=?, updated_at=? WHERE id=?", revision, nowUtc(), runId);
     if (!verification.passed) {
+      const failedCheck = verification.results.find((result) => result.status === "failed");
       this.store.setMilestoneState(runId, milestoneId, "changes_requested", revision);
-      this.store.setRunState(runId, "blocked", { cause: "milestone_verification_failed" });
+      this.store.setRunState(runId, "blocked", {
+        cause: "milestone_verification_failed",
+        command: failedCheck?.id ?? null,
+        exitCode: failedCheck?.exitCode ?? null,
+        outputPath: failedCheck?.outputPath ?? null,
+      });
       return runId;
     }
     if (this.config.execution.humanGate === "every_milestone" || (this.config.execution.humanGate === "final_only" && isFinal)) {
