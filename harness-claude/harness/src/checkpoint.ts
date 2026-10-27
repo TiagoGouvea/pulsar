@@ -177,7 +177,7 @@ export function resolveAnswer(duvidas: string, id: string, resposta: string) {
 export function parseApprovalFiles(aprovacao: string, duvidas: string): Approval {
   const status = aprovacao.match(/^Status:\s*(.+)$/im)?.[1]?.toLowerCase() ?? "";
   const ajustes = (aprovacao.split(/^##\s*Ajustes/im)[1] ?? "").split("\n").map((l) => l.match(/^\s*[-*]\s+(.+)$/)?.[1]?.trim()).filter((x): x is string => !!x);
-  const respostasDuvidas = [...duvidas.matchAll(/^###\s*(Q-\d+)\n\*\*Pergunta:\*\*\s*(.*)\n[\s\S]*?^Resposta:[ \t]*(.*)$/gm)]
+  const respostasDuvidas = [...duvidas.matchAll(/^###\s*(Q-\d+)\s*\n\s*\*\*Pergunta:\*\*\s*(.*)\n[\s\S]*?^Resposta:[ \t]*(.*)$/gm)]
     .filter((m) => m[3].trim()).map((m) => ({ id: m[1], pergunta: m[2], resposta: resolveAnswer(duvidas, m[1], m[3]) }));
   return { aprovado: /aprovad/.test(status) && !/ajuste/.test(status), ajustes, respostasDuvidas };
 }
