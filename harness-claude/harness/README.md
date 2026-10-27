@@ -10,7 +10,7 @@ Harness autônomo e multi-modelo que **constrói o app Pulsar** feature por feat
 ## Fluxo do humano
 
 ```
-doctor → smoke → start → (checkpoint etapa N) → testar preview → APROVACAO.md/DUVIDAS.md → approve → … → DONE
+doctor → smoke → start → (checkpoint etapa N) → testar preview → APROVACAO.md/DUVIDAS.md → approve → (trocar de branch) → resume → … → DONE
 ```
 
 ```bash
@@ -28,7 +28,7 @@ Ao fim de cada etapa o processo **termina** em `AWAITING_APPROVAL` e notifica o 
 3. Em `APROVACAO.md`, escreva `Status: aprovado` ou `Status: ajustes` com a lista de ajustes.
 4. `./harness/bin/harness approve` (mostra o resumo e pede confirmação y/n).
    - Ajustes viram features `F-N.adj-XX` na mesma etapa e o harness continua.
-   - Aprovado sem ajustes: segue para a etapa N+1 na branch em checkout. Merge para `main` e a branch da próxima etapa são com você (crie/troque a branch **antes** do `approve`).
+   - Aprovado sem ajustes: fecha a etapa N e para. Crie/troque para a branch da etapa N+1 e rode `resume` para começá-la. Merge para `main` é com você.
 
 | Comando | Faz |
 |---|---|

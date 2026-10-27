@@ -24,8 +24,9 @@ describe("orquestrador (adapter fake)", () => {
     for (const f of ["RELATORIO.md", "COMO-TESTAR.md", "DUVIDAS.md", "RISCOS.md", "APROVACAO.md"]) expect(existsSync(join(root, "checkpoints/etapa-0", f))).toBe(true);
     expect(readFileSync(join(root, "checkpoints/etapa-0/RELATORIO.md"), "utf8")).toContain("https://test--etapa.web.app");
     approveFile(root, 0, "Status: aprovado\n\n## Ajustes\n");
-    expect(await o.approve()).toBe("AWAITING_APPROVAL");
+    expect(await o.approve()).toBe("STAGE_RUNNING");   // approve does not start the next stage
     expect(loadState(ctx)!.stage).toBe(1);
+    expect(await o.resume()).toBe("AWAITING_APPROVAL");
     approveFile(root, 1, "Status: aprovado\n");
     expect(await o.approve()).toBe("DONE");
     expect(loadFeatures(ctx).features.every((f) => f.status === "passing")).toBe(true);

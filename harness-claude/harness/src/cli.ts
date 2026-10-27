@@ -14,7 +14,7 @@ const USAGE = `uso: harness <comando> [opções]
   start                                 INIT + loop até o primeiro checkpoint
   resume                                continua do estado atual
   status                                etapa, features, custo, próximo passo
-  approve [--yes]                       processa checkpoints/etapa-N/APROVACAO.md
+  approve [--yes]                       processa checkpoints/etapa-N/APROVACAO.md (aprovado: fecha a etapa; a próxima começa no resume)
   pause                                 pausa limpa após as tarefas atuais
   report                                custo e desempenho
   apply-proposal <id>                   aplica uma proposta de melhoria do harness

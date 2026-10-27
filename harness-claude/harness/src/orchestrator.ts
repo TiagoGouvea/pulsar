@@ -559,7 +559,8 @@ export class Orchestrator {
     Object.assign(this.state, { stage: next ?? s, stageFixRounds: 0, budgetAlerts: [] });
     this.set(next === undefined ? "DONE" : "STAGE_RUNNING");
     await g.commitPaths(ctx.root, [".harness", "checkpoints"], `chore(harness): etapa ${s} aprovada`).catch(() => null);
-    return this.run();
+    // the next stage starts only on `harness resume`, after the human switches to that stage's branch
+    return next === undefined ? this.run() : this.state.phase;
   }
 
   // ---------- learning ----------
