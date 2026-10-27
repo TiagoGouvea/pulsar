@@ -55,3 +55,31 @@
 - **Estado de dispensa do convite de salvar conta**: campos `saveAccountInviteDismissedAt` (timestamp|null) e `saveAccountInviteDismissedDayCount` (inteiro ≥ 0|null) em `users/{uid}`, validados pelas regras; reaparece quando os dias distintos com registro ≥ contagem salva + 7. Justificativa: estado no servidor sobrevive a troca de navegador após conversão e a regra fica testável sem relógio.
 - **Distribuição ordinal**: contagem por opção na ordem configurada (inclui opções com 0), denominador = dias com resposta na janela de 30 dias, moda com desempate pela ordem das opções; conta como resumo factual. Justificativa: spec 6.5.1 permite retratos/distribuições ordinais sem associação.
 - **Tendências só para Resultados**: Fatores nunca geram cartão de tendência (spec 6.2 "Tendência de um resultado"); ordinais e booleanos também não. Justificativa: leitura literal da spec; Fatores aparecem em retratos e associações.
+
+
+## Respostas do checkpoint da etapa 0
+
+- Q-1 (O que conta como 'alguns usos' para o convite de instalar a PWA?): N aberturas do app — 2 aberturas, repetir nos dias seguintes ao usar
+- Q-2 (O que é 'evidência nova material' para uma hipótese com dislike reaparecer?): >= 7 dias pareados a mais que a versão descartada ou inversão do sinal do efeito — >= 7 dias pareados a mais que a versão descartada ou inversão do sinal do efeito (padrão)
+- Q-3 (Com quais dias a comparação a partir do 2º dia é feita?): Média dos dias anteriores — Média dos dias anteriores; talvez 7 ou 10 dias
+- Q-4 (Como definir as duas janelas consecutivas de 7 dias das tendências?): hoje..hoje-6 vs. hoje-7..hoje-13 em dias corridos do localDate — hoje..hoje-6 vs. hoje-7..hoje-13 em dias corridos do localDate (padrão)
+- Q-5 (Tendências podem ser geradas para Fatores?): Não; só Resultados numéricos/escala (spec 6.2 'Tendência de um resultado') — Não; só Resultados numéricos/escala (spec 6.2 'Tendência de um resultado') (padrão)
+- Q-6 (Como ordenar os cartões elegíveis?): Razão efeito/limiar desc, depois dias pareados desc, depois hypothesisKey asc — Razão efeito/limiar desc, depois dias pareados desc, depois hypothesisKey asc (padrão)
+- Q-7 (Quais níveis de evidência rotular?): Só 'Descrição' e 'Possível associação'; sem 'sinal consistente' — Só 'Descrição' e 'Possível associação'; sem 'sinal consistente' (padrão)
+- Q-8 (O que o snapshot de like copia?): Tokens do texto, métricas, amostra, período e nome/sigla/emoji dos indicadores no momento; removível, nunca editável — Tokens do texto, métricas, amostra, período e nome/sigla/emoji dos indicadores no momento; removível, nunca editável (padrão)
+- Q-9 (Limites de tamanho de campos?): Sigla até 4 (exibida como digitada), nome 60, unidade 20, observação 500, opções ordinais 2-7 — Sigla até 4 (exibida como digitada), nome 60, unidade 20, observação 500, opções ordinais 2-7 (padrão)
+- Q-10 (Como representar 'sem resposta' em Sim/Não?): Tocar de novo na opção selecionada limpa a resposta e exclui o registro de hoje — Tocar de novo na opção selecionada limpa a resposta e exclui o registro de hoje (padrão)
+- Q-11 (Qual controle usar para escala?): Pílulas tocáveis até 11 valores; slider nativo acima disso — Pílulas tocáveis até 11 valores; slider nativo acima disso (padrão)
+- Q-12 (Como reordenar indicadores?): Botões subir/descer acessíveis — Botões subir/descer acessíveis (padrão)
+- Q-13 (Onde fica o histórico de registros?): A partir do indicador em Meus indicadores, exclusão com confirmação — A partir do indicador em Meus indicadores, exclusão com confirmação (padrão)
+- Q-14 (Quais rotas usar?): /onboarding, /dashboard, /register, /indicators, /saved-insights, /insights/:hypothesisKey, /settings, /install — /onboarding, /dashboard, /register, /indicators, /saved-insights, /insights/:hypothesisKey, /settings, /install (padrão)
+- Q-15 (Como o layout se comporta no computador?): Coluna central até 960 px; listas de cartões em grid auto-fit (mín. 300 px) — Coluna central até 960 px; listas de cartões em grid auto-fit (mín. 300 px) (padrão)
+- Q-16 (Como resolver conflito de credencial na conversão?): Opções 'Cancelar' ou 'Entrar na conta existente' com aviso; nada é apagado nem mesclado — Opções 'Cancelar' ou 'Entrar na conta existente' com aviso; nada é apagado nem mesclado (padrão)
+- Q-17 (De onde servir ícones e fontes?): Material Symbols, Geist e Space Grotesk via pacotes npm, sem CDN — Material Symbols, Geist e Space Grotesk via pacotes npm, sem CDN (padrão)
+- Q-18 (Como identificar e autenticar o usuário do seed?): seed-user-0001 (seed@pulsar.test, sem senha), 30 dias terminando hoje, login e2e por custom token; --demo só com HARNESS_ALLOW_DEMO_SEED=1 e --project sem 'prod' — seed-user-0001 (seed@pulsar.test, sem senha), 30 dias terminando hoje, login e2e por custom token; --demo só com HARNESS_ALLOW_DEMO_SEED=1 e --project sem 'prod' (padrão)
+- Q-19 (Quais portas usar nos emuladores?): Firestore 8282, Auth 9299 (fonte única app/firebase.json) — Firestore 8282, Auth 9299 (fonte única app/firebase.json) (padrão)
+- Q-20 (Registros podem ser atualizados?): ID determinístico por dia com update permitido só hoje — ID determinístico por dia com update permitido só hoje
+- Q-21 (Quem grava o cache de textos da IA?): Só a Function generateInsightTexts após validação; cliente só lê e valida de novo — Só a Function generateInsightTexts após validação; cliente só lê e valida de novo (padrão)
+- Q-22 (Usar App Check na V1?): Fora da V1 inicial; reavaliar na etapa 7 — Fora da V1 inicial; reavaliar na etapa 7 (padrão)
+- Q-23 (Onde guardar o estado de dispensa do convite de salvar conta?): users/{uid}.saveAccountInviteDismissedAt (timestamp|null) e saveAccountInviteDismissedDayCount (int >= 0|null), validados em F-1.08 — users/{uid}.saveAccountInviteDismissedAt (timestamp|null) e saveAccountInviteDismissedDayCount (int >= 0|null), validados em F-1.08 (padrão)
+- Q-24 (Como resumir indicadores ordinais?): Contagem por opção na ordem configurada (inclui zeros), denominador = dias com resposta, moda com desempate pela ordem; só descritivo — Contagem por opção na ordem configurada (inclui zeros), denominador = dias com resposta, moda com desempate pela ordem; só descritivo (padrão)
