@@ -96,3 +96,4 @@
 {"ts":"2026-10-26T10:54:49.023Z","workerId":"gemini-flash-or","provider":"openrouter","role":"review_ui","stage":0,"tokensIn":49325,"tokensOut":695,"costUsd":0.01914385,"billing":"api"}
 {"ts":"2026-10-26T10:54:58.359Z","workerId":"gemini-flash-or","provider":"openrouter","role":"review_ui","stage":0,"tokensIn":27238,"tokensOut":315,"costUsd":0.007281999999999999,"billing":"api"}
 {"ts":"2026-10-26T10:55:17.799Z","workerId":"sonnet","provider":"anthropic","role":"retro","stage":0,"tokensIn":10816,"tokensOut":1759,"costUsd":0.045774800000000004,"billing":"api"}
+{"ts":"2026-10-27T21:53:29.881Z","workerId":"haiku","provider":"anthropic","role":"approval_parser","stage":0,"tokensIn":8984,"tokensOut":3595,"costUsd":0.00305879,"billing":"api"}

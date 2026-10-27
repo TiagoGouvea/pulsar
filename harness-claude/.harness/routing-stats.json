@@ -371,5 +371,12 @@
     "custoMedio": 0.045774800000000004,
     "duracaoMedia": 19433,
     "falhasPorGate": {}
+  },
+  "haiku|approval_parser|*": {
+    "tentativas": 1,
+    "sucessos": 1,
+    "custoMedio": 0.00305879,
+    "duracaoMedia": 14436,
+    "falhasPorGate": {}
   }
 }
