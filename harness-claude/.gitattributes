@@ -1,0 +1,2 @@
+# Append-only logs: merges keep the lines of both branches.
+.harness/**/*.jsonl merge=union

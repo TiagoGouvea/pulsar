@@ -6,18 +6,21 @@ import { hp, readJsonl } from "./state.js";
 
 export interface ReviewRow { ts: string; stage: number; featureId: string; kind: string; workerId?: string; pass: boolean; score: number }
 
+/** Correction rows ("correction", note "... (review_code)") count for the role they correct. */
+const roleOf = (r: { role: string; note?: string }) => (r.role === "correction" ? r.note?.match(/\((\w+)\)/)?.[1] ?? r.role : r.role);
+
 /** Per role x model: attempts, technical success, review verdicts, failed gates, mean cost and time. */
 export function modelsReport(ctx: Ctx, stage?: number): string {
   const inStage = (r: { stage: number }) => stage === undefined || r.stage === stage;
   const evs = readEvents(ctx).filter(inStage);
-  const ledger = readLedger(ctx).filter(inStage);
+  const ledger = readLedger(ctx).filter(inStage) as (ReturnType<typeof readLedger>[number] & { note?: string })[];
   const reviews = readJsonl<ReviewRow>(hp(ctx, "reviews.jsonl")).filter(inStage);
   const groups = new Map<string, typeof evs>();
   for (const e of evs) groups.set(`${e.role}|${e.workerId}`, [...(groups.get(`${e.role}|${e.workerId}`) ?? []), e]);
   const rows = [...groups].sort(([a], [b]) => a.localeCompare(b)).map(([k, es]) => {
     const [role, worker] = k.split("|");
     const ok = es.filter((e) => e.outcome === "success").length;
-    const cost = ledger.filter((r) => r.workerId === worker && r.role === role).reduce((a, r) => a + r.costUsd, 0);
+    const cost = ledger.filter((r) => r.workerId === worker && roleOf(r) === role).reduce((a, r) => a + r.costUsd, 0);
     const rv = reviews.filter((r) => r.workerId === worker && `review_${r.kind}` === role);
     const gates = Object.entries(es.flatMap((e) => e.failedGates ?? []).reduce<Record<string, number>>((a, g) => ((a[g] = (a[g] ?? 0) + 1), a), {})).map(([g, n]) => `${g}×${n}`).join(" ");
     return [role, worker, `${ok}/${es.length}`, `${Math.round((100 * ok) / es.length)}%`, rv.length ? `${rv.filter((r) => r.pass).length}✔ ${rv.filter((r) => !r.pass).length}✖` : "", `US$${(cost / es.length).toFixed(3)}`, `US$${cost.toFixed(2)}`, fmtDur(es.reduce((a, e) => a + (e.durationMs ?? 0), 0) / es.length), gates];
