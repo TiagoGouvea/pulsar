@@ -3,6 +3,7 @@ import {
   consumesTaskAttempt,
   countCurrentReviewFailures,
   effectiveTaskAttemptLimit,
+  hasOnlyTechnicalFailures,
   reviewRequestedChanges,
 } from "../../src/orchestrator/controller.js";
 
@@ -20,6 +21,9 @@ describe("limite de tentativas da tarefa", () => {
     expect(consumesTaskAttempt(technicalFailure)).toBe(false);
     expect(consumesTaskAttempt(requestedRevision)).toBe(true);
     expect(consumesTaskAttempt({ status: "failed", result_json: "inválido" })).toBe(true);
+    expect(hasOnlyTechnicalFailures([technicalFailure, { ...technicalFailure }])).toBe(true);
+    expect(hasOnlyTechnicalFailures([technicalFailure, requestedRevision])).toBe(false);
+    expect(hasOnlyTechnicalFailures([])).toBe(false);
   });
 
   test("permite aumentar o limite operacional sem reduzir o limite planejado", () => {

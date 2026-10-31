@@ -17,7 +17,7 @@ import { writeBudgetReport, writeFinalReport, writeHumanReview, writePlan } from
 import { assertWorkspace } from "../security/workspace.js";
 import { captureInputs, detectInputChanges } from "../state/inputs.js";
 import { StateStore } from "../state/store.js";
-import { createId, nowUtc, parseUsdToMicros, safeError, sha256, writeJson } from "../utils/core.js";
+import { createId, formatMicros, nowUtc, parseUsdToMicros, safeError, sha256, writeJson } from "../utils/core.js";
 import { invalidateStaleVerifications, verifyCommands } from "../verification/commands.js";
 
 const HARNESS_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -52,6 +52,10 @@ export function isTechnicalExecutionFailure(row: Record<string, unknown>): boole
   } catch {
     return true;
   }
+}
+
+export function hasOnlyTechnicalFailures(attempts: Record<string, unknown>[]): boolean {
+  return attempts.length > 0 && attempts.every(isTechnicalExecutionFailure);
 }
 
 export function countCurrentReviewFailures(attempts: Record<string, unknown>[]): number {
@@ -176,7 +180,7 @@ export class Orchestrator {
       this.store.setMilestoneState(id, milestoneId, "in_progress");
       const requirements = this.loadRequirements(id);
       if (!(await this.recoverInterruptedWork(id, milestoneId))) return id;
-      this.recoverAttemptCapacity(id, milestoneId);
+      if (!(await this.recoverAttemptCapacity(id, milestoneId))) return id;
       const milestoneTaskCount = this.store.listTasks(id).filter((row) => row.milestone_id === milestoneId).length;
       let pending = this.store.listTasks(id).filter((row) => row.milestone_id === milestoneId && ["pending", "ready", "changes_requested", "failed"].includes(String(row.state)));
       while (pending.length > 0) {
@@ -519,29 +523,117 @@ export class Orchestrator {
     } finally { prompt.close(); }
   }
 
-  private recoverAttemptCapacity(runId: string, milestoneId: string): void {
+  private async recoverAttemptCapacity(runId: string, milestoneId: string): Promise<boolean> {
     const blocked = this.store.listTasks(runId).filter((row) => row.milestone_id === milestoneId && row.state === "blocked");
     for (const row of blocked) {
       const task = rowToTask(row);
       const attempts = this.store.all<Record<string, unknown>>(
-        "SELECT status, result_json FROM attempts WHERE run_id=? AND task_id=? ORDER BY number",
+        "SELECT id, number, status, result_json, candidate_key, started_at, finished_at FROM attempts WHERE run_id=? AND task_id=? ORDER BY number",
         runId, task.id,
       );
       const consumedAttempts = attempts.filter(consumesTaskAttempt).length;
       const maxAttempts = effectiveTaskAttemptLimit(task.maxAttempts, this.config.execution.maxAttemptsPerTask);
-      if (consumedAttempts >= maxAttempts) continue;
       const review = this.store.get<Record<string, unknown>>(
         "SELECT status FROM attempts WHERE run_id=? AND task_id=? ORDER BY started_at DESC LIMIT 1",
         runId, `${task.id}-review`,
       );
-      if (!reviewRequestedChanges(review?.status)) continue;
+      if (reviewRequestedChanges(review?.status) && consumedAttempts < maxAttempts) {
+        this.store.setTaskState(runId, task.id, "changes_requested");
+        this.store.event(runId, "task.attempt_capacity_recovered", "task", task.id, {
+          consumedAttempts, technicalFailures: attempts.length - consumedAttempts, maxAttempts,
+        });
+        continue;
+      }
+      if (!hasOnlyTechnicalFailures(attempts)) continue;
+
+      const inspectionPath = await this.inspectBlockedTechnicalTask(runId, task, attempts);
+      const latest = attempts.at(-1);
+      const latestResult = typeof latest?.result_json === "string"
+        ? JSON.parse(latest.result_json) as ExecutionResult
+        : null;
+      const budget = this.ledger.snapshot(runId);
+      const budgetText = budget.usableMicros == null
+        ? "sem teto configurado"
+        : `USD ${formatMicros(budget.usableMicros)} disponíveis; USD ${formatMicros(budget.uncertainMicros)} incertos incluídos nas reservas`;
+      this.log(`RECUPERAÇÃO ${task.id}: ${attempts.length} falhas técnicas sem resultado válido; última: ${latestResult?.summary ?? "sem resumo"}. Alterações parciais e trilhas: ${inspectionPath}. Orçamento ${budgetText}.`);
+      const authorization = await this.askForTechnicalRetry(task.id, attempts.length, inspectionPath, budgetText);
+      if (authorization !== true) {
+        const cause = authorization === false ? "technical_retry_declined" : "technical_retry_confirmation_required";
+        this.store.setRunState(runId, "blocked", { cause, taskId: task.id, inspectionPath });
+        if (authorization === false) {
+          this.store.event(runId, "task.technical_retry_declined", "task", task.id, { inspectionPath, actor: "terminal-human" });
+          this.log(`RECUPERAÇÃO ${task.id}: mantida bloqueada; nenhuma chamada nova foi iniciada.`);
+        } else {
+          this.store.event(runId, "task.retry_confirmation_required", "task", task.id, { inspectionPath });
+        }
+        return false;
+      }
       this.store.setTaskState(runId, task.id, "changes_requested");
-      this.store.event(runId, "task.attempt_capacity_recovered", "task", task.id, {
-        consumedAttempts,
-        technicalFailures: attempts.length - consumedAttempts,
-        maxAttempts,
+      this.store.event(runId, "task.retry_authorized", "task", task.id, {
+        actor: "terminal-human", reason: "repeated_technical_failures",
+        failedAttempts: attempts.map((attempt) => ({ id: attempt.id, number: attempt.number, candidateKey: attempt.candidate_key })),
+        inspectionPath, usableBudgetMicros: budget.usableMicros?.toString() ?? null,
+        uncertainBudgetMicros: budget.uncertainMicros.toString(),
+      });
+      this.log(`RECUPERAÇÃO ${task.id}: nova tentativa autorizada; será uma sessão de modelo nova, não continuação interna da anterior.`);
+    }
+    return true;
+  }
+
+  private async askForTechnicalRetry(taskId: string, failedAttempts: number, inspectionPath: string, budgetText: string): Promise<boolean | undefined> {
+    if (!stdin.isTTY || !stdout.isTTY) {
+      this.log(`Para autorizar a retentativa de ${taskId}, execute resume em um terminal interativo e revise ${inspectionPath}.`);
+      return undefined;
+    }
+    const prompt = createInterface({ input: stdin, output: stdout });
+    try {
+      const answer = await prompt.question(
+        `[${nowUtc()}] ${taskId}: ${failedAttempts} falhas técnicas; revisar ${inspectionPath}. ${budgetText}. Autorizar uma nova sessão? [s/N] `,
+      );
+      return ["s", "sim", "y", "yes"].includes(answer.trim().toLocaleLowerCase("pt-BR"));
+    } finally { prompt.close(); }
+  }
+
+  private async inspectBlockedTechnicalTask(
+    runId: string,
+    task: Task,
+    attempts: Array<Record<string, unknown>>,
+  ): Promise<string> {
+    const taskDirectory = path.join(this.config.storage.root, "runs", runId, "tasks", task.id);
+    const currentWorkspaceFiles = Object.keys((await snapshotWorkspaceChanges(this.config.project.workspace)).files);
+    const previousAttempts = [];
+    for (const attempt of attempts) {
+      const attemptNumber = Number(attempt.number);
+      const attemptDirectory = path.join(taskDirectory, `attempt-${String(attemptNumber).padStart(3, "0")}`);
+      let attribution: Record<string, unknown> | null = null;
+      let error: Record<string, unknown> | null = null;
+      try { attribution = JSON.parse(await readFile(path.join(attemptDirectory, "work-attribution.json"), "utf8")) as Record<string, unknown>; }
+      catch { /* Interrupted before attribution was written. */ }
+      try { error = JSON.parse(await readFile(path.join(attemptDirectory, "execution-error.json"), "utf8")) as Record<string, unknown>; }
+      catch { /* Some technical failures are provider outcomes rather than executor exceptions. */ }
+      previousAttempts.push({
+        attemptId: attempt.id, number: attemptNumber, candidateKey: attempt.candidate_key,
+        status: attempt.status, startedAt: attempt.started_at, finishedAt: attempt.finished_at,
+        summary: typeof attempt.result_json === "string"
+          ? (JSON.parse(attempt.result_json) as ExecutionResult).summary
+          : null,
+        observedChangedFiles: Array.isArray(attribution?.observedChangedFiles) ? attribution.observedChangedFiles : [],
+        declaredChangedFiles: Array.isArray(attribution?.declaredChangedFiles) ? attribution.declaredChangedFiles : [],
+        executionError: error,
       });
     }
+    const inspectionPath = path.join(taskDirectory, `retry-inspection-${Date.now()}.json`);
+    await writeJson(inspectionPath, {
+      at: nowUtc(), runId, milestoneId: task.milestoneId, taskId: task.id,
+      recovery: "fresh_attempt_requires_human_authorization",
+      previousAttempts,
+      currentWorkspaceFiles,
+      workspaceAttributionWarning: "Current modified paths can include changes made before these attempts. Use per-attempt observedChangedFiles for the harness snapshot comparison; review contents before authorizing another model call.",
+    });
+    this.store.event(runId, "task.technical_retry_inspected", "task", task.id, {
+      inspectionPath, failedAttempts: attempts.length, currentWorkspaceFileCount: currentWorkspaceFiles.length,
+    });
+    return inspectionPath;
   }
 
   private implementerContext(runId: string, task: Task): {
