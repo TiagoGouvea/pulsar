@@ -51,6 +51,14 @@ Para registrar a evolução cronológica do projeto e permitir comparação prec
 
 ---
 
+## Relatório por etapa
+
+| Etapa | Modelo | Relatório |
+| :---: | :--- | :--- |
+| **0** | Claude | [`harness-claude/observacoes/etapa-0.md`](harness-claude/observacoes/etapa-0.md) |
+
+---
+
 ## Insumos Compartilhados
 
 * **Especificação Funcional:** [`docs/Pulsar_Especificacao_Completa.md`](docs/Pulsar_Especificacao_Completa.md)
