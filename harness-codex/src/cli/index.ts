@@ -8,13 +8,14 @@ import { parse, stringify } from "yaml";
 import { loadConfig } from "../config/load.js";
 import { startDashboard } from "../dashboard/server.js";
 import { Orchestrator } from "../orchestrator/controller.js";
+import { reconcileInterruptedCall } from "../orchestrator/reconcile.js";
 import { doctor, preflight, writePreflightReport } from "../preflight/doctor.js";
 import { probeCandidate } from "../providers/probes.js";
 import { loadLmStudioModel, unloadLmStudioModels } from "../providers/lmstudio.js";
 import { writeBudgetReport, writeFinalReport, writeModelPerformanceReport, writeWorkAttributionReport } from "../reports/generator.js";
 import { testLocalModels, writeLocalModelTestReport } from "../providers/local-model-test.js";
 import { StateStore } from "../state/store.js";
-import { createId, ensureDirectory, nowUtc, safeError } from "../utils/core.js";
+import { createId, ensureDirectory, formatMicros, nowUtc, safeError } from "../utils/core.js";
 import { captureVisualEvidence } from "../verification/visual.js";
 import { currentRevision } from "../git/workspace.js";
 
@@ -244,12 +245,22 @@ program.command("diagnostics").description("Mostra o evento de bloqueio e a tent
     const store = new StateStore(config.storage.root);
     try {
       const blockedEvent = store.get<Record<string, unknown>>(
-        "SELECT payload_json FROM events WHERE run_id=? AND type='run.blocked' ORDER BY sequence DESC LIMIT 1",
+        "SELECT sequence, payload_json FROM events WHERE run_id=? AND type='run.blocked' ORDER BY sequence DESC LIMIT 1",
         options.run,
       );
-      const blocker = typeof blockedEvent?.payload_json === "string"
+      let blocker = typeof blockedEvent?.payload_json === "string"
         ? JSON.parse(blockedEvent.payload_json) as Record<string, unknown>
         : {};
+      const reconciliation = store.get<Record<string, unknown>>(
+        "SELECT sequence, payload_json FROM events WHERE run_id=? AND type='task.interruption_reconciled' ORDER BY sequence DESC LIMIT 1",
+        options.run,
+      );
+      if (reconciliation && Number(reconciliation.sequence) > Number(blockedEvent?.sequence ?? 0)) {
+        const payload = typeof reconciliation.payload_json === "string"
+          ? JSON.parse(reconciliation.payload_json) as Record<string, unknown>
+          : {};
+        if (payload.retryable === true) blocker = { cause: "task_retry_ready", taskId: payload.taskId ?? reconciliation.entity_id };
+      }
       if (blocker.cause === "milestone_verification_failed") {
         const verifier = store.get<Record<string, unknown>>(
           "SELECT verifier_id, status, exit_code, output_path, started_at, finished_at FROM verifier_runs WHERE run_id=? AND status='failed' ORDER BY started_at DESC LIMIT 1",
@@ -261,7 +272,9 @@ program.command("diagnostics").description("Mostra o evento de bloqueio e a tent
       const blockedTask = typeof blocker.taskId === "string" ? blocker.taskId : undefined;
       const taskId = options.task ?? blockedTask;
       const taskClause = taskId ? " AND (a.task_id=? OR a.task_id=?)" : "";
-      const failedOnly = blocker.cause === "max_attempts" ? "" : " AND a.status='failed'";
+      const failedOnly = ["max_attempts", "interrupted_attempt_requires_reconciliation"].includes(String(blocker.cause))
+        ? ""
+        : " AND a.status='failed'";
       const params = taskId ? [options.run, taskId, `${taskId}-review`] : [options.run];
       const attempt = store.get<Record<string, unknown>>(
         `SELECT a.*, pc.provider, pc.model_id, pc.state AS provider_state
@@ -282,6 +295,36 @@ program.command("diagnostics").description("Mostra o evento de bloqueio e a tent
         providerState: attempt.provider_state, startedAt: attempt.started_at, finishedAt: attempt.finished_at,
         summary: result?.summary ?? null, blockers: result?.blockers ?? [], diagnostics: result?.diagnostics ?? null,
       }, null, 2));
+    } finally { store.close(); }
+  });
+
+program.command("reconcile-call")
+  .description("Reconcilia uma cobrança incerta do provedor e, opcionalmente, libera a tarefa interrompida para retentativa")
+  .requiredOption("--config <path>")
+  .requiredOption("--run <id>")
+  .requiredOption("--call <id>", "ID exato da chamada exibido pelo diagnóstico")
+  .requiredOption("--actual-cost <usd>", "Custo real confirmado no Activity do provedor; use 0 se não houve cobrança")
+  .requiredOption("--note <text>", "Evidência breve usada na reconciliação")
+  .option("--input-tokens <n>")
+  .option("--output-tokens <n>")
+  .option("--retry-task", "Marca como falha técnica a tentativa interrompida sem resultado e libera a tarefa para resume")
+  .action(async (options: {
+    config: string; run: string; call: string; actualCost: string; note: string;
+    inputTokens?: string; outputTokens?: string; retryTask?: boolean;
+  }) => {
+    const config = await loadConfig(options.config);
+    const store = new StateStore(config.storage.root);
+    try {
+      const result = reconcileInterruptedCall(store, {
+        runId: options.run,
+        providerCallId: options.call,
+        actualCostUsd: options.actualCost,
+        note: options.note,
+        ...(options.inputTokens === undefined ? {} : { inputTokens: Number(options.inputTokens) }),
+        ...(options.outputTokens === undefined ? {} : { outputTokens: Number(options.outputTokens) }),
+        retryInterruptedTask: options.retryTask ?? false,
+      });
+      console.log(`Chamada reconciliada · ${result.providerCallId} · task ${result.taskId} · tentativa ${result.attemptNumber} · USD ${formatMicros(BigInt(result.actualCostMicros))}${result.taskMadeRetryable ? " · tarefa pronta para resume" : ""}.`);
     } finally { store.close(); }
   });
 

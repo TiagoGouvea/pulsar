@@ -21,6 +21,7 @@ yarn harness run --config harness.config.yaml
 # Monitoramento e controle
 yarn harness status --config harness.config.yaml --run <runId>
 yarn harness diagnostics --config harness.config.yaml --run <runId>
+yarn harness reconcile-call --config harness.config.yaml --run <runId> --call <providerCallId> --actual-cost <usd> --note "evidência do provedor"
 yarn harness models performance --config harness.config.yaml --run <runId>
 yarn harness worklog --config harness.config.yaml --run <runId> [--milestone <id>]
 yarn harness dashboard --config harness.config.yaml --run <runId>

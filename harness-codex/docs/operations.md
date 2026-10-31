@@ -11,7 +11,7 @@ yarn harness stop --config harness.config.yaml --run <runId>
 
 Background grava `controller.log` na pasta da run. Fechar o terminal não depende de Zellij. Em macOS, se desejado, o humano pode iniciar manualmente com `caffeinate`; o harness não altera energia global.
 
-Bloqueios ficam no estado/eventos com causa. Corrija configuração ou dependência e use `resume`. Não apague `state.sqlite` para destravar: isso perde auditoria e reservas incertas.
+Bloqueios ficam no estado/eventos com causa. Corrija configuração ou dependência e use `resume`. Para uma chamada paga interrompida, confira o custo real no provedor e use `harness reconcile-call`; para liberar a tarefa interrompida sem resultado, informe `--retry-task`. Não apague `state.sqlite` para destravar: isso perde auditoria e reservas incertas.
 
 Alterações operacionais em timeout, orçamento, modelos, roteamento e limite de tentativas podem ser aplicadas entre retomadas. Mudanças nas especificações, etapas, workspace ou perfil do projeto exigem um novo planejamento. O arquivo de configuração completo continua registrado para auditoria.
 
