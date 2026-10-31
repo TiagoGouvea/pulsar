@@ -58,7 +58,7 @@ function enforceMax(ls: Lesson[]) {
 }
 
 const roleMatches = (scopeRoles: string[], role: string) =>
-  !scopeRoles.length || scopeRoles.includes(role) || (role === "implement_hard" && scopeRoles.includes("implement"));
+  !scopeRoles.length || scopeRoles.includes(role) || ((role === "implement_hard" || role === "implement_easy") && scopeRoles.includes("implement"));
 
 /** Active lessons for a role/tags, best helpedRate then most recent, max 10. */
 export function selectLessons(ctx: Ctx, role: string, tags: string[], max = 10): Lesson[] {

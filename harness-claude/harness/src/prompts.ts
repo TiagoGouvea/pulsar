@@ -83,7 +83,7 @@ export function featureVars(ctx: Ctx, f: Feature, extra: Record<string, string> 
 /** Template of the role + common rules + filtered lessons. */
 export function render(ctx: Ctx, role: string, vars: Record<string, string>, tags: string[] = []): string {
   const read = (n: string) => (existsSync(join(HARNESS_DIR, "prompts", `${n}.md`)) ? readFileSync(join(HARNESS_DIR, "prompts", `${n}.md`), "utf8") : "");
-  const body = role === "implement_hard" ? `${read("implement")}\n${read("implement_hard")}` : read(role);
+  const body = role === "implement_hard" ? `${read("implement")}\n${read("implement_hard")}` : role === "implement_easy" ? read("implement") : read(role);
   const lessons = selectLessons(ctx, role, tags).map((l) => `- [${l.id}] ${l.rule}`).join("\n") || "(nenhuma)";
   const all: Record<string, string> = {
     specFiles: Object.entries(ctx.config.project.specFiles).map(([a, f]) => `${a} -> ${f}`).join("\n"),

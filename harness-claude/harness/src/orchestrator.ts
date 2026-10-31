@@ -322,7 +322,7 @@ export class Orchestrator {
   private roleFor(f: Feature) {
     const r = this.ctx.config.routing;
     const hard = f.difficulty === "hard" || f.tags.some((t) => r.hardTags.includes(t)) || f.attempts >= r.escalateAfterFailures;
-    return hard ? "implement_hard" : "implement";
+    return hard ? "implement_hard" : f.difficulty === "easy" && this.ctx.config.roles.implement_easy ? "implement_easy" : "implement";
   }
 
   private async block(f: Feature, reason: string, wt?: string) {
@@ -420,7 +420,7 @@ export class Orchestrator {
       });
       recordStats(ctx, res.worker.id, role, f.tags, { success: outcome === "success", costUsd: res.costUsd, durationMs: res.result.durationMs, failedGates: gates?.failed });
       recordLessonOutcome(ctx, lessonIds, outcome === "success");
-      updateFeature(ctx, f.id, (x) => {
+      const fNow = updateFeature(ctx, f.id, (x) => {
         x.attempts = attempt;
         x.costUsd = spent(ctx, { featureId: f.id });
         x.history.push({ attempt, role, workerId: res.worker.id, outcome, failedGates: gates?.failed ?? [], eventId, ts: new Date().toISOString() });
@@ -431,10 +431,18 @@ export class Orchestrator {
         continue;
       }
 
-      const landed = await this.merge(() => g.land(ctx.repo, wt, this.branch, `feat(${f.id}): ${f.title}`));
+      const authors = {
+        implementer: res.worker.id,
+        attempts: fNow.history.map((h) => `${h.workerId} ${h.outcome === "success" ? "✔" : `✖ ${h.failedGates?.length ? h.failedGates.join(",") : h.outcome}`}`),
+        testWriter: readEvents(ctx).filter((e) => e.featureId === f.id && e.role === "test_writer" && e.outcome === "success").at(-1)?.workerId,
+        reviewers: verdicts.map((v) => `${v.kind} ${v.workerId ?? "?"} ${v.score}`),
+        files: (await g.changedFiles(wt, this.branch)).slice(0, 60),
+      };
+      const trailers = [`Implemented-by: ${authors.implementer} (tentativa ${attempt})`, authors.testWriter && `Tests-by: ${authors.testWriter}`, ...authors.reviewers.map((r) => `Reviewed-by: ${r}`)].filter(Boolean).join("\n");
+      const landed = await this.merge(() => g.land(ctx.repo, wt, this.branch, `feat(${f.id}): ${f.title}\n\n${trailers}`));
       if (!landed.ok) { diag = `Conflito de merge com mudanças recentes de ${this.branch} nos arquivos:\n${landed.conflict}\nResolva os marcadores <<<<<<< mantendo as duas funcionalidades.`; continue; }
       await g.removeWorktree(ctx.repo, f.id);
-      updateFeature(ctx, f.id, (x) => { x.status = "passing"; });
+      updateFeature(ctx, f.id, (x) => { x.status = "passing"; x.authors = authors; });
       this.progress(`✔ ${f.id} passing — ${f.title} (worker ${res.worker.id}, ${attempt} tentativa(s), US$ ${spent(ctx, { featureId: f.id }).toFixed(2)}) │ ${this.stageCount(f.stage)}`);
       this.state.featuresSinceRetro++;
       this.save();
@@ -542,7 +550,7 @@ export class Orchestrator {
       id: `F-${stage}.fix-${this.state.stageFixRounds}`, stage, title, description: details.slice(0, 8000), specRefs: [], covers: [],
       acceptance: ["Todos os gates obrigatórios da etapa passam na suíte completa", "Nenhum teste protegido é alterado"],
       tests: [], protectedTests: [...new Set(stageFeatures(all, stage).filter((f) => f.status === "passing").flatMap((f) => f.protectedTests))], tags, difficulty: "hard",
-      dependsOn: [], status: "failing", attempts: 0, costUsd: 0, history: [],
+      dependsOn: [], status: "failing", attempts: 0, costUsd: 0, history: [], origin: [],
     });
     saveFeatures(this.ctx, all);
     this.set("STAGE_RUNNING");
@@ -589,12 +597,12 @@ export class Orchestrator {
     const aprovacao = readFileSync(join(dir, "APROVACAO.md"), "utf8"), duvidas = existsSync(join(dir, "DUVIDAS.md")) ? readFileSync(join(dir, "DUVIDAS.md"), "utf8") : "";
     let a: Approval = parseApprovalFiles(aprovacao, duvidas);
     try {
-      const r = await this.rt.invoke({ role: "approval_parser", taskId: `approve-${s}`, stage: s, attempt: 1, cwd: ctx.root, prompt: render(ctx, "approval_parser", { aprovacao, duvidas }), schema: ApprovalSchema });
+      const r = await this.rt.invoke({ role: "approval_parser", taskId: `approve-${s}`, stage: s, attempt: 1, cwd: ctx.root, prompt: render(ctx, "approval_parser", { aprovacao, duvidas, features: stageFeatures(loadFeatures(ctx), s).filter((f) => f.authors).map((f) => `- ${f.id} ${f.title} (arquivos: ${f.authors!.files.slice(0, 15).join(", ")})`).join("\n") || "-" }), schema: ApprovalSchema });
       if (r.data) a = { ...r.data, respostasDuvidas: r.data.respostasDuvidas.map((x) => ({ ...x, resposta: resolveAnswer(duvidas, x.id, x.resposta) })) };
     } catch (e) {
       if (!(e instanceof NoWorkerError)) throw e;
     }
-    const ajustes = a.ajustes.map((x) => (typeof x === "string" ? { titulo: x, descricao: x, criterios: [x], tags: [] as string[] } : x));
+    const ajustes = a.ajustes.map((x) => (typeof x === "string" ? { titulo: x, descricao: x, criterios: [x], tags: [] as string[], features: [] as string[] } : x));
     if (!a.aprovado && !ajustes.length) return `✖ APROVACAO.md da etapa ${s} não está preenchido (Status: aprovado, ou ajustes + lista). Nada mudou.`;
     const summary = [`Etapa ${s}: ${a.aprovado && !ajustes.length ? "APROVADA" : "AJUSTES"}`, ...ajustes.map((x) => `  ajuste: ${x.titulo}`), ...a.respostasDuvidas.map((r) => `  ${r.id}: ${r.resposta}`)].join("\n");
     if (!(await this.deps.confirm(summary))) return "✖ aprovação cancelada: nada mudou";
@@ -613,7 +621,7 @@ export class Orchestrator {
       ajustes.forEach((x, i) => all.features.push({
         id: `F-${s}.adj-${String(n + i + 1).padStart(2, "0")}`, stage: s, title: x.titulo, description: x.descricao || x.titulo, specRefs: [], covers: [],
         acceptance: x.criterios.length ? x.criterios : [x.titulo], tests: [], protectedTests: [], tags: x.tags.length ? x.tags : ["ui"],
-        difficulty: "normal", dependsOn: [], status: "failing", attempts: 0, costUsd: 0, history: [],
+        difficulty: "normal", dependsOn: [], status: "failing", attempts: 0, costUsd: 0, history: [], origin: x.features,
       }));
       saveFeatures(ctx, all);
       this.state.stageFixRounds = 0;

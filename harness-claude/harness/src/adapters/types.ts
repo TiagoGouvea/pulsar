@@ -1,7 +1,7 @@
 import type { WorkerCfg } from "../config.js";
 
 export type Role =
-  | "initializer" | "test_writer" | "implement" | "implement_hard" | "review_code" | "review_ui"
+  | "initializer" | "test_writer" | "implement" | "implement_easy" | "implement_hard" | "review_code" | "review_ui"
   | "triage" | "approval_parser" | "retro" | "postmortem" | "smoke" | "doctor";
 
 export type WorkerSpec = WorkerCfg & { id: string };

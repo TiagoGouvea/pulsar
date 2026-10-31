@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { readLedger, spent } from "./budget.js";
 import type { Ctx } from "./config.js";
+import { loadFeatures } from "./features.js";
 import { fmtDur, readEvents } from "./logger.js";
 import { hp, readJsonl } from "./state.js";
 
@@ -15,6 +16,13 @@ export function modelsReport(ctx: Ctx, stage?: number): string {
   const evs = readEvents(ctx).filter(inStage);
   const ledger = readLedger(ctx).filter(inStage) as (ReturnType<typeof readLedger>[number] & { note?: string })[];
   const reviews = readJsonl<ReviewRow>(hp(ctx, "reviews.jsonl")).filter(inStage);
+  // adjustments the human asked for, attributed to the implementer of the feature they fix
+  const feats = loadFeatures(ctx).features;
+  const adjBy: Record<string, number> = {};
+  for (const a of feats.filter((f) => f.origin.length)) for (const id of a.origin) {
+    const o = feats.find((f) => f.id === id);
+    if (o?.authors && inStage(o)) adjBy[o.authors.implementer] = (adjBy[o.authors.implementer] ?? 0) + 1;
+  }
   const groups = new Map<string, typeof evs>();
   for (const e of evs) groups.set(`${e.role}|${e.workerId}`, [...(groups.get(`${e.role}|${e.workerId}`) ?? []), e]);
   const rows = [...groups].sort(([a], [b]) => a.localeCompare(b)).map(([k, es]) => {
@@ -23,14 +31,14 @@ export function modelsReport(ctx: Ctx, stage?: number): string {
     const cost = ledger.filter((r) => r.workerId === worker && roleOf(r) === role).reduce((a, r) => a + r.costUsd, 0);
     const rv = reviews.filter((r) => r.workerId === worker && `review_${r.kind}` === role);
     const gates = Object.entries(es.flatMap((e) => e.failedGates ?? []).reduce<Record<string, number>>((a, g) => ((a[g] = (a[g] ?? 0) + 1), a), {})).map(([g, n]) => `${g}×${n}`).join(" ");
-    return [role, `${worker}${ctx.config.workers[worker]?.billing === "local" ? " (local)" : ""}`, `${ok}/${es.length}`, `${Math.round((100 * ok) / es.length)}%`, rv.length ? `${rv.filter((r) => r.pass).length}✔ ${rv.filter((r) => !r.pass).length}✖` : "", `US$${(cost / es.length).toFixed(3)}`, `US$${cost.toFixed(2)}`, fmtDur(es.reduce((a, e) => a + (e.durationMs ?? 0), 0) / es.length), gates];
+    return [role, `${worker}${ctx.config.workers[worker]?.billing === "local" ? " (local)" : ""}`, `${ok}/${es.length}`, `${Math.round((100 * ok) / es.length)}%`, rv.length ? `${rv.filter((r) => r.pass).length}✔ ${rv.filter((r) => !r.pass).length}✖` : "", role.startsWith("implement") && adjBy[worker] ? String(adjBy[worker]) : "", `US$${(cost / es.length).toFixed(3)}`, `US$${cost.toFixed(2)}`, fmtDur(es.reduce((a, e) => a + (e.durationMs ?? 0), 0) / es.length), gates];
   });
-  const head = ["papel", "modelo", "ok", "%", "veredito", "custo/chamada", "custo total", "tempo médio", "gates que falharam"];
+  const head = ["papel", "modelo", "ok", "%", "veredito", "ajustes", "custo/chamada", "custo total", "tempo médio", "gates que falharam"];
   const w = head.map((h, i) => Math.max(h.length, ...rows.map((r) => r[i].length)));
   const line = (r: string[]) => r.map((c, i) => c.padEnd(w[i])).join("  ").trimEnd();
   return [
     `Performance por modelo — ${stage === undefined ? "todas as etapas" : `etapa ${stage}`} (US$ ${spent(ctx, stage === undefined ? {} : { stage }).toFixed(2)})`,
-    "ok = chamada concluída (implement: passou gates e revisão); veredito = aprovou/reprovou como revisor",
+    "ok = chamada concluída (implement: passou gates e revisão); veredito = aprovou/reprovou como revisor; ajustes = pedidos do humano em features desse modelo",
     "", line(head), ...rows.map(line),
   ].join("\n");
 }

@@ -132,6 +132,11 @@ describe("orquestrador (adapter fake)", () => {
     expect(o.status()).toContain("Tempo da etapa");
     expect(o.status()).toContain("harness approve");
     expect(readJsonl(hp(ctx, "reviews.jsonl")).length).toBeGreaterThan(0);
+    const a = feature(root, "F-0.01").authors!;
+    expect(a.implementer).toBeTruthy();
+    expect(a.files.length).toBeGreaterThan(0);
+    expect(await git(root, "log", "-1", "--format=%B", "--grep=feat(F-0.01)")).toContain(`Implemented-by: ${a.implementer}`);
+    expect(readFileSync(join(root, "checkpoints/etapa-0/RELATORIO.md"), "utf8")).toContain(`Feito por **${a.implementer}**`);
   });
 
   it("7. crash no meio de uma tarefa → resume sem duplicar e sem worktree órfã", async () => {

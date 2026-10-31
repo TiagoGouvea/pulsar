@@ -45,9 +45,9 @@ workers:
   kimi:         { cli: pi,     model: "openrouter/moonshotai/kimi-k2.7-code", family: moonshot, tier: mid, vision: false, billing: api, concurrency: 2, timeoutMin: 40 }
   deepseek:     { cli: pi,     model: "openrouter/deepseek/deepseek-v4-pro", family: deepseek, tier: low, vision: false, billing: api, concurrency: 2, timeoutMin: 30 }
   # --- Locais (LM Studio, LMSTUDIO_BASE_URL, padrão http://localhost:1235/v1) ---
-  local-gptoss: { cli: pi, model: "lmstudio/mlx-community/gpt-oss-20b",         family: openai, tier: local, vision: false, billing: local, concurrency: 1, timeoutMin: 30, maxContextTokens: 32000 }
+  local-gptoss: { cli: pi, model: "lmstudio/mlx-community/gpt-oss-20b",         family: openai, tier: local, vision: false, billing: local, concurrency: 1, timeoutMin: 30, maxContextTokens: 65536 }
   local-coder:  { cli: pi, model: "lmstudio/qwen3-coder-30b-a3b-instruct-mlx",  family: qwen,   tier: local, vision: false, billing: local, concurrency: 1, timeoutMin: 40, maxContextTokens: 32000, requiresFreeRamGb: 18, enabled: false }   # não carrega com 24 GB
-  local-small:  { cli: pi, model: "lmstudio/qwen3.5-9b-mlx",                    family: qwen,   tier: local, vision: false, billing: local, concurrency: 1, timeoutMin: 15, maxContextTokens: 32000 }
+  local-small:  { cli: pi, model: "lmstudio/qwen3.5-9b-mlx",                    family: qwen,   tier: local, vision: false, billing: local, concurrency: 1, timeoutMin: 15, maxContextTokens: 65536 }
   # "lmstudio/<key>": key de GET /api/v1/models. O harness descarrega tudo, carrega só o modelo da chamada e o descarrega ao final.
   # --- Testes ---
   fake:         { cli: fake,   model: fake, family: local-other, tier: low, vision: true, billing: local, concurrency: 4, timeoutMin: 1, enabled: false }
@@ -57,11 +57,12 @@ roles:
   initializer:     { pool: [opus],                              note: "decompõe spec, scaffold, design system" }
   test_writer:     { pool: [sonnet, codex-mid],                 note: "escreve testes de aceite ANTES da implementação" }
   implement:       { pool: [deepseek, glm, kimi, sonnet],       note: "features comuns" }
+  implement_easy:  { pool: [local-gptoss, deepseek, kimi],      note: "features difficulty=easy: local primeiro (teste controlado de modelo local)" }
   implement_hard:  { pool: [sonnet, opus],                        note: "estatística, security rules, sincronização, privacidade" }
   review_code:     { pool: [gemini-pro-or, gemini-pro, codex-mid, sonnet],     rule: different_family_from_implementer }
   review_ui:       { pool: [gemini-pro, gemini-pro-or, sonnet],                rule: different_family_from_implementer, requires: vision }
-  triage:          { pool: [local-small, gemini-flash, gemini-flash-or, deepseek, haiku] }
-  approval_parser: { pool: [gemini-flash, gemini-flash-or, haiku, local-small],  note: "converte APROVACAO.md/DUVIDAS.md em JSON" }
+  triage:          { pool: [local-small, local-gptoss, gemini-flash, gemini-flash-or, deepseek, haiku] }
+  approval_parser: { pool: [gemini-flash, gemini-flash-or, haiku, local-small, local-gptoss],  note: "converte APROVACAO.md/DUVIDAS.md em JSON" }
   retro:           { pool: [sonnet] }
   postmortem:      { pool: [sonnet] }
 

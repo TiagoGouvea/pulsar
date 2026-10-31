@@ -20,6 +20,12 @@ export const FeatureSchema = z.object({
   costUsd: z.number().default(0),
   blockedReason: z.string().optional(),
   history: z.array(z.record(z.string(), z.any())).default([]),
+  // who did what (filled when the feature lands): implementer, attempt trail, test writer, reviewers, files
+  authors: z.object({
+    implementer: z.string(), attempts: z.array(z.string()).default([]), testWriter: z.string().optional(),
+    reviewers: z.array(z.string()).default([]), files: z.array(z.string()).default([]),
+  }).optional(),
+  origin: z.array(z.string()).default([]),   // adjustment features: ids of the delivered features it fixes
 });
 export const FeaturesFileSchema = z.object({ specHash: z.string().default(""), features: z.array(FeatureSchema) });
 

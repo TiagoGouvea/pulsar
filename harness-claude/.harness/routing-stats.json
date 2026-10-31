@@ -380,17 +380,17 @@
     "falhasPorGate": {}
   },
   "local-gptoss|smoke|*": {
-    "tentativas": 1,
-    "sucessos": 1,
+    "tentativas": 2,
+    "sucessos": 2,
     "custoMedio": 0,
-    "duracaoMedia": 34478,
+    "duracaoMedia": 29669.5,
     "falhasPorGate": {}
   },
   "local-small|smoke|*": {
-    "tentativas": 1,
-    "sucessos": 1,
+    "tentativas": 2,
+    "sucessos": 2,
     "custoMedio": 0,
-    "duracaoMedia": 53204,
+    "duracaoMedia": 47668.5,
     "falhasPorGate": {}
   }
 }

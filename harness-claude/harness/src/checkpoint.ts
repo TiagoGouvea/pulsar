@@ -5,7 +5,7 @@ import { execa } from "execa";
 import { z } from "zod";
 import type { Ctx } from "./config.js";
 import { readLedger, spent, stageCap } from "./budget.js";
-import { loadFeatures, stageFeatures } from "./features.js";
+import { type Feature, loadFeatures, stageFeatures } from "./features.js";
 import { readEvents } from "./logger.js";
 import { gateEnv } from "./gates/browser.js";
 import { hp, normText, readJson, readJsonl, walk, writeJson } from "./state.js";
@@ -120,7 +120,7 @@ export function buildCheckpoint(ctx: Ctx, c: CheckpointInput) {
     `# Relatório — etapa ${c.stage} (${stageName})${c.partialReason ? ` — PARCIAL: ${c.partialReason}` : ""}`,
     `\n**Preview:** ${c.previewUrl ?? c.previewNote ?? "não publicado"}`,
     `\n## Features entregues (${passing.length}/${fs.length})\n`,
-    ...passing.map((f) => `- **${f.id}** ${f.title} — ${f.attempts} tentativa(s), US$ ${f.costUsd.toFixed(2)}${f.covers.length ? ` — critérios: ${f.covers.join(", ")}` : ""}\n${f.acceptance.map((a) => `  - [x] ${a}`).join("\n")}`),
+    ...passing.map((f) => `- **${f.id}** ${f.title} — ${f.attempts} tentativa(s), US$ ${f.costUsd.toFixed(2)}${f.covers.length ? ` — critérios: ${f.covers.join(", ")}` : ""}${authorsMd(f)}\n${f.acceptance.map((a) => `  - [x] ${a}`).join("\n")}`),
     `\n## Bloqueadas (${blocked.length})\n`, ...blocked.map((f) => `- **${f.id}** ${f.title}: ${f.blockedReason ?? "-"}`),
     pending.length ? `\n## Pendentes (${pending.length})\n\n${pending.map((f) => `- ${f.id} ${f.title} [${f.status}]`).join("\n")}` : "",
     `\n## Custo e tempo\n\n- Custo da etapa: US$ ${spent(ctx, { stage: c.stage }).toFixed(2)} (teto US$ ${stageCap(ctx, c.stage)})`,
@@ -158,9 +158,17 @@ export async function deployPreview(ctx: Ctx, stageWt: string, stage: number): P
 
 // ---------- approval ----------
 
+/** "Who did what" lines of a delivered feature (RELATORIO.md), so feedback can be traced to a model. */
+const authorsMd = (f: Feature) => {
+  const a = f.authors;
+  if (!a) return "";
+  const files = a.files.slice(0, 8).map((x) => `\`${x}\``).join(", ") + (a.files.length > 8 ? ` +${a.files.length - 8}` : "");
+  return `\n  - Feito por **${a.implementer}** · tentativas: ${a.attempts.join(" → ") || "-"} · testes: ${a.testWriter ?? "-"} · revisão: ${a.reviewers.join(", ") || "-"}${a.files.length ? `\n  - Arquivos: ${files}` : ""}`;
+};
+
 export const ApprovalSchema = z.object({
   aprovado: z.boolean(),
-  ajustes: z.array(z.union([z.string(), z.object({ titulo: z.string(), descricao: z.string().default(""), criterios: z.array(z.string()).default([]), tags: z.array(z.string()).default([]) })])).default([]),
+  ajustes: z.array(z.union([z.string(), z.object({ titulo: z.string(), descricao: z.string().default(""), criterios: z.array(z.string()).default([]), tags: z.array(z.string()).default([]), features: z.array(z.string()).default([]) })])).default([]),
   respostasDuvidas: z.array(z.object({ id: z.string(), pergunta: z.string().default(""), resposta: z.string() })).default([]),
 });
 export type Approval = z.infer<typeof ApprovalSchema>;
