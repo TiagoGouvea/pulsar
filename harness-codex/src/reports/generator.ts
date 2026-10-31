@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { HarnessConfig } from "../config/schema.js";
 import type { StateStore } from "../state/store.js";
@@ -12,6 +12,27 @@ function runDirectory(config: HarnessConfig, runId: string): string {
 function csvValue(value: unknown): string {
   const normalized = typeof value === "string" || typeof value === "number" || typeof value === "bigint" ? String(value) : "";
   return `"${normalized.replaceAll('"', '""')}"`;
+}
+
+function parseCsv(text: string): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let field = "";
+  let quoted = false;
+  for (let index = 0; index < text.length; index += 1) {
+    const character = text[index] ?? "";
+    if (quoted && character === '"' && text[index + 1] === '"') { field += '"'; index += 1; }
+    else if (character === '"') quoted = !quoted;
+    else if (!quoted && character === ",") { row.push(field); field = ""; }
+    else if (!quoted && (character === "\n" || character === "\r")) {
+      if (character === "\r" && text[index + 1] === "\n") index += 1;
+      row.push(field); field = "";
+      if (row.some((item) => item.length > 0)) rows.push(row);
+      row = [];
+    } else field += character;
+  }
+  if (field.length > 0 || row.length > 0) { row.push(field); rows.push(row); }
+  return rows;
 }
 
 function textValue(value: unknown, fallback = "unknown"): string {
@@ -39,6 +60,128 @@ export interface ModelPerformance {
   technicalSuccessRatePercent: number;
   confirmedMicros: string;
   uncertainMicros: string;
+}
+
+interface WorkAttributionRow {
+  milestoneId: string;
+  taskId: string;
+  taskTitle: string;
+  requirements: string[];
+  attempt: number;
+  attemptId: string;
+  role: string;
+  modelAlias: string;
+  modelId: string;
+  status: string;
+  startedAt: string;
+  finishedAt: string;
+  durationMs: number | null;
+  changedFiles: string[];
+  declaredFiles: string[];
+  feedback: string;
+  notes: string;
+}
+
+export async function writeWorkAttributionReport(
+  config: HarnessConfig,
+  store: StateStore,
+  runId: string,
+  milestoneId?: string,
+): Promise<string> {
+  const tasks = store.listTasks(runId);
+  const tasksById = new Map(tasks.map((task) => [String(task.id), task]));
+  const attempts = store.all<Record<string, unknown>>(
+    `SELECT a.*, s.role, s.model_key, pc.provider, pc.model_id,
+     CASE WHEN pc.finished_at IS NULL OR pc.started_at IS NULL THEN NULL
+       ELSE CAST((julianday(pc.finished_at)-julianday(pc.started_at))*86400000 AS INTEGER) END AS duration_ms
+     FROM attempts a LEFT JOIN sessions s ON s.attempt_id=a.id
+     LEFT JOIN provider_calls pc ON pc.attempt_id=a.id
+     WHERE a.run_id=? ORDER BY a.started_at, a.number`,
+    runId,
+  );
+  const rows: WorkAttributionRow[] = [];
+  for (const attempt of attempts) {
+    const rawTaskId = String(attempt.task_id);
+    const taskId = rawTaskId.endsWith("-review") ? rawTaskId.slice(0, -7) : rawTaskId;
+    const task = tasksById.get(taskId);
+    if (!task || (milestoneId && String(task.milestone_id) !== milestoneId)) continue;
+    let result: { changedFiles?: unknown } = {};
+    try {
+      result = JSON.parse(typeof attempt.result_json === "string" ? attempt.result_json : "{}") as typeof result;
+    } catch { /* keep partial attempt visible */ }
+    let attribution: { observedChangedFiles?: unknown; declaredChangedFiles?: unknown } = {};
+    if (!rawTaskId.endsWith("-review")) {
+      const attributionPath = path.join(
+        runDirectory(config, runId), "tasks", taskId,
+        `attempt-${String(Number(attempt.number)).padStart(3, "0")}`, "work-attribution.json",
+      );
+      try { attribution = JSON.parse(await readFile(attributionPath, "utf8")) as typeof attribution; } catch { /* interrupted attempt */ }
+    }
+    const requirements = JSON.parse(String(task.requirement_ids_json)) as string[];
+    const modelId = textValue(attempt.model_id, "unknown");
+    const modelAlias = String(attempt.model_key ?? config.models.find((candidate) => candidate.modelId === modelId)?.alias ?? attempt.candidate_key);
+    rows.push({
+      milestoneId: String(task.milestone_id), taskId, taskTitle: String(task.title), requirements,
+      attempt: Number(attempt.number), attemptId: String(attempt.id),
+      role: String(attempt.role ?? (rawTaskId.endsWith("-review") ? "functionalReviewer" : task.role)),
+      modelAlias, modelId,
+      status: String(attempt.status), startedAt: String(attempt.started_at),
+      finishedAt: textValue(attempt.finished_at, ""),
+      durationMs: attempt.duration_ms == null ? null : Number(attempt.duration_ms),
+      changedFiles: Array.isArray(attribution.observedChangedFiles) ? attribution.observedChangedFiles.map(String) : [],
+      declaredFiles: Array.isArray(attribution.declaredChangedFiles)
+        ? attribution.declaredChangedFiles.map(String)
+        : Array.isArray(result.changedFiles) ? result.changedFiles.map(String) : [],
+      feedback: "", notes: "",
+    });
+  }
+
+  const directory = runDirectory(config, runId);
+  await mkdir(directory, { recursive: true });
+  const baseName = milestoneId ? `work-attribution-${milestoneId}` : "work-attribution";
+  const reportPath = path.join(directory, `${baseName}.md`);
+  const header = "| Etapa | Tarefa | Requisitos | Tentativa | Papel | Modelo | ID do modelo | Estado | Arquivos observados | Arquivos declarados | Duração |";
+  const markdown = [
+    "# Registro de trabalho por modelo", "", `Run: ${runId}`,
+    ...(milestoneId ? [`Etapa: ${milestoneId}`] : []), "",
+    "Cada linha representa uma tentativa de implementação ou revisão. Arquivos observados são comparados antes/depois da chamada; arquivos declarados vêm da resposta do modelo. Revisores recebem acesso somente de leitura.", "",
+    header, "| --- | --- | --- | ---: | --- | --- | --- | --- | --- | --- | ---: |",
+    ...rows.map((row) => `| ${row.milestoneId} | ${row.taskId}: ${row.taskTitle} | ${row.requirements.join(", ")} | ${row.attempt} | ${row.role} | ${row.modelAlias} | ${row.modelId} | ${row.status} | ${row.changedFiles.join(", ") || "—"} | ${row.declaredFiles.join(", ") || "—"} | ${row.durationMs == null ? "—" : `${row.durationMs} ms`} |`),
+    "", "## Feedback humano", "",
+    `Preencha \`${baseName}-feedback.csv\` com avaliação e observações; o arquivo não é sobrescrito se já existir.`, "",
+  ].join("\n");
+  await writeFile(reportPath, markdown, { mode: 0o600 });
+  await writeJson(path.join(directory, `${baseName}.json`), { runId, milestoneId: milestoneId ?? null, rows });
+  const csvColumns: Array<keyof WorkAttributionRow> = [
+    "milestoneId", "taskId", "taskTitle", "requirements", "attempt", "attemptId", "role", "modelAlias",
+    "modelId", "status", "startedAt", "finishedAt", "durationMs", "changedFiles", "declaredFiles", "feedback", "notes",
+  ];
+  const csv = [
+    csvColumns.join(","),
+    ...rows.map((row) => csvColumns.map((column) => csvValue(Array.isArray(row[column]) ? row[column].join("|") : row[column])).join(",")),
+  ].join("\n");
+  await writeFile(path.join(directory, `${baseName}.csv`), `${csv}\n`, { mode: 0o600 });
+  const feedbackPath = path.join(directory, `${baseName}-feedback.csv`);
+  const feedbackByAttempt = new Map<string, { feedback: string; notes: string }>();
+  try {
+    const existingRows = parseCsv(await readFile(feedbackPath, "utf8"));
+    for (const existing of existingRows.slice(1)) {
+      const attemptId = existing[0];
+      if (attemptId) feedbackByAttempt.set(attemptId, { feedback: existing[7] ?? "", notes: existing[8] ?? "" });
+    }
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+  }
+  const feedbackCsv = [
+    ["attempt_id", "milestone_id", "task_id", "attempt", "role", "model_alias", "changed_files", "feedback", "notes"].join(","),
+    ...rows.map((row) => {
+      const existing = feedbackByAttempt.get(row.attemptId);
+      return [row.attemptId, row.milestoneId, row.taskId, row.attempt, row.role, row.modelAlias, row.changedFiles.join("|"), existing?.feedback ?? "", existing?.notes ?? ""]
+        .map(csvValue).join(",");
+    }),
+  ].join("\n");
+  await writeFile(feedbackPath, `${feedbackCsv}\n`, { mode: 0o600 });
+  return reportPath;
 }
 
 export function summarizeModelPerformance(calls: Record<string, unknown>[]): ModelPerformance[] {
@@ -167,7 +310,9 @@ export async function writeHumanReview(input: {
     "3. Registre ajustes em um arquivo e importe com `feedback import` ou aprove a revisão exata.", "",
     "## Decisões e dúvidas", "", "Nenhuma dúvida adicional foi criada automaticamente.", "",
     "## Limitações", "", "Probes remotos e revisão visual por visão permanecem pendentes quando não há credencial/modelo elegível.", "",
+    "## Atribuição de trabalho", "", "Consulte `../../work-attribution.md` para tentativas, modelos, arquivos tocados e feedback.", "",
   ].join("\n");
+  await writeWorkAttributionReport(input.config, input.store, input.runId, input.milestoneId);
   await mkdir(directory, { recursive: true });
   const output = path.join(directory, "human-review.md");
   await writeFile(output, markdown, { mode: 0o600 });
@@ -227,12 +372,13 @@ export async function writeFinalReport(config: HarnessConfig, store: StateStore,
     `- Sessões de controlador: ${sessions.length}; tempo ativo acumulado: ${Math.round(activeDurationMs / 1000)} s (intervalos entre resumes excluídos).`,
     `- Interações com modelos: ${textValue(calls?.count, "0")}; tokens entrada/saída: ${textValue(calls?.input_tokens, "0")}/${textValue(calls?.output_tokens, "0")}.`,
     `- Custo: USD ${formatMicros(budget.confirmedMicros)} confirmado; USD ${formatMicros(budget.uncertainMicros)} incerto.`,
-    `- Próximo passo: ${next}`, `- Telemetria detalhada: run-summary.json, model-performance.md, budget-report.md.`, "",
+    `- Próximo passo: ${next}`, `- Telemetria detalhada: run-summary.json, model-performance.md, budget-report.md, work-attribution.md.`, "",
     "## Rastreabilidade", "", ...tasks.map((task) => `- ${String(task.requirement_ids_json)} → ${String(task.id)} → ${String(task.state)}`), "",
     "## Aceites", "", ...(approvals.length ? approvals.map((item) => `- ${String(item.milestone_id)}: ${String(item.decision)} por ${String(item.actor)} em ${String(item.created_at)}`) : ["Nenhum aceite humano registrado."]), "",
     "## Achados", "", ...(findings.length ? findings.map((item) => `- [${String(item.severity)}] ${String(item.summary)}`) : ["Nenhum achado persistido."]), "",
     "## Escopo de comprovação", "", "Integrações remotas só são consideradas verificadas quando existe provider_call/evidência real. Simulações não comprovam acesso remoto.", "",
   ].join("\n");
+  await writeWorkAttributionReport(config, store, runId);
   const output = path.join(runDirectory(config, runId), "final-report.md");
   await writeFile(output, markdown, { mode: 0o600 });
   return output;

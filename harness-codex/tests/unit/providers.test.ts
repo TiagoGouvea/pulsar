@@ -3,8 +3,9 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import type { ModelCandidate } from "../../src/domain/types.js";
+import { testLocalModels, writeLocalModelTestReport } from "../../src/providers/local-model-test.js";
+import { localApiEndpoint } from "../../src/providers/lmstudio.js";
 import { openAiEndpoint, probeCandidate } from "../../src/providers/probes.js";
-import type { ProcessResult } from "../../src/utils/process.js";
 import { createTestConfig } from "../helpers/config.js";
 
 const candidate: ModelCandidate = {
@@ -24,32 +25,89 @@ const candidate: ModelCandidate = {
 
 afterEach(() => vi.restoreAllMocks());
 
+function requestUrl(input: RequestInfo | URL): string {
+  if (typeof input === "string") return input;
+  return input instanceof URL ? input.href : input.url;
+}
+
 describe("probes de provedores", () => {
-  test("normaliza endpoints OpenAI com ou sem /v1", () => {
+  test("normaliza endpoints OpenAI e nativos", () => {
     expect(openAiEndpoint("http://localhost:1235/v1", "models").href).toBe("http://localhost:1235/v1/models");
     expect(openAiEndpoint("http://localhost:1235/", "chat/completions").href).toBe("http://localhost:1235/v1/chat/completions");
+    expect(localApiEndpoint("http://localhost:1235/v1", "models").href).toBe("http://localhost:1235/api/v1/models");
   });
 
-  test("valida disponibilidade, texto e function calling locais", async () => {
+  test("valida disponibilidade, texto e function calling locais pela API", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "harness providers "));
     const config = await createTestConfig(root);
-    const fetchMock = vi.spyOn(globalThis, "fetch")
-      .mockResolvedValueOnce(new Response(JSON.stringify({ data: [{ id: candidate.modelId }] }), { status: 200 }))
-      .mockResolvedValueOnce(new Response(JSON.stringify({ choices: [{ message: { content: "oi" } }] }), { status: 200 }))
-      .mockResolvedValueOnce(new Response(JSON.stringify({
-        choices: [{ message: { tool_calls: [{ function: { name: "report_value", arguments: "{\"value\":7}" } }] } }],
-      }), { status: 200 }));
-    const processRunner = (command: string[]): Promise<ProcessResult> => Promise.resolve({
-      command, exitCode: 0, signal: null, stdout: "", stderr: "", durationMs: 1, timedOut: false,
+    let instanceLoaded = false;
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation((input, init) => {
+      const url = requestUrl(input);
+      if (url.endsWith("/api/v1/models")) return Promise.resolve(new Response(JSON.stringify({ models: [{ key: candidate.modelId, loaded_instances: instanceLoaded ? [{ id: "test-instance" }] : [] }] }), { status: 200 }));
+      if (url.endsWith("/v1/models")) return Promise.resolve(new Response(JSON.stringify({ data: [{ id: candidate.modelId }] }), { status: 200 }));
+      if (url.endsWith("/api/v1/models/load")) {
+        instanceLoaded = true;
+        return Promise.resolve(new Response(JSON.stringify({ instance_id: "test-instance" }), { status: 200 }));
+      }
+      if (url.endsWith("/api/v1/models/unload")) {
+        instanceLoaded = false;
+        return Promise.resolve(new Response(JSON.stringify({ instance_id: "test-instance" }), { status: 200 }));
+      }
+      if (url.endsWith("/v1/chat/completions")) {
+        const body = typeof init?.body === "string" ? init.body : "";
+        if (body.includes("report_value")) {
+          return Promise.resolve(new Response(JSON.stringify({
+            choices: [{ message: { tool_calls: [{ function: { name: "report_value", arguments: "{\"value\":7}" } }] } }],
+          }), { status: 200 }));
+        }
+        return Promise.resolve(new Response(JSON.stringify({ choices: [{ message: { content: "oi" } }] }), { status: 200 }));
+      }
+      throw new Error(`Unexpected request: ${url}`);
     });
 
-    const checks = await probeCandidate(config, candidate, { inference: true, processRunner });
+    const checks = await probeCandidate(config, candidate, { inference: true });
 
     expect(checks.map((check) => [check.id, check.status])).toEqual([
       ["model.local-test.availability", "pass"],
       ["model.local-test.text", "pass"],
       ["model.local-test.tools", "pass"],
     ]);
-    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(fetchMock).toHaveBeenCalledTimes(7);
+  });
+
+  test("mede carga e resposta, descarrega e grava relatório local", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "harness local benchmark "));
+    const config = await createTestConfig(root);
+    let instanceLoaded = false;
+    vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
+      const url = requestUrl(input);
+      if (url.endsWith("/api/v1/models")) {
+        return Promise.resolve(new Response(JSON.stringify({ models: [{ key: candidate.modelId, loaded_instances: instanceLoaded ? [{ id: "test-instance" }] : [] }] }), { status: 200 }));
+      }
+      if (url.endsWith("/api/v1/models/load")) {
+        instanceLoaded = true;
+        return Promise.resolve(new Response(JSON.stringify({ instance_id: "test-instance", status: "loaded" }), { status: 200 }));
+      }
+      if (url.endsWith("/api/v1/models/unload")) {
+        instanceLoaded = false;
+        return Promise.resolve(new Response(JSON.stringify({ instance_id: "test-instance" }), { status: 200 }));
+      }
+      if (url.endsWith("/v1/chat/completions")) {
+        return Promise.resolve(new Response(JSON.stringify({ choices: [{ message: { content: [{ type: "text", text: "oi" }] } }], usage: { prompt_tokens: 5, completion_tokens: 1 }, stats: { generation_time: 0.25 } }), { status: 200 }));
+      }
+      throw new Error(`Unexpected request: ${url}`);
+    });
+
+    const results = await testLocalModels(config, [candidate]);
+    const reportPath = await writeLocalModelTestReport(config, results);
+
+    const result = results[0];
+    expect(result?.status).toBe("passed");
+    expect(result?.response).toBe("oi");
+    expect(typeof result?.loadDurationMs).toBe("number");
+    expect(typeof result?.responseDurationMs).toBe("number");
+    expect(result?.generationDurationMs).toBe(250);
+    expect(instanceLoaded).toBe(false);
+    expect(reportPath).toContain("local-model-tests");
   });
 });

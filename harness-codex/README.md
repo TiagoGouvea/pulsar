@@ -13,6 +13,7 @@ yarn install --frozen-lockfile
 # Verificações de ambiente e ferramentas
 yarn harness doctor --config harness.config.yaml
 yarn harness preflight --config harness.config.yaml
+yarn harness models test-local --config harness.config.yaml
 
 # Execução do ciclo autônomo
 yarn harness run --config harness.config.yaml
@@ -21,6 +22,7 @@ yarn harness run --config harness.config.yaml
 yarn harness status --config harness.config.yaml --run <runId>
 yarn harness diagnostics --config harness.config.yaml --run <runId>
 yarn harness models performance --config harness.config.yaml --run <runId>
+yarn harness worklog --config harness.config.yaml --run <runId> [--milestone <id>]
 yarn harness dashboard --config harness.config.yaml --run <runId>
 yarn harness pause --config harness.config.yaml --run <runId>
 yarn harness resume --config harness.config.yaml --run <runId>

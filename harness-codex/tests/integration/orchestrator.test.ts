@@ -25,6 +25,25 @@ describe("controlador", () => {
     } finally { orchestrator.close(); }
   });
 
+  test("executa typecheck, lint e test em cada tarefa", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "harness-task-quality-gates-"));
+    const base = await createTestConfig(root);
+    const command = ["node", "-e", "process.exit(0)"];
+    const config = { ...base, commands: { typecheck: command, lint: command, test: command } };
+    const orchestrator = new Orchestrator(config);
+    try {
+      const runId = await orchestrator.run();
+      const task = orchestrator.store.listTasks(runId)[0];
+      if (!task) throw new Error("Tarefa de teste ausente.");
+      const checks = orchestrator.store.all<{ verifier_id: string }>(
+        "SELECT verifier_id FROM verifier_runs WHERE run_id=? AND task_id=? ORDER BY rowid",
+        runId, String(task.id),
+      );
+
+      expect(checks.map((item) => item.verifier_id)).toEqual(["typecheck", "lint", "test"]);
+    } finally { orchestrator.close(); }
+  });
+
   test("mudança de entrada exige replanejamento explícito", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "harness-input-"));
     const config = await createTestConfig(root);
@@ -125,9 +144,11 @@ describe("controlador", () => {
   test("registra o comando e o log que bloquearam a verificação da etapa", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "harness-milestone-fail-"));
     const config = await createTestConfig(root);
+    const runCounter = path.join(root, "typecheck-count.txt");
+    const typecheckScript = `const fs=require('node:fs');const path=${JSON.stringify(runCounter)};const count=Number(fs.existsSync(path)?fs.readFileSync(path,'utf8'):0)+1;fs.writeFileSync(path,String(count));process.exit(count>=3?7:0)`;
     const orchestrator = new Orchestrator({
       ...config,
-      commands: { ...config.commands, typecheck: ["node", "-e", "process.exit(7)"] },
+      commands: { ...config.commands, typecheck: ["node", "-e", typecheckScript] },
     });
     try {
       const runId = await orchestrator.run();

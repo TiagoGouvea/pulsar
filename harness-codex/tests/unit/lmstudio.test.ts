@@ -1,10 +1,9 @@
 import { mkdtemp } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { describe, expect, test, vi } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
 import type { ModelCandidate } from "../../src/domain/types.js";
-import { withLmStudioModel } from "../../src/providers/lmstudio.js";
-import type { ProcessResult } from "../../src/utils/process.js";
+import { localApiEndpoint, loadLmStudioModel, unloadLmStudioModels, withLmStudioModel } from "../../src/providers/lmstudio.js";
 import { createTestConfig } from "../helpers/config.js";
 
 const candidate: ModelCandidate = {
@@ -22,63 +21,79 @@ const candidate: ModelCandidate = {
   maxOutputTokens: 2048,
 };
 
-function processResult(command: string[], exitCode = 0): ProcessResult {
-  return { command, exitCode, signal: null, stdout: "", stderr: "", durationMs: 1, timedOut: false };
+afterEach(() => vi.restoreAllMocks());
+
+function requestUrl(input: RequestInfo | URL): string {
+  if (typeof input === "string") return input;
+  return input instanceof URL ? input.href : input.url;
 }
 
-describe("ciclo de vida do LM Studio", () => {
-  test("descarrega, carrega somente o candidato e descarrega após o sucesso", async () => {
-    const config = await createTestConfig(await mkdtemp(path.join(os.tmpdir(), "harness lmstudio ")));
-    const steps: string[] = [];
-    const runner = (command: string[]): Promise<ProcessResult> => {
-      steps.push(command.join(" "));
-      return Promise.resolve(processResult(command));
-    };
-
-    const result = await withLmStudioModel(config, candidate, () => {
-      steps.push("inference");
-      return Promise.resolve("ok");
-    }, runner);
-
-    expect(result).toBe("ok");
-    expect(steps).toEqual([
-      "lms unload --all",
-      "lms load qwen3-coder-30b-a3b-instruct --identifier qwen3-coder-30b-a3b-instruct --context-length 8192",
-      "inference",
-      "lms unload --all",
-    ]);
+describe("ciclo de vida via API do LM Studio/Bionic", () => {
+  test("deriva os endpoints nativos sem perder prefixos de caminho", () => {
+    expect(localApiEndpoint("http://localhost:1235/v1", "models/load").href)
+      .toBe("http://localhost:1235/api/v1/models/load");
+    expect(localApiEndpoint("http://localhost:1235/proxy/v1/", "models").href)
+      .toBe("http://localhost:1235/proxy/api/v1/models");
   });
 
-  test("descarrega no final quando a inferência falha", async () => {
-    const config = await createTestConfig(await mkdtemp(path.join(os.tmpdir(), "harness lmstudio fail ")));
-    const commands: string[] = [];
-    const runner = (command: string[]): Promise<ProcessResult> => {
-      commands.push(command.join(" "));
-      return Promise.resolve(processResult(command));
-    };
-
-    await expect(withLmStudioModel(
-      config,
-      candidate,
-      () => Promise.reject(new Error("inference failed")),
-      runner,
-    )).rejects.toThrow("inference failed");
-
-    expect(commands.at(-1)).toBe("lms unload --all");
-    expect(commands.filter((command) => command === "lms unload --all")).toHaveLength(2);
-  });
-
-  test("tenta a limpeza mesmo quando o carregamento falha", async () => {
-    const config = await createTestConfig(await mkdtemp(path.join(os.tmpdir(), "harness lmstudio load fail ")));
-    let invocation = 0;
-    const runner = vi.fn((command: string[]): Promise<ProcessResult> => {
-      invocation += 1;
-      return Promise.resolve(processResult(command, invocation === 2 ? 1 : 0));
+  test("descarrega instâncias existentes, carrega um modelo e descarrega ao final", async () => {
+    const config = await createTestConfig(await mkdtemp(path.join(os.tmpdir(), "harness-lmstudio-api-test-")));
+    const requests: Array<{ url: string; body?: string }> = [];
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation((input, init) => {
+      const url = requestUrl(input);
+      requests.push({ url, ...(typeof init?.body === "string" ? { body: init.body } : {}) });
+      if (url.endsWith("/models") && requests.length === 1) {
+        return Promise.resolve(new Response(JSON.stringify({ models: [{ key: "phonon", loaded_instances: [{ id: "phonon-instance" }] }] }), { status: 200 }));
+      }
+      if (url.endsWith("/models") && requests.length === 4) {
+        return Promise.resolve(new Response(JSON.stringify({ models: [{ key: candidate.modelId, loaded_instances: [{ id: "coder-instance" }] }] }), { status: 200 }));
+      }
+      if (url.endsWith("/models/unload")) return Promise.resolve(new Response(JSON.stringify({ instance_id: "unloaded" }), { status: 200 }));
+      if (url.endsWith("/models/load")) return Promise.resolve(new Response(JSON.stringify({ instance_id: "coder-instance", status: "loaded" }), { status: 200 }));
+      throw new Error(`Unexpected request: ${url} (${requests.length})`);
     });
 
-    await expect(withLmStudioModel(config, candidate, () => Promise.resolve("unused"), runner)).rejects.toThrow("Falha ao carregar");
+    const actions = await withLmStudioModel(config, candidate, () => Promise.resolve("ok"));
 
-    expect(runner).toHaveBeenCalledTimes(3);
-    expect(runner.mock.calls[2]?.[0]).toEqual(["lms", "unload", "--all"]);
+    expect(actions).toBe("ok");
+    expect(requests.map((request) => request.url.split("/").at(-1))).toEqual([
+      "models", "unload", "load", "models", "unload",
+    ]);
+    expect(JSON.parse(requests[2]?.body ?? "{}")).toMatchObject({ model: candidate.modelId, context_length: 8192 });
+    expect(fetchMock).toHaveBeenCalledTimes(5);
+  });
+
+  test("tenta descarregar no final quando a inferência falha", async () => {
+    const config = await createTestConfig(await mkdtemp(path.join(os.tmpdir(), "harness-lmstudio-api-failure-")));
+    const requests: string[] = [];
+    vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
+      const url = requestUrl(input);
+      requests.push(url);
+      if (url.endsWith("/models")) {
+        return Promise.resolve(new Response(JSON.stringify({ models: [{ key: candidate.modelId, loaded_instances: [] }] }), { status: 200 }));
+      }
+      if (url.endsWith("/models/load")) return Promise.resolve(new Response(JSON.stringify({ instance_id: "coder" }), { status: 200 }));
+      throw new Error("inference failed");
+    });
+
+    await expect(withLmStudioModel(config, candidate, () => Promise.reject(new Error("inference failed"))))
+      .rejects.toThrow("inference failed");
+    expect(requests.at(-1)).toContain("/api/v1/models");
+  });
+
+  test("descarrega mesmo quando a API de load falha", async () => {
+    const config = await createTestConfig(await mkdtemp(path.join(os.tmpdir(), "harness-lmstudio-load-failure-")));
+    const requests: string[] = [];
+    vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
+      const url = requestUrl(input);
+      requests.push(url);
+      if (url.endsWith("/models")) return Promise.resolve(new Response(JSON.stringify({ models: [] }), { status: 200 }));
+      if (url.endsWith("/models/load")) return Promise.resolve(new Response("load failed", { status: 500 }));
+      throw new Error(`Unexpected request: ${url}`);
+    });
+
+    await expect(loadLmStudioModel(config, candidate)).rejects.toThrow("HTTP 500");
+    await expect(unloadLmStudioModels(config)).resolves.toEqual([]);
+    expect(requests.filter((url) => url.endsWith("/models"))).toHaveLength(2);
   });
 });

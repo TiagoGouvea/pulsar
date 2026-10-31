@@ -11,7 +11,8 @@ import { Orchestrator } from "../orchestrator/controller.js";
 import { doctor, preflight, writePreflightReport } from "../preflight/doctor.js";
 import { probeCandidate } from "../providers/probes.js";
 import { loadLmStudioModel, unloadLmStudioModels } from "../providers/lmstudio.js";
-import { writeBudgetReport, writeFinalReport, writeModelPerformanceReport } from "../reports/generator.js";
+import { writeBudgetReport, writeFinalReport, writeModelPerformanceReport, writeWorkAttributionReport } from "../reports/generator.js";
+import { testLocalModels, writeLocalModelTestReport } from "../providers/local-model-test.js";
 import { StateStore } from "../state/store.js";
 import { createId, ensureDirectory, nowUtc, safeError } from "../utils/core.js";
 import { captureVisualEvidence } from "../verification/visual.js";
@@ -19,6 +20,25 @@ import { currentRevision } from "../git/workspace.js";
 
 const program = new Command();
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+
+function loadProjectEnvironment(): void {
+  const envPath = path.join(packageRoot, ".env");
+  if (!existsSync(envPath)) return;
+  for (const line of readFileSync(envPath, "utf8").split(/\r?\n/)) {
+    const match = /^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$/.exec(line);
+    if (!match) continue;
+    const key = match[1];
+    let value = match[2] ?? "";
+    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+      value = value.slice(1, -1);
+    } else {
+      value = value.replace(/\s+#.*$/, "");
+    }
+    if (key) process.env[key] = value;
+  }
+}
+
+loadProjectEnvironment();
 
 program.name("harness").description("Harness local de desenvolvimento autônomo").version("0.1.0");
 
@@ -69,19 +89,35 @@ models.command("probe").requiredOption("--config <path>").requiredOption("--alia
     if (!candidate) throw new Error(`Alias desconhecido: ${options.alias}`);
     printChecks(await probeCandidate(config, candidate, { inference: options.inference ?? false }));
   });
+models.command("test-local")
+  .description("Testa sequencialmente modelos locais pela API, medindo carga e resposta")
+  .requiredOption("--config <path>")
+  .option("--alias <alias>", "Testa somente um alias local")
+  .action(async (options: { config: string; alias?: string }) => {
+    const config = await loadConfig(options.config);
+    const candidates = config.models.filter((item) => item.enabled && item.modality === "local" && (!options.alias || item.alias === options.alias));
+    if (options.alias && !candidates.length) throw new Error(`Alias local habilitado não encontrado: ${options.alias}`);
+    const results = await testLocalModels(config, candidates, (message) => console.log(message));
+    const report = await writeLocalModelTestReport(config, results);
+    console.table(results.map(({ alias, modelId, status, loadDurationMs, responseDurationMs, generationDurationMs, response, error }) => ({
+      alias, modelId, status, cargaMs: loadDurationMs, respostaMs: responseDurationMs,
+      geracaoMs: generationDurationMs, resposta: response, erro: error,
+    })));
+    console.log(`Relatório: ${report}`);
+    if (results.some((item) => item.status !== "passed")) process.exitCode = 2;
+  });
 models.command("load").description("Descarrega outros modelos e carrega um candidato local")
   .requiredOption("--config <path>").requiredOption("--alias <alias>").action(async (options: { config: string; alias: string }) => {
     const config = await loadConfig(options.config);
     const candidate = config.models.find((item) => item.alias === options.alias);
     if (!candidate) throw new Error(`Alias desconhecido: ${options.alias}`);
     const results = await loadLmStudioModel(config, candidate);
-    console.log(results.map((result) => result.stdout || result.stderr).join("\n"));
+    console.table(results.map((result) => ({ action: result.action, modelId: result.modelId, durationMs: result.durationMs })));
   });
 models.command("unload").description("Descarrega modelos locais explicitamente")
   .requiredOption("--config <path>").action(async (options: { config: string }) => {
     const result = await unloadLmStudioModels(await loadConfig(options.config));
-    if (result.exitCode !== 0) throw new Error(result.stderr || result.stdout);
-    console.log(result.stdout || "Modelos descarregados.");
+    console.table(result.map((item) => ({ action: item.action, modelId: item.modelId, durationMs: item.durationMs })));
   });
 models.command("performance").description("Gera o índice de sucesso técnico por modelo")
   .requiredOption("--config <path>").requiredOption("--run <id>")
@@ -161,6 +197,16 @@ for (const command of ["status", "pause", "resume", "stop"] as const) {
     }
   });
 }
+
+program.command("worklog").description("Gera o registro de trabalho e atribuição por modelo")
+  .requiredOption("--config <path>").requiredOption("--run <id>")
+  .option("--milestone <id>", "Filtra uma etapa específica")
+  .action(async (options: { config: string; run: string; milestone?: string }) => {
+    const config = await loadConfig(options.config);
+    const store = new StateStore(config.storage.root);
+    try { console.log(await writeWorkAttributionReport(config, store, options.run, options.milestone)); }
+    finally { store.close(); }
+  });
 
 program.command("review").requiredOption("--config <path>").requiredOption("--run <id>").requiredOption("--milestone <id>")
   .action(async (options: { config: string; run: string; milestone: string }) => {

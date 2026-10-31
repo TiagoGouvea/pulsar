@@ -21,7 +21,17 @@ O índice de sucesso técnico por modelo fica em `model-performance.md`, `.json`
 yarn harness models performance --config harness.config.yaml --run <runId>
 ```
 
+O registro por tentativa em `work-attribution.md`, `.json` e `.csv` relaciona requisito, tarefa, papel, alias/ID do modelo, resultado, duração e arquivos observados antes/depois da chamada. O arquivo `work-attribution-feedback.csv` é criado como template e preservado se já existir. Para atualizar o relatório:
+
+```bash
+yarn harness worklog --config harness.config.yaml --run <runId> [--milestone <id>]
+```
+
+Para verificar modelos locais individualmente em sequência (incluindo carga, resposta e descarga): `yarn harness models test-local --config harness.config.yaml`. A medição distingue tempo de carga, round-trip da resposta e duração de geração reportada pelo servidor quando disponível.
+
 O feedback humano é importado explicitamente e versionado. Editar silenciosamente `human-review.md` não aprova nada.
+
+Cada tarefa executa `typecheck`, `lint` e `test` que estiverem configurados, interrompendo na primeira falha; a verificação final da etapa ainda inclui build e E2E. A CLI carrega credenciais de `harness-codex/.env` e sobrepõe variáveis homônimas herdadas do terminal.
 
 ## Branch por etapa
 

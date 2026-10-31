@@ -73,7 +73,7 @@ budget:
 localInference:
   baseUrl: http://localhost:1235/v1
   maxLoadedModels: 1
-  initialContextTokens: 8192
+  initialContextTokens: 24576
   maxOutputTokens: 2048
   memoryPressureAction: unload_and_route_or_pause
 review:
@@ -85,15 +85,15 @@ review:
     - 1440
 routing:
   pools:
-    planner: [gemini-mid, sol-top, local-review]
-    testAuthor: [gemini-mid, qwen-code, sol-top]
-    implementer: [deepseek-code, qwen-code, local-qwen, glm-cheap]
-    hardImplementer: [sol-top, gemini-mid, local-coder, deepseek-code]
-    functionalReviewer: [gemini-mid, luna-cheap, local-review]
-    visualReviewer: [gemini-mid, glm-cheap]
-    securityReviewer: [sol-top, gemini-mid, local-review]
-    diagnostic: [luna-cheap, glm-cheap, deepseek-code, local-qwen]
-    learningAnalyst: [gemini-mid, local-review]
+    planner: [gemini-mid, sol-top, openai-sol, local-review, local-gptoss-gguf, local-qwen, local-qwen-optiq]
+    testAuthor: [gemini-mid, terra-review, qwen-code, sol-top, local-coder, local-coder-mlx, local-qwen, local-qwen-optiq]
+    implementer: [deepseek-code, minimax-flash, qwen-code, local-qwen, local-qwen-optiq, local-coder, local-coder-mlx, local-review, local-gptoss-gguf, glm-cheap]
+    hardImplementer: [sol-top, openai-sol, gemini-mid, terra-review, local-coder, local-coder-mlx, local-review, local-gptoss-gguf, deepseek-code]
+    functionalReviewer: [gemini-mid, terra-review, luna-cheap, local-review, local-gptoss-gguf, local-qwen, local-qwen-optiq, local-coder, local-coder-mlx]
+    visualReviewer: [gemini-mid, terra-review, glm-cheap]
+    securityReviewer: [sol-top, openai-sol, gemini-mid, terra-review, local-review, local-gptoss-gguf, local-qwen, local-qwen-optiq, local-coder, local-coder-mlx]
+    diagnostic: [luna-cheap, glm-cheap, deepseek-code, minimax-flash, local-qwen, local-qwen-optiq, local-coder, local-coder-mlx, local-review, local-gptoss-gguf]
+    learningAnalyst: [gemini-mid, terra-review, local-review, local-gptoss-gguf, local-qwen, local-qwen-optiq]
   hardTaskPatterns:
     - firestore|security rules|auth|privacidade|exclusão de conta
     - estatística|correlação|significância|insight
@@ -124,8 +124,8 @@ models:
   - alias: sol-top
     executor: pi
     provider: openrouter
-    modelId: openai/gpt-6-sol
-    family: openai-gpt-6
+    modelId: openai/gpt-6.1-sol
+    family: openai-gpt-6.1
     modality: metered_api
     capabilities: [text, tools, reasoning]
     roles: [planner, implementer, testAuthor, securityReviewer]
@@ -134,6 +134,34 @@ models:
     maxOutputTokens: 8192
     inputUsdPerMillion: "2"
     outputUsdPerMillion: "10"
+    credentialEnv: OPENROUTER_API_KEY
+  - alias: openai-sol
+    executor: pi
+    provider: openai
+    modelId: gpt-6.1-sol
+    family: openai-gpt-6.1
+    modality: metered_api
+    capabilities: [text, vision, tools, reasoning]
+    roles: [planner, implementer, testAuthor, securityReviewer]
+    enabled: true
+    contextTokens: 1050000
+    maxOutputTokens: 8192
+    inputUsdPerMillion: "2"
+    outputUsdPerMillion: "10"
+    credentialEnv: OPENAI_API_KEY
+  - alias: terra-review
+    executor: pi
+    provider: openrouter
+    modelId: openai/gpt-6.1-terra
+    family: openai-gpt-6.1
+    modality: metered_api
+    capabilities: [text, vision, tools, reasoning]
+    roles: [planner, implementer, testAuthor, functionalReviewer, visualReviewer, securityReviewer, learningAnalyst]
+    enabled: true
+    contextTokens: 1050000
+    maxOutputTokens: 8192
+    inputUsdPerMillion: "1"
+    outputUsdPerMillion: "5"
     credentialEnv: OPENROUTER_API_KEY
   - alias: gemini-mid
     executor: pi
@@ -152,16 +180,30 @@ models:
   - alias: deepseek-code
     executor: pi
     provider: openrouter
-    modelId: deepseek/deepseek-v4-pro-0813
-    family: deepseek-v4
+    modelId: deepseek/deepseek-v4.1-flash-1017
+    family: deepseek-v4.1
     modality: metered_api
     capabilities: [text, tools, reasoning]
     roles: [implementer, diagnostic]
     enabled: true
-    contextTokens: 131072
+    contextTokens: 1050000
     maxOutputTokens: 8192
-    inputUsdPerMillion: "0.5267"
-    outputUsdPerMillion: "1.58"
+    inputUsdPerMillion: "0.05"
+    outputUsdPerMillion: "0.60"
+    credentialEnv: OPENROUTER_API_KEY
+  - alias: minimax-flash
+    executor: pi
+    provider: openrouter
+    modelId: minimax/minimax-m3.1-flash
+    family: minimax-m3.1
+    modality: metered_api
+    capabilities: [text, vision, tools, reasoning]
+    roles: [implementer, diagnostic]
+    enabled: true
+    contextTokens: 1000000
+    maxOutputTokens: 8192
+    inputUsdPerMillion: "0.15"
+    outputUsdPerMillion: "0.60"
     credentialEnv: OPENROUTER_API_KEY
   - alias: qwen-code
     executor: pi
@@ -220,10 +262,12 @@ models:
       - planner
       - implementer
       - testAuthor
+      - functionalReviewer
+      - securityReviewer
       - diagnostic
       - learningAnalyst
     enabled: true
-    contextTokens: 8192
+    contextTokens: 24576
     maxOutputTokens: 2048
   - alias: local-coder
     executor: pi
@@ -239,7 +283,33 @@ models:
     roles:
       - implementer
       - testAuthor
+      - functionalReviewer
+      - securityReviewer
       - diagnostic
+    enabled: true
+    contextTokens: 8192
+    maxOutputTokens: 2048
+  - alias: local-qwen-optiq
+    executor: pi
+    provider: lmstudio
+    modelId: qwen3.5-9b-optiq
+    endpoint: http://localhost:1235/v1
+    family: qwen3.5
+    modality: local
+    capabilities: [text, tools, reasoning]
+    roles: [planner, implementer, testAuthor, functionalReviewer, diagnostic, securityReviewer, learningAnalyst]
+    enabled: true
+    contextTokens: 24576
+    maxOutputTokens: 2048
+  - alias: local-coder-mlx
+    executor: pi
+    provider: lmstudio
+    modelId: qwen3-coder-30b-a3b-instruct-mlx
+    endpoint: http://localhost:1235/v1
+    family: qwen3-coder
+    modality: local
+    capabilities: [text, tools, reasoning]
+    roles: [implementer, testAuthor, functionalReviewer, diagnostic, securityReviewer]
     enabled: true
     contextTokens: 8192
     maxOutputTokens: 2048
@@ -256,11 +326,23 @@ models:
       - reasoning
     roles:
       - planner
+      - implementer
       - diagnostic
       - functionalReviewer
-      - visualReviewer
       - securityReviewer
       - learningAnalyst
+    enabled: true
+    contextTokens: 8192
+    maxOutputTokens: 2048
+  - alias: local-gptoss-gguf
+    executor: pi
+    provider: lmstudio
+    modelId: unsloth/gpt-oss-20b
+    endpoint: http://localhost:1235/v1
+    family: gpt-oss
+    modality: local
+    capabilities: [text, tools, reasoning]
+    roles: [planner, implementer, functionalReviewer, diagnostic, securityReviewer, learningAnalyst]
     enabled: true
     contextTokens: 8192
     maxOutputTokens: 2048

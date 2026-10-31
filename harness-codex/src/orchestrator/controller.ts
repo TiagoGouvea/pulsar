@@ -9,7 +9,7 @@ import { BudgetLedger } from "../budget/ledger.js";
 import { buildTaskContext } from "../context/builder.js";
 import { createExecutor } from "../executors/index.js";
 import type { Executor } from "../executors/types.js";
-import { checkpointFiles, currentRevision, inspectGitWorkspace } from "../git/workspace.js";
+import { changedPathsBetweenSnapshots, checkpointFiles, currentRevision, inspectGitWorkspace, snapshotWorkspaceChanges } from "../git/workspace.js";
 import { createTasks, extractRequirements, milestoneFromRequirementId } from "../planning/requirements.js";
 import { ModelCatalog } from "../providers/catalog.js";
 import { firebaseProjectChecks } from "../preflight/doctor.js";
@@ -361,17 +361,32 @@ export class Orchestrator {
       "INSERT INTO sessions(id, attempt_id, role, model_key, independent, context_manifest_path, started_at) VALUES (?, ?, ?, ?, 0, ?, ?)",
       sessionId, attemptId, task.role, candidate.alias, path.join(attemptDirectory, "context-manifest.json"), nowUtc(),
     );
+    const beforeWorkspace = await snapshotWorkspaceChanges(this.config.project.workspace);
     const providerCallId = this.startProviderCall(attemptId, candidate, estimated);
     const started = performance.now();
+    const workStartedAt = nowUtc();
     let result: ExecutionResult;
+    let declaredChangedFiles: string[] = [];
     try {
       result = await executor.execute({
         runId, attemptId, task, workspace: this.config.project.workspace, prompt, candidate,
         timeoutMs: this.config.execution.implementationTimeoutMinutes * 60_000, outputDirectory: attemptDirectory,
       });
+      declaredChangedFiles = result.changedFiles;
     } finally {
+      const workFinishedAt = nowUtc();
       this.activeExecutor = undefined;
       this.store.run("UPDATE sessions SET finished_at=? WHERE id=?", nowUtc(), sessionId);
+      const afterWorkspace = await snapshotWorkspaceChanges(this.config.project.workspace);
+      await writeJson(path.join(attemptDirectory, "work-attribution.json"), {
+        runId, milestoneId: task.milestoneId, taskId: task.id, attemptId, attempt: attemptNumber,
+        role: task.role, candidate: candidate.alias, provider: candidate.provider, modelId: candidate.modelId,
+        family: candidate.family, modality: candidate.modality, startedAt: workStartedAt, finishedAt: workFinishedAt,
+        beforeRevision: beforeWorkspace.revision, afterRevision: afterWorkspace.revision,
+        observedChangedFiles: changedPathsBetweenSnapshots(beforeWorkspace, afterWorkspace),
+        declaredChangedFiles,
+        readOnly: false,
+      });
     }
     await writeJson(path.join(attemptDirectory, "result.json"), result);
     this.recordExecutionFailure(runId, task.id, attemptId, candidate.alias, result);
@@ -608,7 +623,8 @@ export class Orchestrator {
     this.store.setTaskState(runId, task.id, "verifying");
     const verification = await verifyCommands({
       config: this.config, store: this.store, runId, taskId: task.id,
-      commandNames: this.config.commands.test ? ["test"] : [], outputDirectory: attemptDirectory,
+      commandNames: ["typecheck", "lint", "test"].filter((name) => Boolean(this.config.commands[name])),
+      outputDirectory: attemptDirectory,
     });
     if (!verification.passed) {
       this.store.setTaskState(runId, task.id, "changes_requested");

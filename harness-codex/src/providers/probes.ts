@@ -1,7 +1,7 @@
 import type { HarnessConfig } from "../config/schema.js";
 import type { CheckResult, ModelCandidate } from "../domain/types.js";
 import { safeError } from "../utils/core.js";
-import { withLmStudioModel, type ProcessRunner } from "./lmstudio.js";
+import { withLmStudioModel } from "./lmstudio.js";
 
 interface LmModel {
   key?: string;
@@ -13,7 +13,7 @@ interface LmModel {
 interface ChatCompletion {
   choices?: Array<{
     message?: {
-      content?: string | null;
+      content?: unknown;
       tool_calls?: Array<{ function?: { name?: string; arguments?: string } }>;
     };
   }>;
@@ -21,7 +21,6 @@ interface ChatCompletion {
 
 export interface ProbeOptions {
   inference?: boolean;
-  processRunner?: ProcessRunner;
 }
 
 export function openAiEndpoint(baseUrl: string, resource: "models" | "chat/completions"): URL {
@@ -78,14 +77,13 @@ async function probeLmStudio(config: HarnessConfig, candidate: ModelCandidate, o
         config,
         candidate,
         async () => probeLocalInference(baseUrl, headers, candidate),
-        options.processRunner,
       );
       return [availability, ...inferenceChecks];
     } catch (error) {
       return [availability, {
         id: `model.${candidate.alias}.lifecycle`, status: "block", scope: "stage", importance: "required",
         summary: "Falha ao preparar ou limpar o modelo local.", evidence: safeError(error),
-        remediation: "Verifique os recursos do sistema e execute `lms ps`; o harness já tentou descarregar todos os modelos.",
+        remediation: "Verifique os recursos do sistema e as instâncias na API nativa; o harness já tentou descarregar os modelos.",
       }];
     }
   } catch (error) {
@@ -107,7 +105,15 @@ async function probeLocalInference(baseUrl: string, headers: Record<string, stri
       max_tokens: maxTokens,
       temperature: 0,
     });
-    const content = payload.choices?.[0]?.message?.content?.trim();
+    const rawContent = payload.choices?.[0]?.message?.content;
+    const contentBlocks: unknown[] = Array.isArray(rawContent) ? rawContent as unknown[] : [];
+    const content = typeof rawContent === "string"
+      ? rawContent.trim()
+      : contentBlocks.map((item: unknown) => {
+        if (!item || typeof item !== "object") return "";
+        const block = item as Record<string, unknown>;
+        return block.type === "text" && typeof block.text === "string" ? block.text : "";
+      }).join("").trim();
     if (!content) throw new Error("Resposta textual vazia.");
     checks.push({
       id: `model.${candidate.alias}.text`, status: "pass", scope: "stage", importance: "required",

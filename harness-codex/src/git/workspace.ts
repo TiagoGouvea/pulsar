@@ -1,7 +1,7 @@
 import { readdir, readFile, realpath, stat } from "node:fs/promises";
 import path from "node:path";
 import { runProcess } from "../utils/process.js";
-import { sha256 } from "../utils/core.js";
+import { hashFile, sha256 } from "../utils/core.js";
 import { assertPathInside } from "../security/workspace.js";
 
 export async function isGitRepository(workspace: string): Promise<boolean> {
@@ -65,6 +65,40 @@ export async function workspaceChanges(workspace: string): Promise<string[]> {
   );
   if (status.exitCode !== 0) throw new Error(`Falha ao inspecionar alterações do workspace: ${status.stderr}`);
   return status.stdout.split("\0").filter(Boolean).map((entry) => entry.slice(3));
+}
+
+export interface WorkspaceSnapshot {
+  revision: string;
+  files: Record<string, string>;
+}
+
+export async function snapshotWorkspaceChanges(workspace: string): Promise<WorkspaceSnapshot> {
+  const workspaceRoot = await realpath(workspace);
+  const repository = await runProcess(["git", "rev-parse", "--show-toplevel"], { cwd: workspaceRoot, timeoutMs: 3_000 });
+  const files: Record<string, string> = {};
+  if (repository.exitCode !== 0) return { revision: await currentRevision(workspaceRoot), files };
+  const repositoryRoot = await realpath(repository.stdout.trim());
+  const workspaceRelative = path.relative(repositoryRoot, workspaceRoot).split(path.sep).join("/");
+  for (const repositoryPath of await workspaceChanges(workspaceRoot)) {
+    const workspacePath = workspaceRelative && repositoryPath.startsWith(`${workspaceRelative}/`)
+      ? repositoryPath.slice(workspaceRelative.length + 1)
+      : repositoryPath;
+    const filePath = assertPathInside(path.resolve(workspaceRoot, workspacePath), workspaceRoot);
+    try {
+      const actualPath = await realpath(filePath);
+      assertPathInside(actualPath, workspaceRoot);
+      files[workspacePath] = await hashFile(actualPath);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") files[workspacePath] = "deleted";
+      else throw error;
+    }
+  }
+  return { revision: await currentRevision(workspaceRoot), files };
+}
+
+export function changedPathsBetweenSnapshots(before: WorkspaceSnapshot, after: WorkspaceSnapshot): string[] {
+  const paths = new Set([...Object.keys(before.files), ...Object.keys(after.files)]);
+  return [...paths].filter((file) => before.files[file] !== after.files[file]).sort();
 }
 
 async function directoryFingerprint(root: string): Promise<string> {
