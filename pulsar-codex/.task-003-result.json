@@ -1,0 +1,54 @@
+{
+  "taskId": "task-003",
+  "outcome": "ready_for_verification",
+  "summary": "Task-003 implementada: tutorial de três telas alinhado ao design de Fatores, Resultados e Associações, com Próximo/Voltar entre etapas, Pular encerrando o fluxo em qualquer tela e conclusão persistida em users/{uid} mais marcador local por UID. O dashboard inicial apresenta quatro sugestões opcionais e a ação Criar meu próprio indicador; nenhum indicador é criado na montagem, apenas por clique explícito. Sugestões usam o modelo estruturado e ficam visíveis em Seus indicadores. O convite para salvar a conta aparece somente após interação útil, é inline, dispensável e não bloqueia o uso; contas permanentes não o recebem. Verificação final: lint, typecheck, 61 testes Vitest, 9 testes de functions, build do app/functions e 60/60 E2E.",
+  "changedFiles": [
+    "README.md",
+    "docs/DECISIONS.md",
+    "docs/IMPLEMENTATION-STATUS-TASK-003.md",
+    "src/components/routing/RootRedirect.tsx",
+    "src/features/account/useAccountSaveInvite.ts",
+    "src/features/indicators/repository.ts",
+    "src/features/indicators/suggestions.ts",
+    "src/features/indicators/types.ts",
+    "src/features/indicators/useIndicators.ts",
+    "src/features/onboarding/completion.ts",
+    "src/features/onboarding/completion.spec.ts",
+    "src/features/onboarding/useOnboardingCompletion.ts",
+    "src/pages/dashboard/AccountSaveInvite.tsx",
+    "src/pages/dashboard/DashboardPage.tsx",
+    "src/pages/dashboard/DashboardPage.test.tsx",
+    "src/pages/onboarding/OnboardingFlow.test.tsx",
+    "src/pages/onboarding/OnboardingStep1.tsx",
+    "src/pages/onboarding/OnboardingStep2.tsx",
+    "src/pages/onboarding/OnboardingStep3.tsx",
+    "src/routes.tsx",
+    "tests/e2e/mobile-reflow.spec.ts",
+    ".task-003-result.json"
+  ],
+  "claimedChecks": [
+    "yarn lint: PASS (0 erros/avisos)",
+    "yarn typecheck: PASS (app + functions)",
+    "yarn test: PASS (61 Vitest + 9 functions)",
+    "yarn build: PASS (tsc + functions + vite build)",
+    "E2E_PORT=3115 yarn test:e2e: PASS (60/60 em Chromium, Firefox, WebKit, Pixel 7 e iPhone 15)"
+  ],
+  "decisions": [
+    "A conclusão do onboarding é gravada em users/{uid}.onboardingCompleted via setDoc merge e também em marcador local por UID; o fallback local mantém o tutorial concluído quando o Firestore está indisponível ou as Security Rules ainda não permitem a escrita.",
+    "A rota raiz consulta o status remoto e o marcador local antes de redirecionar: primeiro acesso vai para /onboarding e conclusão conhecida vai para /dashboard.",
+    "Pular encerra todo o tutorial em qualquer uma das três telas e persiste a conclusão; a terceira tela também conclui pelo botão principal e pelo botão Concluir.",
+    "A terceira tela segue onboarding_3_associacoes, com exemplo de associação, aviso de que correlação não implica causalidade e as garantias da plataforma; controles de privacidade/IA saíram do onboarding.",
+    "O dashboard usa quatro sugestões fixas e nenhuma escrita ocorre na montagem; createIndicator só é chamado no clique em Adicionar de uma sugestão.",
+    "Sugestões são criadas com os campos estruturados do modelo (grupo, tipo, frequência, agregação, direção e faixa ideal). Um cache local por UID mantém os indicadores visíveis enquanto as regras de isolamento da task-004 não existem.",
+    "O convite de conta é elegível após adicionar uma sugestão ou abrir a criação de indicador próprio, é renderizado inline, pode ser dispensado e não usa modal, foco preso ou bloqueio de navegação.",
+    "O convite não aparece para contas permanentes; a dispensa é persistida localmente."
+  ],
+  "blockers": [],
+  "suggestedFollowUps": [
+    "Task-004: implementar Security Rules de isolamento por UID e testes de emulador; depois remover ou sincronizar o cache local de indicadores conforme a estratégia offline definitiva.",
+    "Task-005: substituir o placeholder de /indicators/new pelo formulário completo de criação e edição de indicadores.",
+    "Task-006: implementar o registro diário a partir dos indicadores iniciais e o modo de privacidade visual.",
+    "Ampliar E2E com Firebase Emulator Suite para validar a escrita real de onboarding e sugestões sob as regras de produção.",
+    "Avaliar escopo do marcador de dispensa do convite por UID para evitar preferência compartilhada entre contas no mesmo navegador."
+  ]
+}

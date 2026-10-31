@@ -4,9 +4,11 @@ import { Heading } from '@components/ui/Heading';
 import { Text } from '@components/ui/Text';
 import { Card } from '@components/ui/Card';
 import { Button } from '@components/ui/Button';
+import { useOnboardingCompletion } from '@features/onboarding/useOnboardingCompletion';
 
 export const OnboardingStep1: React.FC = () => {
   const navigate = useNavigate();
+  const { complete, isCompleting, error } = useOnboardingCompletion();
 
   const handleNext = () => {
     navigate('/onboarding/2');
@@ -17,11 +19,11 @@ export const OnboardingStep1: React.FC = () => {
   };
 
   const handleSkip = () => {
-    navigate('/onboarding/3');
+    void complete();
   };
 
   return (
-    <div className="flex flex-col min-h-screen px-gutter pb-safe">
+    <div className="flex flex-col min-h-screen px-gutter pb-32">
       {/* Progress Tracker */}
       <div className="pt-16 px-gutter pt-space-md pb-space-sm flex flex-col gap-space-xs">
         <div className="flex items-center justify-between">
@@ -165,16 +167,19 @@ export const OnboardingStep1: React.FC = () => {
 
       {/* Footer Navigation */}
       <div className="fixed bottom-0 w-full bg-surface pt-safe pb-safe px-gutter py-4 border-t border-outline/20">
-        <div className="flex items-center justify-between max-w-md mx-auto">
-          <Button variant="text" onClick={handleBack}>
-            Voltar
-          </Button>
-          <Button variant="text" onClick={handleSkip} className="text-primary">
-            Pular
-          </Button>
-          <Button variant="primary" onClick={handleNext}>
-            Próximo
-          </Button>
+        <div className="max-w-md mx-auto">
+          {error && <p role="alert" className="body-sm text-error mb-space-sm">{error}</p>}
+          <div className="flex items-center justify-between">
+            <Button variant="text" onClick={handleBack} disabled={isCompleting}>
+              Voltar
+            </Button>
+            <Button variant="text" onClick={handleSkip} className="text-primary" disabled={isCompleting}>
+              {isCompleting ? 'Salvando…' : 'Pular'}
+            </Button>
+            <Button variant="primary" onClick={handleNext} disabled={isCompleting}>
+              Próximo
+            </Button>
+          </div>
         </div>
       </div>
     </div>

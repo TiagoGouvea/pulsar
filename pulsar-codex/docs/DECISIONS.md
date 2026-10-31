@@ -278,10 +278,9 @@ VITE_FIREBASE_MEASUREMENT_ID=...
 
 ## 11. Próximos Passos
 
-1. Onboarding e estado inicial (REQ-1-002, task-003)
-2. Security Rules do Firestore, isolamento por UID e testes de emulador (REQ-1-003, task-004)
-3. Cadastro e gestão de indicadores (REQ-2-001, task-005)
-4. Registro diário e privacidade visual (REQ-2-002, task-006)
+1. Security Rules do Firestore, isolamento por UID e testes de emulador (REQ-1-003, task-004)
+2. Cadastro e gestão de indicadores (REQ-2-001, task-005)
+3. Registro diário e privacidade visual (REQ-2-002, task-006)
 
 ## 12. Task-002 — Entrada anônima e conversão de conta (31/10/2026)
 
@@ -301,8 +300,20 @@ VITE_FIREBASE_MEASUREMENT_ID=...
 - `functions/` é um pacote separado; o `postinstall` do app instala suas dependências para que `yarn install`, `yarn test`, `yarn typecheck` e `yarn build` funcionem em checkout limpo.
 - O desenvolvimento local usa emuladores opt-in (`VITE_USE_FIREBASE_EMULATORS=true`); produção nunca conecta emuladores.
 
+## 13. Task-003 — Onboarding e estado inicial (31/10/2026)
+
+### Tutorial e persistência
+- O tutorial mantém três telas (Fatores, Resultados e Associações), com Próximo e Voltar entre etapas e Pular encerrando o fluxo em qualquer tela. A terceira tela segue `design/onboarding_3_associacoes` e apresenta uma associação de exemplo com aviso explícito de que correlação não implica causalidade.
+- A conclusão é gravada em `users/{uid}` com `onboardingCompleted: true` e também em marcador local por UID. A gravação local é deliberadamente anterior à remota: se o Firestore estiver indisponível ou as Security Rules ainda negarem a escrita, o tutorial continua concluído e o app não fica bloqueado.
+- A rota raiz só redireciona para `/dashboard` quando a conclusão é conhecida; sem conclusão, o primeiro acesso permanece em `/onboarding`.
+
+### Estado inicial
+- O dashboard vazio oferece quatro sugestões e a ação “Criar meu próprio indicador”. Nenhuma escrita de indicador acontece na montagem; a criação é sempre disparada por um clique explícito.
+- As sugestões usam o modelo estruturado (`group`, `valueType`, `frequency`, `dailyAggregation`, direção/faixa ideal) e o cache local por UID mantém a tela utilizável enquanto as regras de isolamento da task-004 não existem.
+- O convite para salvar a conta é inline, aparece somente após interação útil, pode ser dispensado e não usa modal, foco preso ou bloqueio de navegação. Contas permanentes não recebem o convite.
+
 ---
 
-**Status:** ✅ Task-001 concluída; task-002 (entrada anônima e conversão) pronta para verificação  
+**Status:** ✅ Task-001 concluída; task-002 (entrada anônima e conversão) e task-003 (onboarding e estado inicial) prontas para verificação  
 **Build:** ✅ Passando (app + functions)  
-**Testes:** ✅ 49 Vitest + 9 functions; E2E 40/40 nos cinco projetos
+**Testes:** ✅ 61 Vitest + 9 functions; E2E 60/60 nos cinco projetos

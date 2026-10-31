@@ -6,7 +6,7 @@ As especificações ficam em `../harness-codex/docs`, as referências visuais em
 
 ## Estado atual
 
-Etapa 1 — Base: entrada por Firebase Anonymous Authentication, conversão para Google ou link mágico preservando UID, logout, exclusão integral via Cloud Function e onboarding inicial. A interface é mobile-first em pt-BR, com alvos de 390 px e 430 px; telas largas apenas refluem o mesmo conteúdo.
+Etapa 1 — Base: entrada por Firebase Anonymous Authentication, conversão para Google ou link mágico preservando UID, logout, exclusão integral via Cloud Function, tutorial de três telas com conclusão persistida e dashboard inicial com sugestões opcionais. A interface é mobile-first em pt-BR, com alvos de 390 px e 430 px; telas largas apenas refluem o mesmo conteúdo.
 
 ## Comandos
 

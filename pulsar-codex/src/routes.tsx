@@ -1,6 +1,7 @@
 import { lazy } from 'react';
 import { Navigate, RouteObject } from 'react-router-dom';
 import { AppShell } from '@components/layout/AppShell';
+import { RootRedirect } from '@components/routing/RootRedirect';
 
 // Lazy-loaded pages
 const OnboardingPage = lazy(() => import('@pages/onboarding/OnboardingPage'));
@@ -20,7 +21,7 @@ export const routes: RouteObject[] = [
     children: [
       {
         index: true,
-        element: <Navigate to="/onboarding" />
+        element: <RootRedirect />
       },
       {
         path: 'onboarding',
