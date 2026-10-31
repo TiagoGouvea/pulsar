@@ -333,9 +333,29 @@ export class Orchestrator {
       return false;
     }
     const attemptNumber = priorAttempts.length + 1;
-    const hard = this.catalog.isHardTask([task.title, task.description, ...task.acceptanceCriteria].join("\n"));
-    const candidate = this.catalog.select(task.role, ["text", "tools"], { attempt: attemptNumber, seed: task.id, hard });
-    this.log(`Tentativa ${attemptNumber}/${maxAttempts} · ${task.id} · modelo ${candidate.alias}${hard ? " · tarefa crítica" : ""}.`);
+    const critical = this.catalog.isHardTask([task.title, task.description, ...task.acceptanceCriteria].join("\n"));
+    const hard = critical && consumedAttempts.length >= 2;
+    const attemptedAliases = priorAttempts.flatMap((prior) => {
+      const candidate = this.catalog.list().find((item) =>
+        `${item.executor}:${item.provider}:${item.modelId}:${item.version ?? "current"}` === prior.candidate_key,
+      );
+      if (!candidate) return [];
+      if (typeof prior.result_json !== "string") return [candidate.alias];
+      try {
+        const result = JSON.parse(prior.result_json) as ExecutionResult;
+        const phase = result.diagnostics?.phase;
+        return phase === "model_load" || phase === "runtime_setup" ? [] : [candidate.alias];
+      } catch {
+        return [candidate.alias];
+      }
+    });
+    const candidate = this.catalog.select(task.role, ["text", "tools"], {
+      attempt: consumedAttempts.length + 1,
+      seed: task.id,
+      hard,
+      excludeAliases: attemptedAliases,
+    });
+    this.log(`Tentativa ${consumedAttempts.length + 1}/${maxAttempts} · chamada #${attemptNumber} · ${task.id} · modelo ${candidate.alias}${critical ? " · tarefa crítica" : ""}${hard ? " · pool hard após 2 falhas" : ""}.`);
     const attemptId = createId("attempt");
     const attemptDirectory = path.join(this.config.storage.root, "runs", runId, "tasks", task.id, `attempt-${String(attemptNumber).padStart(3, "0")}`);
     await mkdir(attemptDirectory, { recursive: true });

@@ -25,8 +25,13 @@ describe("roteamento de modelos", () => {
     };
     const catalog = new ModelCatalog(config);
     const first = catalog.select("implementer", ["text", "tools"], { seed: "same", attempt: 1 });
-    const second = catalog.select("implementer", ["text", "tools"], { seed: "same", attempt: 2 });
-    expect(second.alias).not.toBe(first.alias);
+    const second = catalog.select("implementer", ["text", "tools"], { seed: "different", attempt: 8 });
+    const fallback = catalog.select("implementer", ["text", "tools"], { excludeAliases: ["cheap-a"] });
+    const hard = catalog.select("implementer", ["text", "tools"], { hard: true });
+    expect(first.alias).toBe("cheap-a");
+    expect(second.alias).toBe("cheap-a");
+    expect(fallback.alias).toBe("cheap-b");
+    expect(hard.alias).toBe("cheap-b");
     const firstReviewer = catalog.selectReviewer("functionalReviewer", first, "same", 1);
     const secondReviewer = catalog.selectReviewer("functionalReviewer", first, "same", 2);
     const finalFallbackReviewer = catalog.selectReviewer("functionalReviewer", first, "same", 3);

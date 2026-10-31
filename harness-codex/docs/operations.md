@@ -15,6 +15,10 @@ Bloqueios ficam no estado/eventos com causa. Corrija configuração ou dependên
 
 Alterações operacionais em timeout, orçamento, modelos, roteamento e limite de tentativas podem ser aplicadas entre retomadas. Mudanças nas especificações, etapas, workspace ou perfil do projeto exigem um novo planejamento. O arquivo de configuração completo continua registrado para auditoria.
 
+### Ordem de fallback de modelos
+
+Os pools em `routing.pools` são listas de preferência: a primeira opção elegível é tentada primeiro e, após uma falha de execução do modelo, o roteador avança para a próxima opção ainda não tentada. Erros de infraestrutura (`model_load` e `runtime_setup`) não consomem uma opção, permitindo repetir o modelo depois de corrigida a configuração. Tarefas que casam com `hardTaskPatterns` permanecem no pool `implementer` até duas falhas que consumam tentativa; só então passam ao pool `hardImplementer`. Falhas técnicas não contam para esse escalonamento nem para o limite de tentativas da tarefa.
+
 O índice de sucesso técnico por modelo fica em `model-performance.md`, `.json` e `.csv` dentro da pasta da run. Para atualizá-lo manualmente:
 
 ```bash

@@ -34,7 +34,7 @@ export class ModelCatalog {
     return this.config.routing?.hardTaskPatterns.some((pattern) => new RegExp(pattern, "i").test(text)) ?? false;
   }
 
-  select(role: Role, required: ModelCandidate["capabilities"] = ["text"], options: { attempt?: number; seed?: string; hard?: boolean } = {}): ModelCandidate {
+  select(role: Role, required: ModelCandidate["capabilities"] = ["text"], options: { attempt?: number; seed?: string; hard?: boolean; excludeAliases?: string[] } = {}): ModelCandidate {
     const eligible = this.eligible(role, required).filter((candidate) => candidate.executor === this.config.execution.executor);
     const aliases = this.configuredPool(role, options.hard ?? false);
     const candidates = aliases
@@ -43,10 +43,8 @@ export class ModelCatalog {
     if (!candidates.length) {
       throw new Error(`Nenhum candidato elegível para ${role} com capacidades ${required.join(", ")}.`);
     }
-    const seed = options.seed ?? role;
-    const hash = hashSeed(seed);
-    const offset = (hash + Math.max(0, (options.attempt ?? 1) - 1)) % candidates.length;
-    return candidates[offset] as ModelCandidate;
+    const excluded = new Set(options.excludeAliases ?? []);
+    return (candidates.find((candidate) => !excluded.has(candidate.alias)) ?? candidates[0]) as ModelCandidate;
   }
 
   selectReviewer(role: Role, implementer: ModelCandidate, seed: string = role, attempt = 1): ModelCandidate {
