@@ -114,3 +114,5 @@
 {"ts":"2026-10-26T10:54:58.359Z","workerId":"gemini-flash-or","provider":"openrouter","role":"review_ui","stage":0,"tokensIn":0,"tokensOut":0,"costUsd":8.673617379884035e-19,"billing":"api","note":"openrouter billed cost (pi estimate replaced)"}
 {"ts":"2026-10-26T10:54:49.023Z","workerId":"gemini-flash-or","provider":"openrouter","role":"review_ui","stage":0,"tokensIn":0,"tokensOut":0,"costUsd":0,"billing":"api","note":"openrouter billed cost (pi estimate replaced)"}
 {"ts":"2026-10-27T21:53:29.881Z","workerId":"haiku","provider":"anthropic","role":"approval_parser","stage":0,"tokensIn":8984,"tokensOut":3595,"costUsd":0.00305879,"billing":"api"}
+{"ts":"2026-10-31T17:57:13.897Z","workerId":"local-gptoss","provider":"local","role":"smoke","stage":-1,"tokensIn":4677,"tokensOut":674,"costUsd":0,"billing":"local"}
+{"ts":"2026-10-31T17:58:18.018Z","workerId":"local-small","provider":"local","role":"smoke","stage":-1,"tokensIn":20790,"tokensOut":853,"costUsd":0,"billing":"local"}

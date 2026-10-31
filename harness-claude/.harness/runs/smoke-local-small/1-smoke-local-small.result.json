@@ -1,0 +1,18 @@
+{
+  "ts": "2026-10-31T17:58:18.018Z",
+  "workerId": "local-small",
+  "role": "smoke",
+  "stage": -1,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0,
+  "durationMs": 53204,
+  "usage": {
+    "inputTokens": 20790,
+    "outputTokens": 853,
+    "cachedTokens": 0
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "\n\n```json\n{\n  \"summary\": \"Created hello.ts with export function hello(name: string): string returning 'Olá, ${name}!' and hello.test.ts with vitest test verifying hello('Pulsar') === 'Olá, Pulsar!'. Tests passed successfully.\",\n  \"filesChanged\": [\"hello.ts\", \"hello.test.ts\"],\n  \"testsRun\": [\"hello - should return greeting with name (1 passed)\"],\n  \"confidence\": \"high\",\n  \"notes\": \"\"\n}\n```"
+}

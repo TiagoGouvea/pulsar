@@ -378,5 +378,19 @@
     "custoMedio": 0.00305879,
     "duracaoMedia": 14436,
     "falhasPorGate": {}
+  },
+  "local-gptoss|smoke|*": {
+    "tentativas": 1,
+    "sucessos": 1,
+    "custoMedio": 0,
+    "duracaoMedia": 34478,
+    "falhasPorGate": {}
+  },
+  "local-small|smoke|*": {
+    "tentativas": 1,
+    "sucessos": 1,
+    "custoMedio": 0,
+    "duracaoMedia": 53204,
+    "falhasPorGate": {}
   }
 }

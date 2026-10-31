@@ -135,7 +135,7 @@ export class Runtime {
   private callLine(r: InvokeReq<any>, w: WorkerSpec, outcome: string, costUsd: number, ms: number) {
     const fs = stageFeatures(loadFeatures(this.ctx), r.stage);
     const progress = fs.length ? ` │ features ${fs.filter((f) => f.status === "passing").length}/${fs.length}` : "";
-    log(`${r.featureId ?? r.taskId} ${r.role} ${w.id} t${r.attempt} ${outcome === "success" ? "✔" : `✖ ${outcome}`} ${fmtDur(ms)} US$${costUsd.toFixed(2)} │ etapa US$${spent(this.ctx, { stage: r.stage }).toFixed(2)}/${stageCap(this.ctx, r.stage)}${progress}`);
+    log(`${r.featureId ?? r.taskId} ${r.role} ${w.id}${w.billing === "local" ? " (local)" : ""} t${r.attempt} ${outcome === "success" ? "✔" : `✖ ${outcome}`} ${fmtDur(ms)} US$${costUsd.toFixed(2)} │ etapa US$${spent(this.ctx, { stage: r.stage }).toFixed(2)}/${stageCap(this.ctx, r.stage)}${progress}`);
   }
 
   private parse<T>(schema: z.ZodType<T>, text: string): T | undefined {
