@@ -118,3 +118,9 @@
 {"ts":"2026-10-31T17:58:18.018Z","workerId":"local-small","provider":"local","role":"smoke","stage":-1,"tokensIn":20790,"tokensOut":853,"costUsd":0,"billing":"local"}
 {"ts":"2026-10-31T18:11:45.326Z","workerId":"local-gptoss","provider":"local","role":"smoke","stage":-1,"tokensIn":6276,"tokensOut":538,"costUsd":0,"billing":"local"}
 {"ts":"2026-10-31T18:12:41.919Z","workerId":"local-small","provider":"local","role":"smoke","stage":-1,"tokensIn":13909,"tokensOut":768,"costUsd":0,"billing":"local"}
+{"ts":"2026-10-31T18:21:00.930Z","workerId":"codex-top","provider":"openai","role":"smoke","stage":-1,"tokensIn":16015,"tokensOut":397,"costUsd":0.0406831,"billing":"api"}
+{"ts":"2026-10-31T18:21:17.896Z","workerId":"codex-mid","provider":"openai","role":"smoke","stage":-1,"tokensIn":16725,"tokensOut":800,"costUsd":0.023916299999999998,"billing":"api"}
+{"ts":"2026-10-31T18:21:31.154Z","workerId":"deepseek-flash","provider":"openrouter","role":"smoke","stage":-1,"tokensIn":2272,"tokensOut":445,"costUsd":0.0007547039999999999,"billing":"api"}
+{"ts":"2026-10-31T18:21:46.802Z","workerId":"qwen-coder","provider":"openrouter","role":"smoke","stage":-1,"tokensIn":3036,"tokensOut":205,"costUsd":0.0007568,"billing":"api"}
+{"ts":"2026-10-31T18:22:00.107Z","workerId":"minimax","provider":"openrouter","role":"smoke","stage":-1,"tokensIn":2301,"tokensOut":399,"costUsd":0.0006509549999999999,"billing":"api"}
+{"ts":"2026-10-31T18:22:01.114Z","workerId":"kimi-pro","provider":"openrouter","role":"smoke","stage":-1,"tokensIn":0,"tokensOut":0,"costUsd":0,"billing":"api"}

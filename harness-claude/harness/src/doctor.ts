@@ -150,6 +150,11 @@ export async function doctor(ctx: Ctx, o: { auth?: boolean; emulators?: boolean 
   } catch (e) {
     add("fail", "git", (e as Error).message);
   }
+  if (ctx.env.OPENROUTER_API_KEY && enabledWorkers(ctx).some((w) => w.model.startsWith("openrouter/"))) {
+    const d = await fetch("https://openrouter.ai/api/v1/credits", { headers: { authorization: `Bearer ${ctx.env.OPENROUTER_API_KEY}` }, signal: AbortSignal.timeout(10_000) }).then((r) => r.json() as Promise<any>, () => undefined);
+    const left = d?.data ? d.data.total_credits - d.data.total_usage : undefined;
+    add(left === undefined ? "warn" : left < 1 ? "fail" : left < 5 ? "warn" : "ok", "saldo OpenRouter", left === undefined ? "não consegui consultar /api/v1/credits" : `US$ ${left.toFixed(2)} na conta (compartilhado por todas as chaves)${left < 5 ? ": recarregue em openrouter.ai/settings/credits" : ""}`);
+  }
 
   // budget + limits + machine
   add("ok", "budget.yaml / prices.yaml", `válidos (teto da execução US$ ${ctx.budget.caps.run})`);

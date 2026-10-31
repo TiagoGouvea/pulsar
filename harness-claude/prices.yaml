@@ -5,10 +5,14 @@ fable:        { input: 10,   output: 50,   cached: 0.25 }
 opus:         { input: 4,    output: 20,   cached: 0.20 }
 sonnet:       { input: 2,    output: 10,   cached: 0.10 }
 haiku:        { input: 0.10, output: 0.50, cached: 0.01 }
-codex-top:    { input: 4,    output: 20,   cached: 0.40 }   # gpt-5.6-sol
-codex-mid:    { input: 2,    output: 12,   cached: 0.20 }   # gpt-5.6-terra
+codex-top:    { input: 2,    output: 10,   cached: 0.10 }   # gpt-6.1-sol (2026-10-31)
+codex-mid:    { input: 1,    output: 5,    cached: 0.05 }   # gpt-6.1-terra (2026-10-31)
 codex-mini:   { input: 0.20, output: 1.20, cached: 0.02 }   # gpt-5.6-luna
 kimi:         { input: 0.67, output: 3.35, cached: 0.15 }   # moonshotai/kimi-k2.7-code
-deepseek:     { input: 0.21, output: 0.42, cached: 0.02 }   # deepseek/deepseek-v4-pro
+deepseek:     { input: 1.60, output: 3.20, cached: 0.135 }  # deepseek/deepseek-v4-pro (fallback: o custo real vem da API de gerações do OpenRouter)
+deepseek-flash: { input: 0.15, output: 0.60, cached: 0.003 } # deepseek/deepseek-v4.1-flash-1017
+qwen-coder:   { input: 0.12, output: 0.80, cached: 0.07 }   # qwen/qwen3-coder-next
+minimax:      { input: 0.075, output: 0.30, cached: 0.007 } # minimax/minimax-m3.1-flash
+kimi-pro:     { input: 2,    output: 10,   cached: 0.20 }   # moonshotai/kimi-k3.1-pro
 gemini-pro-or:   { input: 0.825, output: 4.125, cached: 0.08 }   # google/gemini-3.8-flash (OpenRouter)
 gemini-flash-or: { input: 0.25,  output: 1.50,  cached: 0.025 }  # google/gemini-3.1-flash-lite (OpenRouter)

@@ -1,0 +1,18 @@
+{
+  "ts": "2026-10-31T18:21:00.931Z",
+  "workerId": "codex-top",
+  "role": "smoke",
+  "stage": -1,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.0406831,
+  "durationMs": 13571,
+  "usage": {
+    "inputTokens": 16015,
+    "outputTokens": 397,
+    "cachedTokens": 46831
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"summary\": \"Criados hello.ts e teste Vitest para a saudação de Pulsar.\",\n  \"filesChanged\": [\"hello.ts\", \"hello.test.ts\"],\n  \"testsRun\": [],\n  \"confidence\": \"high\",\n  \"notes\": \"Teste não executado: projeto sem dependências configuradas. Nenhuma dependência instalada.\"\n}\n```"
+}

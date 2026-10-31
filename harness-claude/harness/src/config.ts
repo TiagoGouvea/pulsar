@@ -8,7 +8,7 @@ export const PLACEHOLDER = "<preencher>";
 const Worker = z.object({
   cli: z.enum(["claude", "codex", "agy", "pi", "fake"]),
   model: z.string(),
-  family: z.enum(["anthropic", "openai", "google", "zhipu", "moonshot", "deepseek", "qwen", "local-other"]),
+  family: z.enum(["anthropic", "openai", "google", "zhipu", "moonshot", "deepseek", "qwen", "minimax", "local-other"]),
   tier: z.enum(["high", "mid", "low", "local"]),
   vision: z.boolean(),
   billing: z.enum(["api", "subscription", "local"]),

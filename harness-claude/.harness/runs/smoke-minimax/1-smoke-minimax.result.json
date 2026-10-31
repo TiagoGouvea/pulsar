@@ -1,0 +1,19 @@
+{
+  "ts": "2026-10-31T18:22:00.107Z",
+  "workerId": "minimax",
+  "role": "smoke",
+  "stage": -1,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.0006509549999999999,
+  "durationMs": 6100,
+  "usage": {
+    "inputTokens": 2301,
+    "outputTokens": 399,
+    "cachedTokens": 4427,
+    "costUsd": 0.0006509549999999999
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "Arquivos criados em `/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/.harness/smoke/minimax/`. Nenhuma dependência instalada e nenhum teste executado (não há `package.json`/vitest no diretório).\n\n```json\n{\"summary\": \"Criados hello.ts com a função hello() exportada e hello.test.ts com teste vitest verificando a saudação de 'Pulsar'\", \"filesChanged\": [\"hello.ts\", \"hello.test.ts\"], \"testsRun\": [], \"confidence\": \"high\", \"notes\": \"Dependências não instaladas conforme instrução; vitest não pôde ser executado neste diretório (sem package.json).\"}\n```"
+}
