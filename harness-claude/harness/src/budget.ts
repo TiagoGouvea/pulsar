@@ -1,3 +1,6 @@
+import { readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { parseDocument } from "yaml";
 import { type Ctx, enabledWorkers, providerOf } from "./config.js";
 import type { Usage, WorkerSpec } from "./adapters/types.js";
 import { loadFeatures } from "./features.js";
@@ -49,6 +52,15 @@ export function estimate(ctx: Ctx, w: WorkerSpec, role: string, rows = readLedge
 }
 
 export const stageCap = (ctx: Ctx, stage: number) => ctx.budget.caps.byStage[String(stage)] ?? ctx.budget.caps.stage;
+
+/** Raises a cap in budget.yaml (comments kept) and in memory. */
+export function raiseCap(ctx: Ctx, cap: "stage" | "run", stage: number, by: number) {
+  const file = join(ctx.root, "budget.yaml");
+  const doc = parseDocument(readFileSync(file, "utf8"));
+  if (cap === "stage") doc.setIn(["caps", "byStage", String(stage)], (ctx.budget.caps.byStage[String(stage)] = stageCap(ctx, stage) + by));
+  else doc.setIn(["caps", "run"], (ctx.budget.caps.run += by));
+  writeFileSync(file, doc.toString());
+}
 
 /** First cap that the estimated call would break, or null. */
 export function breach(ctx: Ctx, w: WorkerSpec, est: number, s: { stage: number; featureId?: string }): Cap | null {

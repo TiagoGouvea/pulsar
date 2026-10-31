@@ -89,3 +89,25 @@ Branch `0-setup`. Custo final: US$ 15,49 da etapa (teto 16), US$ 16,10 acumulado
 | review_ui | sonnet / gemini-flash-or | 3/3 | US$ 0,03–0,07 |
 | triage | deepseek | 3/3 | US$ 0,005 |
 | initializer | opus | 3/6 | US$ 1,32 |
+
+## Melhorias aplicadas antes da etapa 1
+
+- Uma linha no terminal por chamada de modelo: feature, papel, modelo, tentativa, resultado, tempo, custo, gasto da etapa e features x/y.
+- Linhas de marco: início da etapa, feature aprovada, nova tentativa com o motivo, bloqueio, crash.
+- Bloco final ao parar: ✔/⏸/✖, tempo da sessão e da etapa, custo e próximo comando.
+- `harness watch` acompanha a execução de outro terminal.
+- Tempo ativo e início/fim por etapa no `state.json` (resume não conta o tempo parado).
+- Crash e interrupção (Ctrl+C, terminal fechado) registrados em `.harness/crashes.jsonl` e no `progress.md`.
+- `.result.json` por chamada, ao lado do prompt e do transcript.
+- Teto de orçamento no terminal: pergunta quanto aumentar e atualiza o `budget.yaml`.
+- Crédito ou cota esgotados: o worker sai da rotação; sem nenhum, pausa em `PAUSED_QUOTA`.
+- `harness models [--stage N]`: sucesso, veredito, custo, tempo e gates por modelo.
+- `harness costs`: ledger vs. provedor (OpenRouter bate: US$ 0,60 vs. US$ 0,59).
+- Custo do OpenRouter passa a vir da API de gerações (o pi errava até 2x); histórico corrigido no ledger.
+- `status` diz se a aprovação foi preenchida mas não processada, e se a etapa ainda não começou.
+- Autofix (format + lint --fix) antes dos gates; `tmp-*` dos workers apagados.
+- Trava de portas para e2e/rules entre worktrees; servidores órfãos encerrados antes dos gates.
+- Revisor de código lê o diff e só abre arquivos para confirmar pontos específicos.
+- `COMO-TESTAR.md` passa a dizer o que dá e o que não dá para testar, com as portas da config.
+- Dúvidas: cada rodada do inicializador substitui as perguntas da anterior.
+- F-1.01 (modelo de domínio puro) sem a tag `statistics`: não vai mais para a fila cara.

@@ -1,9 +1,10 @@
-import { appendFileSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import { execa } from "execa";
 import { join } from "node:path";
 import { createInterface } from "node:readline/promises";
 import { z } from "zod";
 import { FatalError, type WorkerSpec } from "./adapters/types.js";
-import { spent, stageCap, usageRatio } from "./budget.js";
+import { raiseCap, spent, stageCap, usageRatio } from "./budget.js";
 import {
   addQuestion, addRisk, ApprovalSchema, type Approval, buildCheckpoint, checkpointDir, computeHash, deployPreview,
   freezeSpec, markAnswered, parseApprovalFiles, resolveAnswer, storedHash, writeSpecChange,
@@ -18,13 +19,13 @@ import { captureScreens } from "./gates/visual.js";
 import { registerProtected, TEST_FILE } from "./gates/protected.js";
 import { type GateReport, runGates as realRunGates, type RunGates } from "./gates/run-gates.js";
 import * as g from "./git.js";
-import { BudgetError, type InvokeRes, NoWorkerError, Runtime } from "./invoke.js";
+import { BudgetError, type InvokeRes, NoWorkerError, QuotaError, Runtime } from "./invoke.js";
 import { addLesson, applyRetro, PostmortemSchema, promotedLessons, recordLessonOutcome, RetroSchema, selectLessons } from "./learning.js";
-import { log, logEvent, readEvents } from "./logger.js";
+import { fmtDur, log, logEvent, readEvents } from "./logger.js";
 import { notify } from "./notify.js";
 import { acceptanceCriteria, featureVars, render } from "./prompts.js";
 import { pick, recordStats } from "./router.js";
-import { hp, loadState, mutex, newState, type Phase, readJsonl, saveState, type State, writeJson } from "./state.js";
+import { appendJsonl, hp, loadState, mutex, newState, type Phase, readJsonl, saveState, type State, writeJson } from "./state.js";
 
 export interface Deps {
   runGates: RunGates;
@@ -32,6 +33,8 @@ export interface Deps {
   deployPreview: typeof deployPreview;
   confirm: (summary: string) => Promise<boolean>;
   doctor?: (ctx: Ctx) => Promise<boolean>;
+  /** Interactive question in the terminal (only when stdin is a TTY). */
+  ask?: (question: string) => Promise<string>;
   rng?: () => number;
 }
 
@@ -45,12 +48,15 @@ export const defaultDeps = (): Deps => ({
   deployPreview,
   async confirm(summary) {
     console.log(summary);
-    const rl = createInterface({ input: process.stdin, output: process.stdout });
-    const a = await rl.question("Confirmar? (y/n) ");
-    rl.close();
-    return /^y(es)?|^s(im)?/i.test(a.trim());
+    return /^y(es)?|^s(im)?/i.test((await question("Confirmar? (y/n) ")).trim());
   },
+  ask: process.stdin.isTTY ? question : undefined,
 });
+
+async function question(q: string) {
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  try { return await rl.question(q); } finally { rl.close(); }
+}
 
 export class Orchestrator {
   rt: Runtime;
@@ -58,6 +64,7 @@ export class Orchestrator {
   private merge = mutex();   // serializes landings on the current branch
   private branch = "";       // branch checked out in the repo; the human creates/switches it, the harness only commits on it
   private fatal?: unknown;
+  private lastTick = Date.now();
 
   constructor(public ctx: Ctx, public deps: Deps = defaultDeps()) {
     this.rt = new Runtime(ctx, { rng: deps.rng, onSpend: (s) => this.onSpend(s) });
@@ -78,8 +85,16 @@ export class Orchestrator {
     if (!s) throw new Error("nenhuma execução encontrada; use `harness start`");
     this.state = s;
     rmSync(PAUSE_FILE(this.ctx), { force: true });
-    if (["CRASHED", "PAUSED_MANUAL", "PAUSED_BUDGET"].includes(s.phase)) this.set(s.pausedFrom ?? "STAGE_RUNNING");
+    if (["CRASHED", "PAUSED_MANUAL", "PAUSED_BUDGET", "PAUSED_QUOTA"].includes(s.phase)) this.set(s.pausedFrom ?? "STAGE_RUNNING");
     return this.run();
+  }
+
+  /** Terminal closed / Ctrl+C: recorded like a crash; `resume` picks up from the saved state. */
+  interrupted(signal: string) {
+    if (!this.state) return;
+    appendJsonl(hp(this.ctx, "crashes.jsonl"), { ts: new Date().toISOString(), phase: this.state.phase, stage: this.state.stage, error: `interrompido por ${signal}` });
+    this.progress(`✖ interrompido por ${signal} em ${this.state.phase}: rode harness resume para continuar`);
+    this.save();
   }
 
   pause() {
@@ -109,12 +124,20 @@ export class Orchestrator {
       }
     } catch (e) {
       if (e instanceof BudgetError) {
+        if (await this.askRaise(e)) return this.run();
         await this.pauseFor("PAUSED_BUDGET");
         buildCheckpoint(this.ctx, { stage: this.state.stage, partialReason: e.message });
         await notify(this.ctx, "budget_100", `${e.message}: harness pausado, checkpoint parcial gerado`);
         return this.state.phase;
       }
+      if (e instanceof QuotaError) {
+        await this.pauseFor("PAUSED_QUOTA");
+        await notify(this.ctx, "blocked", `${e.message}: recarregue o crédito (ou desabilite o worker) e rode harness resume`);
+        return this.state.phase;
+      }
       this.state.lastError = String((e as Error)?.stack ?? e);
+      appendJsonl(hp(this.ctx, "crashes.jsonl"), { ts: new Date().toISOString(), phase: this.state.phase, stage: this.state.stage, error: String((e as Error)?.message ?? e), stack: this.state.lastError });
+      this.progress(`✖ CRASH em ${this.state.phase}: ${(e as Error)?.message ?? e}`);
       await this.pauseFor("CRASHED");
       await notify(this.ctx, "crash", `orquestrador caiu: ${(e as Error)?.message ?? e}`);
       throw e;
@@ -123,7 +146,26 @@ export class Orchestrator {
 
   // ---------- state helpers ----------
 
-  private save() { saveState(this.ctx, this.state); }
+  private save() {
+    const t = (this.state.stageTimes[this.state.stage] ??= { startedAt: new Date().toISOString(), activeMs: 0 });
+    t.activeMs += Date.now() - this.lastTick;
+    this.lastTick = Date.now();
+    saveState(this.ctx, this.state);
+  }
+
+  /** Budget cap hit in an interactive terminal: ask how much to raise it instead of pausing. */
+  private async askRaise(e: BudgetError) {
+    if (!this.deps.ask || (e.cap !== "stage" && e.cap !== "run")) return false;
+    const s = this.state.stage, cap = e.cap === "stage" ? stageCap(this.ctx, s) : this.ctx.budget.caps.run;
+    const used = spent(this.ctx, e.cap === "stage" ? { stage: s } : {});
+    const a = (await this.deps.ask(`⏸ Teto ${e.cap === "stage" ? `da etapa ${s}` : "da execução"} atingido (US$ ${used.toFixed(2)} de ${cap}). Aumentar em quantos US$ e continuar? [Enter = pausar] `)).trim().replace(",", ".");
+    const by = Number(a);
+    if (!a || !(by > 0)) return false;
+    raiseCap(this.ctx, e.cap, s, by);
+    this.state.budgetAlerts = [];
+    this.progress(`teto ${e.cap === "stage" ? `da etapa ${s}` : "da execução"} aumentado para US$ ${cap + by} (budget.yaml)`);
+    return true;
+  }
   private set(phase: Phase) { this.state.phase = phase; this.save(); }
   private async pauseFor(phase: Phase) {
     if (!this.state.phase.startsWith("PAUSED") && this.state.phase !== "CRASHED") this.state.pausedFrom = this.state.phase;
@@ -182,8 +224,15 @@ export class Orchestrator {
     for (const k of ["questions", "risks"]) writeFileSync(join(wt, ".harness", "inbox", `${k}.jsonl`), "");
   }
 
+  /** Milestone: terminal line + .harness/progress.md. */
   private progress(line: string) {
+    log(line);
     appendFileSync(hp(this.ctx, "progress.md"), `- ${new Date().toISOString().slice(0, 16)} ${line}\n`);
+  }
+
+  private stageCount(s = this.state.stage) {
+    const fs = stageFeatures(loadFeatures(this.ctx), s);
+    return `features ${fs.filter((f) => f.status === "passing").length}/${fs.length}`;
   }
 
   // ---------- INIT ----------
@@ -210,8 +259,10 @@ export class Orchestrator {
     const vars = { acceptance: acText, stages: ctx.config.stages.map((s) => `${s.id}. ${s.name}${s.optional ? " (só se DECISOES.md incluir no escopo)" : ""}`).join("\n"), routesFile: ctx.config.browser.routesFile, sentinels: ctx.config.browser.sentinels.join(", ") };
     let feedback = "";
     let file: z.infer<typeof FeaturesFileSchema> | undefined;
+    const qFile = hp(ctx, "inbox", "questions.jsonl"), q0 = readJsonl(qFile);
     for (let round = 1; round <= 3; round++) {
       const res = await this.rt.invoke({ role: "initializer", taskId: "init", stage: 0, attempt: round, cwd: wt, prompt: render(ctx, "initializer", { ...vars, feedback: feedback || "(primeira rodada)" }), schema: InitFinal });
+      if (readJsonl(join(wt, ".harness", "inbox", "questions.jsonl")).length) writeFileSync(qFile, q0.map((q) => JSON.stringify(q) + "\n").join(""));   // each round re-asks: keep only the latest
       this.harvestInbox(wt);
       if (res.outcome !== "success") { feedback = `A rodada anterior terminou com ${res.outcome}.`; continue; }
       const parsed = FeaturesFileSchema.safeParse(existsSync(join(wt, ".harness", "features.json")) ? JSON.parse(readFileSync(join(wt, ".harness", "features.json"), "utf8")) : {});
@@ -245,6 +296,8 @@ export class Orchestrator {
       return this.save();
     }
     await this.stageWt(s);
+    const fs = stageFeatures(loadFeatures(this.ctx), s);
+    this.progress(`▶ etapa ${s} (${this.ctx.config.stages.find((x) => x.id === s)?.name ?? "?"}) │ ${this.stageCount()} │ ${fs.filter((f) => f.status === "blocked").length} bloqueadas │ US$ ${spent(this.ctx, { stage: s }).toFixed(2)}/${stageCap(this.ctx, s)} │ branch ${this.branch}`);
     const running = new Map<string, Promise<void>>();
     this.fatal = undefined;
     for (;;) {
@@ -277,7 +330,7 @@ export class Orchestrator {
     addQuestion(this.ctx, { featureId: f.id, pergunta: `A feature ${f.id} (${f.title}) foi bloqueada: ${reason}. Como devemos seguir?`, escolhido: "seguir com as demais features", alternativas: ["ajustar a spec/critérios", "simplificar a feature", "aceitar sem ela nesta etapa"], impacto: "a feature não está no preview" });
     addRisk(this.ctx, { featureId: f.id, risco: `feature bloqueada: ${reason}`, probabilidade: "alta", impacto: "médio", sugestao: "responder em DUVIDAS.md ou pedir ajuste" });
     if (wt) await g.removeWorktree(this.ctx.repo, f.id);   // attempts stay in .harness/runs/<id>
-    this.progress(`${f.id} BLOQUEADA: ${reason}`);
+    this.progress(`⛔ ${f.id} BLOQUEADA: ${reason} │ ${this.stageCount(f.stage)}`);
     await notify(this.ctx, "blocked", `${f.id} bloqueada: ${reason}`);
   }
 
@@ -339,6 +392,7 @@ export class Orchestrator {
       if (res.outcome !== "success") {
         diag = `A tentativa anterior terminou com "${res.outcome}". Final da resposta:\n${res.result.finalText.slice(-1500)}`;
       } else {
+        await this.tidy(wt, f.id);
         gates = await this.deps.runGates(ctx, wt, { stage: f.stage, mode: "feature", base: this.branch, featureId: f.id });
         writeJson(hp(ctx, "runs", f.id, `gate-report-${attempt}.json`), gates);
         if (gates.failed.includes("G7")) {
@@ -371,17 +425,34 @@ export class Orchestrator {
         x.costUsd = spent(ctx, { featureId: f.id });
         x.history.push({ attempt, role, workerId: res.worker.id, outcome, failedGates: gates?.failed ?? [], eventId, ts: new Date().toISOString() });
       });
-      if (outcome !== "success") continue;
+      if (outcome !== "success") {
+        const why = outcome === "failure" && gates ? `gates ${gates.failed.join(",")}` : outcome === "review_rejected" ? `revisão reprovou (${verdicts.filter((v) => !v.pass).map((v) => `${v.kind} ${v.workerId ?? "?"} nota ${v.score}`).join(", ")})` : outcome;
+        log(`↻ ${f.id} t${attempt} ${res.worker.id}: ${why} │ US$ ${spent(ctx, { featureId: f.id }).toFixed(2)} na feature`);
+        continue;
+      }
 
       const landed = await this.merge(() => g.land(ctx.repo, wt, this.branch, `feat(${f.id}): ${f.title}`));
       if (!landed.ok) { diag = `Conflito de merge com mudanças recentes de ${this.branch} nos arquivos:\n${landed.conflict}\nResolva os marcadores <<<<<<< mantendo as duas funcionalidades.`; continue; }
       await g.removeWorktree(ctx.repo, f.id);
       updateFeature(ctx, f.id, (x) => { x.status = "passing"; });
-      this.progress(`${f.id} passing — ${f.title} (worker ${res.worker.id}, ${attempt} tentativa(s), US$ ${spent(ctx, { featureId: f.id }).toFixed(2)})`);
+      this.progress(`✔ ${f.id} passing — ${f.title} (worker ${res.worker.id}, ${attempt} tentativa(s), US$ ${spent(ctx, { featureId: f.id }).toFixed(2)}) │ ${this.stageCount(f.stage)}`);
       this.state.featuresSinceRetro++;
       this.save();
       return;
     }
+  }
+
+  /** Before gates: workers' tmp-* scratch files are removed and the configured autofix (format, lint --fix) is committed. */
+  private async tidy(wt: string, featureId: string) {
+    const app = this.appAbs(wt);
+    for (const d of ["", "e2e", "src", "tests"]) {
+      const dir = join(app, d);
+      if (existsSync(dir)) for (const n of readdirSync(dir)) if (n.startsWith("tmp-")) rmSync(join(dir, n), { recursive: true, force: true });
+    }
+    const cmd = this.ctx.config.project.autofixCmd;
+    if (!cmd || !existsSync(app)) return;
+    await execa(cmd, { shell: true, cwd: app, reject: false, timeout: 300_000 });
+    await g.commitAll(wt, `style(${featureId}): autofix`);
   }
 
   /** Cheap model summarizes the root cause; recurring patterns become candidate lessons. */
@@ -490,6 +561,7 @@ export class Orchestrator {
 
   private async publishCheckpoint() {
     const s = this.state.stage;
+    (this.state.stageTimes[s] ??= { startedAt: new Date().toISOString(), activeMs: 0 }).finishedAt = new Date().toISOString();
     this.set("AWAITING_APPROVAL");
     await g.commitPaths(this.ctx.root, [".harness", "checkpoints"], `chore(harness): checkpoint etapa ${s}`).catch((e) => log(`commit do checkpoint falhou: ${e.message}`));
     await notify(this.ctx, "checkpoint_ready", `etapa ${s} pronta para teste: checkpoints/etapa-${s}/`, { stage: s });
@@ -523,9 +595,9 @@ export class Orchestrator {
       if (!(e instanceof NoWorkerError)) throw e;
     }
     const ajustes = a.ajustes.map((x) => (typeof x === "string" ? { titulo: x, descricao: x, criterios: [x], tags: [] as string[] } : x));
-    if (!a.aprovado && !ajustes.length) return `APROVACAO.md da etapa ${s} não está preenchido (Status: aprovado ou ajustes + lista).`;
+    if (!a.aprovado && !ajustes.length) return `✖ APROVACAO.md da etapa ${s} não está preenchido (Status: aprovado, ou ajustes + lista). Nada mudou.`;
     const summary = [`Etapa ${s}: ${a.aprovado && !ajustes.length ? "APROVADA" : "AJUSTES"}`, ...ajustes.map((x) => `  ajuste: ${x.titulo}`), ...a.respostasDuvidas.map((r) => `  ${r.id}: ${r.resposta}`)].join("\n");
-    if (!(await this.deps.confirm(summary))) return "aprovação cancelada";
+    if (!(await this.deps.confirm(summary))) return "✖ aprovação cancelada: nada mudou";
 
     const wt = await this.stageWt(s);
     if (a.respostasDuvidas.length) {
@@ -546,6 +618,7 @@ export class Orchestrator {
       saveFeatures(ctx, all);
       this.state.stageFixRounds = 0;
       this.set("STAGE_RUNNING");
+      this.progress(`etapa ${s}: ${ajustes.length} ajuste(s) viraram features F-${s}.adj-*; rodando agora`);
       return this.run();
     }
     const visual = ctx.config.gates.G11;
@@ -554,12 +627,13 @@ export class Orchestrator {
       await this.commitToBranch(wt, `test(visual): baseline aprovada na etapa ${s}`);
     }
     await g.removeWorktree(ctx.repo, `stage-${s}`);
-    this.progress(`etapa ${s} aprovada (commits em ${this.branch}; merge e branches da próxima etapa ficam com o humano)`);
+    this.progress(`✔ etapa ${s} aprovada${a.respostasDuvidas.length ? ` · ${a.respostasDuvidas.length} resposta(s) em ${ctx.config.project.decisionsFile}` : ""} · commits em ${this.branch}`);
     const next = this.firstStageFrom(s + 1);
     Object.assign(this.state, { stage: next ?? s, stageFixRounds: 0, budgetAlerts: [] });
     this.set(next === undefined ? "DONE" : "STAGE_RUNNING");
     await g.commitPaths(ctx.root, [".harness", "checkpoints"], `chore(harness): etapa ${s} aprovada`).catch(() => null);
-    return this.run();
+    // the next stage starts only on `harness resume`, after the human switches to that stage's branch
+    return next === undefined ? this.run() : this.state.phase;
   }
 
   // ---------- learning ----------
@@ -572,7 +646,7 @@ export class Orchestrator {
     const lessons = ["project", "harness"].map((f) => existsSync(hp(ctx, "lessons", `${f}.md`)) ? readFileSync(hp(ctx, "lessons", `${f}.md`), "utf8") : "").join("\n");
     const fs = stageFeatures(loadFeatures(ctx), this.state.stage).map((f) => `${f.id} [${f.status}] ${f.title}: ${f.acceptance.join(" | ")}`).join("\n");
     try {
-      const r = await this.rt.invoke({ role: "retro", taskId: `retro-${this.state.stage}-${kind}`, stage: this.state.stage, attempt: 1, cwd: ctx.root, prompt: render(ctx, "retro", { kind, events, lessonFiles: lessons, features: fs, stage: String(this.state.stage) }), schema: RetroSchema });
+      const r = await this.rt.invoke({ role: "retro", taskId: `retro-${this.state.stage}-${kind}`, stage: this.state.stage, attempt: 1, cwd: ctx.root, prompt: render(ctx, "retro", { kind, events, lessonFiles: lessons, features: fs, stage: String(this.state.stage), baseUrl: ctx.config.browser.baseUrl, basePort: new URL(ctx.config.browser.baseUrl).port }), schema: RetroSchema });
       if (!r.data) return undefined;
       applyRetro(ctx, r.data);
       return r.data;
@@ -606,21 +680,37 @@ export class Orchestrator {
   status(): string {
     const s = loadState(this.ctx);
     if (!s) return "Nenhuma execução. Próximo passo: harness doctor → harness smoke → harness start";
-    const all = loadFeatures(this.ctx);
+    const all = loadFeatures(this.ctx), stageFs = stageFeatures(all, s.stage);
     const count = (fs: Feature[]) => ["passing", "in_progress", "failing", "blocked"].map((k) => `${k}=${fs.filter((f) => f.status === k).length}`).join(" ");
-    const next: Record<string, string> = {
-      INIT: "harness start", STAGE_RUNNING: "harness resume", STAGE_GATES: "harness resume", CHECKPOINT_READY: "harness resume",
-      AWAITING_APPROVAL: `testar o preview, preencher checkpoints/etapa-${s.stage}/APROVACAO.md e DUVIDAS.md, depois harness approve`,
-      PAUSED_BUDGET: "ajustar budget.yaml e rodar harness resume", PAUSED_SPEC_CHANGE: "revisar checkpoints/mudanca-spec.md e rodar harness approve",
-      PAUSED_MANUAL: "harness resume", CRASHED: `ver lastError em .harness/state.json e rodar harness resume`, DONE: "ver .harness/proposals/ (harness apply-proposal <id>)",
-    };
+    const icon = s.phase === "AWAITING_APPROVAL" || s.phase === "DONE" ? "✔" : s.phase === "CRASHED" ? "✖" : s.phase.startsWith("PAUSED") ? "⏸" : "▶";
+    const t = s.stageTimes[s.stage];
+    const when = (iso: string) => new Date(iso).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
     return [
-      `Fase: ${s.phase}${s.pausedFrom ? ` (de ${s.pausedFrom})` : ""} · Etapa ${s.stage} (${this.ctx.config.stages.find((x) => x.id === s.stage)?.name ?? "?"})`,
-      `Etapa atual: ${count(stageFeatures(all, s.stage))}`,
+      `${icon} Fase: ${s.phase}${s.pausedFrom ? ` (de ${s.pausedFrom})` : ""} · Etapa ${s.stage} (${this.ctx.config.stages.find((x) => x.id === s.stage)?.name ?? "?"})`,
+      `Etapa atual: ${count(stageFs)}`,
       `Total: ${all.features.length} features — ${count(all.features)}`,
+      t ? `Tempo da etapa: ${fmtDur(t.activeMs)} de execução · início ${when(t.startedAt)}${t.finishedAt ? ` · checkpoint ${when(t.finishedAt)}` : ""}` : "",
       `Custo acumulado: US$ ${spent(this.ctx).toFixed(2)} / ${this.ctx.budget.caps.run} (etapa: US$ ${spent(this.ctx, { stage: s.stage }).toFixed(2)} / ${stageCap(this.ctx, s.stage)})`,
-      `Próximo passo: ${next[s.phase]}`,
-    ].join("\n");
+      `Próximo passo: ${this.nextStep(s, stageFs)}`,
+    ].filter(Boolean).join("\n");
+  }
+
+  private nextStep(s: State, stageFs: Feature[]) {
+    const dir = `checkpoints/etapa-${s.stage}`;
+    if (s.phase === "AWAITING_APPROVAL") {
+      const file = join(this.ctx.root, dir, "APROVACAO.md");
+      const a = existsSync(file) ? parseApprovalFiles(readFileSync(file, "utf8"), "") : undefined;
+      if (a?.ajustes.length) return `${dir}/APROVACAO.md tem ${a.ajustes.length} ajuste(s), ainda não processados: rode harness approve`;
+      if (a?.aprovado) return `${dir}/APROVACAO.md está "aprovado", mas a aprovação ainda não foi processada: rode harness approve`;
+      return `testar (${dir}/COMO-TESTAR.md), preencher ${dir}/APROVACAO.md e DUVIDAS.md, depois harness approve`;
+    }
+    if (s.phase === "STAGE_RUNNING" && !stageFs.some((f) => f.attempts > 0 || f.status !== "failing")) return `a etapa ${s.stage} ainda não começou: crie/troque para a branch da etapa e rode harness resume`;
+    return {
+      INIT: "harness start", STAGE_RUNNING: "harness resume", STAGE_GATES: "harness resume", CHECKPOINT_READY: "harness resume", AWAITING_APPROVAL: "",
+      PAUSED_BUDGET: "ajustar budget.yaml e rodar harness resume", PAUSED_QUOTA: "recarregar o crédito do provedor (ou desabilitar o worker em harness.config.yaml) e rodar harness resume",
+      PAUSED_SPEC_CHANGE: "revisar checkpoints/mudanca-spec.md e rodar harness approve", PAUSED_MANUAL: "harness resume",
+      CRASHED: "ver .harness/crashes.jsonl e rodar harness resume", DONE: "ver .harness/proposals/ (harness apply-proposal <id>)",
+    }[s.phase];
   }
 
   /** Human action only: applies a postmortem proposal to the harness. */

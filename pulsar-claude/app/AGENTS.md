@@ -72,5 +72,5 @@ functions/     (etapa 1+) Cloud Functions v2 em southamerica-east1.
 | `emulators`               | Auth + Firestore emulados (projeto `demo-pulsar`)                                                     |
 | `e2e:serve`               | build com emuladores + emuladores + seed + `vite preview` na porta 4792 (fica rodando)                |
 
-Portas: Firestore 8282, Auth 9299 (fonte única: `firebase.json`, lida por `src/lib/firebase.ts`), preview 4792. Antes de terminar uma tarefa rode no mínimo
+Portas: Firestore 8282, Auth 9299 (fonte única: `firebase.json`, lida por `src/lib/firebase.ts`), preview 4792. `test:rules`, `test:e2e` e `test:visual` esperam a trava de portas (`scripts/port-lock.sh`), porque worktrees paralelas usam as mesmas portas: não suba `e2e:serve` em segundo plano nem deixe servidores rodando ao terminar. Antes de terminar uma tarefa rode no mínimo
 `yarn lint && yarn typecheck && yarn format:check && yarn test:unit` e os testes da feature.

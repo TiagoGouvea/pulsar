@@ -1,17 +1,24 @@
-import { writeFileSync, mkdirSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { z } from "zod";
 import { adapters, workerEnv } from "./adapters/index.js";
 import { FatalError, type Role, type WorkerResult, type WorkerSpec } from "./adapters/types.js";
-import { breach, type Cap, estimate, record, usageRatio } from "./budget.js";
+import { breach, type Cap, estimate, record, spent, stageCap, usageRatio } from "./budget.js";
 import { type Ctx, enabledWorkers } from "./config.js";
-import { log, logEvent } from "./logger.js";
+import { loadFeatures, stageFeatures } from "./features.js";
+import { fmtDur, log, logEvent } from "./logger.js";
 import { extractJson } from "./prompts.js";
 import { candidates, pick, recordStats } from "./router.js";
-import { hp } from "./state.js";
+import { hp, writeJson } from "./state.js";
 
 export class BudgetError extends Error { constructor(public cap: Cap) { super(`teto de orçamento atingido: ${cap}`); } }
 export class NoWorkerError extends Error {}
+/** Every worker of a role is out of credit/quota: the run pauses instead of blocking features. */
+export class QuotaError extends Error {}
+class QuotaHit extends Error {}
+
+/** Provider answers that mean "no money/quota left" (not transient rate limits). */
+export const QUOTA_RE = /credit balance is too low|insufficient_quota|exceeded your current quota|quota (reached|exceeded)|payment required|insufficient credits|requires more credits/i;
 
 export interface InvokeReq<T = unknown> {
   role: Role;
@@ -49,7 +56,19 @@ export class Runtime {
 
   preferCheap = (stage: number) => usageRatio(this.ctx, stage) >= 0.8;
 
+  quotaHit = new Set<string>();
+
   async invoke<T>(r: InvokeReq<T>): Promise<InvokeRes<T>> {
+    try {
+      return await this.invokeOnce(r);
+    } catch (e) {
+      if (!(e instanceof QuotaHit)) throw e;
+      if (r.workerId) throw new NoWorkerError(e.message);
+      return this.invoke(r);   // same request, another worker
+    }
+  }
+
+  private async invokeOnce<T>(r: InvokeReq<T>): Promise<InvokeRes<T>> {
     const adapter = (w: WorkerSpec) => adapters[w.cli];
     let w: WorkerSpec;
     for (;;) {
@@ -70,6 +89,13 @@ export class Runtime {
       writeFileSync(join(dir, `${base}.prompt.md`), r.prompt);
       let result = await this.exec(w, r, r.prompt, join(dir, `${base}.jsonl`));
       let costUsd = record(this.ctx, w, r.role, r.stage, r.featureId, result.usage).costUsd;
+      const stderr = join(dir, `${base}.stderr.log`);
+      if (!result.ok && QUOTA_RE.test(`${result.finalText}\n${existsSync(stderr) ? readFileSync(stderr, "utf8").slice(-4000) : ""}`)) {
+        this.unavailable.add(w.id);
+        this.quotaHit.add(w.id);
+        log(`⚠ ${w.id} sem crédito/cota: fora da rotação nesta execução`);
+        throw new QuotaHit(`${w.id} sem crédito/cota`);
+      }
       let outcome: InvokeRes["outcome"] = result.timedOut ? "timeout" : result.ok ? "success" : "failure";
       let data: T | undefined;
       if (outcome === "success" && r.schema) {
@@ -92,12 +118,24 @@ export class Runtime {
         });
         recordStats(this.ctx, w.id, r.role, r.tags ?? [], { success: outcome === "success", costUsd, durationMs: result.durationMs });
       }
+      writeJson(join(dir, `${base}.result.json`), {
+        ts: new Date().toISOString(), workerId: w.id, role: r.role, featureId: r.featureId, stage: r.stage, attempt: r.attempt, outcome,
+        costUsd, durationMs: result.durationMs, usage: result.usage, exitCode: result.exitCode, timedOut: !!result.timedOut, finalTail: result.finalText.slice(-2000),
+      });
+      this.callLine(r, w, outcome, costUsd, result.durationMs);
       await this.opts.onSpend?.(r.stage);
       return { worker: w, result, data, outcome, costUsd, eventId };
     } finally {
       await adapter(w).release?.(w, this.ctx.env).catch(() => undefined);
       this.busy.set(w.id, (this.busy.get(w.id) ?? 1) - 1);
     }
+  }
+
+  /** One terminal line per model call: what, who, result, time, cost, stage budget and progress. */
+  private callLine(r: InvokeReq<any>, w: WorkerSpec, outcome: string, costUsd: number, ms: number) {
+    const fs = stageFeatures(loadFeatures(this.ctx), r.stage);
+    const progress = fs.length ? ` │ features ${fs.filter((f) => f.status === "passing").length}/${fs.length}` : "";
+    log(`${r.featureId ?? r.taskId} ${r.role} ${w.id} t${r.attempt} ${outcome === "success" ? "✔" : `✖ ${outcome}`} ${fmtDur(ms)} US$${costUsd.toFixed(2)} │ etapa US$${spent(this.ctx, { stage: r.stage }).toFixed(2)}/${stageCap(this.ctx, r.stage)}${progress}`);
   }
 
   private parse<T>(schema: z.ZodType<T>, text: string): T | undefined {
@@ -131,6 +169,8 @@ export class Runtime {
       if (!w) {
         if (candidates(this.ctx, o).length) { await sleep(200); continue; }   // all busy: wait for a slot
         if (lastBreach) throw new BudgetError(lastBreach);
+        const out = (this.ctx.config.roles[r.role]?.pool ?? []).filter((id) => this.quotaHit.has(id));
+        if (out.length) throw new QuotaError(`sem worker para ${r.role}: ${out.join(", ")} sem crédito/cota`);
         throw new NoWorkerError(`nenhum worker disponível para ${r.role}`);
       }
       if (adapters[w.cli].available && !(await adapters[w.cli].available!(w, this.ctx.env))) {

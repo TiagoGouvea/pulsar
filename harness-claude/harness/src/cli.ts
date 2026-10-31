@@ -5,7 +5,10 @@ import { report } from "./budget.js";
 import { loadCtx } from "./config.js";
 import { execa } from "execa";
 import { designSyncCmd, doctor, formatDoctor, smoke } from "./doctor.js";
+import { fmtDur, setConsoleFile } from "./logger.js";
+import { costsReport, modelsReport, watch } from "./models.js";
 import { defaultDeps, Orchestrator } from "./orchestrator.js";
+import { hp } from "./state.js";
 
 const USAGE = `uso: harness <comando> [opções]
   doctor [--no-auth] [--no-emulators]  verifica ambiente e configuração
@@ -14,9 +17,12 @@ const USAGE = `uso: harness <comando> [opções]
   start                                 INIT + loop até o primeiro checkpoint
   resume                                continua do estado atual
   status                                etapa, features, custo, próximo passo
-  approve [--yes]                       processa checkpoints/etapa-N/APROVACAO.md
+  approve [--yes]                       processa checkpoints/etapa-N/APROVACAO.md (aprovado: fecha a etapa; a próxima começa no resume)
   pause                                 pausa limpa após as tarefas atuais
-  report                                custo e desempenho
+  report                                custo por etapa, worker, papel e provedor
+  models [--stage N]                    performance por modelo (sucesso, veredito, custo, tempo, gates)
+  costs                                 gasto registrado vs. o que os provedores informam
+  watch                                 acompanha, de outro terminal, a execução em andamento
   apply-proposal <id>                   aplica uma proposta de melhoria do harness
 opções globais: --root <dir> (padrão: pasta acima de harness/)`;
 
@@ -36,7 +42,17 @@ async function main() {
     return r.ok;
   };
   const orch = new Orchestrator(ctx, deps);
-  const run = async (p: Promise<unknown>) => { const r = await p; console.log(typeof r === "string" && r.includes(" ") ? r : orch.status()); };
+  const run = async (start: () => Promise<unknown>) => {
+    setConsoleFile(hp(ctx, "console.log"));
+    for (const sig of ["SIGINT", "SIGTERM", "SIGHUP"] as const) process.once(sig, () => { orch.interrupted(sig); console.log(`\n${"─".repeat(60)}\n${orch.status()}`); process.exit(130); });
+    const began = Date.now();
+    try {
+      const r = await start();
+      if (typeof r === "string" && r.includes(" ")) console.log(r);
+    } finally {
+      console.log(`\n${"─".repeat(60)}\nSessão: ${fmtDur(Date.now() - began)}\n${orch.status()}`);
+    }
+  };
 
   switch (cmd) {
     case "doctor": {
@@ -52,12 +68,15 @@ async function main() {
       return console.log(`design copiado para ${args.at(-1)}; faça commit no repo do projeto`);
     }
     case "smoke": return console.log(await smoke(ctx, rest));
-    case "start": return run(orch.start());
-    case "resume": return run(orch.resume());
+    case "start": return run(() => orch.start());
+    case "resume": return run(() => orch.resume());
     case "status": return console.log(orch.status());
-    case "approve": return run(orch.approve());
+    case "approve": return run(() => orch.approve());
     case "pause": return console.log(orch.pause());
     case "report": return console.log(report(ctx));
+    case "models": return console.log(modelsReport(ctx, argv.includes("--stage") ? Number(argv[argv.indexOf("--stage") + 1]) : undefined));
+    case "costs": return console.log(await costsReport(ctx));
+    case "watch": return watch(ctx);
     case "apply-proposal": return console.log(await orch.applyProposal(rest[0]));
     default:
       console.log(USAGE);

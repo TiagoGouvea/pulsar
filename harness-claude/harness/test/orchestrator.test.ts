@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { readLedger } from "../src/budget.js";
+import { loadCtx } from "../src/config.js";
 import { loadFeatures } from "../src/features.js";
 import { git, listWorktrees } from "../src/git.js";
 import { loadLessons } from "../src/learning.js";
@@ -24,8 +25,9 @@ describe("orquestrador (adapter fake)", () => {
     for (const f of ["RELATORIO.md", "COMO-TESTAR.md", "DUVIDAS.md", "RISCOS.md", "APROVACAO.md"]) expect(existsSync(join(root, "checkpoints/etapa-0", f))).toBe(true);
     expect(readFileSync(join(root, "checkpoints/etapa-0/RELATORIO.md"), "utf8")).toContain("https://test--etapa.web.app");
     approveFile(root, 0, "Status: aprovado\n\n## Ajustes\n");
-    expect(await o.approve()).toBe("AWAITING_APPROVAL");
+    expect(await o.approve()).toBe("STAGE_RUNNING");   // approve does not start the next stage
     expect(loadState(ctx)!.stage).toBe(1);
+    expect(await o.resume()).toBe("AWAITING_APPROVAL");
     approveFile(root, 1, "Status: aprovado\n");
     expect(await o.approve()).toBe("DONE");
     expect(loadFeatures(ctx).features.every((f) => f.status === "passing")).toBe(true);
@@ -115,6 +117,21 @@ describe("orquestrador (adapter fake)", () => {
     ctx.budget.caps.stage = 100;
     expect(await orch(ctx).resume()).toBe("AWAITING_APPROVAL");
     expect(readLedger(ctx).length).toBeGreaterThan(ledgerBefore);
+  });
+
+  it("6c. teto atingido no terminal: pergunta, aumenta o budget.yaml e continua; tempo da etapa e modelos registrados", async () => {
+    const { root, ctx } = await makeProject({ budget: { caps: { run: 100, stage: 2.5, feature: 20, dailyByProvider: {} } } });
+    setFakeScript(script([{ id: "F-0.01", stage: 0 }, { id: "F-0.02", stage: 0 }, { id: "F-0.03", stage: 0 }], () => ({ costUsd: 0.5 })));
+    const asked: string[] = [];
+    const o = orch(ctx, deps(() => true, { ask: async (q) => (asked.push(q), "10") }));
+    expect(await o.start()).toBe("AWAITING_APPROVAL");
+    expect(asked).toHaveLength(1);
+    expect(loadCtx(root).budget.caps.byStage["0"]).toBe(12.5);
+    const t = loadState(ctx)!.stageTimes["0"];
+    expect(t.finishedAt).toBeDefined();
+    expect(o.status()).toContain("Tempo da etapa");
+    expect(o.status()).toContain("harness approve");
+    expect(readJsonl(hp(ctx, "reviews.jsonl")).length).toBeGreaterThan(0);
   });
 
   it("7. crash no meio de uma tarefa → resume sem duplicar e sem worktree órfã", async () => {

@@ -5,7 +5,7 @@ import type { Ctx } from "./config.js";
 
 export const PHASES = [
   "INIT", "STAGE_RUNNING", "STAGE_GATES", "CHECKPOINT_READY", "AWAITING_APPROVAL", "DONE",
-  "PAUSED_BUDGET", "PAUSED_SPEC_CHANGE", "PAUSED_MANUAL", "CRASHED",
+  "PAUSED_BUDGET", "PAUSED_QUOTA", "PAUSED_SPEC_CHANGE", "PAUSED_MANUAL", "CRASHED",
 ] as const;
 export type Phase = (typeof PHASES)[number];
 
@@ -18,6 +18,8 @@ export const StateSchema = z.object({
   budgetAlerts: z.array(z.number()).default([]),
   postmortemDone: z.boolean().default(false),
   lastError: z.string().optional(),
+  /** Per stage: first start, checkpoint time and active time (summed per session, so pauses between resumes don't count). */
+  stageTimes: z.record(z.string(), z.object({ startedAt: z.string(), finishedAt: z.string().optional(), activeMs: z.number() })).default({}),
   updatedAt: z.string(),
 });
 export type State = z.infer<typeof StateSchema>;

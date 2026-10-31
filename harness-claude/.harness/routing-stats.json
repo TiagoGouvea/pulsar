@@ -23,56 +23,56 @@
   "codex-top|smoke|*": {
     "tentativas": 1,
     "sucessos": 1,
-    "custoMedio": 0.34828440000000005,
+    "custoMedio": 0.10972040000000005,
     "duracaoMedia": 16682,
     "falhasPorGate": {}
   },
   "codex-mini|smoke|*": {
     "tentativas": 1,
     "sucessos": 1,
-    "custoMedio": 0.0124595,
+    "custoMedio": 0.004550500000000001,
     "duracaoMedia": 8047,
     "falhasPorGate": {}
   },
   "glm|smoke|*": {
     "tentativas": 3,
     "sucessos": 2,
-    "custoMedio": 0.0006435430000000001,
+    "custoMedio": 0.000643543,
     "duracaoMedia": 49234.333333333336,
     "falhasPorGate": {}
   },
   "kimi|smoke|*": {
     "tentativas": 2,
     "sucessos": 2,
-    "custoMedio": 0.0026650399999999996,
+    "custoMedio": 0.0026403199,
     "duracaoMedia": 7344,
     "falhasPorGate": {}
   },
   "deepseek|smoke|*": {
     "tentativas": 1,
     "sucessos": 1,
-    "custoMedio": 0.0014168002200000002,
+    "custoMedio": 0.0033070999999999994,
     "duracaoMedia": 5912,
     "falhasPorGate": {}
   },
   "codex-mid|smoke|*": {
     "tentativas": 1,
     "sucessos": 1,
-    "custoMedio": 0.203437,
+    "custoMedio": 0.05540700000000001,
     "duracaoMedia": 11000,
     "falhasPorGate": {}
   },
   "opus|initializer|*": {
     "tentativas": 6,
     "sucessos": 3,
-    "custoMedio": 1.3178374333333336,
+    "custoMedio": 1.3178374333333334,
     "duracaoMedia": 291744.5,
     "falhasPorGate": {}
   },
   "codex-mid|review_code|*": {
     "tentativas": 11,
     "sucessos": 11,
-    "custoMedio": 0.3927431454545455,
+    "custoMedio": 0.14546641818181824,
     "duracaoMedia": 31479.909090909092,
     "falhasPorGate": {}
   },
@@ -86,14 +86,14 @@
   "sonnet|test_writer|*": {
     "tentativas": 3,
     "sucessos": 3,
-    "custoMedio": 0.11079113333333333,
+    "custoMedio": 0.11079113333333336,
     "duracaoMedia": 31815,
     "falhasPorGate": {}
   },
   "deepseek|triage|*": {
     "tentativas": 3,
     "sucessos": 3,
-    "custoMedio": 0.00477022856,
+    "custoMedio": 0.005565389,
     "duracaoMedia": 24450.333333333332,
     "falhasPorGate": {}
   },
@@ -110,49 +110,49 @@
   "kimi|implement|*": {
     "tentativas": 2,
     "sucessos": 1,
-    "custoMedio": 0.0972017076,
+    "custoMedio": 0.07220772466666668,
     "duracaoMedia": 94679.5,
     "falhasPorGate": {}
   },
   "opus|implement_hard|*": {
     "tentativas": 5,
     "sucessos": 4,
-    "custoMedio": 0.5559181999999999,
+    "custoMedio": 0.5559182,
     "duracaoMedia": 134138,
     "falhasPorGate": {}
   },
   "sonnet|test_writer|ui": {
     "tentativas": 2,
     "sucessos": 2,
-    "custoMedio": 0.12387585000000001,
+    "custoMedio": 0.12387585000000004,
     "duracaoMedia": 35867,
     "falhasPorGate": {}
   },
   "codex-mid|review_code|security-rules": {
     "tentativas": 1,
     "sucessos": 1,
-    "custoMedio": 0.6510726,
+    "custoMedio": 0.24114793649348348,
     "duracaoMedia": 32365,
     "falhasPorGate": {}
   },
   "opus|implement_hard|security-rules": {
     "tentativas": 1,
     "sucessos": 1,
-    "custoMedio": 0.40646280000000007,
+    "custoMedio": 0.4064628000000002,
     "duracaoMedia": 114902,
     "falhasPorGate": {}
   },
   "deepseek|triage|ui": {
     "tentativas": 2,
     "sucessos": 2,
-    "custoMedio": 0.0030474882,
+    "custoMedio": 0.0035554810618780497,
     "duracaoMedia": 16519.5,
     "falhasPorGate": {}
   },
   "deepseek|implement|*": {
     "tentativas": 4,
     "sucessos": 1,
-    "custoMedio": 0.039340467795,
+    "custoMedio": 0.06796774174999999,
     "duracaoMedia": 118891.75,
     "falhasPorGate": {
       "G2": 1
@@ -161,7 +161,7 @@
   "deepseek|implement|ui": {
     "tentativas": 1,
     "sucessos": 0,
-    "custoMedio": 0.029257536239999996,
+    "custoMedio": 0.050547661958771216,
     "duracaoMedia": 105526,
     "falhasPorGate": {
       "G2": 1
@@ -170,7 +170,7 @@
   "codex-mid|review_code|ui": {
     "tentativas": 2,
     "sucessos": 2,
-    "custoMedio": 0.7471171,
+    "custoMedio": 0.27672143933563714,
     "duracaoMedia": 44450,
     "falhasPorGate": {}
   },
@@ -191,28 +191,28 @@
   "kimi|implement|ui": {
     "tentativas": 1,
     "sucessos": 1,
-    "custoMedio": 0.18428892480000003,
+    "custoMedio": 0.13690175069593574,
     "duracaoMedia": 177770,
     "falhasPorGate": {}
   },
   "codex-mid|review_code|privacy-mode": {
     "tentativas": 1,
     "sucessos": 1,
-    "custoMedio": 0.40754,
+    "custoMedio": 0.15094696050571665,
     "duracaoMedia": 29484,
     "falhasPorGate": {}
   },
   "opus|implement_hard|privacy-mode": {
     "tentativas": 2,
     "sucessos": 1,
-    "custoMedio": 0.29389190000000004,
+    "custoMedio": 0.2938919000000001,
     "duracaoMedia": 63916.5,
     "falhasPorGate": {}
   },
   "opus|implement_hard|ui": {
     "tentativas": 2,
     "sucessos": 1,
-    "custoMedio": 0.29389190000000004,
+    "custoMedio": 0.2938919000000001,
     "duracaoMedia": 63916.5,
     "falhasPorGate": {}
   },
@@ -284,63 +284,63 @@
   "sonnet|test_writer|privacy-mode": {
     "tentativas": 1,
     "sucessos": 1,
-    "custoMedio": 0.10811189999999998,
+    "custoMedio": 0.10811190000000001,
     "duracaoMedia": 33726,
     "falhasPorGate": {}
   },
   "deepseek|triage|privacy-mode": {
     "tentativas": 1,
     "sucessos": 1,
-    "custoMedio": 0.0046005112800000005,
+    "custoMedio": 0.0053673811537634,
     "duracaoMedia": 22949,
     "falhasPorGate": {}
   },
   "deepseek|review_code|*": {
     "tentativas": 1,
     "sucessos": 1,
-    "custoMedio": 0.01007471832,
+    "custoMedio": 0.027819500000000004,
     "duracaoMedia": 46295,
     "falhasPorGate": {}
   },
   "deepseek|review_code|ui": {
     "tentativas": 1,
     "sucessos": 1,
-    "custoMedio": 0.01007471832,
+    "custoMedio": 0.027819500000000004,
     "duracaoMedia": 46295,
     "falhasPorGate": {}
   },
   "deepseek|review_code|privacy-mode": {
     "tentativas": 1,
     "sucessos": 1,
-    "custoMedio": 0.01007471832,
+    "custoMedio": 0.027819500000000004,
     "duracaoMedia": 46295,
     "falhasPorGate": {}
   },
   "gemini-flash-or|review_ui|*": {
     "tentativas": 2,
     "sucessos": 2,
-    "custoMedio": 0.0268078875,
+    "custoMedio": 0.017871924999999997,
     "duracaoMedia": 24082.5,
     "falhasPorGate": {}
   },
   "gemini-flash-or|review_ui|ui": {
     "tentativas": 2,
     "sucessos": 2,
-    "custoMedio": 0.0268078875,
+    "custoMedio": 0.017871924999999997,
     "duracaoMedia": 24082.5,
     "falhasPorGate": {}
   },
   "gemini-flash-or|review_ui|privacy-mode": {
     "tentativas": 1,
     "sucessos": 1,
-    "custoMedio": 0.027189924999999997,
+    "custoMedio": 0.018126616666666664,
     "duracaoMedia": 38878,
     "falhasPorGate": {}
   },
   "codex-mid|review_code|regression": {
     "tentativas": 2,
     "sucessos": 2,
-    "custoMedio": 0.08049709999999999,
+    "custoMedio": 0.029814969265654225,
     "duracaoMedia": 17630.5,
     "falhasPorGate": {}
   },
@@ -361,7 +361,7 @@
   "opus|implement_hard|regression": {
     "tentativas": 1,
     "sucessos": 1,
-    "custoMedio": 1.4265893999999997,
+    "custoMedio": 1.4265894,
     "duracaoMedia": 364610,
     "falhasPorGate": {}
   },

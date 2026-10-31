@@ -6,6 +6,7 @@ import type { Feature } from "./features.js";
 import type { GateReport } from "./gates/run-gates.js";
 import { NoWorkerError, type Runtime } from "./invoke.js";
 import { designRefs, HARNESS_DIR, render } from "./prompts.js";
+import { appendJsonl, hp } from "./state.js";
 
 const Issue = z.object({
   severidade: z.enum(["blocker", "major", "minor"]).catch("major"),
@@ -43,6 +44,12 @@ async function review<T>(b: Base, role: "review_code" | "review_ui", prompt: str
   return undefined;
 }
 
+/** Reviewer verdicts feed `harness models` (approve/reject rate per reviewer). */
+function logged(b: Base, v: Verdict): Verdict {
+  appendJsonl(hp(b.rt.ctx, "reviews.jsonl"), { ts: new Date().toISOString(), stage: b.f.stage, featureId: b.f.id, kind: v.kind, workerId: v.workerId, pass: v.pass, score: v.score });
+  return v;
+}
+
 const noReviewer = (kind: Verdict["kind"]): Verdict => ({ kind, pass: false, score: 0, issues: [{ severidade: "blocker", descricao: "nenhum avaliador de outra família respondeu com JSON válido" }] });
 
 export async function reviewCode(b: Base & { ctx: Ctx; feature: Feature; diff: string; gates: GateReport }): Promise<Verdict> {
@@ -52,7 +59,7 @@ export async function reviewCode(b: Base & { ctx: Ctx; feature: Feature; diff: s
     gateReport: b.gates.results.map((r) => `${r.id} ${r.name}: ${r.skipped ? "pulado" : r.ok ? "ok" : "FALHOU"}`).join("\n"),
   }, b.f.tags);
   const r = await review(b, "review_code", prompt, ReviewCodeSchema);
-  return r ? { kind: "code", pass: codeRules(r.data), score: r.data.score, issues: r.data.issues, workerId: r.workerId } : noReviewer("code");
+  return logged(b, r ? { kind: "code", pass: codeRules(r.data), score: r.data.score, issues: r.data.issues, workerId: r.workerId } : noReviewer("code"));
 }
 
 const rubric = () => readFileSync(join(HARNESS_DIR, "rubrics", "design.md"), "utf8");
@@ -69,14 +76,14 @@ export async function reviewUi(b: Base & { ctx: Ctx; title: string; screenshots:
   }, b.f.tags);
   const attachments = [...b.screenshots, ...d.screens.map((s) => join(b.ctx.repo, s))].slice(0, 40);
   const r = await review(b, "review_ui", prompt, ReviewUiSchema, attachments);
-  return r ? { kind: "ui", pass: uiRules(r.data), score: r.data.score, issues: r.data.issues, porCriterio: r.data.porCriterio, workerId: r.workerId } : noReviewer("ui");
+  return logged(b, r ? { kind: "ui", pass: uiRules(r.data), score: r.data.score, issues: r.data.issues, porCriterio: r.data.porCriterio, workerId: r.workerId } : noReviewer("ui"));
 }
 
 /** INIT: features.json is reviewed by a family different from the initializer's. */
 export async function reviewFeatures(b: Base & { ctx: Ctx; featuresJson: string; acceptance: string }): Promise<Verdict> {
   const prompt = render(b.ctx, "review_features", { featuresJson: b.featuresJson.slice(0, 80000), acceptance: b.acceptance });
   const r = await review(b, "review_code", prompt, FeaturesReviewSchema);
-  return r ? { kind: "features", pass: r.data.pass, score: r.data.pass ? 10 : 0, issues: r.data.issues, workerId: r.workerId } : noReviewer("features");
+  return logged(b, r ? { kind: "features", pass: r.data.pass, score: r.data.pass ? 10 : 0, issues: r.data.issues, workerId: r.workerId } : noReviewer("features"));
 }
 
 /** Tournament judge: picks the best of the diffs (index), judged by a family not among the contenders. */

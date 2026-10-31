@@ -3,8 +3,7 @@ import { join } from "node:path";
 import type { Ctx } from "../config.js";
 import { runProcess } from "../adapters/exec.js";
 import { git } from "../git.js";
-import { mutex } from "../state.js";
-import { gateEnv } from "./browser.js";
+import { gateEnv, withPortLock } from "./browser.js";
 import { privacyGate } from "./privacy-leak.js";
 import { checkProtected } from "./protected.js";
 import { a11yGate, layoutGate, lighthouseGate } from "./quality.js";
@@ -38,10 +37,8 @@ export async function scanSecrets(ctx: Ctx, cwd: string, base?: string) {
   return { ok: !problems.length, output: problems.join("\n") || "nenhum segredo no diff" };
 }
 
-/** Gates share emulators/ports, so gate runs are serialized across parallel tasks. */
-const serialized = mutex();
-
-export const runGates: RunGates = (ctx, cwd, o) => serialized(async () => {
+/** Gates share emulators/ports, so gate runs hold the ports lock (serialized across parallel tasks and worker e2e runs). */
+export const runGates: RunGates = (ctx, cwd, o) => withPortLock(ctx, join(cwd, ctx.config.project.appDir), async () => {
   const appAbs = join(cwd, ctx.config.project.appDir);
   const results: GateResult[] = [];
   for (const [id, g] of Object.entries(ctx.config.gates)) {

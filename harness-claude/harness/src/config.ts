@@ -50,6 +50,7 @@ export const ConfigSchema = z.object({
     decisionsFile: z.string(),
     language: z.string(),
     mainBranch: z.string().default("main"),
+    autofixCmd: z.string().optional(),   // run in <appDir> before the feature gates; result committed
   }),
   workers: z.record(z.string(), Worker),
   roles: z.record(z.string(), RoleCfg),
@@ -78,6 +79,8 @@ export const ConfigSchema = z.object({
     baseUrl: z.string(),
     routesFile: z.string(),
     readyTimeoutSec: z.number().default(120),
+    // one process at a time on the preview/emulator ports: gates/screenshots here, workers' e2e/rules via app/scripts/port-lock.sh
+    portLock: z.string().default("/tmp/pulsar-claude-ports.lock"),
     sentinels: z.array(z.string()).min(1),
     lighthouse: z.object({ performance: z.number(), accessibility: z.number() }),
   }),

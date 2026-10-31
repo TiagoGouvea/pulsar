@@ -2,6 +2,7 @@ project:
   name: pulsar
   repo: ../pulsar-claude        # projeto (spec, design, DECISOES.md, app/); subpasta do monorepo Pulsar/. Worktrees detached em .worktrees/
   appDir: app
+  autofixCmd: "yarn -s format && yarn -s lint --fix"   # antes dos gates da feature (G2 lint/format era a falha mais comum)
   # alias -> arquivo. specRefs nas features usam o alias (ex.: "spec.md#4.4")
   specFiles:
     spec.md: docs/Pulsar_Especificacao_Completa.md

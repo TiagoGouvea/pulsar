@@ -1,3 +1,4 @@
+import { appendFileSync } from "node:fs";
 import type { Ctx } from "./config.js";
 import { appendJsonl, hp, readJsonl } from "./state.js";
 
@@ -33,6 +34,18 @@ export function logEvent(ctx: Ctx, ev: HarnessEvent): string {
 
 export const readEvents = (ctx: Ctx) => readJsonl<HarnessEvent>(hp(ctx, "events.jsonl"));
 
+let consoleFile: string | undefined;
+/** Mirrors every log line to a file (followed by `harness watch`). */
+export const setConsoleFile = (f: string) => { consoleFile = f; };
+
 export const log = (msg: string) => {
-  if (!process.env.HARNESS_QUIET) console.log(`[harness ${new Date().toISOString().slice(11, 19)}] ${msg}`);
+  const line = `[${new Date().toTimeString().slice(0, 8)}] ${msg}`;
+  if (!process.env.HARNESS_QUIET) console.log(line);
+  if (consoleFile) appendFileSync(consoleFile, line + "\n");
+};
+
+/** 2h05m / 3m12s / 41s */
+export const fmtDur = (ms: number) => {
+  const s = Math.round(ms / 1000), h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
+  return h ? `${h}h${String(m).padStart(2, "0")}m` : m ? `${m}m${String(s % 60).padStart(2, "0")}s` : `${s}s`;
 };

@@ -10,7 +10,7 @@ Harness autônomo e multi-modelo que **constrói o app Pulsar** feature por feat
 ## Fluxo do humano
 
 ```
-doctor → smoke → start → (checkpoint etapa N) → testar preview → APROVACAO.md/DUVIDAS.md → approve → … → DONE
+doctor → smoke → start → (checkpoint etapa N) → testar preview → APROVACAO.md/DUVIDAS.md → approve → (trocar de branch) → resume → … → DONE
 ```
 
 ```bash
@@ -21,6 +21,8 @@ cd ..
 caffeinate -dimsu ./harness/bin/harness start
 ```
 
+Durante a execução, o terminal mostra uma linha por chamada de modelo (`F-1.03 implement deepseek t2 ✔ 2m14s US$0.04 │ etapa US$3.10/10 │ features 3/12`), marcos (`▶` início da etapa, `✔` feature aprovada, `↻` nova tentativa e motivo, `⛔` bloqueio) e, ao parar, um bloco com resultado (✔/⏸/✖), tempo, custo e o próximo comando. Em outro terminal, `harness watch` acompanha a mesma saída (`.harness/console.log`). Teto de orçamento atingido num terminal interativo: o harness pergunta quanto aumentar (atualiza o `budget.yaml`) em vez de só pausar.
+
 Ao fim de cada etapa o processo **termina** em `AWAITING_APPROVAL` e notifica o webhook. Então:
 
 1. Abra `checkpoints/etapa-N/RELATORIO.md` (URL do preview) e siga `COMO-TESTAR.md`.
@@ -28,7 +30,7 @@ Ao fim de cada etapa o processo **termina** em `AWAITING_APPROVAL` e notifica o 
 3. Em `APROVACAO.md`, escreva `Status: aprovado` ou `Status: ajustes` com a lista de ajustes.
 4. `./harness/bin/harness approve` (mostra o resumo e pede confirmação y/n).
    - Ajustes viram features `F-N.adj-XX` na mesma etapa e o harness continua.
-   - Aprovado sem ajustes: segue para a etapa N+1 na branch em checkout. Merge para `main` e a branch da próxima etapa são com você (crie/troque a branch **antes** do `approve`).
+   - Aprovado sem ajustes: fecha a etapa N e para. Crie/troque para a branch da etapa N+1 e rode `resume` para começá-la. Merge para `main` é com você.
 
 | Comando | Faz |
 |---|---|
@@ -36,7 +38,10 @@ Ao fim de cada etapa o processo **termina** em `AWAITING_APPROVAL` e notifica o 
 | `sync-design` | espelha `project.designSource` (Pulsar/design) em `<repo>/design` |
 | `smoke [workerId…]` | cria `hello.ts` + teste com cada worker; mede tempo/custo/sucesso |
 | `start` / `resume` | INIT + loop / continua do estado atual (também depois de crash ou pausa) |
-| `status` | fase, etapa, features por status, custo, próximo passo |
+| `status` | fase, etapa, features por status, tempo da etapa, custo, próximo passo |
+| `watch` | acompanha, de outro terminal, a execução em andamento |
+| `models [--stage N]` | por papel × modelo: chamadas ok, veredito como revisor, custo, tempo médio, gates que falharam |
+| `costs` | gasto do ledger vs. o informado pelos provedores (OpenRouter pela chave; Anthropic/OpenAI com `ANTHROPIC_ADMIN_KEY`/`OPENAI_ADMIN_KEY`) |
 | `approve` | processa o checkpoint (ou aceita uma mudança de spec) |
 | `pause` | pausa limpa após as tarefas em andamento |
 | `report` | gasto por etapa, worker, papel e provedor; custo médio por feature aprovada |
@@ -57,12 +62,12 @@ Ao fim de cada etapa o processo **termina** em `AWAITING_APPROVAL` e notifica o 
 
 ## Como funciona
 
-- **Estado em arquivos** (`.harness/`): `state.json` (máquina de estados), `features.json`, `events.jsonl`, `ledger.jsonl`, `routing-stats.json`, `protected.json`, `inbox/`, `lessons/`, `runs/<taskId>/` (prompt, transcript, gate report, veredito). Escrita atômica (tmp + rename).
+- **Estado em arquivos** (`.harness/`): `state.json` (máquina de estados e tempo ativo por etapa), `features.json`, `events.jsonl`, `ledger.jsonl`, `reviews.jsonl` (vereditos), `crashes.jsonl` (crashes e interrupções), `console.log`, `routing-stats.json`, `protected.json`, `inbox/`, `lessons/`, `runs/<taskId>/` (por chamada: `.prompt.md`, transcript `.jsonl`, `.stderr.log`, `.result.json`; gate report, veredito). Escrita atômica (tmp + rename).
 - **Git**: cada feature roda numa worktree **detached** em `<projeto>/.worktrees/<id>` (sem branch), a partir da ponta da branch em checkout; tentativas e rollbacks ficam só lá. Aprovada, vira **um commit** `feat(<id>): título` na branch em checkout (squash + fast-forward, serializado, com retry se outro agente commitar no meio). Só a pasta do projeto entra nesses commits. Se a branch em checkout mudar durante a execução, o harness para com erro. Commits do harness usam a identidade `pulsar-harness`.
 - **Ciclo por feature**: testes de aceite (test_writer, depois protegidos por hash) → implementação (router escolhe o worker; `hard`/tags críticas e após 2 falhas → `implement_hard`; torneio nas tags críticas) → gates G1–G13 → triage em caso de falha → avaliador de código de outra família → avaliador visual (tag `ui`) → merge. Após 5 tentativas: `blocked` + DUVIDAS/RISCOS.
-- **Gates**: comandos do app em `harness.config.yaml > gates` (yarn); embutidos: G7 (testes protegidos), G8 (sentinelas de privacidade), G9 (axe), G10 (overflow/alvos 44px), G12 (Lighthouse), G13 (segredos no diff). Os gates de navegador sobem `browser.serveCmd` e carregam o Playwright do próprio app. Rodam serializados (emuladores e portas compartilhados).
+- **Gates**: comandos do app em `harness.config.yaml > gates` (yarn); embutidos: G7 (testes protegidos), G8 (sentinelas de privacidade), G9 (axe), G10 (overflow/alvos 44px), G12 (Lighthouse), G13 (segredos no diff). Os gates de navegador sobem `browser.serveCmd` e carregam o Playwright do próprio app. Rodam sob a trava de portas (`browser.portLock`), a mesma que `app/scripts/port-lock.sh` usa para o e2e/rules dos workers em worktrees paralelas; servidores órfãos de worktrees são encerrados antes. Antes dos gates da feature, `project.autofixCmd` (format + lint --fix) roda e é commitado, e arquivos `tmp-*` dos workers são apagados.
 - **Roteamento**: bandit (sucesso suavizado ÷ custo ÷ duração) com `explorationRate`; respeita família, visão, disponibilidade (LM Studio), concorrência, exclusividade dos locais e `prefer_cheap` acima de 80% do orçamento.
-- **Orçamento**: estimativa antes de cada chamada (média histórica worker×papel); estouro do teto da feature troca de worker e, sem alternativa, bloqueia a feature; estouro de etapa/execução/provedor pausa em `PAUSED_BUDGET` com `checkpoints/etapa-N-parcial/`.
+- **Orçamento**: estimativa antes de cada chamada (média histórica worker×papel); estouro do teto da feature troca de worker e, sem alternativa, bloqueia a feature; estouro de etapa/execução/provedor pausa em `PAUSED_BUDGET` com `checkpoints/etapa-N-parcial/` (num terminal interativo, pergunta antes quanto aumentar). Crédito/cota esgotados: o worker sai da rotação; sem nenhum para o papel, `PAUSED_QUOTA`. Custo do pi via OpenRouter vem da API de gerações (custo cobrado), não da estimativa do pi.
 - **Aprendizado**: triage cria lições com evidência (`evt-N`); retro a cada N features e no fim da etapa; lições injetadas por papel/tag (máx. 10); aposentadas (≥ 8 hits, < 30%) ou promovidas para `app/AGENTS.md` (≥ 5 hits, ≥ 70%). O post-mortem só **propõe** mudanças em `.harness/proposals/`.
 - **Mudança de spec/design**: hash diferente → `PAUSED_SPEC_CHANGE` + `checkpoints/mudanca-spec.md`; `approve` aceita.
 - **Segurança**: workers recebem só as variáveis injetadas (nunca o `.env` inteiro); Claude roda com `--permission-mode dontAsk` e allowlist; Codex com `-s workspace-write`. Recomendado: usuário dedicado do macOS ou devcontainer.

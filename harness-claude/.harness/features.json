@@ -428,9 +428,7 @@
       "protectedTests": [
         "app/src/domain/__tests__/indicator.test.ts"
       ],
-      "tags": [
-        "statistics"
-      ],
+      "tags": [],
       "difficulty": "normal",
       "dependsOn": [
         "F-0.01"

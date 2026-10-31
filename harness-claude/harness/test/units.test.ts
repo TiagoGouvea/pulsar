@@ -4,7 +4,9 @@ import { describe, expect, it } from "vitest";
 import { adapters } from "../src/adapters/index.js";
 import { parseCodex } from "../src/adapters/codex.js";
 import { costOf, stageCap } from "../src/budget.js";
-import { NoWorkerError, Runtime } from "../src/invoke.js";
+import { NoWorkerError, QuotaError, Runtime } from "../src/invoke.js";
+import { setFakeScript } from "../src/adapters/fake.js";
+import { modelsReport } from "../src/models.js";
 import { parseApprovalFiles } from "../src/checkpoint.js";
 import { enabledWorkers } from "../src/config.js";
 import { codeRules, uiRules } from "../src/evaluator.js";
@@ -71,6 +73,25 @@ describe("invoke: prepare/release (load/unload do LM Studio)", () => {
     } finally {
       delete (adapters.fake as any).prepare;
       delete (adapters.fake as any).release;
+    }
+  });
+});
+
+describe("invoke: crédito/cota esgotados", () => {
+  it("worker sem crédito sai da rotação e outro assume; sem nenhum, QuotaError (pausa, não bloqueia)", async () => {
+    const { ctx } = await makeProject();
+    setFakeScript((_run, spec) => (spec.id === "fake-cheap" ? { kind: "fail", text: "Credit balance is too low to access the API" } : undefined));
+    try {
+      ctx.config.roles.triage.pool = ["fake-cheap", "fake-google"];
+      const rt = new Runtime(ctx);
+      const ok = await rt.invoke({ role: "triage", taskId: "t", stage: 0, attempt: 1, cwd: ctx.root, prompt: "oi" });
+      expect(ok.worker.id).toBe("fake-google");
+      expect(rt.quotaHit.has("fake-cheap")).toBe(true);
+      ctx.config.roles.triage.pool = ["fake-cheap"];
+      expect(await rt.invoke({ role: "triage", taskId: "t", stage: 0, attempt: 1, cwd: ctx.root, prompt: "oi" }).catch((e) => e)).toBeInstanceOf(QuotaError);
+      expect(modelsReport(ctx, 0)).toMatch(/triage\s+fake-google\s+1\/1/);
+    } finally {
+      setFakeScript(undefined);
     }
   });
 });
