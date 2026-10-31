@@ -74,9 +74,13 @@ function eventSummary(event: unknown): Record<string, unknown> | null {
   const summary: Record<string, unknown> = { at: nowUtc(), type };
   if (["tool_execution_start", "tool_execution_end"].includes(type)) {
     summary.toolName = value.toolName;
+    if (typeof value.toolCallId === "string") summary.toolCallId = value.toolCallId;
     if (type === "tool_execution_end") {
       summary.isError = value.isError;
       summary.durationMs = value.durationMs;
+      for (const key of ["error", "errorMessage"]) {
+        if (typeof value[key] === "string") summary[key] = value[key];
+      }
     }
     return summary;
   }
@@ -86,8 +90,140 @@ function eventSummary(event: unknown): Record<string, unknown> | null {
     }
     return summary;
   }
-  if (["agent_start", "agent_end", "turn_start", "turn_end", "message_start", "message_end"].includes(type)) return summary;
+  if (["agent_start", "agent_end", "turn_start", "turn_end", "message_start", "message_end"].includes(type)) {
+    if (type === "message_end" && value.message && typeof value.message === "object") {
+      const message = value.message as Record<string, unknown>;
+      if (typeof message.role === "string") summary.role = message.role;
+      if (Array.isArray(message.content)) summary.contentTypes = message.content.flatMap((item) =>
+        item && typeof item === "object" && typeof (item as Record<string, unknown>).type === "string"
+          ? [(item as Record<string, unknown>).type]
+          : [],
+      );
+      if (message.usage && typeof message.usage === "object") summary.usage = message.usage;
+    }
+    for (const key of ["aborted", "success"]) if (key in value) summary[key] = value[key];
+    return summary;
+  }
   return null;
+}
+
+function eventMarker(event: Record<string, unknown>): string | null {
+  switch (event.type) {
+    case "turn_start": return "·";
+    case "tool_execution_start": return "T";
+    case "tool_execution_end": return event.isError === true ? "!" : "✓";
+    case "turn_end": return event.aborted === true ? "×" : "✓";
+    case "auto_retry_start": return "!";
+    case "agent_end": return event.aborted === true ? "×" : "✓";
+    default: return null;
+  }
+}
+
+function modalityLabel(modality: ModelCandidate["modality"]): string {
+  if (modality === "local") return "local";
+  if (modality === "metered_api") return "remoto";
+  return modality;
+}
+
+function durationLabel(durationMs: number): string {
+  const totalSeconds = Math.max(0, Math.floor(durationMs / 1000));
+  return `${Math.floor(totalSeconds / 60)}:${String(totalSeconds % 60).padStart(2, "0")}`;
+}
+
+function statusLine(input: {
+  request: ExecutionRequest;
+  elapsedMs: number;
+  turns: number;
+  tools: number;
+  errors: number;
+  idleMs: number;
+  lastEvent: string;
+  trail: string;
+}): string {
+  return `${input.request.task.id} ${input.request.candidate.alias} [${modalityLabel(input.request.candidate.modality)}] ${durationLabel(input.elapsedMs)}/${durationLabel(input.request.timeoutMs)} · t${input.turns} T${input.tools} !${input.errors} · ${input.lastEvent} idle ${durationLabel(input.idleMs)} · ${input.trail || "…"}`;
+}
+
+function startLiveProgress(request: ExecutionRequest, tracePath: string, redactionPatterns: string[]): {
+  event: (summary: Record<string, unknown>) => void;
+  finish: (outcome: "success" | "failure" | "interrupted") => void;
+} {
+  const startedAt = Date.now();
+  let sequence = 0;
+  let turns = 0;
+  let tools = 0;
+  let errors = 0;
+  let lastActivityAt = startedAt;
+  let lastEvent = "iniciando";
+  let trail = "";
+  let finished = false;
+  let renderedLength = 0;
+  const isTty = process.stdout.isTTY;
+  const appendEvent = (record: Record<string, unknown>): void => {
+    appendFileSync(tracePath, `${redact(JSON.stringify(record), redactionPatterns)}\n`, { encoding: "utf8", mode: 0o600 });
+  };
+  const render = (periodic = false): void => {
+    const current = statusLine({
+      request, elapsedMs: Date.now() - startedAt, turns, tools, errors,
+      idleMs: Date.now() - lastActivityAt, lastEvent, trail: trail.slice(-8),
+    });
+    if (isTty) {
+      const padded = current.padEnd(renderedLength, " ");
+      process.stdout.write(`\r${padded}`);
+      renderedLength = current.length;
+    } else if (periodic && !finished) {
+      console.log(`[${nowUtc()}] ${current}`);
+    }
+  };
+  render(true);
+  const ticker = setInterval(() => render(true), 30_000);
+  return {
+    event(summary) {
+      sequence += 1;
+      const marker = eventMarker(summary);
+      if (summary.type === "turn_start") turns += 1;
+      if (summary.type === "tool_execution_start") tools += 1;
+      if (summary.type === "tool_execution_end" && summary.isError === true) errors += 1;
+      if (summary.type === "auto_retry_start" || summary.type === "agent_end" && summary.aborted === true) errors += 1;
+      lastActivityAt = Date.now();
+      if (summary.type === "turn_start") lastEvent = "modelo";
+      else if (summary.type === "turn_end") lastEvent = "turno";
+      else if (summary.type === "tool_execution_start" || summary.type === "tool_execution_end") {
+        const toolName = typeof summary.toolName === "string" ? summary.toolName.slice(0, 10) : "tool";
+        lastEvent = `${toolName}${summary.type === "tool_execution_start" ? "…" : summary.isError === true ? "!" : "✓"}`;
+      } else if (summary.type === "message_end") {
+        lastEvent = `msg:${typeof summary.role === "string" ? summary.role : "?"}`;
+      }
+      else lastEvent = String(summary.type).slice(0, 12);
+      if (marker) trail += marker;
+      appendEvent({
+        ...summary,
+        sequence,
+        elapsedMs: Date.now() - startedAt,
+        marker,
+        counts: { turns, tools, errors },
+      });
+      if (isTty) render();
+    },
+    finish(outcome) {
+      if (finished) return;
+      finished = true;
+      clearInterval(ticker);
+      const marker = outcome === "success" ? "✓" : outcome === "interrupted" ? "×" : "!";
+      trail += marker;
+      lastEvent = outcome === "success" ? "resposta concluída" : outcome === "interrupted" ? "interrompida" : "falha";
+      const finalLine = statusLine({
+        request, elapsedMs: Date.now() - startedAt, turns, tools, errors,
+        idleMs: Date.now() - lastActivityAt, lastEvent, trail: trail.slice(-8),
+      });
+      appendEvent({
+        at: nowUtc(), type: "session_outcome", sequence: sequence + 1,
+        elapsedMs: Date.now() - startedAt, outcome, lastActivityAt: new Date(lastActivityAt).toISOString(),
+        counts: { turns, tools, errors }, trail: trail.slice(-8),
+      });
+      if (isTty) process.stdout.write(`\r${finalLine.padEnd(renderedLength, " ")}\n`);
+      else console.log(`[${nowUtc()}] ${finalLine}`);
+    },
+  };
 }
 
 export function extractResult(
@@ -230,19 +366,20 @@ export class PiExecutor implements Executor {
     const tracePath = path.join(request.outputDirectory, "session-trace.jsonl");
     appendFileSync(tracePath, `${JSON.stringify({
       at: nowUtc(), type: "session_start", provider: request.candidate.provider,
-      modelId: request.candidate.modelId, alias: request.candidate.alias, timeoutMs: request.timeoutMs,
+      modelId: request.candidate.modelId, alias: request.candidate.alias,
+      modality: request.candidate.modality, taskId: request.task.id, taskRole: request.task.role,
+      runId: request.runId, attemptId: request.attemptId, timeoutMs: request.timeoutMs,
     })}\n`, { encoding: "utf8", mode: 0o600 });
+    const progress = startLiveProgress(request, tracePath, this.config.security.redactPatterns);
     const unsubscribe = session.subscribe((event) => {
       const summary = eventSummary(event);
-      if (summary) {
-        const line = redact(JSON.stringify(summary), this.config.security.redactPatterns);
-        appendFileSync(tracePath, `${line}\n`, { encoding: "utf8", mode: 0o600 });
-      }
+      if (summary) progress.event(summary);
     });
-    this.abortCurrent = () => session.abort();
-    const timeoutState = { triggered: false };
+    const timeoutState = { triggered: false, cancelled: false };
+    this.abortCurrent = async () => { timeoutState.cancelled = true; await session.abort(); };
     const timedOut = (): boolean => timeoutState.triggered;
     const timeout = setTimeout(() => { timeoutState.triggered = true; void session.abort(); }, request.timeoutMs);
+    let outcome: "success" | "failure" | "interrupted" = "failure";
     try {
       try { await session.prompt(request.prompt); }
       catch (error) { throw new PiExecutionError(timeoutState.triggered ? "timeout" : "provider_request", error); }
@@ -310,11 +447,14 @@ export class PiExecutor implements Executor {
         cachedTokens: stats.tokens.cacheRead,
         costUsd: String(stats.cost),
       };
+      outcome = "success";
       return result;
     } finally {
       clearTimeout(timeout);
       this.abortCurrent = undefined;
       unsubscribe();
+      if (timeoutState.triggered || timeoutState.cancelled) outcome = "interrupted";
+      progress.finish(outcome);
       appendFileSync(tracePath, `${JSON.stringify({ at: nowUtc(), type: "session_disposed", timedOut: timeoutState.triggered })}\n`, { encoding: "utf8", mode: 0o600 });
       session.dispose();
     }

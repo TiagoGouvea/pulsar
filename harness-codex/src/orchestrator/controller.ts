@@ -658,8 +658,10 @@ export class Orchestrator {
       const task = rowToTask(row);
       const context = this.implementerContext(runId, task);
       if (!context) {
+        const inspectionPath = await this.inspectInterruptedAttempt(runId, task);
         this.store.setTaskState(runId, task.id, "blocked");
         this.store.setRunState(runId, "blocked", { cause: "interrupted_attempt_requires_reconciliation", taskId: task.id });
+        this.log(`RECUPERAÇÃO ${task.id}: tentativa sem resultado final; sessão Pi não pode ser continuada. Inspeção do estado atual salva em ${inspectionPath}. Após reconciliar o custo, a tarefa será tentada em uma sessão nova.`);
         return false;
       }
       await mkdir(context.attemptDirectory, { recursive: true });
@@ -707,6 +709,65 @@ export class Orchestrator {
       }
     }
     return true;
+  }
+
+  private async inspectInterruptedAttempt(runId: string, task: Task): Promise<string> {
+    const attempt = this.store.get<Record<string, unknown>>(
+      "SELECT id, number, candidate_key, started_at FROM attempts WHERE run_id=? AND task_id=? ORDER BY number DESC LIMIT 1",
+      runId, task.id,
+    );
+    const attemptNumber = Number(attempt?.number ?? 0);
+    const attemptDirectory = path.join(
+      this.config.storage.root, "runs", runId, "tasks", task.id,
+      `attempt-${String(attemptNumber).padStart(3, "0")}`,
+    );
+    await mkdir(attemptDirectory, { recursive: true });
+    let trace: Record<string, unknown>[] = [];
+    try {
+      const content = await readFile(path.join(attemptDirectory, "session-trace.jsonl"), "utf8");
+      trace = content.split("\n").filter(Boolean).flatMap((line) => {
+        try {
+          const event = JSON.parse(line) as Record<string, unknown>;
+          return [{
+            at: event.at ?? null, type: event.type ?? null, sequence: event.sequence ?? null,
+            elapsedMs: event.elapsedMs ?? null, marker: event.marker ?? null,
+            toolName: event.toolName ?? null, isError: event.isError ?? null,
+            durationMs: event.durationMs ?? null,
+          }];
+        } catch { return []; }
+      });
+    } catch { /* The trace may not exist if interruption happened during setup. */ }
+    let currentWorkspaceFiles: string[] = [];
+    let workspaceInspectionError: string | null = null;
+    try {
+      currentWorkspaceFiles = Object.keys((await snapshotWorkspaceChanges(this.config.project.workspace)).files);
+    } catch (error) { workspaceInspectionError = safeError(error); }
+    const inspectionPath = path.join(attemptDirectory, "recovery-inspection.json");
+    const inspection = {
+      at: nowUtc(), runId, milestoneId: task.milestoneId, taskId: task.id,
+      attemptId: attempt?.id ?? null, attemptNumber,
+      candidateKey: attempt?.candidate_key ?? null,
+      attemptStartedAt: attempt?.started_at ?? null,
+      recovery: "fresh_attempt_required",
+      reason: "The Pi session is in-memory and produced no final structured result; its internal state cannot be resumed.",
+      currentWorkspaceFiles,
+      workspaceInspectionError,
+      workspaceAttributionWarning: "These are current uncommitted workspace paths. Without a durable pre-attempt snapshot, they may include changes made before this attempt and are not asserted to be caused by it.",
+      traceEventCount: trace.length,
+      traceCounts: trace.reduce<Record<string, number>>((counts, event) => {
+        const key = typeof event.type === "string" ? event.type : "unknown";
+        counts[key] = (counts[key] ?? 0) + 1;
+        return counts;
+      }, {}),
+      lastTraceEvents: trace.slice(-20),
+    };
+    await writeJson(inspectionPath, inspection);
+    this.store.event(runId, "task.interruption_inspected", "task", task.id, {
+      attemptId: attempt?.id ?? null, attemptNumber, inspectionPath,
+      currentWorkspaceFileCount: currentWorkspaceFiles.length, traceEventCount: trace.length,
+      freshAttemptRequired: true,
+    });
+    return inspectionPath;
   }
 
   private async verifyReadyResult(
