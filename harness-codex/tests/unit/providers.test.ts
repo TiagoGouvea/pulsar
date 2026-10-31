@@ -142,7 +142,9 @@ describe("probes de provedores", () => {
     expect(fetchMock.mock.calls.filter(([input]) => requestUrl(input).endsWith("/v1/chat/completions"))).toHaveLength(2);
     expect(lifecycle.map((item) => item.phase)).toEqual(["before_unload", "unloaded", "loading", "loaded", "before_unload", "unloaded"]);
     const schemaCall = fetchMock.mock.calls.find(([input, init]) => requestUrl(input).endsWith("/v1/chat/completions") && typeof init?.body === "string" && init.body.includes("json_schema"));
-    expect(JSON.parse(String(schemaCall?.[1]?.body))).toMatchObject({ response_format: { type: "json_schema", json_schema: { strict: true } } });
+    const schemaBody = schemaCall?.[1]?.body;
+    expect(typeof schemaBody).toBe("string");
+    expect(JSON.parse(typeof schemaBody === "string" ? schemaBody : "{}")).toMatchObject({ response_format: { type: "json_schema", json_schema: { strict: true } } });
   });
 
   test("aceita apenas JSON válido no canal de raciocínio e não registra raciocínio livre", async () => {

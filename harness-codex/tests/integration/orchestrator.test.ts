@@ -1,7 +1,7 @@
 import { appendFile, mkdtemp } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import { Orchestrator } from "../../src/orchestrator/controller.js";
 import { createTestConfig } from "../helpers/config.js";
 import { runProcess } from "../../src/utils/process.js";
@@ -12,17 +12,20 @@ describe("controlador", () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "harness-run-"));
     const config = await createTestConfig(root);
     const orchestrator = new Orchestrator(config);
+    const output: string[] = [];
+    vi.spyOn(console, "log").mockImplementation((...args) => { output.push(args.join(" ")); });
     try {
       const runId = await orchestrator.run();
       expect(orchestrator.store.getRun(runId)?.state).toBe("awaiting_human");
       expect(orchestrator.store.listTasks(runId).every((task) => task.state === "passed")).toBe(true);
       expect(orchestrator.store.all("SELECT id FROM sessions WHERE independent=1")).toHaveLength(2);
       expect(orchestrator.store.all("SELECT id FROM provider_calls WHERE state='completed'")).toHaveLength(4);
+      expect(output.some((line) => /etapa [^ ]+ tarefas \d+\/\d+ · projeto tarefas \d+\/\d+ · features etapa \d+\/\d+ · projeto \d+\/\d+/.test(line))).toBe(true);
       const count = orchestrator.store.listTasks(runId).length;
       await orchestrator.run(runId);
       expect(orchestrator.store.listTasks(runId)).toHaveLength(count);
       expect(orchestrator.store.getRun(runId)?.state).toBe("awaiting_human");
-    } finally { orchestrator.close(); }
+    } finally { orchestrator.close(); vi.restoreAllMocks(); }
   });
 
   test("executa typecheck, lint e test em cada tarefa", async () => {

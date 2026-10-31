@@ -227,7 +227,7 @@ export class Orchestrator {
       if (["completed", "awaiting_human", "blocked", "paused_budget"].includes(finalState)) {
         await writeFinalReport(this.config, this.store, id).catch((error: unknown) => this.log(`Não foi possível atualizar o relatório final: ${safeError(error)}`));
       }
-      this.log(`Sessão encerrada: ${finalState}; ${this.progress(id)} tarefas aprovadas; consulte ${path.join(this.config.storage.root, "runs", id, "final-report.md")}.`);
+      this.log(`Sessão encerrada: ${finalState}; ${this.progress(id)}; consulte ${path.join(this.config.storage.root, "runs", id, "final-report.md")}.`);
     }
   }
 
@@ -275,8 +275,10 @@ export class Orchestrator {
   }
 
   private logTaskSummary(runId: string, task: Task, taskCount: number, outcome: string): void {
-    const taskRows = this.store.listTasks(runId).filter((row) => row.milestone_id === task.milestoneId);
+    const allTaskRows = this.store.listTasks(runId);
+    const taskRows = allTaskRows.filter((row) => row.milestone_id === task.milestoneId);
     const taskPosition = taskRows.findIndex((row) => row.id === task.id) + 1;
+    const projectTaskPosition = allTaskRows.findIndex((row) => row.id === task.id) + 1;
     const relatedTaskId = `${task.id}-review`;
     const attempts = this.store.all<Record<string, unknown>>(
       "SELECT started_at, finished_at FROM attempts WHERE run_id=? AND task_id IN (?, ?)",
@@ -297,8 +299,8 @@ export class Orchestrator {
       runId, task.id, relatedTaskId,
     );
     const costs = calls.reduce<{ reported: bigint; uncertain: bigint }>((total, call) => {
-      total.reported += BigInt(String(call.reported_micros ?? 0));
-      total.uncertain += BigInt(String(call.uncertain_micros ?? 0));
+      total.reported += this.microsFromRow(call.reported_micros);
+      total.uncertain += this.microsFromRow(call.uncertain_micros);
       return total;
     }, { reported: 0n, uncertain: 0n });
     const totalSeconds = Math.floor(durationMs / 1_000);
@@ -309,24 +311,41 @@ export class Orchestrator {
     const reportedUsd = this.formatUsdMicros(costs.reported);
     const uncertainUsd = this.formatUsdMicros(costs.uncertain);
     const cost = costs.uncertain > 0n ? `USD ${reportedUsd} + ${uncertainUsd} incerto` : `USD ${reportedUsd}`;
-    this.log(`Tarefa ${task.id} ${outcome} · tempo ativo ${duration} · custo ${cost} · Tarefa ${taskPosition} de ${taskCount}.`);
+    this.log(`Tarefa ${task.id} ${outcome} · tempo ativo ${duration} · custo ${cost} · etapa ${taskPosition}/${taskCount} · projeto ${projectTaskPosition}/${allTaskRows.length}.`);
   }
 
   private formatUsdMicros(micros: bigint): string {
     return (Number(micros) / 1_000_000).toFixed(6).replace(/0+$/, "").replace(/\.$/, "");
   }
 
+  private microsFromRow(value: unknown): bigint {
+    if (typeof value === "bigint") return value;
+    if (typeof value === "number" && Number.isSafeInteger(value)) return BigInt(value);
+    if (typeof value === "string" && /^-?\d+$/.test(value)) return BigInt(value);
+    return 0n;
+  }
+
   private progress(runId: string, milestoneId?: string): string {
-    const tasks = this.store.listTasks(runId).filter((task) => !milestoneId || task.milestone_id === milestoneId);
-    const passed = tasks.filter((task) => task.state === "passed").length;
-    const linked = new Map<string, boolean>();
-    for (const task of tasks) {
-      let requirementIds: string[] = [];
-      try { requirementIds = JSON.parse(String(task.requirement_ids_json)) as string[]; } catch { /* Ignore malformed legacy rows in progress display. */ }
-      for (const requirementId of requirementIds) linked.set(requirementId, (linked.get(requirementId) ?? true) && task.state === "passed");
-    }
-    const featuresDone = [...linked.values()].filter(Boolean).length;
-    return `tarefas ${passed}/${tasks.length} · features ${featuresDone}/${linked.size}`;
+    const allTasks = this.store.listTasks(runId);
+    const stageTasks = milestoneId ? allTasks.filter((task) => task.milestone_id === milestoneId) : allTasks;
+    const summarize = (tasks: typeof allTasks): { passed: number; total: number; featuresDone: number; featuresTotal: number } => {
+      const linked = new Map<string, boolean>();
+      for (const task of tasks) {
+        let requirementIds: string[] = [];
+        try { requirementIds = JSON.parse(String(task.requirement_ids_json)) as string[]; } catch { /* Ignore malformed legacy rows in progress display. */ }
+        for (const requirementId of requirementIds) linked.set(requirementId, (linked.get(requirementId) ?? true) && task.state === "passed");
+      }
+      return {
+        passed: tasks.filter((task) => task.state === "passed").length,
+        total: tasks.length,
+        featuresDone: [...linked.values()].filter(Boolean).length,
+        featuresTotal: linked.size,
+      };
+    };
+    const project = summarize(allTasks);
+    const stage = summarize(stageTasks);
+    if (!milestoneId) return `projeto tarefas ${project.passed}/${project.total} · features ${project.featuresDone}/${project.featuresTotal}`;
+    return `etapa ${milestoneId} tarefas ${stage.passed}/${stage.total} · projeto tarefas ${project.passed}/${project.total} · features etapa ${stage.featuresDone}/${stage.featuresTotal} · projeto ${project.featuresDone}/${project.featuresTotal}`;
   }
 
   private async writeRunSummary(runId: string): Promise<void> {

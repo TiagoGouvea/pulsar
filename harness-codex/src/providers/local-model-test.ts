@@ -140,8 +140,10 @@ async function runStructuredVariant(
     const status = outputStatus === "passed" && output?.channel === "reasoning_content" ? "passed_reasoning_channel" : outputStatus;
     const choice = (payload.choices as Array<{ finish_reason?: unknown; message?: Record<string, unknown> }> | undefined)?.[0];
     const reasoning = choice?.message?.reasoning_content ?? choice?.message?.reasoning;
+    const finishReason = choice?.finish_reason;
+    const finishReasonText = typeof finishReason === "string" || typeof finishReason === "number" || typeof finishReason === "boolean" ? String(finishReason) : "n/a";
     const detail = !output
-      ? `Sem texto final válido (finish_reason=${String(choice?.finish_reason ?? "n/a")}; reasoning_chars=${typeof reasoning === "string" ? reasoning.length : 0}; message_keys=${Object.keys(choice?.message ?? {}).join(",") || "n/a"}).`
+      ? `Sem texto final válido (finish_reason=${finishReasonText}; reasoning_chars=${typeof reasoning === "string" ? reasoning.length : 0}; message_keys=${Object.keys(choice?.message ?? {}).join(",") || "n/a"}).`
       : outputStatus === "schema_mismatch" ? "JSON final válido, mas incompatível com o contrato estrito." : null;
     const safeFinalOutput = outputStatus === "passed" ? output?.text.slice(0, 1_000) ?? null : null;
     return { alias: candidate.alias, modelId: candidate.modelId, variant, endpoint: url.pathname, status, outputChannel: output?.channel ?? null, durationMs, response: safeFinalOutput, error: detail };
