@@ -156,24 +156,23 @@ function startLiveProgress(request: ExecutionRequest, tracePath: string, redacti
   let lastEvent = "iniciando";
   let trail = "";
   let finished = false;
-  let renderedLength = 0;
-  const isTty = process.stdout.isTTY;
+  let printedSummaries = 0;
+  let markersSinceSummary = 0;
   const appendEvent = (record: Record<string, unknown>): void => {
     appendFileSync(tracePath, `${redact(JSON.stringify(record), redactionPatterns)}\n`, { encoding: "utf8", mode: 0o600 });
   };
-  const render = (periodic = false): void => {
+  const printSummary = (outcome?: "success" | "failure" | "interrupted"): void => {
     const current = statusLine({
       request, elapsedMs: Date.now() - startedAt, turns, tools, errors,
       idleMs: Date.now() - lastActivityAt, lastEvent, trail: trail.slice(-8),
-    });
-    if (isTty || periodic) {
-      const padded = current.padEnd(renderedLength, " ");
-      process.stdout.write(`\r${padded}`);
-      renderedLength = current.length;
-    }
+    }) + (outcome ? ` · resultado ${outcome}` : "");
+    if (printedSummaries > 0 && markersSinceSummary > 0) process.stdout.write("\n");
+    process.stdout.write(`[${nowUtc()}] ${current}\n`);
+    printedSummaries += 1;
+    markersSinceSummary = 0;
   };
-  render(true);
-  const ticker = setInterval(() => render(true), 60_000);
+  printSummary();
+  const ticker = setInterval(printSummary, 60_000);
   return {
     event(summary) {
       sequence += 1;
@@ -200,7 +199,10 @@ function startLiveProgress(request: ExecutionRequest, tracePath: string, redacti
         marker,
         counts: { turns, tools, errors },
       });
-      if (isTty) render();
+      if (marker) {
+        process.stdout.write(marker);
+        markersSinceSummary += 1;
+      }
     },
     finish(outcome) {
       if (finished) return;
@@ -208,17 +210,15 @@ function startLiveProgress(request: ExecutionRequest, tracePath: string, redacti
       clearInterval(ticker);
       const marker = outcome === "success" ? "✓" : outcome === "interrupted" ? "×" : "!";
       trail += marker;
+      process.stdout.write(marker);
+      markersSinceSummary += 1;
       lastEvent = outcome === "success" ? "resposta concluída" : outcome === "interrupted" ? "interrompida" : "falha";
-      const finalLine = statusLine({
-        request, elapsedMs: Date.now() - startedAt, turns, tools, errors,
-        idleMs: Date.now() - lastActivityAt, lastEvent, trail: trail.slice(-8),
-      });
       appendEvent({
         at: nowUtc(), type: "session_outcome", sequence: sequence + 1,
         elapsedMs: Date.now() - startedAt, outcome, lastActivityAt: new Date(lastActivityAt).toISOString(),
         counts: { turns, tools, errors }, trail: trail.slice(-8),
       });
-      process.stdout.write(`\r${finalLine.padEnd(renderedLength, " ")}\n`);
+      printSummary(outcome);
     },
   };
 }
