@@ -278,14 +278,31 @@ VITE_FIREBASE_MEASUREMENT_ID=...
 
 ## 11. Próximos Passos
 
-1. Implementar Security Rules do Firestore (REQ-1-002)
-2. Implementar estado do usuário e persistência (REQ-2-001)
-3. Criar componentes de registro (REQ-2-002)
-4. Implementar motor estatístico (REQ-3-001)
-5. Dashboard e insights (REQ-3-002)
+1. Onboarding e estado inicial (REQ-1-002, task-003)
+2. Security Rules do Firestore, isolamento por UID e testes de emulador (REQ-1-003, task-004)
+3. Cadastro e gestão de indicadores (REQ-2-001, task-005)
+4. Registro diário e privacidade visual (REQ-2-002, task-006)
+
+## 12. Task-002 — Entrada anônima e conversão de conta (31/10/2026)
+
+### Sessão e conversão
+- A sessão é criada por `signInAnonymously` com `browserLocalPersistence`; a inicialização é memoizada para impedir UIDs duplicados em montagens concorrentes e não cria usuário enquanto um link mágico está pendente ou depois de logout explícito (`pulsar.auth.signedOut`).
+- Google e link mágico usam somente `linkWithPopup`/`linkWithCredential` no usuário corrente. O UID é comparado antes e depois; um resultado com outro UID é interrompido (`account/uid-mismatch`). Nunca há fallback para `signInWithPopup`/`signInWithEmailLink` durante a conversão.
+- O contexto do link mágico guarda e-mail, UID original, intenção (`link`, `login`, `reauthenticate`) e nonce de sessão na URL. O link só é aceito no mesmo navegador/perfil e na mesma sessão; abrir em outro dispositivo não vincula nem transfere dados.
+- Conflitos de credencial (`auth/credential-already-in-use`, `auth/email-already-in-use`, `auth/account-exists-with-different-credential`) propagam o erro sem tocar em UID, sessão, dados ou credenciais. A tela explica que nada foi mesclado/substituído/apagado e oferece “Continuar nesta conta”.
+
+### Logout, reautenticação e exclusão
+- `logout` grava primeiro o marcador de saída e só então chama `signOut`; uma falha remove o marcador. A recriação anônima exige ação explícita (“Começar sem cadastro”).
+- A exclusão é uma callable `deleteAccount` em `southamerica-east1`. O servidor ignora qualquer UID do cliente, exige `auth_time` recente (até 300 s) para contas permanentes, marca a exclusão, remove recursivamente `users/{uid}`, remove o usuário do Auth e limpa o marcador. Falhas preservam o marcador e nunca são reportadas como sucesso.
+- O cliente só faz logout depois de receber `deleted: true` para o mesmo UID. `auth/requires-recent-login`/`functions/failed-precondition` exibem reautenticação por Google ou link mágico; a reautenticação não exclui sozinha — a confirmação é repetida.
+- A tela de conta segue a referência mobile de `design/configura_es_e_conta` e reflui em largura máxima, sem navegação ou desenho exclusivo de desktop.
+
+### Operação
+- `functions/` é um pacote separado; o `postinstall` do app instala suas dependências para que `yarn install`, `yarn test`, `yarn typecheck` e `yarn build` funcionem em checkout limpo.
+- O desenvolvimento local usa emuladores opt-in (`VITE_USE_FIREBASE_EMULATORS=true`); produção nunca conecta emuladores.
 
 ---
 
-**Status:** ✅ Scaffold completo, design system implementado, base mobile-only funcional  
-**Build:** ✅ Passando  
-**Testes:** ⏳ A serem implementados na etapa seguinte
+**Status:** ✅ Task-001 concluída; task-002 (entrada anônima e conversão) pronta para verificação  
+**Build:** ✅ Passando (app + functions)  
+**Testes:** ✅ 49 Vitest + 9 functions; E2E 40/40 nos cinco projetos

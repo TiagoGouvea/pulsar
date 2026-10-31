@@ -9,13 +9,18 @@ vi.mock('@lib/firebase/context', () => ({
     user: null,
     isLoading: false,
     anonymous: true,
-    googleAvailable: true,
-    emailAvailable: true,
+    initializationError: null,
+    emailLinkPending: false,
+    pendingEmail: '',
     signInAnonymous: vi.fn(),
-    signInGoogle: vi.fn(),
-    sendPasswordReset: vi.fn(),
-    linkCredential: vi.fn(),
-    signOutUser: vi.fn()
+    linkGoogle: vi.fn(),
+    loginGoogle: vi.fn(),
+    sendEmailLink: vi.fn(),
+    completeEmailLink: vi.fn(),
+    dismissEmailLink: vi.fn(),
+    reauthenticateGoogle: vi.fn(),
+    signOutUser: vi.fn(),
+    deleteAccount: vi.fn()
   })
 }));
 

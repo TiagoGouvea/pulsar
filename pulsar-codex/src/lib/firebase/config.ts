@@ -1,6 +1,7 @@
 import { FirebaseOptions, getApp, getApps, initializeApp } from 'firebase/app';
-import { getAuth, Auth } from 'firebase/auth';
-import { getFirestore, Firestore } from 'firebase/firestore';
+import { connectAuthEmulator, getAuth } from 'firebase/auth';
+import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore';
+import { connectFunctionsEmulator, getFunctions } from 'firebase/functions';
 
 /**
  * Firebase configuration
@@ -19,17 +20,15 @@ const firebaseConfig: FirebaseOptions = {
 // Initialize Firebase app (singleton pattern)
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
-// Initialize services
-let auth: Auth;
-let db: Firestore;
+const auth = getAuth(app);
+const db = getFirestore(app);
+const functions = getFunctions(app, 'southamerica-east1');
 
-try {
-  auth = getAuth(app);
-  db = getFirestore(app);
-} catch (error) {
-  console.error('Failed to initialize Firebase services:', error);
-  auth = {} as Auth;
-  db = {} as Firestore;
+// Tests and local development must opt in; production never uses emulators.
+if (import.meta.env.DEV && import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true') {
+  connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
+  connectFirestoreEmulator(db, '127.0.0.1', 8080);
+  connectFunctionsEmulator(functions, '127.0.0.1', 5001);
 }
 
-export { app, auth, db, firebaseConfig };
+export { app, auth, db, functions, firebaseConfig };

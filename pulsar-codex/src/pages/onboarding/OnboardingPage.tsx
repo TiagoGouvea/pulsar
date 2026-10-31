@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Heading } from '@components/ui/Heading';
 import { Text } from '@components/ui/Text';
 import { Card } from '@components/ui/Card';
 import { Button } from '@components/ui/Button';
 import { useFirebase } from '@lib/firebase/context';
+import { accountErrorMessage } from '@features/auth/errors';
 
 const OnboardingStep1 = React.lazy(() => import('@pages/onboarding/OnboardingStep1'));
 const OnboardingStep2 = React.lazy(() => import('@pages/onboarding/OnboardingStep2'));
@@ -13,14 +14,21 @@ const OnboardingStep3 = React.lazy(() => import('@pages/onboarding/OnboardingSte
 export const OnboardingPage: React.FC = () => {
   const { step } = useParams();
   const navigate = useNavigate();
-  const { signInAnonymous } = useFirebase();
+  const { signInAnonymous, isLoading, anonymous, user, initializationError } = useFirebase();
+  const [isStarting, setIsStarting] = useState(false);
+  const [error, setError] = useState('');
 
   const handleStart = async () => {
+    if (isStarting) return;
+    setIsStarting(true);
+    setError('');
     try {
       await signInAnonymous();
       navigate('/onboarding/1');
-    } catch (error) {
-      console.error('Failed to sign in:', error);
+    } catch (failure) {
+      setError(accountErrorMessage(failure));
+    } finally {
+      setIsStarting(false);
     }
   };
 
@@ -98,9 +106,14 @@ export const OnboardingPage: React.FC = () => {
         </Card>
 
         <div className="flex flex-col space-y-space-sm">
-          <Button variant="primary" size="lg" fullWidth onClick={handleStart}>
-            Começar agora
+          {(anonymous || !user) && <p className="body-sm text-on-surface-variant text-center">
+            Comece sem cadastro. Na conta anônima, sair, limpar os dados do navegador ou perder a sessão pode tornar seus dados inacessíveis. Você pode vincular Google ou e-mail depois, sem mudar seu UID.
+          </p>}
+          {(error || initializationError) && <p role="alert" className="body-sm text-error">{error || initializationError}</p>}
+          <Button variant="primary" size="lg" fullWidth className="min-h-[48px]" disabled={isLoading || isStarting} onClick={handleStart}>
+            {isLoading || isStarting ? 'Preparando sessão…' : 'Começar agora'}
           </Button>
+          <button type="button" className="min-h-[44px] text-secondary label-lg" onClick={() => navigate('/account')}>Já tenho uma conta salva</button>
           <Text variant="body-sm" color="on-surface-variant" align="center">
             Ao continuar, você concorda com os Termos de Uso e Política de Privacidade.
           </Text>

@@ -43,6 +43,13 @@ export default defineConfig({
   webServer: {
     command: `yarn dev --host 127.0.0.1 --port ${PORT} --strictPort`,
     url: BASE_URL,
-    reuseExistingServer: !process.env.CI
+    reuseExistingServer: false,
+    env: {
+      VITE_USE_FIREBASE_EMULATORS: 'true',
+      VITE_FIREBASE_PROJECT_ID: 'demo-pulsar',
+      VITE_FIREBASE_API_KEY: 'demo-api-key',
+      VITE_FIREBASE_AUTH_DOMAIN: 'demo-pulsar.firebaseapp.com',
+      VITE_FIREBASE_APP_ID: 'demo-app'
+    }
   }
 });

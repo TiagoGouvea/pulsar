@@ -45,8 +45,9 @@ yarn build
 ```
 
 Este comando executa:
-1. `tsc` - Verifica tipos TypeScript e gera declarações
-2. `vite build` - Cria build de produção otimizado
+1. `tsc` - Verifica tipos TypeScript
+2. `yarn build:functions` - Compila a Cloud Function de exclusão de conta
+3. `vite build` - Cria build de produção otimizado
 
 O output é gerado em `dist/` com:
 - `index.html` (3.81 kB)
@@ -68,11 +69,17 @@ Serve o build de produção localmente na porta 4173 para verificação antes de
 yarn test
 ```
 
-Executa todos os testes unitários usando Vitest com configuração:
+Executa os testes do app com Vitest e, em seguida, os testes da Cloud Function com `node --test`:
 - Environment: jsdom
 - Setup files: `tests/setup.ts`
 - Coverage: V8 provider
 - Output: text + HTML
+
+```bash
+yarn test:functions
+```
+
+Compila `functions/` e executa apenas os testes de exclusão de conta.
 
 ```bash
 yarn test:watch
@@ -104,6 +111,12 @@ Na primeira execução em uma máquina nova, instale os navegadores:
 yarn playwright install firefox webkit
 ```
 
+Para executar com os emuladores Firebase de Auth, Firestore e Functions:
+
+```bash
+yarn test:e2e:emulators
+```
+
 ### 7. Linting
 
 ```bash
@@ -127,7 +140,7 @@ Executa lint com auto-fix automático.
 yarn typecheck
 ```
 
-Executa `tsc --noEmit` para validar os tipos sem gerar arquivos.
+Executa `tsc --noEmit` no app e em `functions/tsconfig.json` para validar os tipos sem gerar arquivos.
 
 ## Variáveis de Ambiente
 
@@ -141,6 +154,10 @@ VITE_FIREBASE_STORAGE_BUCKET=your_storage_bucket
 VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 VITE_FIREBASE_APP_ID=your_app_id
 VITE_FIREBASE_MEASUREMENT_ID=your_measurement_id
+
+# Desenvolvimento local com emuladores
+VITE_USE_FIREBASE_EMULATORS=true
+# Para emuladores, use VITE_FIREBASE_PROJECT_ID=demo-pulsar
 ```
 
 As variáveis são carregadas via `import.meta.env.VITE_*` no código.

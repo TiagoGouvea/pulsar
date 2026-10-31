@@ -4,13 +4,17 @@ import { Heading } from '@components/ui/Heading';
 import { Text } from '@components/ui/Text';
 import { Card } from '@components/ui/Card';
 import { Button } from '@components/ui/Button';
+import { GoogleIcon } from '@components/ui/GoogleIcon';
 import { Toggle } from '@components/ui/Toggle';
 import { useFirebase } from '@lib/firebase/context';
+import { accountErrorMessage } from '@features/auth/errors';
 
 export const OnboardingStep3: React.FC = () => {
   const navigate = useNavigate();
-  const { user, signInGoogle } = useFirebase();
+  const { user, linkGoogle } = useFirebase();
   const [aiConsent, setAiConsent] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
   const [privacyRevealed, setPrivacyRevealed] = useState(false);
 
   const handleNext = async () => {
@@ -26,11 +30,17 @@ export const OnboardingStep3: React.FC = () => {
     navigate('/dashboard');
   };
 
-  const handleGoogleLogin = async () => {
+  const handleSaveWithGoogle = async () => {
+    if (saving) return;
+    setSaving(true);
+    setSaveError('');
     try {
-      await signInGoogle();
-    } catch (error) {
-      console.error('Failed to sign in with Google:', error);
+      // Link to the current anonymous UID: the account is saved in place.
+      await linkGoogle();
+    } catch (failure) {
+      setSaveError(accountErrorMessage(failure));
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -113,31 +123,34 @@ export const OnboardingStep3: React.FC = () => {
           </Card>
         </div>
 
-        {/* Anonymous Account Warning */}
+        {/* Account status: anonymous risk disappears after conversion. */}
         <div className="px-gutter mb-space-md">
-          <Card padding="lg" variant="elevated" className="border-l-4 border-l-error">
+          <Card padding="lg" variant="elevated" className={`border-l-4 ${user?.isAnonymous ? 'border-l-error' : user ? 'border-l-tertiary' : 'border-l-outline-variant'}`}>
             <div className="flex items-start gap-space-md">
-              <div className="w-8 h-8 rounded-full bg-error/10 text-error flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-[18px]">warning</span>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${user?.isAnonymous ? 'bg-error/10 text-error' : user ? 'bg-tertiary-fixed/50 text-tertiary' : 'bg-surface-container text-on-surface-variant'}`}>
+                <span className="material-symbols-outlined text-[18px]">{user?.isAnonymous ? 'warning' : user ? 'check_circle' : 'help'}</span>
               </div>
               <div className="flex-1 space-y-2">
                 <Heading level={3} variant="mobile">
-                  Conta anônima atual
+                  {user?.isAnonymous ? 'Conta anônima atual' : user ? 'Conta salva' : 'Sessão não iniciada'}
                 </Heading>
                 <Text variant="body-sm" color="on-surface-variant">
-                  Você está usando uma conta anônima. Se perder o acesso ao navegador ou trocar de dispositivo, seus dados poderão ser perdidos.
+                  {user?.isAnonymous
+                    ? 'Você está usando uma conta anônima. Se perder o acesso ao navegador ou trocar de dispositivo, seus dados poderão ser perdidos.'
+                    : user
+                      ? 'Sua conta está vinculada. O UID e todos os dados originais foram preservados.'
+                      : 'Nenhuma sessão ativa. Volte ao início para começar sem cadastro.'}
                 </Text>
                 {user?.isAnonymous && (
-                  <div className="pt-2">
-                    <Button variant="primary" size="sm" fullWidth onClick={handleGoogleLogin}>
-                      Salvar minha conta
+                  <div className="pt-2 flex flex-col gap-space-sm">
+                    <Button variant="primary" size="sm" fullWidth className="min-h-[44px]" disabled={saving} leftIcon={<GoogleIcon />} onClick={() => void handleSaveWithGoogle()}>
+                      {saving ? 'Abrindo Google…' : 'Vincular com Google'}
                     </Button>
+                    <Button variant="text" size="sm" fullWidth className="min-h-[44px]" onClick={() => navigate('/account')}>
+                      Salvar com link mágico por e-mail
+                    </Button>
+                    {saveError && <Text variant="body-sm" color="error" role="alert">{saveError}</Text>}
                   </div>
-                )}
-                {user && !user.isAnonymous && (
-                  <Text variant="body-sm" color="tertiary">
-                    Sua conta foi salva! Continue com segurança.
-                  </Text>
                 )}
               </div>
             </div>

@@ -1,120 +1,87 @@
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  useCallback
-} from 'react';
-import {
-  User,
-  onAuthStateChanged,
-  signInAnonymously,
-  signInWithCredential,
-  linkWithCredential,
-  signOut,
-  GoogleAuthProvider,
-  sendPasswordResetEmail
-} from 'firebase/auth';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { onIdTokenChanged, type User } from 'firebase/auth';
 import { auth } from './config';
+import * as session from '@features/auth/session';
+import { accountErrorMessage } from '@features/auth/errors';
 
 interface FirebaseContextType {
   user: User | null;
   isLoading: boolean;
   anonymous: boolean;
-  googleAvailable: boolean;
-  emailAvailable: boolean;
-  signInAnonymous: () => Promise<void>;
-  signInGoogle: () => Promise<void>;
-  sendPasswordReset: (email: string) => Promise<void>;
-  linkCredential: (credential: { provider: string }) => Promise<void>;
-  signOutUser: () => Promise<void>;
+  initializationError: string | null;
+  emailLinkPending: boolean;
+  pendingEmail: string;
+  signInAnonymous: typeof session.startAnonymousSession;
+  linkGoogle: typeof session.linkGoogle;
+  loginGoogle: typeof session.loginGoogle;
+  sendEmailLink: typeof session.sendEmailLink;
+  completeEmailLink: () => ReturnType<typeof session.completeEmailLink>;
+  dismissEmailLink: () => void;
+  reauthenticateGoogle: typeof session.reauthenticateGoogle;
+  signOutUser: typeof session.logout;
+  deleteAccount: typeof session.deleteAccount;
 }
 
 const FirebaseContext = createContext<FirebaseContextType | undefined>(undefined);
 
-export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({
-  children
-}) => {
-  const [user, setUser] = useState<User | null>(null);
+export function FirebaseProvider({ children }: { children: ReactNode }) {
+  const [snapshot, setSnapshot] = useState<{ user: User | null }>({ user: null });
   const [isLoading, setIsLoading] = useState(true);
+  const [initializationError, setInitializationError] = useState<string | null>(null);
+  const [emailLinkPending, setEmailLinkPending] = useState(session.hasEmailLink);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      setIsLoading(false);
+    let active = true;
+    const unsubscribe = onIdTokenChanged(auth, (user) => {
+      if (active) setSnapshot({ user });
     });
-
-    return unsubscribe;
+    session.initializeSession().catch((error: unknown) => {
+      if (active) setInitializationError(accountErrorMessage(error));
+    }).finally(() => {
+      if (active) setIsLoading(false);
+    });
+    return () => {
+      active = false;
+      unsubscribe();
+    };
   }, []);
 
-  const signInAnonymous = useCallback(async () => {
-    try {
-      await signInAnonymously(auth);
-    } catch (error) {
-      console.error('Failed to sign in anonymously:', error);
-      throw error;
-    }
-  }, []);
-
-  const signInGoogle = useCallback(async () => {
-    try {
-      await signInWithCredential(auth, GoogleAuthProvider.credential());
-    } catch (error) {
-      console.error('Failed to sign in with Google:', error);
-      throw error;
-    }
-  }, []);
-
-  const sendPasswordReset = useCallback(async (email: string) => {
-    try {
-      await sendPasswordResetEmail(auth, email);
-    } catch (error) {
-      console.error('Failed to send password reset:', error);
-      throw error;
-    }
-  }, []);
-
-  const linkCredential = useCallback(async (credential: { provider: string }) => {
-    try {
-      if (!user) throw new Error('No user logged in');
-      await linkWithCredential(user, { providerId: credential.provider } as any);
-    } catch (error) {
-      console.error('Failed to link credential:', error);
-      throw error;
-    }
-  }, [user]);
-
-  const signOutUser = useCallback(async () => {
-    try {
-      await signOut(auth);
-    } catch (error) {
-      console.error('Failed to sign out:', error);
-      throw error;
-    }
-  }, []);
-
-  const value = {
-    user,
+  const refresh = () => setSnapshot({ user: auth.currentUser });
+  const value: FirebaseContextType = {
+    user: snapshot.user,
     isLoading,
-    anonymous: user?.isAnonymous ?? false,
-    googleAvailable: true,
-    emailAvailable: true,
-    signInAnonymous,
-    signInGoogle,
-    sendPasswordReset,
-    linkCredential,
-    signOutUser
+    anonymous: snapshot.user?.isAnonymous ?? false,
+    initializationError,
+    emailLinkPending,
+    pendingEmail: session.getPendingEmailLink()?.email ?? '',
+    signInAnonymous: async () => {
+      await session.startAnonymousSession();
+      setInitializationError(null);
+      refresh();
+    },
+    linkGoogle: async () => { await session.linkGoogle(); refresh(); },
+    loginGoogle: async () => { await session.loginGoogle(); refresh(); },
+    sendEmailLink: session.sendEmailLink,
+    completeEmailLink: async () => {
+      const intent = await session.completeEmailLink();
+      setEmailLinkPending(false);
+      refresh();
+      return intent;
+    },
+    dismissEmailLink: () => {
+      session.dismissEmailLink();
+      setEmailLinkPending(false);
+    },
+    reauthenticateGoogle: session.reauthenticateGoogle,
+    signOutUser: async () => { await session.logout(); refresh(); },
+    deleteAccount: async () => { await session.deleteAccount(); refresh(); }
   };
 
   return <FirebaseContext.Provider value={value}>{children}</FirebaseContext.Provider>;
-};
+}
 
-export const useFirebase = () => {
+export function useFirebase() {
   const context = useContext(FirebaseContext);
-  if (context === undefined) {
-    throw new Error('useFirebase must be used within a FirebaseProvider');
-  }
+  if (!context) throw new Error('useFirebase must be used within a FirebaseProvider');
   return context;
-};
-
-export default FirebaseContext;
+}

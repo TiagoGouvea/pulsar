@@ -5,15 +5,19 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && yarn build:functions && vite build",
+    "build:functions": "tsc -p functions/tsconfig.json",
     "preview": "vite preview",
-    "test": "vitest run",
+    "test": "vitest run && yarn test:functions",
+    "test:functions": "yarn build:functions && node --test functions/test/*.test.mjs",
+    "test:e2e:emulators": "yarn build:functions && firebase emulators:exec --project demo-pulsar --only auth,firestore,functions 'playwright test'",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:e2e": "playwright test",
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "lint:fix": "eslint src --ext ts,tsx --fix"
+    "typecheck": "tsc --noEmit && tsc --noEmit -p functions/tsconfig.json",
+    "lint": "eslint src functions/src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint src --ext ts,tsx --fix",
+    "postinstall": "yarn --cwd functions install --frozen-lockfile --ignore-engines"
   },
   "dependencies": {
     "clsx": "^2.1.1",
@@ -42,6 +46,7 @@
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.18",
+    "firebase-tools": "14.22.0",
     "globals": "^15.14.0",
     "jsdom": "^26.0.0",
     "postcss": "^8.5.2",

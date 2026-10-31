@@ -49,3 +49,20 @@ test.describe('wide screens reuse the mobile layout', () => {
     expect(await page.locator('[data-desktop-only]').count()).toBe(0);
   });
 });
+
+// The account entry is reachable before any permanent registration; even the
+// signed-out state must reflow without horizontal overflow.
+for (const viewport of viewports) {
+  test(`account entry reflows at ${viewport.name}`, async ({ page }) => {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await page.goto('/account');
+
+    await expect(page.getByRole('heading', { name: 'Configurações e Conta' })).toBeVisible();
+
+    const overflow = await page.evaluate(() => {
+      const doc = document.documentElement;
+      return doc.scrollWidth - doc.clientWidth;
+    });
+    expect(overflow, `horizontal overflow of ${overflow}px`).toBeLessThanOrEqual(0);
+  });
+}
