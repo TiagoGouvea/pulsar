@@ -177,7 +177,7 @@ export class Orchestrator {
       const requirements = this.loadRequirements(id);
       if (!(await this.recoverInterruptedWork(id, milestoneId))) return id;
       this.recoverAttemptCapacity(id, milestoneId);
-      const milestoneTasks = this.store.listTasks(id).filter((row) => row.milestone_id === milestoneId);
+      const milestoneTaskCount = this.store.listTasks(id).filter((row) => row.milestone_id === milestoneId).length;
       let pending = this.store.listTasks(id).filter((row) => row.milestone_id === milestoneId && ["pending", "ready", "changes_requested", "failed"].includes(String(row.state)));
       while (pending.length > 0) {
         const control = this.applyControlCommands(id);
@@ -190,10 +190,13 @@ export class Orchestrator {
           return id;
         }
         const task = rowToTask(readyRow);
-        const taskPosition = milestoneTasks.findIndex((row) => row.id === task.id) + 1;
         console.log("");
-        this.log(`Tarefa ${taskPosition} de ${milestoneTasks.length} · ${task.id}: ${task.title} (${this.progress(id, milestoneId)} concluídas).`);
+        this.log(`Tarefa ${task.id}: ${task.title}`);
         const shouldContinue = await this.executeTask(id, task, requirements);
+        const taskState = this.store.listTasks(id).find((row) => row.id === task.id)?.state;
+        if (taskState === "passed" || taskState === "blocked" || !shouldContinue) {
+          this.logTaskSummary(id, task, milestoneTaskCount, taskState === "passed" ? "concluída" : "encerrada");
+        }
         if (!shouldContinue) return id;
         pending = this.store.listTasks(id).filter((row) => row.milestone_id === milestoneId && ["pending", "ready", "changes_requested", "failed"].includes(String(row.state)));
       }
@@ -269,6 +272,48 @@ export class Orchestrator {
     if (modality === "local") return "local";
     if (modality === "fake") return "simulado";
     return "remoto";
+  }
+
+  private logTaskSummary(runId: string, task: Task, taskCount: number, outcome: string): void {
+    const taskRows = this.store.listTasks(runId).filter((row) => row.milestone_id === task.milestoneId);
+    const taskPosition = taskRows.findIndex((row) => row.id === task.id) + 1;
+    const relatedTaskId = `${task.id}-review`;
+    const attempts = this.store.all<Record<string, unknown>>(
+      "SELECT started_at, finished_at FROM attempts WHERE run_id=? AND task_id IN (?, ?)",
+      runId, task.id, relatedTaskId,
+    );
+    const verifications = this.store.all<Record<string, unknown>>(
+      "SELECT started_at, finished_at FROM verifier_runs WHERE run_id=? AND task_id=?",
+      runId, task.id,
+    );
+    const durationMs = [...attempts, ...verifications].reduce((total, item) => {
+      const startedAt = typeof item.started_at === "string" ? Date.parse(item.started_at) : NaN;
+      const finishedAt = typeof item.finished_at === "string" ? Date.parse(item.finished_at) : Date.now();
+      return total + (Number.isFinite(startedAt) ? Math.max(0, finishedAt - startedAt) : 0);
+    }, 0);
+    const calls = this.store.all<Record<string, unknown>>(
+      `SELECT pc.reported_micros, pc.uncertain_micros FROM provider_calls pc
+       JOIN attempts a ON a.id=pc.attempt_id WHERE a.run_id=? AND a.task_id IN (?, ?)`,
+      runId, task.id, relatedTaskId,
+    );
+    const costs = calls.reduce<{ reported: bigint; uncertain: bigint }>((total, call) => {
+      total.reported += BigInt(String(call.reported_micros ?? 0));
+      total.uncertain += BigInt(String(call.uncertain_micros ?? 0));
+      return total;
+    }, { reported: 0n, uncertain: 0n });
+    const totalSeconds = Math.floor(durationMs / 1_000);
+    const hours = Math.floor(totalSeconds / 3_600);
+    const minutes = Math.floor((totalSeconds % 3_600) / 60);
+    const seconds = totalSeconds % 60;
+    const duration = [hours ? `${hours}h` : "", minutes ? `${minutes}m` : "", `${seconds}s`].filter(Boolean).join(" ");
+    const reportedUsd = this.formatUsdMicros(costs.reported);
+    const uncertainUsd = this.formatUsdMicros(costs.uncertain);
+    const cost = costs.uncertain > 0n ? `USD ${reportedUsd} + ${uncertainUsd} incerto` : `USD ${reportedUsd}`;
+    this.log(`Tarefa ${task.id} ${outcome} · tempo ativo ${duration} · custo ${cost} · Tarefa ${taskPosition} de ${taskCount}.`);
+  }
+
+  private formatUsdMicros(micros: bigint): string {
+    return (Number(micros) / 1_000_000).toFixed(6).replace(/0+$/, "").replace(/\.$/, "");
   }
 
   private progress(runId: string, milestoneId?: string): string {
@@ -601,6 +646,9 @@ export class Orchestrator {
       await mkdir(context.attemptDirectory, { recursive: true });
       this.store.event(runId, "task.recovery_resumed", "task", task.id, { attemptId: context.attempt.id, phase: "verification" });
       if (!(await this.verifyReadyResult(runId, task, context.result, context.candidate, context.attemptDirectory))) return false;
+      if (this.store.listTasks(runId).find((item) => item.id === task.id)?.state === "passed") {
+        this.logTaskSummary(runId, task, this.store.listTasks(runId).filter((item) => item.milestone_id === milestoneId).length, "concluída na recuperação");
+      }
     }
 
     const verifying = this.store.listTasks(runId).filter((row) =>
@@ -635,6 +683,9 @@ export class Orchestrator {
       this.store.setTaskState(runId, task.id, "verifying");
       const decision = await this.reviewTaskWithFallbacks(runId, task, context.candidate, revision);
       if (!this.applyReviewDecision(runId, task.id, decision)) return false;
+      if (this.store.listTasks(runId).find((item) => item.id === task.id)?.state === "passed") {
+        this.logTaskSummary(runId, task, this.store.listTasks(runId).filter((item) => item.milestone_id === milestoneId).length, "concluída na recuperação");
+      }
     }
     return true;
   }
@@ -786,7 +837,8 @@ export class Orchestrator {
       outputTokens: result.usage?.outputTokens ?? null, cachedTokens: result.usage?.cachedTokens ?? null,
       costUsd: uncertain ? null : result.usage?.costUsd ?? "0", estimatedCostUsd: String(estimated), uncertain,
     });
-    this.log(`Revisão ${candidate.alias} [${this.modelLocation(candidate.modality)}] · ${result.outcome} · ${result.usage?.inputTokens ?? "?"}/${result.usage?.outputTokens ?? "?"} tokens · USD ${uncertain ? "incerto" : result.usage?.costUsd ?? "0"} · ${reviewDurationMs} ms.`);
+    const failureDetail = result.outcome === "failed" ? ` · motivo: ${result.summary.replace(/\s+/g, " ").slice(0, 220)}` : "";
+    this.log(`Revisão ${candidate.alias} [${this.modelLocation(candidate.modality)}] · ${result.outcome} · ${result.usage?.inputTokens ?? "?"}/${result.usage?.outputTokens ?? "?"} tokens · USD ${uncertain ? "incerto" : result.usage?.costUsd ?? "0"} · ${reviewDurationMs} ms${failureDetail}.`);
     this.store.run("UPDATE attempts SET status=?, result_json=?, finished_at=? WHERE id=?", result.outcome, JSON.stringify(result), nowUtc(), attemptId);
     const decision: ReviewDecision = result.outcome === "ready_for_verification" && result.blockers.length === 0
       ? "passed"
