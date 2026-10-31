@@ -177,6 +177,7 @@ export class Orchestrator {
       const requirements = this.loadRequirements(id);
       if (!(await this.recoverInterruptedWork(id, milestoneId))) return id;
       this.recoverAttemptCapacity(id, milestoneId);
+      const milestoneTasks = this.store.listTasks(id).filter((row) => row.milestone_id === milestoneId);
       let pending = this.store.listTasks(id).filter((row) => row.milestone_id === milestoneId && ["pending", "ready", "changes_requested", "failed"].includes(String(row.state)));
       while (pending.length > 0) {
         const control = this.applyControlCommands(id);
@@ -189,7 +190,9 @@ export class Orchestrator {
           return id;
         }
         const task = rowToTask(readyRow);
-        this.log(`Tarefa ${task.id}: ${task.title} (${this.progress(id, milestoneId)} tarefas concluídas).`);
+        const taskPosition = milestoneTasks.findIndex((row) => row.id === task.id) + 1;
+        console.log("");
+        this.log(`Tarefa ${taskPosition} de ${milestoneTasks.length} · ${task.id}: ${task.title} (${this.progress(id, milestoneId)} concluídas).`);
         const shouldContinue = await this.executeTask(id, task, requirements);
         if (!shouldContinue) return id;
         pending = this.store.listTasks(id).filter((row) => row.milestone_id === milestoneId && ["pending", "ready", "changes_requested", "failed"].includes(String(row.state)));
@@ -260,6 +263,12 @@ export class Orchestrator {
 
   private log(message: string): void {
     console.log(`[${nowUtc()}] ${message}`);
+  }
+
+  private modelLocation(modality: string): "local" | "remoto" | "simulado" {
+    if (modality === "local") return "local";
+    if (modality === "fake") return "simulado";
+    return "remoto";
   }
 
   private progress(runId: string, milestoneId?: string): string {
@@ -355,7 +364,7 @@ export class Orchestrator {
       hard,
       excludeAliases: attemptedAliases,
     });
-    this.log(`Tentativa ${consumedAttempts.length + 1}/${maxAttempts} · chamada #${attemptNumber} · ${task.id} · modelo ${candidate.alias}${critical ? " · tarefa crítica" : ""}${hard ? " · pool hard após 2 falhas" : ""}.`);
+    this.log(`Tentativa ${consumedAttempts.length + 1}/${maxAttempts} · chamada #${attemptNumber} · ${task.id} · modelo ${candidate.alias} [${this.modelLocation(candidate.modality)}]${critical ? " · tarefa crítica" : ""}${hard ? " · pool hard após 2 falhas" : ""}.`);
     const attemptId = createId("attempt");
     const attemptDirectory = path.join(this.config.storage.root, "runs", runId, "tasks", task.id, `attempt-${String(attemptNumber).padStart(3, "0")}`);
     await mkdir(attemptDirectory, { recursive: true });
@@ -429,7 +438,7 @@ export class Orchestrator {
       costUsd: uncertain ? null : result.usage?.costUsd ?? "0", estimatedCostUsd: String(estimated), uncertain,
     };
     await writeJson(path.join(attemptDirectory, "model-call.json"), callRecord);
-    this.log(`Modelo ${candidate.alias} · ${result.outcome} · ${result.usage?.inputTokens ?? "?"}/${result.usage?.outputTokens ?? "?"} tokens · USD ${uncertain ? "incerto" : result.usage?.costUsd ?? "0"} · ${callDurationMs} ms · ${this.progress(runId, task.milestoneId)}.`);
+    this.log(`Modelo ${candidate.alias} [${this.modelLocation(candidate.modality)}] · ${result.outcome} · ${result.usage?.inputTokens ?? "?"}/${result.usage?.outputTokens ?? "?"} tokens · USD ${uncertain ? "incerto" : result.usage?.costUsd ?? "0"} · ${callDurationMs} ms · ${this.progress(runId, task.milestoneId)}.`);
     this.store.run(
       "INSERT INTO routing_observations(id, run_id, attempt_id, candidate_key, role, task_category, duration_ms, cost_micros, outcome, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       createId("route"), runId, attemptId, candidate.alias, task.role, "implementation", Math.round(performance.now() - started), actualMicros, result.outcome, nowUtc(),
@@ -777,7 +786,7 @@ export class Orchestrator {
       outputTokens: result.usage?.outputTokens ?? null, cachedTokens: result.usage?.cachedTokens ?? null,
       costUsd: uncertain ? null : result.usage?.costUsd ?? "0", estimatedCostUsd: String(estimated), uncertain,
     });
-    this.log(`Revisão ${candidate.alias} · ${result.outcome} · ${result.usage?.inputTokens ?? "?"}/${result.usage?.outputTokens ?? "?"} tokens · USD ${uncertain ? "incerto" : result.usage?.costUsd ?? "0"} · ${reviewDurationMs} ms.`);
+    this.log(`Revisão ${candidate.alias} [${this.modelLocation(candidate.modality)}] · ${result.outcome} · ${result.usage?.inputTokens ?? "?"}/${result.usage?.outputTokens ?? "?"} tokens · USD ${uncertain ? "incerto" : result.usage?.costUsd ?? "0"} · ${reviewDurationMs} ms.`);
     this.store.run("UPDATE attempts SET status=?, result_json=?, finished_at=? WHERE id=?", result.outcome, JSON.stringify(result), nowUtc(), attemptId);
     const decision: ReviewDecision = result.outcome === "ready_for_verification" && result.blockers.length === 0
       ? "passed"
