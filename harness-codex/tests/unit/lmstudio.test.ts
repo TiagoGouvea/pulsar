@@ -39,17 +39,21 @@ describe("ciclo de vida via API do LM Studio/Bionic", () => {
   test("descarrega instâncias existentes, carrega um modelo e descarrega ao final", async () => {
     const config = await createTestConfig(await mkdtemp(path.join(os.tmpdir(), "harness-lmstudio-api-test-")));
     const requests: Array<{ url: string; body?: string }> = [];
+    let loadedModels = [{ key: "phonon", loaded_instances: [{ id: "phonon-instance" }] }];
     const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation((input, init) => {
       const url = requestUrl(input);
       requests.push({ url, ...(typeof init?.body === "string" ? { body: init.body } : {}) });
-      if (url.endsWith("/models") && requests.length === 1) {
-        return Promise.resolve(new Response(JSON.stringify({ models: [{ key: "phonon", loaded_instances: [{ id: "phonon-instance" }] }] }), { status: 200 }));
+      if (url.endsWith("/models")) {
+        return Promise.resolve(new Response(JSON.stringify({ models: loadedModels }), { status: 200 }));
       }
-      if (url.endsWith("/models") && requests.length === 4) {
-        return Promise.resolve(new Response(JSON.stringify({ models: [{ key: candidate.modelId, loaded_instances: [{ id: "coder-instance" }] }] }), { status: 200 }));
+      if (url.endsWith("/models/unload")) {
+        loadedModels = [];
+        return Promise.resolve(new Response(JSON.stringify({ instance_id: "unloaded" }), { status: 200 }));
       }
-      if (url.endsWith("/models/unload")) return Promise.resolve(new Response(JSON.stringify({ instance_id: "unloaded" }), { status: 200 }));
-      if (url.endsWith("/models/load")) return Promise.resolve(new Response(JSON.stringify({ instance_id: "coder-instance", status: "loaded" }), { status: 200 }));
+      if (url.endsWith("/models/load")) {
+        loadedModels = [{ key: candidate.modelId, loaded_instances: [{ id: "coder-instance" }] }];
+        return Promise.resolve(new Response(JSON.stringify({ instance_id: "coder-instance", status: "loaded" }), { status: 200 }));
+      }
       throw new Error(`Unexpected request: ${url} (${requests.length})`);
     });
 
@@ -57,22 +61,30 @@ describe("ciclo de vida via API do LM Studio/Bionic", () => {
 
     expect(actions).toBe("ok");
     expect(requests.map((request) => request.url.split("/").at(-1))).toEqual([
-      "models", "unload", "load", "models", "unload",
+      "models", "unload", "models", "load", "models", "models", "unload", "models",
     ]);
-    expect(JSON.parse(requests[2]?.body ?? "{}")).toMatchObject({ model: candidate.modelId, context_length: 8192 });
-    expect(fetchMock).toHaveBeenCalledTimes(5);
+    expect(JSON.parse(requests[3]?.body ?? "{}")).toMatchObject({ model: candidate.modelId, context_length: 8192 });
+    expect(fetchMock).toHaveBeenCalledTimes(8);
   });
 
   test("tenta descarregar no final quando a inferência falha", async () => {
     const config = await createTestConfig(await mkdtemp(path.join(os.tmpdir(), "harness-lmstudio-api-failure-")));
     const requests: string[] = [];
+    let loaded = false;
     vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
       const url = requestUrl(input);
       requests.push(url);
       if (url.endsWith("/models")) {
-        return Promise.resolve(new Response(JSON.stringify({ models: [{ key: candidate.modelId, loaded_instances: [] }] }), { status: 200 }));
+        return Promise.resolve(new Response(JSON.stringify({ models: [{ key: candidate.modelId, loaded_instances: loaded ? [{ id: "coder" }] : [] }] }), { status: 200 }));
       }
-      if (url.endsWith("/models/load")) return Promise.resolve(new Response(JSON.stringify({ instance_id: "coder" }), { status: 200 }));
+      if (url.endsWith("/models/load")) {
+        loaded = true;
+        return Promise.resolve(new Response(JSON.stringify({ instance_id: "coder" }), { status: 200 }));
+      }
+      if (url.endsWith("/models/unload")) {
+        loaded = false;
+        return Promise.resolve(new Response(JSON.stringify({ instance_id: "coder" }), { status: 200 }));
+      }
       throw new Error("inference failed");
     });
 
@@ -93,7 +105,7 @@ describe("ciclo de vida via API do LM Studio/Bionic", () => {
     });
 
     await expect(loadLmStudioModel(config, candidate)).rejects.toThrow("HTTP 500");
-    await expect(unloadLmStudioModels(config)).resolves.toEqual([]);
-    expect(requests.filter((url) => url.endsWith("/models"))).toHaveLength(2);
+    await expect(unloadLmStudioModels(config)).resolves.toMatchObject([{ action: "unload_confirmed", modelId: "all" }]);
+    expect(requests.filter((url) => url.endsWith("/models"))).toHaveLength(4);
   });
 });

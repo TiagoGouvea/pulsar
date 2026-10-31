@@ -52,6 +52,11 @@ describe("contrato estruturado do Pi", () => {
     expect(() => extractResult(JSON.stringify({ ...result, outcome: "talvez" }), "task-001"))
       .toThrow(/outcome inesperado/);
   });
+
+  test("rejeita campos extras e tipos incompatíveis com o schema estrito", () => {
+    expect(() => extractResult(JSON.stringify({ ...result, extra: true }), "task-001")).toThrow(/contrato estruturado/);
+    expect(() => extractResult(JSON.stringify({ ...result, changedFiles: [1] }), "task-001")).toThrow(/changedFiles inválido/);
+  });
 });
 
 describe("protocolo local do Pi", () => {
@@ -61,12 +66,13 @@ describe("protocolo local do Pi", () => {
     expect(localApiFor(localCandidate({}))).toBe("openai-completions");
   });
 
-  test("usa o último bloco de raciocínio quando o provedor local não emite texto", () => {
+  test("só usa raciocínio quando ele é um objeto JSON completo", () => {
     const messages = [{
       role: "assistant",
       content: [{ type: "thinking", thinking: JSON.stringify(result) }],
     }];
     expect(lastAssistantOutput(messages)).toBe(JSON.stringify(result));
+    expect(lastAssistantOutput([{ role: "assistant", content: [{ type: "thinking", thinking: "We need analyze carefully" }] }])).toBeUndefined();
     expect(lastAssistantOutput(messages, "resposta normal")).toBe("resposta normal");
   });
 });

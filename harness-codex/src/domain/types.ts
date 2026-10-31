@@ -95,6 +95,7 @@ export interface ExecutionResult {
     errorPath: string;
     rawResponsePath?: string;
     tracePath?: string;
+    localModelLifecyclePath?: string;
   };
   usage?: {
     inputTokens?: number;

@@ -13,7 +13,7 @@ import { doctor, preflight, writePreflightReport } from "../preflight/doctor.js"
 import { probeCandidate } from "../providers/probes.js";
 import { loadLmStudioModel, unloadLmStudioModels } from "../providers/lmstudio.js";
 import { writeBudgetReport, writeFinalReport, writeModelPerformanceReport, writeWorkAttributionReport } from "../reports/generator.js";
-import { testLocalModels, writeLocalModelTestReport } from "../providers/local-model-test.js";
+import { testLocalModels, testStructuredLocalModels, writeLocalModelTestReport, writeStructuredOutputTestReport } from "../providers/local-model-test.js";
 import { StateStore } from "../state/store.js";
 import { createId, ensureDirectory, formatMicros, nowUtc, safeError } from "../utils/core.js";
 import { captureVisualEvidence } from "../verification/visual.js";
@@ -106,6 +106,20 @@ models.command("test-local")
     })));
     console.log(`Relatório: ${report}`);
     if (results.some((item) => item.status !== "passed")) process.exitCode = 2;
+  });
+models.command("test-json")
+  .description("Valida JSON Schema estrito e reporta o canal de saída nos modelos locais")
+  .requiredOption("--config <path>")
+  .option("--alias <alias>", "Testa somente um alias local")
+  .action(async (options: { config: string; alias?: string }) => {
+    const config = await loadConfig(options.config);
+    const candidates = config.models.filter((item) => item.enabled && item.modality === "local" && (!options.alias || item.alias === options.alias));
+    if (options.alias && !candidates.length) throw new Error(`Alias local habilitado não encontrado: ${options.alias}`);
+    const { results, lifecycle } = await testStructuredLocalModels(config, candidates, (message) => console.log(message));
+    const report = await writeStructuredOutputTestReport(config, results, lifecycle);
+    console.table(results.map(({ alias, variant, endpoint, status, outputChannel, durationMs, error }) => ({ alias, variant, endpoint, status, canal: outputChannel, durationMs, error })));
+    console.log(`Relatório: ${report}`);
+    if (results.some((item) => !["passed", "passed_reasoning_channel", "unsupported"].includes(item.status))) process.exitCode = 2;
   });
 models.command("load").description("Descarrega outros modelos e carrega um candidato local")
   .requiredOption("--config <path>").requiredOption("--alias <alias>").action(async (options: { config: string; alias: string }) => {

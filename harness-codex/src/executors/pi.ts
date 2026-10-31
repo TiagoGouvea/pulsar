@@ -8,7 +8,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { HarnessConfig } from "../config/schema.js";
 import type { ExecutionRequest, ExecutionResult, ModelCandidate } from "../domain/types.js";
-import { withLmStudioModel } from "../providers/lmstudio.js";
+import { withLmStudioModel, type LocalModelDiagnostic } from "../providers/lmstudio.js";
 import { redact } from "../security/redaction.js";
 import { nowUtc, safeError, writeJson } from "../utils/core.js";
 import type { Executor } from "./types.js";
@@ -41,7 +41,12 @@ export function lastAssistantOutput(messages: readonly unknown[], preferredText?
         ? [block.thinking]
         : [];
     }).join("\n").trim();
-    if (thinking) return thinking;
+    if (thinking.startsWith("{") && thinking.endsWith("}")) {
+      try {
+        const candidate = JSON.parse(thinking) as unknown;
+        if (candidate && typeof candidate === "object" && !Array.isArray(candidate)) return thinking;
+      } catch { /* Ignore free-form or incomplete reasoning; the normal repair path handles it. */ }
+    }
   }
   return undefined;
 }
@@ -96,8 +101,17 @@ export function extractResult(
   const last = text.lastIndexOf("}");
   const raw = fenced ?? (first >= 0 && last > first ? text.slice(first, last + 1) : text);
   const parsed = JSON.parse(raw) as Record<string, unknown>;
-  if (!resultKeys.every((key) => key in parsed) || typeof parsed.taskId !== "string") {
+  if (Object.keys(parsed).length !== resultKeys.length || !resultKeys.every((key) => key in parsed) || typeof parsed.taskId !== "string") {
     throw new Error("Resultado do Pi não atende ao contrato estruturado da tarefa.");
+  }
+  for (const key of ["summary"] as const) {
+    if (typeof parsed[key] !== "string") throw new Error(`Resultado do Pi retornou ${key} inválido.`);
+  }
+  for (const key of ["changedFiles", "claimedChecks", "decisions", "blockers", "suggestedFollowUps"] as const) {
+    const value = parsed[key];
+    if (!Array.isArray(value) || value.some((item) => typeof item !== "string")) {
+      throw new Error(`Resultado do Pi retornou ${key} inválido.`);
+    }
   }
   if (!acceptedTaskIds.includes(parsed.taskId)) {
     throw new Error(`Resultado do Pi retornou taskId inesperado: ${parsed.taskId}.`);
@@ -150,11 +164,16 @@ export class PiExecutor implements Executor {
   async execute(request: ExecutionRequest): Promise<ExecutionResult> {
     await mkdir(request.outputDirectory, { recursive: true, mode: 0o700 });
     let enteredSession = false;
+    const localDiagnostics: LocalModelDiagnostic[] = [];
     try {
       if (request.candidate.modality === "local") {
         return await withLmStudioModel(this.config, request.candidate, async () => {
           enteredSession = true;
           return this.executeSession(request);
+        }, (diagnostic) => {
+          localDiagnostics.push(diagnostic);
+          const details = diagnostic.error ? ` · ${diagnostic.error.replace(/\s+/g, " ").slice(0, 500)}` : "";
+          console.log(`[${diagnostic.at}] LM Studio · ${diagnostic.phase} · ${diagnostic.modelId}${diagnostic.contextLength ? ` · contexto ${diagnostic.contextLength}` : ""}${diagnostic.durationMs == null ? "" : ` · ${diagnostic.durationMs} ms`}${details}`);
         });
       }
       enteredSession = true;
@@ -179,8 +198,17 @@ export class PiExecutor implements Executor {
           phase: failure.phase, errorPath,
           ...(["response_parse", "timeout"].includes(failure.phase) ? { rawResponsePath } : {}),
           ...(enteredSession ? { tracePath } : {}),
+          ...(request.candidate.modality === "local" ? { localModelLifecyclePath: path.join(request.outputDirectory, "local-model-lifecycle.json") } : {}),
         },
       };
+    } finally {
+      if (request.candidate.modality === "local") {
+        await writeJson(path.join(request.outputDirectory, "local-model-lifecycle.json"), {
+          alias: request.candidate.alias,
+          modelId: request.candidate.modelId,
+          diagnostics: localDiagnostics,
+        }).catch((error: unknown) => console.error(`[${nowUtc()}] Não foi possível salvar o diagnóstico do LM Studio: ${safeError(error)}`));
+      }
     }
   }
 
@@ -222,7 +250,15 @@ export class PiExecutor implements Executor {
       const initialResponse = lastAssistantOutput(session.messages, session.getLastAssistantText());
       let rawResponse = initialResponse;
       const saveRawResponse = async (): Promise<void> => {
-        const safeResponse = redact(rawResponse ?? "[EMPTY RESPONSE]", this.config.security.redactPatterns);
+        let diagnosticResponse = rawResponse ?? "[EMPTY RESPONSE]";
+        try {
+          diagnosticResponse = JSON.stringify(extractResult(
+            rawResponse, request.task.id, request.acceptedResultTaskIds ?? [request.task.id],
+          ));
+        } catch {
+          diagnosticResponse = `[UNPARSEABLE RESPONSE OMITTED; chars=${diagnosticResponse.length}]`;
+        }
+        const safeResponse = redact(diagnosticResponse, this.config.security.redactPatterns);
         const truncated = safeResponse.length > MAX_RAW_RESPONSE_CHARS;
         await writeFile(
           path.join(request.outputDirectory, "raw-response.txt"),
