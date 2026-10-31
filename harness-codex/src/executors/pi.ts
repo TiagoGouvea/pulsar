@@ -166,16 +166,14 @@ function startLiveProgress(request: ExecutionRequest, tracePath: string, redacti
       request, elapsedMs: Date.now() - startedAt, turns, tools, errors,
       idleMs: Date.now() - lastActivityAt, lastEvent, trail: trail.slice(-8),
     });
-    if (isTty) {
+    if (isTty || periodic) {
       const padded = current.padEnd(renderedLength, " ");
       process.stdout.write(`\r${padded}`);
       renderedLength = current.length;
-    } else if (periodic && !finished) {
-      console.log(`[${nowUtc()}] ${current}`);
     }
   };
   render(true);
-  const ticker = setInterval(() => render(true), 30_000);
+  const ticker = setInterval(() => render(true), 60_000);
   return {
     event(summary) {
       sequence += 1;
@@ -220,8 +218,7 @@ function startLiveProgress(request: ExecutionRequest, tracePath: string, redacti
         elapsedMs: Date.now() - startedAt, outcome, lastActivityAt: new Date(lastActivityAt).toISOString(),
         counts: { turns, tools, errors }, trail: trail.slice(-8),
       });
-      if (isTty) process.stdout.write(`\r${finalLine.padEnd(renderedLength, " ")}\n`);
-      else console.log(`[${nowUtc()}] ${finalLine}`);
+      process.stdout.write(`\r${finalLine.padEnd(renderedLength, " ")}\n`);
     },
   };
 }
