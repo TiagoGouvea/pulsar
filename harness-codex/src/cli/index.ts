@@ -117,16 +117,17 @@ program.command("run").description("Executa ou retoma o controlador")
     }
     await withOrchestrator(config.configPath, async (orchestrator) => {
       const runId = options.run ?? await orchestrator.plan();
-      const onInterrupt = (signal: "SIGINT" | "SIGTERM"): void => { void orchestrator.interrupt(runId, signal); };
+      const onInterrupt = (signal: "SIGINT" | "SIGTERM" | "SIGHUP"): void => { void orchestrator.interrupt(runId, signal); };
       const onSigint = (): void => onInterrupt("SIGINT");
       const onSigterm = (): void => onInterrupt("SIGTERM");
-      process.once("SIGINT", onSigint); process.once("SIGTERM", onSigterm);
+      const onSighup = (): void => onInterrupt("SIGHUP");
+      process.once("SIGINT", onSigint); process.once("SIGTERM", onSigterm); process.once("SIGHUP", onSighup);
       try {
         await orchestrator.run(runId);
         const run = orchestrator.store.getRun(runId);
-        printRunOutcome(orchestrator.store, runId, String(run?.state));
+        printRunOutcome(orchestrator.store, runId, String(run?.state), config.storage.root);
       } finally {
-        process.removeListener("SIGINT", onSigint); process.removeListener("SIGTERM", onSigterm);
+        process.removeListener("SIGINT", onSigint); process.removeListener("SIGTERM", onSigterm); process.removeListener("SIGHUP", onSighup);
       }
     });
   });
@@ -150,7 +151,7 @@ for (const command of ["status", "pause", "resume", "stop"] as const) {
         const orchestrator = new Orchestrator(config);
         try {
           await orchestrator.run(options.run);
-          printRunOutcome(orchestrator.store, options.run, String(orchestrator.store.getRun(options.run)?.state));
+          printRunOutcome(orchestrator.store, options.run, String(orchestrator.store.getRun(options.run)?.state), config.storage.root);
         } finally { orchestrator.close(); }
         return;
       }
@@ -284,8 +285,20 @@ function printChecks(checks: Array<{ status: string; id: string; summary: string
   for (const check of checks) console.log(`[${check.status.toUpperCase()}] ${check.id}: ${check.summary}\n  ${check.evidence}`);
 }
 
-function printRunOutcome(store: StateStore, runId: string, state: string): void {
-  console.log(`Run ${runId}: ${state}`);
+function printRunOutcome(store: StateStore, runId: string, state: string, storageRoot: string): void {
+  console.log(`[${nowUtc()}] Run ${runId}: ${state}`);
+  const runDirectory = path.join(storageRoot, "runs", runId);
+  if (state === "awaiting_human") {
+    const milestone = store.listMilestones(runId).find((item) => item.state === "awaiting_human");
+    const milestoneId = typeof milestone?.id === "string" ? milestone.id : "etapa";
+    console.log(`Próximo passo: revise ${path.join(runDirectory, "milestones", milestoneId, "human-review.md")} e use yarn harness approve ou feedback import.`);
+  } else if (state === "paused_budget") {
+    console.log(`Próximo passo: veja yarn harness budget --config harness.config.yaml --run ${runId}; não houve autorização para exceder o teto.`);
+  } else if (state === "completed") {
+    console.log(`Sucesso. Relatório: ${path.join(runDirectory, "final-report.md")}`);
+  } else if (state === "paused") {
+    console.log(`Pausado. Retome com yarn harness resume --config harness.config.yaml --run ${runId}.`);
+  }
   if (state !== "blocked") return;
   const event = store.get<Record<string, unknown>>(
     "SELECT payload_json FROM events WHERE run_id=? AND type='run.blocked' ORDER BY sequence DESC LIMIT 1",

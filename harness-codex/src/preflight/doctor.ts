@@ -1,4 +1,4 @@
-import { access, constants, statfs } from "node:fs/promises";
+import { access, constants, readFile, statfs } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -86,7 +86,70 @@ export async function preflight(config: HarnessConfig): Promise<CheckResult[]> {
   for (const candidate of config.models.filter((item) => item.enabled && item.executor === config.execution.executor)) {
     checks.push(...await probeCandidate(config, candidate));
   }
-  if (config.project.profile.includes("firebase")) checks.push(...firebaseChecklist());
+  if (config.project.profile.includes("firebase")) {
+    checks.push(...firebaseChecklist());
+    checks.push(...await firebaseProjectChecks(config));
+  }
+  return checks;
+}
+
+export async function firebaseProjectChecks(config: HarnessConfig): Promise<CheckResult[]> {
+  const workspace = config.project.workspace;
+  const checks: CheckResult[] = [];
+  let firebaseConfig: Record<string, unknown> = {};
+  let packageJson: Record<string, unknown> = {};
+  try { firebaseConfig = JSON.parse(await readFile(path.join(workspace, "firebase.json"), "utf8")) as Record<string, unknown>; }
+  catch (error) {
+    checks.push({ id: "firebase.emulator-config", status: "block", scope: "stage", importance: "required", summary: "firebase.json ausente ou inválido.", evidence: safeError(error), remediation: "Configure Auth e Firestore Emulator antes da etapa de autenticação/regras." });
+  }
+  try { packageJson = JSON.parse(await readFile(path.join(workspace, "package.json"), "utf8")) as Record<string, unknown>; }
+  catch (error) { checks.push({ id: "firebase.project-package", status: "block", scope: "stage", importance: "required", summary: "package.json do projeto ausente ou inválido.", evidence: safeError(error) }); }
+  const emulators = firebaseConfig.emulators && typeof firebaseConfig.emulators === "object" ? firebaseConfig.emulators as Record<string, unknown> : {};
+  const firestoreConfigured = Boolean(emulators.firestore && typeof emulators.firestore === "object");
+  const authConfigured = Boolean(emulators.auth && typeof emulators.auth === "object");
+  if (firebaseConfig.emulators || !checks.some((check) => check.id === "firebase.emulator-config")) {
+    checks.push({
+      id: "firebase.emulators", status: firestoreConfigured && authConfigured ? "pass" : "block", scope: "stage", importance: "required",
+      summary: firestoreConfigured && authConfigured ? "Emuladores de Auth e Firestore configurados." : "Etapa Firebase exige Auth e Firestore Emulator configurados.",
+      evidence: `firebase.json: auth=${authConfigured ? "sim" : "não"}, firestore=${firestoreConfigured ? "sim" : "não"}; deploy de produção permanece desabilitado.`,
+      ...(!(firestoreConfigured && authConfigured) ? { remediation: "Adicione emulators.auth e emulators.firestore ao firebase.json e execute regras/testes apenas via emulator." } : {}),
+    });
+  }
+  const rulesPath = typeof firebaseConfig.firestore === "object" && firebaseConfig.firestore !== null
+    ? (firebaseConfig.firestore as Record<string, unknown>).rules : undefined;
+  if (typeof rulesPath === "string") {
+    const resolvedRules = path.resolve(workspace, rulesPath);
+    try {
+      await access(resolvedRules, constants.R_OK);
+      checks.push({ id: "firebase.rules-file", status: "pass", scope: "stage", importance: "required", summary: "Arquivo de Security Rules acessível.", evidence: resolvedRules });
+    } catch (error) {
+      checks.push({ id: "firebase.rules-file", status: "block", scope: "stage", importance: "required", summary: "Security Rules configuradas não estão acessíveis.", evidence: safeError(error) });
+    }
+  } else {
+    checks.push({ id: "firebase.rules-file", status: "block", scope: "stage", importance: "required", summary: "firebase.json não aponta para Security Rules.", evidence: "firestore.rules ausente da configuração Firebase." });
+  }
+  const scripts = packageJson.scripts && typeof packageJson.scripts === "object" ? packageJson.scripts as Record<string, unknown> : {};
+  const dependencies: Record<string, unknown> = {};
+  for (const source of [packageJson.dependencies, packageJson.devDependencies]) {
+    if (source && typeof source === "object") Object.assign(dependencies, source);
+  }
+  const rulesTestConfigured = typeof scripts["test:rules"] === "string" && typeof dependencies["@firebase/rules-unit-testing"] === "string";
+  checks.push({
+    id: "firebase.rules-tests", status: rulesTestConfigured ? "pass" : "warn", scope: "stage", importance: "required",
+    summary: rulesTestConfigured ? "Testes automatizados das Rules configurados." : "Testes automatizados de Security Rules ainda não estão configurados.",
+    evidence: "Os testes devem iniciar Auth/Firestore Emulator e nunca apontar para projeto de produção.",
+    ...(!rulesTestConfigured ? { remediation: "Adicione @firebase/rules-unit-testing e um script test:rules executado com firebase emulators:exec." } : {}),
+  });
+  for (const [id, variable] of [["firestore", "FIRESTORE_EMULATOR_HOST"], ["auth", "FIREBASE_AUTH_EMULATOR_HOST"]] as const) {
+    const value = process.env[variable];
+    const local = value == null || /^(localhost|127\.0\.0\.1|\[::1\]):\d+$/.test(value);
+    checks.push({
+      id: `firebase.${id}-endpoint`, status: local ? (value ? "pass" : "warn") : "block", scope: "stage", importance: "required",
+      summary: value ? (local ? `${variable} aponta para localhost.` : `${variable} aponta para endpoint não local.`) : `${variable} não definido nesta sessão.`,
+      evidence: value ?? "Sem endpoint emulator ativo; deploy/conexão remota não é iniciada pelo preflight.",
+      ...(!local ? { remediation: "Use somente host local de emulator para testes de Auth/Firestore; remova endpoints remotos do ambiente." } : {}),
+    });
+  }
   return checks;
 }
 

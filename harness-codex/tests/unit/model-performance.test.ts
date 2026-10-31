@@ -10,6 +10,9 @@ describe("desempenho por modelo", () => {
       role: "functionalReviewer",
       reported_micros: 10,
       uncertain_micros: null,
+      input_tokens: 12,
+      output_tokens: 8,
+      duration_ms: 250,
     };
     const [performance] = summarizeModelPerformance([
       {
@@ -32,6 +35,10 @@ describe("desempenho por modelo", () => {
       technicalSuccessRatePercent: 50,
       confirmedMicros: "10",
       uncertainMicros: "5",
+      inputTokens: 24,
+      outputTokens: 16,
+      durationMs: 500,
+      averageDurationMs: 250,
     });
   });
 });

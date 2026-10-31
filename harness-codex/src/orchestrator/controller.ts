@@ -1,5 +1,7 @@
 import { cp, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { createInterface } from "node:readline/promises";
+import { stdin, stdout } from "node:process";
 import { fileURLToPath } from "node:url";
 import type { HarnessConfig } from "../config/schema.js";
 import type { ExecutionResult, Requirement, Task, TaskState } from "../domain/types.js";
@@ -10,6 +12,7 @@ import type { Executor } from "../executors/types.js";
 import { checkpointFiles, currentRevision, inspectGitWorkspace } from "../git/workspace.js";
 import { createTasks, extractRequirements, milestoneFromRequirementId } from "../planning/requirements.js";
 import { ModelCatalog } from "../providers/catalog.js";
+import { firebaseProjectChecks } from "../preflight/doctor.js";
 import { writeBudgetReport, writeFinalReport, writeHumanReview, writePlan } from "../reports/generator.js";
 import { assertWorkspace } from "../security/workspace.js";
 import { captureInputs, detectInputChanges } from "../state/inputs.js";
@@ -82,7 +85,7 @@ export class Orchestrator {
 
   close(): void { this.store.close(); }
 
-  async interrupt(runId: string, signal: "SIGINT" | "SIGTERM"): Promise<void> {
+  async interrupt(runId: string, signal: "SIGINT" | "SIGTERM" | "SIGHUP"): Promise<void> {
     this.store.enqueueCommand(runId, "pause", { signal });
     this.store.event(runId, "run.interrupt_requested", "run", runId, { signal });
     await this.activeExecutor?.cancel?.();
@@ -135,6 +138,20 @@ export class Orchestrator {
       throw new Error("Esta execução já possui um controlador ativo.");
     }
     const heartbeat = setInterval(() => this.store.heartbeat(id, owner, this.config.execution.staleHeartbeatSeconds), Math.max(5_000, this.config.execution.staleHeartbeatSeconds * 500));
+    const sessionId = createId("run-session");
+    const sessionStartedAt = nowUtc();
+    const priorHeartbeat = typeof run.heartbeat_at === "string" ? run.heartbeat_at : sessionStartedAt;
+    const staleSessions = this.store.all<Record<string, unknown>>("SELECT id FROM run_sessions WHERE run_id=? AND finished_at IS NULL", id);
+    if (staleSessions.length) {
+      this.store.run("UPDATE run_sessions SET finished_at=?, outcome='interrupted' WHERE run_id=? AND finished_at IS NULL", priorHeartbeat, id);
+      this.store.event(id, "run.crash_recovered", "run", id, { staleSessionIds: staleSessions.map((item) => item.id), estimatedStoppedAt: priorHeartbeat });
+      this.log(`Recuperação: ${staleSessions.length} sessão(ões) anterior(es) interrompida(s); duração encerrada no último heartbeat ${priorHeartbeat}.`);
+      const priorPid = typeof run.pid === "number" ? run.pid : null;
+      if (priorPid != null && !this.isProcessAlive(priorPid)) await this.reconcileInterruptedProviderCalls(id, priorHeartbeat);
+    }
+    this.store.run("INSERT INTO run_sessions(id, run_id, started_at, pid) VALUES (?, ?, ?, ?)", sessionId, id, sessionStartedAt, process.pid);
+    this.log(`Run ${id} retomada; início desta sessão ${sessionStartedAt}.`);
+    this.store.event(id, "run.session_started", "run_session", sessionId, { pid: process.pid, resumed: String(run.state) !== "created" });
     try {
       const activeMilestone = this.store.listMilestones(id).find((row) => row.state !== "approved");
       if (!activeMilestone) {
@@ -143,6 +160,16 @@ export class Orchestrator {
         return id;
       }
       const milestoneId = String(activeMilestone.id);
+      if (this.isFirebaseSecurityMilestone(activeMilestone)) {
+        const checks = await firebaseProjectChecks(this.config);
+        const blockers = checks.filter((check) => check.status === "block" && check.importance === "required");
+        if (blockers.length) {
+          this.store.setRunState(id, "blocked", { cause: "firebase_emulator_preflight_failed", milestoneId, checks: blockers.map(({ id: checkId, summary, evidence, remediation }) => ({ id: checkId, summary, evidence, remediation })) });
+          this.log(`BLOQUEIO de segurança Firebase: ${blockers.map((item) => item.id).join(", ")}. Nenhuma tarefa/modelo foi iniciado.`);
+          return id;
+        }
+        this.store.event(id, "firebase.emulator_preflight_passed", "milestone", milestoneId, { checks: checks.map((item) => item.id) });
+      }
       await this.assertMilestoneBranch(id, milestoneId);
       await this.reconcileRevision(id);
       this.store.setRunState(id, "running");
@@ -162,6 +189,7 @@ export class Orchestrator {
           return id;
         }
         const task = rowToTask(readyRow);
+        this.log(`Tarefa ${task.id}: ${task.title} (${this.progress(id, milestoneId)} tarefas concluídas).`);
         const shouldContinue = await this.executeTask(id, task, requirements);
         if (!shouldContinue) return id;
         pending = this.store.listTasks(id).filter((row) => row.milestone_id === milestoneId && ["pending", "ready", "changes_requested", "failed"].includes(String(row.state)));
@@ -177,12 +205,96 @@ export class Orchestrator {
       return await this.finishMilestone(id, milestoneId);
     } catch (error) {
       this.store.setRunState(id, "blocked", { error: safeError(error) });
+      this.store.event(id, "run.controller_error", "run", id, { error: safeError(error), stack: error instanceof Error ? error.stack : undefined });
+      this.log(`ERRO do controlador: ${safeError(error)}`);
       throw error;
     } finally {
       clearInterval(heartbeat);
       this.store.releaseLease(id, owner);
+      const endedAt = nowUtc();
+      const storedState = this.store.getRun(id)?.state;
+      const finalState = typeof storedState === "string" ? storedState : "unknown";
+      this.store.run("UPDATE run_sessions SET finished_at=?, outcome=? WHERE id=?", endedAt, finalState, sessionId);
+      this.store.event(id, "run.session_finished", "run_session", sessionId, { startedAt: sessionStartedAt, finishedAt: endedAt, outcome: finalState });
+      await this.writeRunSummary(id).catch((error: unknown) => this.log(`Não foi possível atualizar run-summary.json: ${safeError(error)}`));
       await writeBudgetReport(this.config, this.store, id).catch(() => undefined);
+      if (["completed", "awaiting_human", "blocked", "paused_budget"].includes(finalState)) {
+        await writeFinalReport(this.config, this.store, id).catch((error: unknown) => this.log(`Não foi possível atualizar o relatório final: ${safeError(error)}`));
+      }
+      this.log(`Sessão encerrada: ${finalState}; ${this.progress(id)} tarefas aprovadas; consulte ${path.join(this.config.storage.root, "runs", id, "final-report.md")}.`);
     }
+  }
+
+  private isFirebaseSecurityMilestone(milestone: Record<string, unknown>): boolean {
+    const text = [milestone.id, milestone.title, milestone.objective].filter((value): value is string => typeof value === "string").join(" ");
+    return /auth|security rules|regras de segurança|firebase/i.test(text);
+  }
+
+  private isProcessAlive(pid: number): boolean {
+    try { process.kill(pid, 0); return true; }
+    catch (error) { return (error as NodeJS.ErrnoException).code !== "ESRCH"; }
+  }
+
+  private async reconcileInterruptedProviderCalls(runId: string, stoppedAt: string): Promise<void> {
+    const calls = this.store.all<Record<string, unknown>>(
+      `SELECT pc.*, a.task_id, a.number FROM provider_calls pc JOIN attempts a ON a.id=pc.attempt_id
+       WHERE a.run_id=? AND pc.state='running'`, runId,
+    );
+    for (const call of calls) {
+      if (typeof call.id !== "string") continue;
+      const estimatedMicros = typeof call.estimated_micros === "string" || typeof call.estimated_micros === "number" ? call.estimated_micros : 0;
+      this.store.run("UPDATE provider_calls SET state='uncertain', uncertain_micros=estimated_micros, finished_at=? WHERE id=? AND state='running'", stoppedAt, call.id);
+      this.store.run("UPDATE cost_reservations SET state='uncertain' WHERE provider_call_id=? AND state='active'", call.id);
+      const artifact = {
+        providerCallId: call.id, runId, taskId: call.task_id, attempt: call.number,
+        provider: call.provider, modelId: call.model_id, state: "interrupted_uncertain",
+        startedAt: call.started_at, stoppedAt, estimatedCostMicros: String(estimatedMicros),
+        note: "O processo terminou sem relatório de uso; custo mantido como incerto até reconciliação.",
+      };
+      const output = path.join(this.config.storage.root, "runs", runId, "recovered-calls", `${call.id}.json`);
+      await writeJson(output, artifact);
+      this.store.event(runId, "provider_call.interrupted", "provider_call", call.id, { ...artifact, artifactPath: output });
+      this.log(`Chamada interrompida ${call.id}: custo reservado mantido como incerto (USD ${String(estimatedMicros)} micros).`);
+    }
+  }
+
+  private log(message: string): void {
+    console.log(`[${nowUtc()}] ${message}`);
+  }
+
+  private progress(runId: string, milestoneId?: string): string {
+    const tasks = this.store.listTasks(runId).filter((task) => !milestoneId || task.milestone_id === milestoneId);
+    const passed = tasks.filter((task) => task.state === "passed").length;
+    const linked = new Map<string, boolean>();
+    for (const task of tasks) {
+      let requirementIds: string[] = [];
+      try { requirementIds = JSON.parse(String(task.requirement_ids_json)) as string[]; } catch { /* Ignore malformed legacy rows in progress display. */ }
+      for (const requirementId of requirementIds) linked.set(requirementId, (linked.get(requirementId) ?? true) && task.state === "passed");
+    }
+    const featuresDone = [...linked.values()].filter(Boolean).length;
+    return `tarefas ${passed}/${tasks.length} · features ${featuresDone}/${linked.size}`;
+  }
+
+  private async writeRunSummary(runId: string): Promise<void> {
+    const run = this.store.getRun(runId);
+    if (!run) return;
+    const sessions = this.store.all<Record<string, unknown>>("SELECT started_at, finished_at, outcome FROM run_sessions WHERE run_id=? ORDER BY started_at", runId);
+    const activeMs = sessions.reduce((total, item) => {
+      const startedAt = typeof item.started_at === "string" ? item.started_at : nowUtc();
+      const finishedAt = typeof item.finished_at === "string" ? item.finished_at : nowUtc();
+      return total + Math.max(0, Date.parse(finishedAt) - Date.parse(startedAt));
+    }, 0);
+    const tasks = this.store.listTasks(runId);
+    const requirements = this.store.listRequirements(runId);
+    const featuresDone = requirements.filter((requirement) => tasks.some((task) => {
+      if (task.state !== "passed") return false;
+      try { return (JSON.parse(String(task.requirement_ids_json)) as string[]).includes(String(requirement.id)); } catch { return false; }
+    })).length;
+    await writeJson(path.join(this.config.storage.root, "runs", runId, "run-summary.json"), {
+      runId, state: run.state, createdAt: run.created_at, updatedAt: run.updated_at, completedAt: run.completed_at ?? null,
+      activeDurationMs: activeMs, sessions, tasks: { total: tasks.length, passed: tasks.filter((task) => task.state === "passed").length, blocked: tasks.filter((task) => task.state === "blocked").length },
+      features: { total: requirements.length, done: featuresDone },
+    });
   }
 
   private loadRequirements(runId: string): Requirement[] {
@@ -200,7 +312,19 @@ export class Orchestrator {
     const priorAttempts = this.store.all<Record<string, unknown>>("SELECT * FROM attempts WHERE run_id=? AND task_id=? ORDER BY number", runId, task.id);
     const consumedAttempts = priorAttempts.filter(consumesTaskAttempt);
     const maxAttempts = effectiveTaskAttemptLimit(task.maxAttempts, this.config.execution.maxAttemptsPerTask);
-    if (consumedAttempts.length >= maxAttempts) {
+    const authorizations = this.store.all<Record<string, unknown>>(
+      "SELECT payload_json FROM events WHERE run_id=? AND type='task.retry_authorized' AND entity_id=? ORDER BY sequence",
+      runId, task.id,
+    ).length;
+    if (consumedAttempts.length >= maxAttempts + authorizations) {
+      const authorized = stdin.isTTY && stdout.isTTY ? await this.askForRetry(task.id, consumedAttempts.length, maxAttempts) : false;
+      if (authorized) {
+        this.store.event(runId, "task.retry_authorized", "task", task.id, { consumedAttempts: consumedAttempts.length, configuredLimit: maxAttempts, actor: "terminal-human" });
+        this.store.setTaskState(runId, task.id, "changes_requested");
+        this.log(`Tentativa adicional autorizada manualmente para ${task.id}; o teto financeiro continua valendo.`);
+        return true;
+      }
+      this.log(`BLOQUEIO ${task.id}: limite de tentativas (${consumedAttempts.length}/${maxAttempts + authorizations}); sem nova autorização.`);
       this.store.setTaskState(runId, task.id, "blocked");
       this.store.setRunState(runId, "blocked", {
         cause: "max_attempts", taskId: task.id,
@@ -211,6 +335,7 @@ export class Orchestrator {
     const attemptNumber = priorAttempts.length + 1;
     const hard = this.catalog.isHardTask([task.title, task.description, ...task.acceptanceCriteria].join("\n"));
     const candidate = this.catalog.select(task.role, ["text", "tools"], { attempt: attemptNumber, seed: task.id, hard });
+    this.log(`Tentativa ${attemptNumber}/${maxAttempts} · ${task.id} · modelo ${candidate.alias}${hard ? " · tarefa crítica" : ""}.`);
     const attemptId = createId("attempt");
     const attemptDirectory = path.join(this.config.storage.root, "runs", runId, "tasks", task.id, `attempt-${String(attemptNumber).padStart(3, "0")}`);
     await mkdir(attemptDirectory, { recursive: true });
@@ -220,6 +345,7 @@ export class Orchestrator {
     try {
       reservationId = this.ledger.reserve(runId, task.id, candidate, estimated);
     } catch (error) {
+      this.log(`LIMITE DE ORÇAMENTO · ${task.id}: ${safeError(error)}. Nenhuma chamada foi iniciada.`);
       this.store.setRunState(runId, "paused_budget", { taskId: task.id, error: safeError(error) });
       return false;
     }
@@ -258,12 +384,30 @@ export class Orchestrator {
     const uncertain = candidate.modality === "metered_api" && result.outcome === "failed" && !result.usage;
     this.finishProviderCall(providerCallId, result, uncertain, estimated, actualMicros);
     this.ledger.reconcile({ runId, taskId: task.id, reservationId, providerCallId, amountMicros: uncertain ? estimated : actualMicros, uncertain });
+    const callDurationMs = Math.round(performance.now() - started);
+    const callRecord = {
+      providerCallId, runId, taskId: task.id, role: task.role, alias: candidate.alias, provider: candidate.provider,
+      modelId: candidate.modelId, modality: candidate.modality, startedAt: this.store.get<Record<string, unknown>>("SELECT started_at FROM provider_calls WHERE id=?", providerCallId)?.started_at,
+      finishedAt: nowUtc(), durationMs: callDurationMs, outcome: result.outcome, inputTokens: result.usage?.inputTokens ?? null,
+      outputTokens: result.usage?.outputTokens ?? null, cachedTokens: result.usage?.cachedTokens ?? null,
+      costUsd: uncertain ? null : result.usage?.costUsd ?? "0", estimatedCostUsd: String(estimated), uncertain,
+    };
+    await writeJson(path.join(attemptDirectory, "model-call.json"), callRecord);
+    this.log(`Modelo ${candidate.alias} · ${result.outcome} · ${result.usage?.inputTokens ?? "?"}/${result.usage?.outputTokens ?? "?"} tokens · USD ${uncertain ? "incerto" : result.usage?.costUsd ?? "0"} · ${callDurationMs} ms · ${this.progress(runId, task.milestoneId)}.`);
     this.store.run(
       "INSERT INTO routing_observations(id, run_id, attempt_id, candidate_key, role, task_category, duration_ms, cost_micros, outcome, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       createId("route"), runId, attemptId, candidate.alias, task.role, "implementation", Math.round(performance.now() - started), actualMicros, result.outcome, nowUtc(),
     );
     if (result.outcome !== "ready_for_verification") return this.handleFailure(runId, task, priorAttempts, failureSignature, result);
     return this.verifyReadyResult(runId, task, result, candidate, attemptDirectory);
+  }
+
+  private async askForRetry(taskId: string, attempts: number, limit: number): Promise<boolean> {
+    const prompt = createInterface({ input: stdin, output: stdout });
+    try {
+      const answer = await prompt.question(`[${nowUtc()}] ${taskId} chegou ao limite de ${limit} tentativas (${attempts} consumidas). Autorizar mais uma tentativa? [s/N] `);
+      return ["s", "sim", "y", "yes"].includes(answer.trim().toLocaleLowerCase("pt-BR"));
+    } finally { prompt.close(); }
   }
 
   private recoverAttemptCapacity(runId: string, milestoneId: string): void {
@@ -567,6 +711,7 @@ export class Orchestrator {
       sessionId, attemptId, candidate.alias, nowUtc(),
     );
     const providerCallId = this.startProviderCall(attemptId, candidate, estimated);
+    const reviewStarted = performance.now();
     const executor = createExecutor(this.config);
     this.activeExecutor = executor;
     let result: ExecutionResult;
@@ -586,6 +731,15 @@ export class Orchestrator {
     const uncertain = candidate.modality === "metered_api" && result.outcome === "failed" && !result.usage;
     this.finishProviderCall(providerCallId, result, uncertain, estimated, actualMicros);
     this.ledger.reconcile({ runId, taskId: task.id, reservationId, providerCallId, amountMicros: uncertain ? estimated : actualMicros, uncertain });
+    const reviewDurationMs = Math.round(performance.now() - reviewStarted);
+    await writeJson(path.join(outputDirectory, "model-call.json"), {
+      providerCallId, runId, taskId: task.id, role: "functionalReviewer", alias: candidate.alias,
+      provider: candidate.provider, modelId: candidate.modelId, modality: candidate.modality,
+      durationMs: reviewDurationMs, outcome: result.outcome, inputTokens: result.usage?.inputTokens ?? null,
+      outputTokens: result.usage?.outputTokens ?? null, cachedTokens: result.usage?.cachedTokens ?? null,
+      costUsd: uncertain ? null : result.usage?.costUsd ?? "0", estimatedCostUsd: String(estimated), uncertain,
+    });
+    this.log(`Revisão ${candidate.alias} · ${result.outcome} · ${result.usage?.inputTokens ?? "?"}/${result.usage?.outputTokens ?? "?"} tokens · USD ${uncertain ? "incerto" : result.usage?.costUsd ?? "0"} · ${reviewDurationMs} ms.`);
     this.store.run("UPDATE attempts SET status=?, result_json=?, finished_at=? WHERE id=?", result.outcome, JSON.stringify(result), nowUtc(), attemptId);
     const decision: ReviewDecision = result.outcome === "ready_for_verification" && result.blockers.length === 0
       ? "passed"
@@ -622,6 +776,7 @@ export class Orchestrator {
   }
 
   private handleFailure(runId: string, task: Task, previous: Record<string, unknown>[], signature: string | null, result: ExecutionResult): boolean {
+    this.log(`PROBLEMA ${task.id}: ${result.outcome} — ${result.summary}${result.blockers.length ? ` [${result.blockers.join(", ")}]` : ""}.`);
     const sameFailures = previous.filter((attempt) => attempt.failure_signature === signature).length + 1;
     if (result.outcome === "blocked" || sameFailures >= this.config.execution.maxSameFailureCount) {
       this.store.setTaskState(runId, task.id, "blocked");

@@ -282,4 +282,19 @@ export const migrations: Migration[] = [
     name: "pin_branch_per_milestone",
     sql: "ALTER TABLE milestones ADD COLUMN branch TEXT;",
   },
+  {
+    version: 3,
+    name: "run_sessions_and_call_artifacts",
+    sql: `
+      CREATE TABLE run_sessions (
+        id TEXT PRIMARY KEY,
+        run_id TEXT NOT NULL REFERENCES runs(id),
+        started_at TEXT NOT NULL,
+        finished_at TEXT,
+        outcome TEXT,
+        pid INTEGER NOT NULL
+      ) STRICT;
+      CREATE INDEX idx_run_sessions_run ON run_sessions(run_id, started_at);
+    `,
+  },
 ];

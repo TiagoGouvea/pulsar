@@ -26,6 +26,10 @@ export interface ModelPerformance {
   modelId: string;
   roles: string[];
   calls: number;
+  inputTokens: number;
+  outputTokens: number;
+  durationMs: number;
+  averageDurationMs: number;
   technicalSuccesses: number;
   technicalFailures: number;
   incompleteCalls: number;
@@ -46,10 +50,14 @@ export function summarizeModelPerformance(calls: Record<string, unknown>[]): Mod
     const key = `${alias}\u0000${provider}\u0000${modelId}`;
     const group = groups.get(key) ?? {
       alias, provider, modelId, roles: new Set<string>(), calls: 0, technicalSuccesses: 0,
+      inputTokens: 0, outputTokens: 0, durationMs: 0, averageDurationMs: 0,
       technicalFailures: 0, incompleteCalls: 0, readyResults: 0, changesRequested: 0,
       blockedResults: 0, confirmedMicros: "0", uncertainMicros: "0",
     };
     group.calls += 1;
+    group.inputTokens += Number(call.input_tokens ?? 0);
+    group.outputTokens += Number(call.output_tokens ?? 0);
+    group.durationMs += Number(call.duration_ms ?? 0);
     group.roles.add(textValue(call.role));
     group.confirmedMicros = String(BigInt(group.confirmedMicros) + BigInt(Number(call.reported_micros ?? 0)));
     group.uncertainMicros = String(BigInt(group.uncertainMicros) + BigInt(Number(call.uncertain_micros ?? 0)));
@@ -73,13 +81,15 @@ export function summarizeModelPerformance(calls: Record<string, unknown>[]): Mod
   return [...groups.values()].map((group) => ({
     ...group,
     roles: [...group.roles].sort(),
+    averageDurationMs: group.calls ? Math.round(group.durationMs / group.calls) : 0,
     technicalSuccessRatePercent: group.calls === 0 ? 0 : Number(((group.technicalSuccesses / group.calls) * 100).toFixed(2)),
   })).sort((left, right) => left.alias.localeCompare(right.alias));
 }
 
 export async function writeModelPerformanceReport(config: HarnessConfig, store: StateStore, runId: string): Promise<string> {
   const calls = store.all<Record<string, unknown>>(
-    `SELECT s.model_key AS alias, s.role, pc.provider, pc.model_id, pc.reported_micros, pc.uncertain_micros, a.result_json
+    `SELECT s.model_key AS alias, s.role, pc.provider, pc.model_id, pc.input_tokens, pc.output_tokens, pc.reported_micros, pc.uncertain_micros,
+     CASE WHEN pc.finished_at IS NULL THEN 0 ELSE CAST((julianday(pc.finished_at)-julianday(pc.started_at))*86400000 AS INTEGER) END AS duration_ms, a.result_json
      FROM provider_calls pc
      JOIN attempts a ON a.id=pc.attempt_id
      LEFT JOIN sessions s ON s.attempt_id=a.id
@@ -93,19 +103,20 @@ export async function writeModelPerformanceReport(config: HarnessConfig, store: 
   const markdown = [
     "# Desempenho dos modelos", "", `Run: ${runId}`, "",
     "Sucesso técnico significa que o modelo concluiu a sessão e entregou uma resposta estruturada; não equivale à aprovação final da tarefa.", "",
-    "| Modelo | Papéis | Chamadas | Sucessos técnicos | Falhas técnicas | Incompletas | Índice | Prontos | Alterações |",
-    "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
-    ...performance.map((item) => `| ${item.alias} | ${item.roles.join(", ")} | ${item.calls} | ${item.technicalSuccesses} | ${item.technicalFailures} | ${item.incompleteCalls} | ${item.technicalSuccessRatePercent}% | ${item.readyResults} | ${item.changesRequested} |`),
+    "| Modelo | Papéis | Chamadas | Sucesso técnico | Falhas | Incompletas | Taxa | Tokens entrada/saída | Duração média | Custo confirmado/incerto |",
+    "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+    ...performance.map((item) => `| ${item.alias} | ${item.roles.join(", ")} | ${item.calls} | ${item.technicalSuccesses} | ${item.technicalFailures} | ${item.incompleteCalls} | ${item.technicalSuccessRatePercent}% | ${item.inputTokens}/${item.outputTokens} | ${item.averageDurationMs} ms | USD ${formatMicros(BigInt(item.confirmedMicros))}/${formatMicros(BigInt(item.uncertainMicros))} |`),
     "",
   ].join("\n");
   await writeFile(output, markdown, { mode: 0o600 });
   await writeJson(path.join(directory, "model-performance.json"), { runId, models: performance });
   const csv = [
-    "alias,provider,model_id,roles,calls,technical_successes,technical_failures,incomplete_calls,technical_success_rate_percent,ready_results,changes_requested,blocked_results,confirmed_micros,uncertain_micros",
+    "alias,provider,model_id,roles,calls,technical_successes,technical_failures,incomplete_calls,technical_success_rate_percent,ready_results,changes_requested,blocked_results,input_tokens,output_tokens,duration_ms,average_duration_ms,confirmed_micros,uncertain_micros",
     ...performance.map((item) => [
       item.alias, item.provider, item.modelId, item.roles.join("|"), item.calls, item.technicalSuccesses,
       item.technicalFailures, item.incompleteCalls, item.technicalSuccessRatePercent, item.readyResults,
-      item.changesRequested, item.blockedResults, item.confirmedMicros, item.uncertainMicros,
+      item.changesRequested, item.blockedResults, item.inputTokens, item.outputTokens, item.durationMs,
+      item.averageDurationMs, item.confirmedMicros, item.uncertainMicros,
     ].map(csvValue).join(",")),
   ].join("\n");
   await writeFile(path.join(directory, "model-performance.csv"), `${csv}\n`, { mode: 0o600 });
@@ -193,10 +204,26 @@ export async function writeFinalReport(config: HarnessConfig, store: StateStore,
   const run = store.getRun(runId);
   if (!run) throw new Error(`Run inexistente: ${runId}`);
   const tasks = store.listTasks(runId);
+  const sessions = store.all<Record<string, unknown>>("SELECT started_at, finished_at, outcome FROM run_sessions WHERE run_id=? ORDER BY started_at", runId);
+  const activeDurationMs = sessions.reduce((total, item) => total + Math.max(0, Date.parse(String(item.finished_at ?? run.updated_at)) - Date.parse(String(item.started_at))), 0);
+  const calls = store.all<Record<string, unknown>>("SELECT COUNT(*) AS count, SUM(COALESCE(input_tokens,0)) AS input_tokens, SUM(COALESCE(output_tokens,0)) AS output_tokens FROM provider_calls WHERE attempt_id IN (SELECT id FROM attempts WHERE run_id=?)", runId)[0];
+  const budget = new BudgetLedger(store, config).snapshot(runId);
   const approvals = store.all<Record<string, unknown>>("SELECT * FROM approvals WHERE run_id=? ORDER BY created_at", runId);
   const findings = store.all<Record<string, unknown>>("SELECT * FROM findings WHERE run_id=? ORDER BY created_at", runId);
+  const incomplete = tasks.filter((task) => task.state !== "passed");
+  const next = run.state === "awaiting_human"
+    ? "Revise milestones/<etapa>/human-review.md; depois aprove a revisão exata ou importe feedback."
+    : run.state === "blocked" ? `Execute yarn harness diagnostics --config harness.config.yaml --run ${runId}.`
+      : run.state === "paused_budget" ? `Revise yarn harness budget --config harness.config.yaml --run ${runId}; nenhum excedente foi autorizado.`
+        : run.state === "completed" ? "Execução concluída; inicie manualmente a próxima etapa/branch quando estiver pronto."
+          : `Consulte o estado e retome com yarn harness resume --config harness.config.yaml --run ${runId}.`;
   const markdown = [
     "# Relatório final", "", `Run: ${runId}`, `Estado: **${String(run.state)}**`, `Revisão: ${typeof run.revision === "string" ? run.revision : "n/a"}`, "",
+    "## Resumo", "", `- Tarefas: ${tasks.filter((task) => task.state === "passed").length}/${tasks.length} aprovadas; ${incomplete.length} pendentes/bloqueadas.`,
+    `- Sessões de controlador: ${sessions.length}; tempo ativo acumulado: ${Math.round(activeDurationMs / 1000)} s (intervalos entre resumes excluídos).`,
+    `- Interações com modelos: ${textValue(calls?.count, "0")}; tokens entrada/saída: ${textValue(calls?.input_tokens, "0")}/${textValue(calls?.output_tokens, "0")}.`,
+    `- Custo: USD ${formatMicros(budget.confirmedMicros)} confirmado; USD ${formatMicros(budget.uncertainMicros)} incerto.`,
+    `- Próximo passo: ${next}`, `- Telemetria detalhada: run-summary.json, model-performance.md, budget-report.md.`, "",
     "## Rastreabilidade", "", ...tasks.map((task) => `- ${String(task.requirement_ids_json)} → ${String(task.id)} → ${String(task.state)}`), "",
     "## Aceites", "", ...(approvals.length ? approvals.map((item) => `- ${String(item.milestone_id)}: ${String(item.decision)} por ${String(item.actor)} em ${String(item.created_at)}`) : ["Nenhum aceite humano registrado."]), "",
     "## Achados", "", ...(findings.length ? findings.map((item) => `- [${String(item.severity)}] ${String(item.summary)}`) : ["Nenhum achado persistido."]), "",

@@ -1,0 +1,24 @@
+# Operação e recuperação do Harness Codex
+
+## Acompanhar uma execução
+
+- O terminal mostra timestamp, etapa/tarefa, tentativa, modelo, tokens, custo e duração.
+- Cada sessão do controlador atualiza `runs/<id>/run-summary.json`; pausas entre sessões não entram no tempo ativo.
+- Cada interação grava `model-call.json` junto do `result.json`, `session-trace.jsonl` e demais evidências da tentativa.
+- O painel `yarn harness dashboard --config harness.config.yaml --run <id>` exibe tarefas, eventos e totais por modelo.
+- `yarn harness models performance --config harness.config.yaml --run <id>` gera taxa técnica, tokens, duração média e custos.
+- `yarn harness diagnostics --config harness.config.yaml --run <id>` explica o bloqueio; `yarn harness report ...` gera o resumo e próximo passo.
+
+## Resume e crash
+
+Retome com `yarn harness resume --config harness.config.yaml --run <id>`. Sessões interrompidas são fechadas no último heartbeat registrado, e não no momento do resume, para que o tempo parado não seja contado. Chamadas interrompidas permanecem sujeitas à reconciliação do orçamento; custo sem uso confirmado é marcado como incerto e não é tratado como zero.
+
+SIGINT, SIGTERM e SIGHUP solicitam pausa controlada. Encerramento forçado do processo não pode ser gravado no instante do crash; o próximo resume registra a sessão anterior como interrompida. Preserve `.harness/runs/<id>` para manter logs, banco e evidências.
+
+## Limites e aprovação
+
+Ao atingir o limite de tentativas, uma execução interativa pergunta se deve autorizar exatamente mais uma tentativa. A decisão fica registrada no SQLite; execuções sem TTY não tentam novamente. A autorização nunca amplia tetos de custo. Se o orçamento não comportar a próxima chamada, nenhuma chamada paga é iniciada; revise `budget-report.md` e altere o orçamento explicitamente antes de retomar.
+
+## Firebase
+
+Antes de etapas que alterem Auth ou Security Rules, execute `yarn harness preflight --config harness.config.yaml`. O preflight verifica `firebase.json`, o arquivo de Rules, configuração de Auth/Firestore Emulator, infraestrutura de testes de Rules e endpoints definidos no ambiente. Configure `FIRESTORE_EMULATOR_HOST` e `FIREBASE_AUTH_EMULATOR_HOST` apenas com hosts locais para testes; endpoints não locais bloqueiam o preflight. Deploy de produção continua desabilitado por padrão.

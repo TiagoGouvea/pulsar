@@ -36,11 +36,28 @@ export async function startDashboard(config: HarnessConfig, runId: string): Prom
       if (request.method === "GET" && url.pathname === "/api/status") {
         const run = orchestrator.store.getRun(runId);
         if (!run) return json(response, 404, { error: "Run inexistente." });
+        const tasks = orchestrator.store.listTasks(runId);
+        const requirements = orchestrator.store.listRequirements(runId);
+        const linked = new Map<string, boolean>();
+        for (const task of tasks) {
+          let ids: string[] = [];
+          try { ids = JSON.parse(String(task.requirement_ids_json)) as string[]; } catch { /* Ignore malformed legacy rows. */ }
+          for (const requirementId of ids) linked.set(requirementId, (linked.get(requirementId) ?? true) && task.state === "passed");
+        }
         return json(response, 200, {
           run,
           milestones: orchestrator.store.listMilestones(runId),
-          tasks: orchestrator.store.listTasks(runId),
+          tasks,
+          progress: { tasksDone: tasks.filter((task) => task.state === "passed").length, tasksTotal: tasks.length, featuresDone: [...linked.values()].filter(Boolean).length, featuresTotal: requirements.length },
           events: orchestrator.store.listEvents(runId, 30),
+          sessions: orchestrator.store.all("SELECT started_at, finished_at, outcome FROM run_sessions WHERE run_id=? ORDER BY started_at", runId),
+          models: orchestrator.store.all(
+            `SELECT s.model_key AS alias, pc.provider, pc.model_id, COUNT(*) AS calls,
+             SUM(COALESCE(pc.input_tokens,0)) AS input_tokens, SUM(COALESCE(pc.output_tokens,0)) AS output_tokens,
+             SUM(COALESCE(pc.reported_micros,0)) AS confirmed_micros, SUM(COALESCE(pc.uncertain_micros,0)) AS uncertain_micros
+             FROM provider_calls pc JOIN attempts a ON a.id=pc.attempt_id LEFT JOIN sessions s ON s.attempt_id=a.id
+             WHERE a.run_id=? GROUP BY s.model_key, pc.provider, pc.model_id ORDER BY calls DESC`, runId,
+          ),
         });
       }
       if (request.method === "POST" && url.pathname.startsWith("/api/")) {
@@ -91,15 +108,16 @@ button{background:#4f7cff;color:white;border:0;border-radius:8px;padding:9px 14p
 </style></head><body><main><h1>Harness</h1><p class="muted">Run <code>${runId}</code></p><div id="summary" class="card">Carregando…</div>
 <p><button data-command="pause">Pausar</button><button class="danger" data-command="cancel">Cancelar</button></p>
 <section class="card"><h2>Revisão humana</h2><p><button id="approve">Aprovar revisão exibida</button></p><label for="feedback">Solicitar ajustes</label><textarea id="feedback" rows="5" style="width:100%;background:#10131a;color:inherit"></textarea><p><button id="send-feedback">Enviar feedback</button></p></section>
-<div class="grid"><section class="card"><h2>Tarefas</h2><ul id="tasks"></ul></section><section class="card"><h2>Eventos</h2><ul id="events"></ul></section></div>
+<div class="grid"><section class="card"><h2>Tarefas</h2><ul id="tasks"></ul></section><section class="card"><h2>Modelos e custo</h2><ul id="models"></ul></section><section class="card"><h2>Eventos</h2><ul id="events"></ul></section></div>
 <script>
 const token=${JSON.stringify(token)};
 const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const eventDetail=e=>{try{const p=JSON.parse(e.payload_json||'{}');return p.summary||p.cause||p.phase||''}catch{return''}};
 async function refresh(){const r=await fetch('/api/status',{cache:'no-store'});const d=await r.json();
 window.currentStatus=d;
-document.querySelector('#summary').innerHTML='<strong>Estado:</strong> '+esc(d.run.state)+'<br><strong>Revisão:</strong> <code>'+esc(d.run.revision||'n/a')+'</code>';
+document.querySelector('#summary').innerHTML='<strong>Estado:</strong> '+esc(d.run.state)+'<br><strong>Tarefas:</strong> '+esc(d.progress.tasksDone)+'/'+esc(d.progress.tasksTotal)+'<br><strong>Features:</strong> '+esc(d.progress.featuresDone)+'/'+esc(d.progress.featuresTotal)+'<br><strong>Revisão:</strong> <code>'+esc(d.run.revision||'n/a')+'</code>';
 document.querySelector('#tasks').innerHTML=d.tasks.map(t=>'<li><strong>'+esc(t.id)+'</strong> — '+esc(t.state)+'<br>'+esc(t.title)+'</li>').join('');
+document.querySelector('#models').innerHTML=d.models.map(m=>'<li><strong>'+esc(m.alias||m.model_id)+'</strong> · '+esc(m.calls)+' chamadas · '+esc(m.input_tokens||0)+'/'+esc(m.output_tokens||0)+' tokens · USD '+esc((Number(m.confirmed_micros||0)/1000000).toFixed(4))+(Number(m.uncertain_micros||0)?' · incerto USD '+esc((Number(m.uncertain_micros)/1000000).toFixed(4)):'')+'</li>').join('')||'<li>Nenhuma chamada ainda.</li>';
 document.querySelector('#events').innerHTML=d.events.map(e=>{const detail=eventDetail(e);return '<li>'+esc(e.created_at)+' — '+esc(e.type)+(detail?'<br><span class="muted">'+esc(detail)+'</span>':'')+'</li>'}).join('');}
 document.querySelectorAll('[data-command]').forEach(b=>b.onclick=async()=>{await fetch('/api/control',{method:'POST',headers:{'content-type':'application/json','x-harness-token':token},body:JSON.stringify({command:b.dataset.command})});await refresh()});
 document.querySelector('#approve').onclick=async()=>{const m=window.currentStatus.milestones.find(x=>x.state==='awaiting_human');if(!m)return alert('Nenhum marco aguardando aceite.');const r=await fetch('/api/approve',{method:'POST',headers:{'content-type':'application/json','x-harness-token':token},body:JSON.stringify({milestoneId:m.id,revision:m.revision})});const d=await r.json();if(!r.ok)alert(d.error);await refresh()};
