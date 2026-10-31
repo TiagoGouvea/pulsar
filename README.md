@@ -56,6 +56,7 @@ Para registrar a evolução cronológica do projeto e permitir comparação prec
 | Etapa | Modelo | Relatório |
 | :---: | :--- | :--- |
 | **0** | Claude | [`harness-claude/observacoes/etapa-0.md`](harness-claude/observacoes/etapa-0.md) |
+| **0** | Codex | [`harness-codex/docs/retrospectiva-0-setup.md`](harness-codex/docs/retrospectiva-0-setup.md) |
 
 ---
 
