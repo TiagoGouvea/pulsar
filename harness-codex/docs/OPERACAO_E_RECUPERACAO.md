@@ -6,7 +6,7 @@
 - Cada sessão do controlador atualiza `runs/<id>/run-summary.json`; pausas entre sessões não entram no tempo ativo.
 - Cada interação grava `model-call.json` junto do `result.json`, `session-trace.jsonl` e demais evidências da tentativa.
 - O painel `yarn harness dashboard --config harness.config.yaml --run <id>` exibe tarefas, eventos e totais por modelo.
-- `yarn harness models performance --config harness.config.yaml --run <id>` gera taxa técnica, tokens, duração média e custos.
+- `yarn harness models performance --config harness.config.yaml --run <id> [--milestone 1-base]` gera taxa técnica, tokens, duração média e custos, por modelo e opcionalmente por etapa.
 - `yarn harness diagnostics --config harness.config.yaml --run <id>` explica o bloqueio; `yarn harness report ...` gera o resumo e próximo passo.
 
 ## Resume e crash

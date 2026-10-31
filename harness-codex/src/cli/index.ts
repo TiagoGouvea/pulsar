@@ -85,10 +85,11 @@ models.command("unload").description("Descarrega modelos locais explicitamente")
   });
 models.command("performance").description("Gera o índice de sucesso técnico por modelo")
   .requiredOption("--config <path>").requiredOption("--run <id>")
-  .action(async (options: { config: string; run: string }) => {
+  .option("--milestone <id>", "Filtra uma etapa específica")
+  .action(async (options: { config: string; run: string; milestone?: string }) => {
     const config = await loadConfig(options.config);
     const store = new StateStore(config.storage.root);
-    try { console.log(await writeModelPerformanceReport(config, store, options.run)); } finally { store.close(); }
+    try { console.log(await writeModelPerformanceReport(config, store, options.run, options.milestone)); } finally { store.close(); }
   });
 
 program.command("plan").description("Extrai requisitos e cria o plano rastreável")

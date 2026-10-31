@@ -86,22 +86,26 @@ export function summarizeModelPerformance(calls: Record<string, unknown>[]): Mod
   })).sort((left, right) => left.alias.localeCompare(right.alias));
 }
 
-export async function writeModelPerformanceReport(config: HarnessConfig, store: StateStore, runId: string): Promise<string> {
+export async function writeModelPerformanceReport(config: HarnessConfig, store: StateStore, runId: string, milestoneId?: string): Promise<string> {
+  const milestoneClause = milestoneId
+    ? "AND EXISTS (SELECT 1 FROM tasks t WHERE t.run_id=a.run_id AND t.milestone_id=? AND (a.task_id=t.id OR a.task_id=t.id || '-review'))"
+    : "";
   const calls = store.all<Record<string, unknown>>(
     `SELECT s.model_key AS alias, s.role, pc.provider, pc.model_id, pc.input_tokens, pc.output_tokens, pc.reported_micros, pc.uncertain_micros,
      CASE WHEN pc.finished_at IS NULL THEN 0 ELSE CAST((julianday(pc.finished_at)-julianday(pc.started_at))*86400000 AS INTEGER) END AS duration_ms, a.result_json
      FROM provider_calls pc
      JOIN attempts a ON a.id=pc.attempt_id
      LEFT JOIN sessions s ON s.attempt_id=a.id
-     WHERE a.run_id=? ORDER BY pc.started_at`,
-    runId,
+     WHERE a.run_id=? ${milestoneClause} ORDER BY pc.started_at`,
+    ...(milestoneId ? [runId, milestoneId] : [runId]),
   );
   const performance = summarizeModelPerformance(calls);
   const directory = runDirectory(config, runId);
   await mkdir(directory, { recursive: true });
-  const output = path.join(directory, "model-performance.md");
+  const reportBase = milestoneId ? `model-performance-${milestoneId}` : "model-performance";
+  const output = path.join(directory, `${reportBase}.md`);
   const markdown = [
-    "# Desempenho dos modelos", "", `Run: ${runId}`, "",
+    "# Desempenho dos modelos", "", `Run: ${runId}`, ...(milestoneId ? [`Etapa: ${milestoneId}`] : []), "",
     "Sucesso técnico significa que o modelo concluiu a sessão e entregou uma resposta estruturada; não equivale à aprovação final da tarefa.", "",
     "| Modelo | Papéis | Chamadas | Sucesso técnico | Falhas | Incompletas | Taxa | Tokens entrada/saída | Duração média | Custo confirmado/incerto |",
     "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
@@ -109,7 +113,7 @@ export async function writeModelPerformanceReport(config: HarnessConfig, store: 
     "",
   ].join("\n");
   await writeFile(output, markdown, { mode: 0o600 });
-  await writeJson(path.join(directory, "model-performance.json"), { runId, models: performance });
+  await writeJson(path.join(directory, `${reportBase}.json`), { runId, milestoneId: milestoneId ?? null, models: performance });
   const csv = [
     "alias,provider,model_id,roles,calls,technical_successes,technical_failures,incomplete_calls,technical_success_rate_percent,ready_results,changes_requested,blocked_results,input_tokens,output_tokens,duration_ms,average_duration_ms,confirmed_micros,uncertain_micros",
     ...performance.map((item) => [
@@ -119,7 +123,7 @@ export async function writeModelPerformanceReport(config: HarnessConfig, store: 
       item.averageDurationMs, item.confirmedMicros, item.uncertainMicros,
     ].map(csvValue).join(",")),
   ].join("\n");
-  await writeFile(path.join(directory, "model-performance.csv"), `${csv}\n`, { mode: 0o600 });
+  await writeFile(path.join(directory, `${reportBase}.csv`), `${csv}\n`, { mode: 0o600 });
   return output;
 }
 
