@@ -4,11 +4,14 @@ import { Heading } from '@components/ui/Heading';
 import { Text } from '@components/ui/Text';
 import { Card } from '@components/ui/Card';
 import { Button } from '@components/ui/Button';
+import { MaterialIcon } from '@components/ui/MaterialIcon';
 import { useOnboardingCompletion } from '@features/onboarding/useOnboardingCompletion';
+import { useScrollToTop } from '@features/onboarding/useScrollToTop';
 
 export const OnboardingStep1: React.FC = () => {
   const navigate = useNavigate();
   const { complete, isCompleting, error } = useOnboardingCompletion();
+  useScrollToTop();
 
   const handleNext = () => {
     navigate('/onboarding/2');
@@ -40,60 +43,58 @@ export const OnboardingStep1: React.FC = () => {
       <div className="flex-1 flex flex-col mt-space-md">
         {/* Hero Graphic */}
         <div className="px-gutter my-space-md">
-          <Card padding="lg" hover variant="elevated">
-            <div className="relative w-full rounded-lg bg-surface-container-low p-space-lg overflow-hidden shadow-sm flex flex-col items-center">
-              <div className="absolute -right-12 -top-12 w-48 h-48 bg-secondary-fixed/50 rounded-full blur-2xl pointer-events-none"></div>
-              <div className="absolute -left-10 -bottom-10 w-44 h-44 bg-primary-fixed/40 rounded-full blur-2xl pointer-events-none"></div>
-              
-              <div className="relative w-full max-w-[280px] h-44 flex items-center justify-center">
-                {/* Center Pulsar Core */}
-                <div className="w-16 h-16 rounded-full bg-surface-container-lowest shadow-md flex items-center justify-center z-10">
-                  <div className="w-11 h-11 rounded-full bg-secondary text-on-secondary flex items-center justify-center shadow-sm">
-                    <span className="material-symbols-outlined text-[24px]">science</span>
-                  </div>
-                </div>
-
-                {/* Connecting Rays */}
-                <svg className="absolute inset-0 w-full h-full pointer-events-none" fill="none" viewBox="0 0 280 176">
-                  <circle className="text-surface-variant" cx="140" cy="88" r="64" stroke="currentColor" strokeDasharray="3 3" strokeWidth="1.5"></circle>
-                  <line className="text-secondary-fixed-dim" stroke="currentColor" strokeWidth="1.5" x1="140" x2="52" y1="88" y2="40"></line>
-                  <line className="text-secondary-fixed-dim" stroke="currentColor" strokeWidth="1.5" x1="140" x2="228" y1="88" y2="40"></line>
-                  <line className="text-secondary-fixed-dim" stroke="currentColor" strokeWidth="1.5" x1="140" x2="52" y1="88" y2="136"></line>
-                  <line className="text-secondary-fixed-dim" stroke="currentColor" strokeWidth="1.5" x1="140" x2="228" y1="88" y2="136"></line>
-                </svg>
-
-                {/* Floating Factor Nodes */}
-                <div className="absolute left-2 top-3 bg-surface-container-lowest shadow-md px-2.5 py-1.5 rounded-full flex items-center gap-1.5 animate-bounce" style={{ animationDuration: '3.2s' }}>
-                  <span className="px-1.5 py-0.5 rounded bg-secondary/10 text-secondary font-label-code text-label-code">CAF</span>
-                  <span className="material-symbols-outlined text-[16px] text-secondary">coffee</span>
-                  <span className="font-label-md text-label-md text-on-surface">Café</span>
-                </div>
-
-                <div className="absolute right-2 top-3 bg-surface-container-lowest shadow-md px-2.5 py-1.5 rounded-full flex items-center gap-1.5 animate-bounce" style={{ animationDuration: '2.8s', animationDelay: '0.4s' }}>
-                  <span className="px-1.5 py-0.5 rounded bg-secondary/10 text-secondary font-label-code text-label-code">EXE</span>
-                  <span className="material-symbols-outlined text-[16px] text-secondary">fitness_center</span>
-                  <span className="font-label-md text-label-md text-on-surface">Treino</span>
-                </div>
-
-                <div className="absolute left-2 bottom-3 bg-surface-container-lowest shadow-md px-2.5 py-1.5 rounded-full flex items-center gap-1.5 animate-bounce" style={{ animationDuration: '3.5s', animationDelay: '0.2s' }}>
-                  <span className="px-1.5 py-0.5 rounded bg-secondary/10 text-secondary font-label-code text-label-code">Q10</span>
-                  <span className="material-symbols-outlined text-[16px] text-secondary">medication</span>
-                  <span className="font-label-md text-label-md text-on-surface">Suplemento</span>
-                </div>
-
-                <div className="absolute right-2 bottom-3 bg-surface-container-lowest shadow-md px-2.5 py-1.5 rounded-full flex items-center gap-1.5 animate-bounce" style={{ animationDuration: '3s', animationDelay: '0.6s' }}>
-                  <span className="px-1.5 py-0.5 rounded bg-secondary/10 text-secondary font-label-code text-label-code">SLP</span>
-                  <span className="material-symbols-outlined text-[16px] text-secondary">bedtime</span>
-                  <span className="font-label-md text-label-md text-on-surface">Leitura</span>
+          <div className="relative w-full rounded-lg bg-surface-container-low p-space-lg overflow-hidden shadow-sm flex flex-col items-center">
+            <div className="absolute -right-12 -top-12 w-48 h-48 bg-secondary-fixed/50 rounded-full blur-2xl pointer-events-none"></div>
+            <div className="absolute -left-10 -bottom-10 w-44 h-44 bg-primary-fixed/40 rounded-full blur-2xl pointer-events-none"></div>
+            
+            <div className="relative w-full max-w-[280px] h-44 flex items-center justify-center">
+              {/* Center Pulsar Core */}
+              <div className="w-16 h-16 rounded-full bg-surface-container-lowest shadow-md flex items-center justify-center z-10">
+                <div className="w-11 h-11 rounded-full bg-secondary text-on-secondary flex items-center justify-center shadow-sm">
+                  <MaterialIcon name="science" size={24} />
                 </div>
               </div>
 
-              <div className="flex items-center gap-1.5 mt-2 bg-secondary-fixed/60 px-3 py-1 rounded-full">
-                <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
-                <span className="font-label-code text-label-code text-on-secondary-fixed uppercase tracking-wider font-semibold">Inputs Bio-Comportamentais</span>
+              {/* Connecting Rays */}
+              <svg className="absolute inset-0 w-full h-full pointer-events-none" fill="none" viewBox="0 0 280 176">
+                <circle className="text-surface-variant" cx="140" cy="88" r="64" stroke="currentColor" strokeDasharray="3 3" strokeWidth="1.5"></circle>
+                <line className="text-secondary-fixed-dim" stroke="currentColor" strokeWidth="1.5" x1="140" x2="52" y1="88" y2="40"></line>
+                <line className="text-secondary-fixed-dim" stroke="currentColor" strokeWidth="1.5" x1="140" x2="228" y1="88" y2="40"></line>
+                <line className="text-secondary-fixed-dim" stroke="currentColor" strokeWidth="1.5" x1="140" x2="52" y1="88" y2="136"></line>
+                <line className="text-secondary-fixed-dim" stroke="currentColor" strokeWidth="1.5" x1="140" x2="228" y1="88" y2="136"></line>
+              </svg>
+
+              {/* Floating Factor Nodes */}
+              <div className="absolute left-2 top-3 bg-surface-container-lowest shadow-md px-1.5 py-1 rounded-full flex items-center gap-1 animate-bounce" style={{ animationDuration: '3.2s' }}>
+                <span className="px-1 py-0.5 rounded bg-secondary/10 text-secondary font-label-code text-label-code">CAF</span>
+                <MaterialIcon name="coffee" size={14} className="text-secondary" />
+                <span className="font-label-md text-label-md text-on-surface">Café</span>
+              </div>
+
+              <div className="absolute right-2 top-3 bg-surface-container-lowest shadow-md px-1.5 py-1 rounded-full flex items-center gap-1 animate-bounce" style={{ animationDuration: '2.8s', animationDelay: '0.4s' }}>
+                <span className="px-1 py-0.5 rounded bg-secondary/10 text-secondary font-label-code text-label-code">EXE</span>
+                <MaterialIcon name="fitness_center" size={14} className="text-secondary" />
+                <span className="font-label-md text-label-md text-on-surface">Treino</span>
+              </div>
+
+              <div className="absolute left-2 bottom-3 bg-surface-container-lowest shadow-md px-1.5 py-1 rounded-full flex items-center gap-1 animate-bounce" style={{ animationDuration: '3.5s', animationDelay: '0.2s' }}>
+                <span className="px-1 py-0.5 rounded bg-secondary/10 text-secondary font-label-code text-label-code">Q10</span>
+                <MaterialIcon name="medication" size={14} className="text-secondary" />
+                <span className="font-label-md text-label-md text-on-surface">Suplemento</span>
+              </div>
+
+              <div className="absolute right-2 bottom-3 bg-surface-container-lowest shadow-md px-1.5 py-1 rounded-full flex items-center gap-1 animate-bounce" style={{ animationDuration: '3s', animationDelay: '0.6s' }}>
+                <span className="px-1 py-0.5 rounded bg-secondary/10 text-secondary font-label-code text-label-code">SLP</span>
+                <MaterialIcon name="bedtime" size={14} className="text-secondary" />
+                <span className="font-label-md text-label-md text-on-surface">Leitura</span>
               </div>
             </div>
-          </Card>
+
+            <div className="flex items-center gap-1.5 mt-2 bg-secondary-fixed/60 px-3 py-1 rounded-full">
+              <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+              <span className="font-label-code text-label-code text-on-secondary-fixed uppercase tracking-wider font-semibold">Inputs Bio-Comportamentais</span>
+            </div>
+          </div>
         </div>
 
         {/* Narrative Header */}
@@ -114,7 +115,7 @@ export const OnboardingStep1: React.FC = () => {
           <Card padding="lg">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-secondary text-[20px]">touch_app</span>
+                <MaterialIcon name="touch_app" size={20} className="text-secondary" />
                 <span className="font-label-lg text-label-lg text-on-surface">Exemplos práticos de registro</span>
               </div>
               <span className="font-label-code text-label-code text-secondary font-semibold uppercase">Interativo</span>
@@ -150,14 +151,14 @@ export const OnboardingStep1: React.FC = () => {
               </div>
               <div className="flex items-center justify-between bg-surface-container-low p-1.5 rounded-full">
                 <button className="w-10 h-10 rounded-full bg-surface-container text-on-surface flex items-center justify-center active:scale-90 transition-transform shadow-xs">
-                  <span className="material-symbols-outlined text-[20px]">remove</span>
+                  <MaterialIcon name="remove" size={20} />
                 </button>
                 <div className="flex flex-col items-center justify-center">
                   <span className="font-stat-display text-stat-display text-secondary leading-none">2</span>
                   <span className="font-label-code text-label-code text-on-surface-variant uppercase">Xícaras</span>
                 </div>
                 <button className="w-10 h-10 rounded-full bg-secondary text-on-secondary flex items-center justify-center active:scale-90 transition-transform shadow-xs">
-                  <span className="material-symbols-outlined text-[20px]">add</span>
+                  <MaterialIcon name="add" size={20} />
                 </button>
               </div>
             </div>

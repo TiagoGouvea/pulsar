@@ -6,7 +6,15 @@ import { createIndicator } from '@features/indicators/repository';
 import { INITIAL_INDICATOR_SUGGESTIONS } from '@features/indicators/suggestions';
 import type { Indicator, IndicatorSuggestion } from '@features/indicators/types';
 import { useIndicators } from '@features/indicators/useIndicators';
+import { MaterialIcon, MaterialIconName } from '@components/ui/MaterialIcon';
 import { AccountSaveInvite } from './AccountSaveInvite';
+
+const suggestionIcons: Record<string, MaterialIconName> = {
+  exercise: 'fitness_center',
+  coffee: 'coffee',
+  energy: 'bolt',
+  focus: 'psychology'
+};
 
 const groupLabel = {
   factor: 'Fator',
@@ -110,7 +118,7 @@ export const DashboardPage: React.FC = () => {
         <div className="absolute -right-12 -top-12 w-36 h-36 rounded-full bg-primary-fixed/25 blur-2xl pointer-events-none" aria-hidden="true" />
         <div className="flex items-start gap-space-md relative z-10">
           <span className="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center shrink-0 shadow-sm" aria-hidden="true">
-            <span className="material-symbols-outlined text-[22px]">science</span>
+            <MaterialIcon name="science" size={22} />
           </span>
           <div className="flex-1 space-y-1 min-w-0">
             <h2 id="dashboard-purpose" className="font-headline-md text-headline-md text-on-surface">
@@ -194,12 +202,7 @@ export const DashboardPage: React.FC = () => {
                   <div className="flex items-center justify-between gap-space-sm">
                     <div className="flex items-center gap-space-sm min-w-0">
                       <span className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 ${iconTone[suggestion.group]}`} aria-hidden="true">
-                        <span className="material-symbols-outlined text-[22px]">
-                          {suggestion.key === 'exercise' && 'fitness_center'}
-                          {suggestion.key === 'coffee' && 'coffee'}
-                          {suggestion.key === 'energy' && 'bolt'}
-                          {suggestion.key === 'focus' && 'psychology'}
-                        </span>
+                        <MaterialIcon name={suggestionIcons[suggestion.key] ?? 'science'} size={22} />
                       </span>
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5 flex-wrap">
@@ -222,7 +225,7 @@ export const DashboardPage: React.FC = () => {
                       onClick={() => void addSuggestion(suggestion)}
                       disabled={pendingKey !== null}
                     >
-                      <span className="material-symbols-outlined text-[18px]" aria-hidden="true">{isAdding ? 'hourglass_top' : 'add'}</span>
+                      <MaterialIcon name={isAdding ? 'hourglass_top' : 'add'} size={18} />
                       <span>{isAdding ? 'Adicionando…' : 'Adicionar'}</span>
                     </button>
                   </div>
@@ -247,7 +250,7 @@ export const DashboardPage: React.FC = () => {
           onClick={invite.markUsefulInteraction}
           className="w-full min-h-[48px] rounded-full bg-surface-container-highest text-primary font-label-lg text-label-lg flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-sm hover:bg-surface-variant"
         >
-          <span className="material-symbols-outlined text-[20px]" aria-hidden="true">add_circle</span>
+          <MaterialIcon name="add_circle" size={20} />
           <span>Criar meu próprio indicador</span>
         </Link>
       </section>
@@ -255,7 +258,7 @@ export const DashboardPage: React.FC = () => {
       <section className="bg-surface-container-lowest p-space-lg rounded-lg shadow-sm space-y-space-md" aria-labelledby="insights-explained-heading">
         <div className="flex items-center justify-between gap-space-sm">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="material-symbols-outlined text-primary text-[22px]" aria-hidden="true">insights</span>
+            <MaterialIcon name="insights" size={22} className="text-primary" />
             <h2 id="insights-explained-heading" className="font-headline-md text-headline-md text-on-surface">
               Como os insights funcionam?
             </h2>
@@ -274,7 +277,7 @@ export const DashboardPage: React.FC = () => {
           </svg>
           <div className="absolute inset-0 bg-gradient-to-t from-surface-container-low/90 via-transparent to-transparent flex items-end justify-center pb-2">
             <span className="font-label-code text-label-code text-on-surface-variant flex items-center gap-1.5 bg-surface-container-lowest/80 px-2.5 py-1 rounded-full backdrop-blur-sm shadow-sm">
-              <span className="material-symbols-outlined text-[14px] text-primary" aria-hidden="true">schedule</span>
+              <MaterialIcon name="schedule" size={14} className="text-primary" />
               {indicators.length ? 'Aguardando seus primeiros registros' : 'Aguardando seus primeiros indicadores'}
             </span>
           </div>
@@ -298,7 +301,7 @@ export const DashboardPage: React.FC = () => {
 
       <section className="bg-surface-container-low p-space-md rounded-lg flex items-start gap-space-sm" aria-labelledby="data-protection-heading">
         <span className="w-8 h-8 rounded-full bg-surface-container-high text-secondary flex items-center justify-center shrink-0 mt-0.5" aria-hidden="true">
-          <span className="material-symbols-outlined text-[18px]">lock</span>
+          <MaterialIcon name="lock" size={18} />
         </span>
         <div className="space-y-1 min-w-0">
           <h2 id="data-protection-heading" className="font-label-lg text-label-lg text-on-surface font-semibold">

@@ -4,11 +4,14 @@ import { Heading } from '@components/ui/Heading';
 import { Text } from '@components/ui/Text';
 import { Card } from '@components/ui/Card';
 import { Button } from '@components/ui/Button';
+import { MaterialIcon } from '@components/ui/MaterialIcon';
 import { useOnboardingCompletion } from '@features/onboarding/useOnboardingCompletion';
+import { useScrollToTop } from '@features/onboarding/useScrollToTop';
 
 export const OnboardingStep2: React.FC = () => {
   const navigate = useNavigate();
   const { complete, isCompleting, error } = useOnboardingCompletion();
+  useScrollToTop();
 
   const handleNext = () => {
     navigate('/onboarding/3');
@@ -40,60 +43,58 @@ export const OnboardingStep2: React.FC = () => {
       <div className="flex-1 flex flex-col mt-space-md">
         {/* Hero Graphic */}
         <div className="px-gutter my-space-md">
-          <Card padding="lg" hover variant="elevated">
-            <div className="relative w-full rounded-lg bg-surface-container-low p-space-lg overflow-hidden shadow-sm flex flex-col items-center">
-              <div className="absolute -right-10 -top-8 w-44 h-44 bg-primary-fixed/50 rounded-full blur-2xl pointer-events-none"></div>
-              <div className="absolute -left-12 -bottom-12 w-48 h-48 bg-tertiary-fixed/40 rounded-full blur-2xl pointer-events-none"></div>
-              
-              <div className="relative w-full max-w-[280px] h-44 flex items-center justify-center">
-                {/* Center Result Core */}
-                <div className="w-16 h-16 rounded-full bg-surface-container-lowest shadow-md flex items-center justify-center z-10">
-                  <div className="w-11 h-11 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-sm">
-                    <span className="material-symbols-outlined text-[24px]">bolt</span>
-                  </div>
-                </div>
-
-                {/* Connecting Rays */}
-                <svg className="absolute inset-0 w-full h-full pointer-events-none" fill="none" viewBox="0 0 280 176">
-                  <circle className="text-surface-variant" cx="140" cy="88" r="64" stroke="currentColor" strokeDasharray="3 3" strokeWidth="1.5"></circle>
-                  <line className="text-primary-fixed-dim" stroke="currentColor" strokeWidth="1.5" x1="140" x2="52" y1="88" y2="40"></line>
-                  <line className="text-primary-fixed-dim" stroke="currentColor" strokeWidth="1.5" x1="140" x2="228" y1="88" y2="40"></line>
-                  <line className="text-primary-fixed-dim" stroke="currentColor" strokeWidth="1.5" x1="140" x2="52" y1="88" y2="136"></line>
-                  <line className="text-primary-fixed-dim" stroke="currentColor" strokeWidth="1.5" x1="140" x2="228" y1="88" y2="136"></line>
-                </svg>
-
-                {/* Floating Result Nodes */}
-                <div className="absolute left-2 top-3 bg-surface-container-lowest shadow-md px-2.5 py-1.5 rounded-full flex items-center gap-1.5 animate-bounce" style={{ animationDuration: '3s' }}>
-                  <span className="px-1.5 py-0.5 rounded bg-primary/10 text-primary font-label-code text-label-code">ENE</span>
-                  <span className="material-symbols-outlined text-[16px] text-primary">flash_on</span>
-                  <span className="font-label-md text-label-md text-on-surface">Energia</span>
-                </div>
-
-                <div className="absolute right-2 top-3 bg-surface-container-lowest shadow-md px-2.5 py-1.5 rounded-full flex items-center gap-1.5 animate-bounce" style={{ animationDuration: '2.5s', animationDelay: '0.3s' }}>
-                  <span className="px-1.5 py-0.5 rounded bg-primary/10 text-primary font-label-code text-label-code">CON</span>
-                  <span className="material-symbols-outlined text-[16px] text-primary">focus_center</span>
-                  <span className="font-label-md text-label-md text-on-surface">Concentração</span>
-                </div>
-
-                <div className="absolute left-2 bottom-3 bg-surface-container-lowest shadow-md px-2.5 py-1.5 rounded-full flex items-center gap-1.5 animate-bounce" style={{ animationDuration: '3.5s', animationDelay: '0.1s' }}>
-                  <span className="px-1.5 py-0.5 rounded bg-primary/10 text-primary font-label-code text-label-code">HUM</span>
-                  <span className="material-symbols-outlined text-[16px] text-primary">mood</span>
-                  <span className="font-label-md text-label-md text-on-surface">Humor</span>
-                </div>
-
-                <div className="absolute right-2 bottom-3 bg-surface-container-lowest shadow-md px-2.5 py-1.5 rounded-full flex items-center gap-1.5 animate-bounce" style={{ animationDuration: '2.8s', animationDelay: '0.5s' }}>
-                  <span className="px-1.5 py-0.5 rounded bg-primary/10 text-primary font-label-code text-label-code">DOR</span>
-                  <span className="material-symbols-outlined text-[16px] text-primary">healing</span>
-                  <span className="font-label-md text-label-md text-on-surface">Dor</span>
+          <div className="relative w-full rounded-lg bg-surface-container-low p-space-lg overflow-hidden shadow-sm flex flex-col items-center">
+            <div className="absolute -right-10 -top-8 w-44 h-44 bg-primary-fixed/50 rounded-full blur-2xl pointer-events-none"></div>
+            <div className="absolute -left-12 -bottom-12 w-48 h-48 bg-tertiary-fixed/40 rounded-full blur-2xl pointer-events-none"></div>
+            
+            <div className="relative w-full max-w-[280px] h-44 flex items-center justify-center">
+              {/* Center Result Core */}
+              <div className="w-16 h-16 rounded-full bg-surface-container-lowest shadow-md flex items-center justify-center z-10">
+                <div className="w-11 h-11 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-sm">
+                  <MaterialIcon name="bolt" size={24} />
                 </div>
               </div>
 
-              <div className="flex items-center gap-1.5 mt-2 bg-primary-fixed/60 px-3 py-1 rounded-full">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-                <span className="font-label-code text-label-code text-on-primary-fixed uppercase tracking-wider font-semibold">Medições e Percepções</span>
+              {/* Connecting Rays */}
+              <svg className="absolute inset-0 w-full h-full pointer-events-none" fill="none" viewBox="0 0 280 176">
+                <circle className="text-surface-variant" cx="140" cy="88" r="64" stroke="currentColor" strokeDasharray="3 3" strokeWidth="1.5"></circle>
+                <line className="text-primary-fixed-dim" stroke="currentColor" strokeWidth="1.5" x1="140" x2="52" y1="88" y2="40"></line>
+                <line className="text-primary-fixed-dim" stroke="currentColor" strokeWidth="1.5" x1="140" x2="228" y1="88" y2="40"></line>
+                <line className="text-primary-fixed-dim" stroke="currentColor" strokeWidth="1.5" x1="140" x2="52" y1="88" y2="136"></line>
+                <line className="text-primary-fixed-dim" stroke="currentColor" strokeWidth="1.5" x1="140" x2="228" y1="88" y2="136"></line>
+              </svg>
+
+              {/* Floating Result Nodes */}
+              <div className="absolute left-2 top-3 bg-surface-container-lowest shadow-md px-1.5 py-1 rounded-full flex items-center gap-1 animate-bounce" style={{ animationDuration: '3s' }}>
+                <span className="px-1 py-0.5 rounded bg-primary/10 text-primary font-label-code text-label-code">ENE</span>
+                <MaterialIcon name="flash_on" size={14} className="text-primary" />
+                <span className="font-label-md text-label-md text-on-surface">Energia</span>
+              </div>
+
+              <div className="absolute right-2 top-3 bg-surface-container-lowest shadow-md px-1.5 py-1 rounded-full flex items-center gap-1 animate-bounce" style={{ animationDuration: '2.5s', animationDelay: '0.3s' }}>
+                <span className="px-1 py-0.5 rounded bg-primary/10 text-primary font-label-code text-label-code">CON</span>
+                <MaterialIcon name="psychology" size={14} className="text-primary" />
+                <span className="font-label-md text-label-md text-on-surface">Concentração</span>
+              </div>
+
+              <div className="absolute left-2 bottom-3 bg-surface-container-lowest shadow-md px-1.5 py-1 rounded-full flex items-center gap-1 animate-bounce" style={{ animationDuration: '3.5s', animationDelay: '0.1s' }}>
+                <span className="px-1 py-0.5 rounded bg-primary/10 text-primary font-label-code text-label-code">HUM</span>
+                <MaterialIcon name="mood" size={14} className="text-primary" />
+                <span className="font-label-md text-label-md text-on-surface">Humor</span>
+              </div>
+
+              <div className="absolute right-2 bottom-3 bg-surface-container-lowest shadow-md px-1.5 py-1 rounded-full flex items-center gap-1 animate-bounce" style={{ animationDuration: '2.8s', animationDelay: '0.5s' }}>
+                <span className="px-1 py-0.5 rounded bg-primary/10 text-primary font-label-code text-label-code">DOR</span>
+                <MaterialIcon name="healing" size={14} className="text-primary" />
+                <span className="font-label-md text-label-md text-on-surface">Dor</span>
               </div>
             </div>
-          </Card>
+
+            <div className="flex items-center gap-1.5 mt-2 bg-primary-fixed/60 px-3 py-1 rounded-full">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
+              <span className="font-label-code text-label-code text-on-primary-fixed uppercase tracking-wider font-semibold">Medições e Percepções</span>
+            </div>
+          </div>
         </div>
 
         {/* Narrative Header */}
@@ -114,7 +115,7 @@ export const OnboardingStep2: React.FC = () => {
           <Card padding="lg">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-[20px]">touch_app</span>
+                <MaterialIcon name="touch_app" size={20} className="text-primary" />
                 <span className="font-label-lg text-label-lg text-on-surface">Exemplos de definição</span>
               </div>
               <span className="font-label-code text-label-code text-primary font-semibold uppercase">Interativo</span>

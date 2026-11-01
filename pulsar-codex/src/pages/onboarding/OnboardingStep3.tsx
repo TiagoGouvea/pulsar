@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { Heading } from '@components/ui/Heading';
 import { Text } from '@components/ui/Text';
 import { Button } from '@components/ui/Button';
+import { MaterialIcon, MaterialIconName } from '@components/ui/MaterialIcon';
 import { useOnboardingCompletion } from '@features/onboarding/useOnboardingCompletion';
+import { useScrollToTop } from '@features/onboarding/useScrollToTop';
 
-const guarantees = [
+const guarantees: { icon: MaterialIconName; tone: string; title: string; description: string }[] = [
   {
     icon: 'no_accounts',
     tone: 'bg-secondary-fixed text-on-secondary-fixed-variant',
@@ -29,6 +31,7 @@ const guarantees = [
 export const OnboardingStep3: React.FC = () => {
   const navigate = useNavigate();
   const { complete, isCompleting, error } = useOnboardingCompletion();
+  useScrollToTop();
 
   const handleBack = () => {
     navigate('/onboarding/2');
@@ -70,7 +73,7 @@ export const OnboardingStep3: React.FC = () => {
           <div className="flex flex-wrap items-center justify-between gap-space-sm">
             <div className="flex items-center gap-space-xs" aria-hidden="true">
               <span className="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-code text-label-code">FAT • FATOR</span>
-              <span className="material-symbols-outlined text-[16px] text-on-surface-variant">arrow_forward</span>
+              <MaterialIcon name="arrow_forward" size={16} className="text-on-surface-variant" />
               <span className="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-code text-label-code">RES • RESULTADO</span>
             </div>
             <span className="font-label-code text-label-code text-primary bg-primary-fixed/50 px-2 py-0.5 rounded-full">Possível associação</span>
@@ -130,7 +133,7 @@ export const OnboardingStep3: React.FC = () => {
               Nos dias com exercício registrado, sua energia média apareceu mais alta. Isso é uma associação, não uma prova de causa.
             </Text>
             <div className="flex items-start gap-1.5 pt-space-xs text-on-surface-variant">
-              <span className="material-symbols-outlined text-[16px] text-outline shrink-0 mt-0.5" aria-hidden="true">verified_user</span>
+              <MaterialIcon name="verified_user" size={16} className="text-outline shrink-0 mt-0.5" />
               <p className="font-label-code text-[10px] leading-tight text-outline">
                 Correlação estatística não implica causalidade. O Pulsar mostra possíveis associações e mantém a interpretação com você.
               </p>
@@ -145,7 +148,7 @@ export const OnboardingStep3: React.FC = () => {
           {guarantees.map((guarantee) => (
             <div key={guarantee.title} className="flex items-center gap-space-md p-space-sm rounded bg-surface-container-lowest">
               <span className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${guarantee.tone}`} aria-hidden="true">
-                <span className="material-symbols-outlined text-[20px]">{guarantee.icon}</span>
+                <MaterialIcon name={guarantee.icon} size={20} />
               </span>
               <div className="flex flex-col min-w-0">
                 <Heading level={3} variant="mobile">{guarantee.title}</Heading>
@@ -155,24 +158,24 @@ export const OnboardingStep3: React.FC = () => {
           ))}
         </section>
 
-        <Button variant="primary" size="lg" fullWidth className="min-h-[52px]" onClick={finish} disabled={isCompleting}>
-          {isCompleting ? 'Salvando conclusão…' : 'Começar a Explorar'}
-          {!isCompleting && <span className="material-symbols-outlined text-[20px] ml-2" aria-hidden="true">arrow_forward</span>}
-        </Button>
       </div>
 
       <div className="fixed bottom-0 w-full bg-surface pt-safe pb-safe px-gutter py-4 border-t border-outline/20">
         <div className="max-w-xl mx-auto">
           {error && <p role="alert" className="body-sm text-error mb-space-sm">{error}</p>}
-          <div className="flex items-center justify-between gap-space-sm">
+          <div className="flex items-center gap-space-sm">
             <Button variant="text" onClick={handleBack} disabled={isCompleting}>
               Voltar
             </Button>
-            <Button variant="text" onClick={finish} className="text-primary" disabled={isCompleting}>
-              Pular
-            </Button>
-            <Button variant="primary" onClick={finish} disabled={isCompleting}>
-              {isCompleting ? 'Salvando…' : 'Concluir'}
+            <Button
+              variant="primary"
+              size="lg"
+              className="flex-1 min-h-[52px]"
+              onClick={finish}
+              disabled={isCompleting}
+              rightIcon={!isCompleting ? <MaterialIcon name="arrow_forward" size={20} /> : undefined}
+            >
+              {isCompleting ? 'Salvando conclusão…' : 'Começar a Explorar'}
             </Button>
           </div>
         </div>

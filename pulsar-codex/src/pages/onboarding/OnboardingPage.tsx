@@ -4,8 +4,10 @@ import { Heading } from '@components/ui/Heading';
 import { Text } from '@components/ui/Text';
 import { Card } from '@components/ui/Card';
 import { Button } from '@components/ui/Button';
+import { MaterialIcon } from '@components/ui/MaterialIcon';
 import { useFirebase } from '@lib/firebase/context';
 import { accountErrorMessage } from '@features/auth/errors';
+import { useScrollToTop } from '@features/onboarding/useScrollToTop';
 
 const OnboardingStep1 = React.lazy(() => import('@pages/onboarding/OnboardingStep1'));
 const OnboardingStep2 = React.lazy(() => import('@pages/onboarding/OnboardingStep2'));
@@ -17,6 +19,7 @@ export const OnboardingPage: React.FC = () => {
   const { signInAnonymous, isLoading, anonymous, user, initializationError } = useFirebase();
   const [isStarting, setIsStarting] = useState(false);
   const [error, setError] = useState('');
+  useScrollToTop();
 
   const handleStart = async () => {
     if (isStarting) return;
@@ -49,7 +52,7 @@ export const OnboardingPage: React.FC = () => {
       <div className="w-full max-w-md space-y-space-xl">
         <div className="flex flex-col items-center text-center space-y-space-md">
           <div className="w-24 h-24 rounded-full bg-primary-fixed/50 text-primary flex items-center justify-center mb-space-md">
-            <span className="material-symbols-outlined text-[48px]">science</span>
+            <MaterialIcon name="science" size={48} />
           </div>
           <Heading level={1} variant="mobile">
             Seu laboratório pessoal
@@ -63,7 +66,7 @@ export const OnboardingPage: React.FC = () => {
           <div className="flex flex-col space-y-space-md">
             <div className="flex items-start gap-space-md">
               <div className="w-10 h-10 rounded-full bg-secondary-fixed/50 text-secondary flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-[20px]">check_circle</span>
+                <MaterialIcon name="check_circle" size={20} />
               </div>
               <div>
                 <Heading level={3} variant="mobile">
@@ -77,7 +80,7 @@ export const OnboardingPage: React.FC = () => {
 
             <div className="flex items-start gap-space-md">
               <div className="w-10 h-10 rounded-full bg-primary-fixed/50 text-primary flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-[20px]">auto_awesome</span>
+                <MaterialIcon name="auto_awesome" size={20} />
               </div>
               <div>
                 <Heading level={3} variant="mobile">
@@ -91,7 +94,7 @@ export const OnboardingPage: React.FC = () => {
 
             <div className="flex items-start gap-space-md">
               <div className="w-10 h-10 rounded-full bg-tertiary-fixed/50 text-tertiary flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-[20px]">lock</span>
+                <MaterialIcon name="lock" size={20} />
               </div>
               <div>
                 <Heading level={3} variant="mobile">

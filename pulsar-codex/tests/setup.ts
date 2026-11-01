@@ -15,6 +15,12 @@ if (typeof window !== 'undefined' && !window.matchMedia) {
     }) as MediaQueryList;
 }
 
+// jsdom does not implement scrolling; the onboarding wizard scrolls the window
+// to the top when the person moves between screens.
+if (typeof window !== 'undefined') {
+  window.scrollTo = (() => {}) as typeof window.scrollTo;
+}
+
 // jsdom does not implement ResizeObserver.
 if (typeof window !== 'undefined' && !('ResizeObserver' in window)) {
   class ResizeObserverStub {

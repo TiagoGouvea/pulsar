@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { MaterialIcon } from '@components/ui/MaterialIcon';
 
 interface AccountSaveInviteProps {
   onDismiss: () => void;
@@ -12,7 +13,7 @@ export function AccountSaveInvite({ onDismiss }: AccountSaveInviteProps) {
     >
       <div className="flex items-start gap-space-sm">
         <span className="w-9 h-9 rounded-full bg-surface-container-lowest text-secondary flex items-center justify-center shrink-0" aria-hidden="true">
-          <span className="material-symbols-outlined text-[20px]">lock</span>
+          <MaterialIcon name="lock" size={20} />
         </span>
         <div className="flex flex-col gap-space-xs min-w-0">
           <h2 id="account-save-invite-title" className="font-label-lg text-label-lg text-on-surface">

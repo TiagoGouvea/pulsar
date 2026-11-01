@@ -53,12 +53,38 @@ test.describe('onboarding and initial dashboard', () => {
     await page.getByRole('button', { name: 'Próximo' }).click();
     await expect(page.getByRole('heading', { name: /descubra associações reais/i })).toBeVisible();
 
-    await page.getByRole('button', { name: 'Pular' }).click();
+    await expect(page.getByRole('button', { name: 'Pular' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Concluir' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /começar a explorar/i })).toHaveCount(1);
+
+    await page.getByRole('button', { name: /começar a explorar/i }).click();
     await expect(page.getByRole('heading', { name: 'Bem-vindo ao Pulsar' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Exercício Físico' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Concentração / Foco' })).toBeVisible();
     await expect(page.getByRole('link', { name: /Criar meu próprio indicador/i })).toBeVisible();
     await expect(page.getByText(/nenhum auto-criado/i)).toBeVisible();
+  });
+
+  test('starts each wizard screen from the top and shows the concentration icon', async ({ page }) => {
+    await page.goto('/onboarding/1');
+    await expect(page.getByRole('heading', { name: /observe sua rotina/i })).toBeVisible();
+
+    await page.evaluate(() => window.scrollTo(0, 1200));
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+
+    await page.getByRole('button', { name: 'Próximo' }).click();
+    await expect(page.getByRole('heading', { name: /acompanhe como você se sente/i })).toBeVisible();
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+
+    const concentrationChip = page.getByText('Concentração');
+    await expect(concentrationChip).toBeVisible();
+    const iconName = await concentrationChip
+      .locator('xpath=..')
+      .locator('.material-symbols-outlined')
+      .first()
+      .textContent();
+    expect(iconName?.trim()).toBe('psychology');
+    await expect(page.locator('text=focus_center')).toHaveCount(0);
   });
 });
 

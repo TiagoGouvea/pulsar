@@ -1,54 +1,44 @@
 {
   "taskId": "task-003",
   "outcome": "ready_for_verification",
-  "summary": "Task-003 implementada: tutorial de três telas alinhado ao design de Fatores, Resultados e Associações, com Próximo/Voltar entre etapas, Pular encerrando o fluxo em qualquer tela e conclusão persistida em users/{uid} mais marcador local por UID. O dashboard inicial apresenta quatro sugestões opcionais e a ação Criar meu próprio indicador; nenhum indicador é criado na montagem, apenas por clique explícito. Sugestões usam o modelo estruturado e ficam visíveis em Seus indicadores. O convite para salvar a conta aparece somente após interação útil, é inline, dispensável e não bloqueia o uso; contas permanentes não o recebem. Verificação final: lint, typecheck, 61 testes Vitest, 9 testes de functions, build do app/functions e 60/60 E2E.",
+  "summary": "Task-003 revisada com o feedback humano da etapa 1-base: cada tela do wizard inicial volta ao topo ao ser montada (rolagem zerada ao avançar e voltar); o chip Concentração exibe o ícone psychology em vez do texto literal do ligature focus_center, que não existe na fonte Material Symbols e fazia o chip crescer para 240 px; a última página do wizard ficou com uma única ação de saída (Voltar + Começar a Explorar), sem Pular nem Concluir redundantes. Os ícones das telas do tutorial e do dashboard passam por um novo componente MaterialIcon com nomes tipados, evitando regressão de ligature inválido. O herói das telas 1 e 2 passou a usar o envelope de 280 px da referência oficial, eliminando a sobreposição dos chips flutuantes. Tutorial de três telas, sugestões opcionais sem criação automática e convite contextual para salvar a conta foram preservados. Verificação final: lint, typecheck, 66 testes Vitest, 9 testes de functions, suítes de emulador, build do app/functions e 65/65 E2E.",
   "changedFiles": [
-    "README.md",
     "docs/DECISIONS.md",
     "docs/IMPLEMENTATION-STATUS-TASK-003.md",
-    "src/components/routing/RootRedirect.tsx",
-    "src/features/account/useAccountSaveInvite.ts",
-    "src/features/indicators/repository.ts",
-    "src/features/indicators/suggestions.ts",
-    "src/features/indicators/types.ts",
-    "src/features/indicators/useIndicators.ts",
-    "src/features/onboarding/completion.ts",
-    "src/features/onboarding/completion.spec.ts",
-    "src/features/onboarding/useOnboardingCompletion.ts",
+    "src/components/ui/MaterialIcon.tsx",
+    "src/features/onboarding/useScrollToTop.ts",
     "src/pages/dashboard/AccountSaveInvite.tsx",
     "src/pages/dashboard/DashboardPage.tsx",
-    "src/pages/dashboard/DashboardPage.test.tsx",
     "src/pages/onboarding/OnboardingFlow.test.tsx",
+    "src/pages/onboarding/OnboardingPage.tsx",
     "src/pages/onboarding/OnboardingStep1.tsx",
     "src/pages/onboarding/OnboardingStep2.tsx",
     "src/pages/onboarding/OnboardingStep3.tsx",
-    "src/routes.tsx",
     "tests/e2e/mobile-reflow.spec.ts",
+    "tests/setup.ts",
     ".task-003-result.json"
   ],
   "claimedChecks": [
     "yarn lint: PASS (0 erros/avisos)",
     "yarn typecheck: PASS (app + functions)",
-    "yarn test: PASS (61 Vitest + 9 functions)",
+    "yarn test: PASS (66 Vitest + 9 functions + suítes de emulador)",
     "yarn build: PASS (tsc + functions + vite build)",
-    "E2E_PORT=3115 yarn test:e2e: PASS (60/60 em Chromium, Firefox, WebKit, Pixel 7 e iPhone 15)"
+    "E2E_PORT=3115 yarn test:e2e: PASS (65/65 em Chromium, Firefox, WebKit, Pixel 7 e iPhone 15)"
   ],
   "decisions": [
-    "A conclusão do onboarding é gravada em users/{uid}.onboardingCompleted via setDoc merge e também em marcador local por UID; o fallback local mantém o tutorial concluído quando o Firestore está indisponível ou as Security Rules ainda não permitem a escrita.",
-    "A rota raiz consulta o status remoto e o marcador local antes de redirecionar: primeiro acesso vai para /onboarding e conclusão conhecida vai para /dashboard.",
-    "Pular encerra todo o tutorial em qualquer uma das três telas e persiste a conclusão; a terceira tela também conclui pelo botão principal e pelo botão Concluir.",
-    "A terceira tela segue onboarding_3_associacoes, com exemplo de associação, aviso de que correlação não implica causalidade e as garantias da plataforma; controles de privacidade/IA saíram do onboarding.",
-    "O dashboard usa quatro sugestões fixas e nenhuma escrita ocorre na montagem; createIndicator só é chamado no clique em Adicionar de uma sugestão.",
-    "Sugestões são criadas com os campos estruturados do modelo (grupo, tipo, frequência, agregação, direção e faixa ideal). Um cache local por UID mantém os indicadores visíveis enquanto as regras de isolamento da task-004 não existem.",
-    "O convite de conta é elegível após adicionar uma sugestão ou abrir a criação de indicador próprio, é renderizado inline, pode ser dispensado e não usa modal, foco preso ou bloqueio de navegação.",
-    "O convite não aparece para contas permanentes; a dispensa é persistida localmente."
+    "O nome focus_center foi substituído por psychology, o ícone usado pela referência oficial para Concentração / Foco; a causa era o ligature inexistente na fonte Material Symbols, que imprimia o texto literal e rompeu o chip.",
+    "Os ícones das telas do tutorial e do dashboard usam o componente MaterialIcon, cujo name é tipado a partir de uma lista explícita de símbolos válidos; um nome inexistente agora falha na compilação.",
+    "O tamanho do ícone é aplicado por estilo inline porque a folha de terceiros do Google Fonts define font-size fora de camadas e sobrepõe as utilitárias de tamanho do Tailwind.",
+    "A rolagem ao topo é feita pelo hook useScrollToTop na montagem de cada etapa do wizard e da tela de entrada, para que avançar ou voltar nunca herde a posição anterior.",
+    "A última tela mantém Voltar e o botão principal Começar a Explorar, conforme design/onboarding_3_associa_es; Pular e Concluir foram removidos por redundância e Pular segue disponível nas telas 1 e 2.",
+    "O herói das telas 1 e 2 deixou de usar um Card adicional e voltou ao envelope de 280 px da referência; os chips flutuantes foram compactados para caber lado a lado sem sobreposição em 390, 430 e 1440 px.",
+    "Nenhum indicador continua sendo criado automaticamente; as quatro sugestões e a ação Criar meu próprio indicador seguem behaving igual, e o convite para salvar a conta continua inline, dispensável e não bloqueante."
   ],
   "blockers": [],
   "suggestedFollowUps": [
-    "Task-004: implementar Security Rules de isolamento por UID e testes de emulador; depois remover ou sincronizar o cache local de indicadores conforme a estratégia offline definitiva.",
+    "Migrar os ícones restantes do Header e da tela de conta para o componente MaterialIcon, para que o tamanho dos ícones nesses pontos também deixe de depender da folha de terceiros.",
     "Task-005: substituir o placeholder de /indicators/new pelo formulário completo de criação e edição de indicadores.",
-    "Task-006: implementar o registro diário a partir dos indicadores iniciais e o modo de privacidade visual.",
-    "Ampliar E2E com Firebase Emulator Suite para validar a escrita real de onboarding e sugestões sob as regras de produção.",
-    "Avaliar escopo do marcador de dispensa do convite por UID para evitar preferência compartilhada entre contas no mesmo navegador."
+    "Ampliar o E2E com Firebase Emulator Suite para validar a escrita real de onboarding e sugestões sob as regras de produção.",
+    "Avaliar uma variação do herói da tela 2 com o gráfico radial da referência oficial, hoje substituído por nós flutuantes."
   ]
 }

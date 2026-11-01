@@ -312,6 +312,12 @@ VITE_FIREBASE_MEASUREMENT_ID=...
 - As sugestões usam o modelo estruturado (`group`, `valueType`, `frequency`, `dailyAggregation`, direção/faixa ideal) e o cache local por UID mantém a tela utilizável enquanto as regras de isolamento da task-004 não existem.
 - O convite para salvar a conta é inline, aparece somente após interação útil, pode ser dispensado e não usa modal, foco preso ou bloqueio de navegação. Contas permanentes não recebem o convite.
 
+### Correções do feedback humano (etapa 1-base)
+- Cada tela do tutorial começa no topo: o hook `useScrollToTop` roda na montagem de cada etapa, de modo que avançar ou voltar nunca herda a rolagem da tela anterior.
+- Os ícones das telas do tutorial e do dashboard passam pelo componente `MaterialIcon`, cujo `name` é tipado a partir de uma lista explícita de símbolos existentes na fonte Material Symbols. A lista existe porque um nome inexistente não vira ligature: o navegador imprime o texto literal, o elemento cresce e quebra o chip. O tamanho do ícone é aplicado por estilo inline, porque a folha de terceiros do Google Fonts define `font-size` fora de qualquer camada e vence as utilitárias do Tailwind.
+- A última tela do tutorial tem uma única ação de saída (“Começar a Explorar”), alinhada a `design/onboarding_3_associa_es`; “Pular” e “Concluir” foram removidos por redundância. “Pular” continua disponível nas duas primeiras telas.
+- O herói das telas 1 e 2 usa o mesmo envelope da referência, sem cartão adicional: o palco volta a ter 280 px e os chips flutuantes, compactados, cabem lado a lado sem sobreposição em 390, 430 e 1440 px.
+
 ---
 
 ## 14. Task-004 — Isolamento e exclusão segura
