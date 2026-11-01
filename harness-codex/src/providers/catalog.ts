@@ -86,8 +86,9 @@ export class ModelCatalog {
   ): ModelCandidate {
     const candidates = this.reviewerCandidates(role, implementer, seed);
     const excluded = new Set(excludeAliases);
-    const startIndex = Math.min(Math.max(attempt - 1, 0), candidates.length - 1);
-    const candidate = candidates.slice(startIndex).find((item) => !excluded.has(item.alias));
+    const startIndex = candidates.length ? ((Math.max(attempt - 1, 0) % candidates.length)) : 0;
+    const ordered = [...candidates.slice(startIndex), ...candidates.slice(0, startIndex)];
+    const candidate = ordered.find((item) => !excluded.has(item.alias));
     if (!candidate) throw new Error(`Pool de revisão esgotado para ${role}; não há revisor elegível ainda não tentado.`);
     return candidate;
   }

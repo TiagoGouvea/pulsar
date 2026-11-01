@@ -1049,6 +1049,7 @@ export class Orchestrator {
       "Use apenas ferramentas de leitura. Não considere a autoavaliação do implementador como evidência.",
       `Responda somente JSON. O campo taskId deve ser exatamente "${reviewTask.id}".`,
       "Use outcome ready_for_verification para aprovação, changes_requested quando houver ajustes, ou failed somente se a revisão não puder ser concluída.",
+      "changedFiles, claimedChecks, decisions, blockers e suggestedFollowUps devem ser arrays JSON de strings; use [] quando vazios, nunca objeto ou null. claimedChecks não é evidência.",
       "Inclua taskId, outcome, summary, changedFiles, claimedChecks, decisions, blockers e suggestedFollowUps.",
     ].join("\n\n");
     const estimated = this.ledger.estimate(candidate, Math.ceil(prompt.length / 4), candidate.maxOutputTokens);

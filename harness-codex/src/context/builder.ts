@@ -27,7 +27,8 @@ export async function buildTaskContext(input: {
       : "",
     lessons.length ? `Aprendizados validados:\n${lessons.map((item) => `- ${String(item.recommended_action)} (${String(item.id)})`).join("\n")}` : "",
     "Ao terminar, responda somente JSON válido com: taskId, outcome, summary, changedFiles, claimedChecks, decisions, blockers, suggestedFollowUps.",
-    "outcome deve ser ready_for_verification, blocked ou failed. claimedChecks não é evidência.",
+    "changedFiles, claimedChecks, decisions, blockers e suggestedFollowUps devem ser arrays JSON de strings; use [] quando vazios, nunca objeto ou null. claimedChecks não é evidência.",
+    "outcome deve ser ready_for_verification, blocked ou failed.",
   ].filter(Boolean);
   const prompt = sections.join("\n\n");
   const manifest = {

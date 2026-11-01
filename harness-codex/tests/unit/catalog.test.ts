@@ -36,10 +36,12 @@ describe("roteamento de modelos", () => {
     const secondReviewer = catalog.selectReviewer("functionalReviewer", first, "same", 2);
     const emergencyReviewer = catalog.selectReviewer("functionalReviewer", first, "same", 3);
     const nextUnusedReviewer = catalog.selectReviewer("functionalReviewer", first, "same", 1, [firstReviewer.alias, secondReviewer.alias]);
+    const wrappedReviewer = catalog.selectReviewer("functionalReviewer", first, "same", 8, [secondReviewer.alias, emergencyReviewer.alias]);
     expect(firstReviewer.family).not.toBe(first.family);
     expect(secondReviewer.alias).not.toBe(firstReviewer.alias);
     expect(emergencyReviewer.alias).toBe("diagnostic-d");
     expect(nextUnusedReviewer.alias).toBe("diagnostic-d");
+    expect(wrappedReviewer.alias).toBe(firstReviewer.alias);
     expect(() => catalog.selectReviewer("functionalReviewer", first, "same", 1, [firstReviewer.alias, secondReviewer.alias, emergencyReviewer.alias])).toThrow("Pool de revisão esgotado");
     expect(catalog.isHardTask("Revisar privacidade dos dados")).toBe(true);
   });
