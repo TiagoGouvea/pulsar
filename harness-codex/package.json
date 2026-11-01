@@ -24,6 +24,7 @@
   "dependencies": {
     "@earendil-works/pi-coding-agent": "1.4.0",
     "commander": "15.0.0",
+    "json-llm-repair": "0.1.5",
     "yaml": "2.9.1",
     "zod": "4.6.7"
   },

@@ -57,6 +57,35 @@ describe("contrato estruturado do Pi", () => {
     expect(() => extractResult(JSON.stringify({ ...result, extra: true }), "task-001")).toThrow(/contrato estruturado/);
     expect(() => extractResult(JSON.stringify({ ...result, changedFiles: [1] }), "task-001")).toThrow(/changedFiles inválido/);
   });
+
+  test("usa json-llm-repair para corrigir sintaxe e registra a recuperação", () => {
+    const diagnostics: Array<{ status: string; reason: string }> = [];
+    const malformed = `{taskId: 'task-001', outcome: 'ready_for_verification', summary: 'ok', changedFiles: [], claimedChecks: [], decisions: [], blockers: [], suggestedFollowUps: [],}`;
+    const parsed = extractResult(malformed, "task-001", ["task-001"], (diagnostic) => diagnostics.push(diagnostic));
+
+    expect(parsed.summary).toBe("ok");
+    expect(diagnostics.map(({ status }) => status)).toEqual(["started", "resolved"]);
+    expect(diagnostics[0]?.reason).toMatch(/JSON inválido/);
+  });
+
+  test("registra quando json-llm-repair não resolve tipos inválidos do contrato", () => {
+    const diagnostics: Array<{ status: string; reason: string; detail?: string }> = [];
+
+    expect(() => extractResult(
+      JSON.stringify({ ...result, claimedChecks: [42] }), "task-001", ["task-001"],
+      (diagnostic) => diagnostics.push(diagnostic),
+    )).toThrow(/json-llm-repair foi executado, mas não resolveu o contrato/);
+    expect(diagnostics.map(({ status }) => status)).toEqual(["started", "unresolved"]);
+    expect(diagnostics[1]?.detail).toMatch(/claimedChecks inválido/);
+  });
+
+  test("registra resposta vazia como caso não reparável", () => {
+    const diagnostics: Array<{ status: string; reason: string }> = [];
+
+    expect(() => extractResult("", "task-001", ["task-001"], (diagnostic) => diagnostics.push(diagnostic)))
+      .toThrow(/não pôde ser executado sem conteúdo/);
+    expect(diagnostics).toEqual([expect.objectContaining({ status: "skipped", responseChars: 0 })]);
+  });
 });
 
 describe("protocolo local do Pi", () => {

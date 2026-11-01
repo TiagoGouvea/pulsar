@@ -3,6 +3,7 @@ import {
   ModelRuntime,
   SessionManager,
 } from "@earendil-works/pi-coding-agent";
+import { parseFromLLM } from "json-llm-repair";
 import { appendFileSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -20,6 +21,15 @@ const outcomeAliases = new Map([
   ["revisions_requested", "changes_requested"],
 ]);
 const MAX_RAW_RESPONSE_CHARS = 64_000;
+
+export type ResultRepairDiagnostic = {
+  status: "started" | "resolved" | "unresolved" | "skipped";
+  reason: string;
+  responseChars: number;
+  detail?: string;
+};
+
+type ResultRepairObserver = (diagnostic: ResultRepairDiagnostic) => void;
 
 export function localApiFor(candidate: ModelCandidate): "openai-completions" | "openai-responses" {
   return candidate.family === "gpt-oss" || candidate.modelId.includes("gpt-oss")
@@ -230,35 +240,99 @@ export function extractResult(
   text: string | undefined,
   taskId: string,
   acceptedTaskIds: string[] = [taskId],
+  observeRepair?: ResultRepairObserver,
 ): ExecutionResult {
-  if (!text) throw new Error("A sessão Pi terminou sem resposta textual.");
+  if (!text?.trim()) {
+    observeRepair?.({
+      status: "skipped", reason: "resposta vazia; não há texto para reparar", responseChars: 0,
+    });
+    throw new Error("A sessão Pi terminou sem resposta textual; json-llm-repair não pôde ser executado sem conteúdo.");
+  }
   const fenced = /```(?:json)?\s*([\s\S]*?)```/i.exec(text)?.[1];
   const first = text.indexOf("{");
   const last = text.lastIndexOf("}");
   const raw = fenced ?? (first >= 0 && last > first ? text.slice(first, last + 1) : text);
-  const parsed = JSON.parse(raw) as Record<string, unknown>;
-  if (Object.keys(parsed).length !== resultKeys.length || !resultKeys.every((key) => key in parsed) || typeof parsed.taskId !== "string") {
-    throw new Error("Resultado do Pi não atende ao contrato estruturado da tarefa.");
-  }
-  for (const key of ["summary"] as const) {
-    if (typeof parsed[key] !== "string") throw new Error(`Resultado do Pi retornou ${key} inválido.`);
-  }
-  for (const key of ["changedFiles", "claimedChecks", "decisions", "blockers", "suggestedFollowUps"] as const) {
-    const value = parsed[key];
-    if (!Array.isArray(value) || value.some((item) => typeof item !== "string")) {
-      throw new Error(`Resultado do Pi retornou ${key} inválido.`);
+  let parsed: unknown;
+  let repairReason: string | undefined;
+  let initialParseError: unknown;
+  try {
+    parsed = JSON.parse(raw) as unknown;
+  } catch (error) {
+    initialParseError = error;
+    repairReason = "JSON inválido ou resposta com texto fora do objeto";
+    observeRepair?.({
+      status: "started", reason: repairReason, responseChars: text.length,
+      detail: safeError(error),
+    });
+    try {
+      parsed = parseFromLLM(text, { mode: "repair" });
+    } catch (repairError) {
+      const detail = `JSON original: ${safeError(initialParseError)}; parser: ${safeError(repairError)}`;
+      observeRepair?.({ status: "unresolved", reason: repairReason, responseChars: text.length, detail });
+      throw new Error(`json-llm-repair não conseguiu extrair/reparar o JSON. ${detail}`);
     }
   }
-  if (!acceptedTaskIds.includes(parsed.taskId)) {
-    throw new Error(`Resultado do Pi retornou taskId inesperado: ${parsed.taskId}.`);
+
+  const validate = (value: unknown): ExecutionResult => {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+      throw new Error("Resultado do Pi não é um objeto JSON.");
+    }
+    const resultValue = value as Record<string, unknown>;
+    if (Object.keys(resultValue).length !== resultKeys.length || !resultKeys.every((key) => key in resultValue) || typeof resultValue.taskId !== "string") {
+      throw new Error("Resultado do Pi não atende ao contrato estruturado da tarefa.");
+    }
+    if (typeof resultValue.summary !== "string") throw new Error("Resultado do Pi retornou summary inválido.");
+    for (const key of ["changedFiles", "claimedChecks", "decisions", "blockers", "suggestedFollowUps"] as const) {
+      const field = resultValue[key];
+      if (!Array.isArray(field) || field.some((item) => typeof item !== "string")) {
+        throw new Error(`Resultado do Pi retornou ${key} inválido.`);
+      }
+    }
+    if (!acceptedTaskIds.includes(resultValue.taskId)) {
+      throw new Error(`Resultado do Pi retornou taskId inesperado: ${resultValue.taskId}.`);
+    }
+    if (typeof resultValue.outcome !== "string") throw new Error("Resultado do Pi retornou outcome inválido.");
+    resultValue.outcome = outcomeAliases.get(resultValue.outcome) ?? resultValue.outcome;
+    if (!resultOutcomes.has(resultValue.outcome as string)) {
+      throw new Error(`Resultado do Pi retornou outcome inesperado: ${String(resultValue.outcome)}.`);
+    }
+    resultValue.taskId = taskId;
+    return resultValue as unknown as ExecutionResult;
+  };
+
+  try {
+    const result = validate(parsed);
+    if (repairReason) {
+      observeRepair?.({ status: "resolved", reason: repairReason, responseChars: text.length });
+    }
+    return result;
+  } catch (validationError) {
+    if (!repairReason) {
+      repairReason = "JSON válido, mas incompatível com o contrato do harness";
+      observeRepair?.({
+        status: "started", reason: repairReason, responseChars: text.length,
+        detail: safeError(validationError),
+      });
+      try {
+        parsed = parseFromLLM(text, { mode: "repair" });
+      } catch (repairError) {
+        const detail = `Contrato: ${safeError(validationError)}; parser: ${safeError(repairError)}`;
+        observeRepair?.({ status: "unresolved", reason: repairReason, responseChars: text.length, detail });
+        throw new Error(`json-llm-repair não resolveu a resposta incompatível com o contrato. ${detail}`);
+      }
+    }
+    try {
+      const result = validate(parsed);
+      observeRepair?.({ status: "resolved", reason: repairReason, responseChars: text.length });
+      return result;
+    } catch (finalValidationError) {
+      const detail = safeError(finalValidationError);
+      observeRepair?.({
+        status: "unresolved", reason: repairReason, responseChars: text.length, detail,
+      });
+      throw new Error(`json-llm-repair foi executado, mas não resolveu o contrato: ${detail}`);
+    }
   }
-  if (typeof parsed.outcome !== "string") throw new Error("Resultado do Pi retornou outcome inválido.");
-  parsed.outcome = outcomeAliases.get(parsed.outcome) ?? parsed.outcome;
-  if (!resultOutcomes.has(parsed.outcome as string)) {
-    throw new Error(`Resultado do Pi retornou outcome inesperado: ${String(parsed.outcome)}.`);
-  }
-  parsed.taskId = taskId;
-  return parsed as unknown as ExecutionResult;
 }
 
 async function createRuntime(candidate: ModelCandidate): Promise<{ runtime: ModelRuntime; model: NonNullable<ReturnType<ModelRuntime["getModel"]>> }> {
@@ -334,6 +408,7 @@ export class PiExecutor implements Executor {
           phase: failure.phase, errorPath,
           ...(["response_parse", "timeout"].includes(failure.phase) ? { rawResponsePath } : {}),
           ...(enteredSession ? { tracePath } : {}),
+          ...(failure.phase === "response_parse" ? { responseRepairLogPath: path.join(request.outputDirectory, "response-repair.jsonl") } : {}),
           ...(request.candidate.modality === "local" ? { localModelLifecyclePath: path.join(request.outputDirectory, "local-model-lifecycle.json") } : {}),
         },
       };
@@ -364,6 +439,23 @@ export class PiExecutor implements Executor {
     } catch (error) { throw new PiExecutionError("session_setup", error); }
     const { session } = created;
     const tracePath = path.join(request.outputDirectory, "session-trace.jsonl");
+    const responseRepairLogPath = path.join(request.outputDirectory, "response-repair.jsonl");
+    const observeResponseRepair: ResultRepairObserver = (diagnostic) => {
+      const safeDiagnostic = {
+        at: nowUtc(),
+        ...diagnostic,
+        ...(diagnostic.detail ? { detail: redact(diagnostic.detail, this.config.security.redactPatterns) } : {}),
+      };
+      appendFileSync(responseRepairLogPath, `${JSON.stringify(safeDiagnostic)}\n`, { encoding: "utf8", mode: 0o600 });
+      const status = {
+        started: "acionado",
+        resolved: "recuperou resposta válida",
+        unresolved: "não resolveu; revisar o caso para ampliar o parser",
+        skipped: "não pôde atuar",
+      }[diagnostic.status];
+      const detail = safeDiagnostic.detail ? ` · ${safeDiagnostic.detail.replace(/\s+/g, " ").slice(0, 400)}` : "";
+      console.log(`[${safeDiagnostic.at}] json-llm-repair · ${status} · ${diagnostic.reason} · ${diagnostic.responseChars} caracteres · log ${responseRepairLogPath}${detail}`);
+    };
     appendFileSync(tracePath, `${JSON.stringify({
       at: nowUtc(), type: "session_start", provider: request.candidate.provider,
       modelId: request.candidate.modelId, alias: request.candidate.alias,
@@ -386,15 +478,11 @@ export class PiExecutor implements Executor {
       if (timeoutState.triggered) throw new PiExecutionError("timeout", new Error(`Sessão excedeu ${request.timeoutMs} ms.`));
       const initialResponse = lastAssistantOutput(session.messages, session.getLastAssistantText());
       let rawResponse = initialResponse;
-      const saveRawResponse = async (): Promise<void> => {
-        let diagnosticResponse = rawResponse ?? "[EMPTY RESPONSE]";
-        try {
-          diagnosticResponse = JSON.stringify(extractResult(
-            rawResponse, request.task.id, request.acceptedResultTaskIds ?? [request.task.id],
-          ));
-        } catch {
-          diagnosticResponse = `[UNPARSEABLE RESPONSE OMITTED; chars=${diagnosticResponse.length}]`;
-        }
+      const saveRawResponse = async (parsedResult?: ExecutionResult): Promise<void> => {
+        const original = rawResponse ?? "[EMPTY RESPONSE]";
+        const diagnosticResponse = parsedResult
+          ? JSON.stringify(parsedResult)
+          : `[UNPARSEABLE RESPONSE OMITTED; chars=${original.length}]`;
         const safeResponse = redact(diagnosticResponse, this.config.security.redactPatterns);
         const truncated = safeResponse.length > MAX_RAW_RESPONSE_CHARS;
         await writeFile(
@@ -409,6 +497,7 @@ export class PiExecutor implements Executor {
         result = extractResult(
           initialResponse, request.task.id,
           request.acceptedResultTaskIds ?? [request.task.id],
+          observeResponseRepair,
         );
       } catch (error) {
         initialParseError = error;
@@ -430,6 +519,7 @@ export class PiExecutor implements Executor {
           result = extractResult(
             repairedResponse, request.task.id,
             request.acceptedResultTaskIds ?? [request.task.id],
+            observeResponseRepair,
           );
         } catch (repairParseError) {
           await saveRawResponse();
@@ -439,7 +529,7 @@ export class PiExecutor implements Executor {
           );
         }
       }
-      await saveRawResponse();
+      await saveRawResponse(result);
       const stats = session.getSessionStats();
       result.usage = {
         inputTokens: stats.tokens.input,
