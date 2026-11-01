@@ -8,6 +8,8 @@ import { writeJson } from "../utils/core.js";
 export interface VisualEvidence {
   viewport: number;
   screenshot: string;
+  navigationError?: string;
+  screenshotError?: string;
   consoleErrors: string[];
   failedRequests: string[];
   horizontalOverflow: boolean;
@@ -30,22 +32,33 @@ export async function captureVisualEvidence(input: {
       const failedRequests: string[] = [];
       page.on("console", (message) => { if (message.type() === "error") consoleErrors.push(message.text()); });
       page.on("requestfailed", (request) => failedRequests.push(`${request.method()} ${request.url()}`));
-      await page.goto(input.url, { waitUntil: "networkidle" });
-      await page.evaluate(() => document.fonts.ready);
-      await page.addScriptTag({ content: axe.source });
-      const accessibility = await page.evaluate(async () => {
-        const runner = (window as typeof window & { axe: { run(): Promise<{ violations: Array<{ id: string; impact: string | null; help: string; nodes: Array<{ target: string[] }> }> }> } }).axe;
-        return runner.run();
-      });
-      const horizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
-      const screenshot = path.join(input.outputDirectory, `viewport-${width}.png`);
-      await page.screenshot({ path: screenshot, fullPage: true });
-      evidence.push({
-        viewport: width, screenshot, consoleErrors, failedRequests, horizontalOverflow,
-        accessibilityViolations: accessibility.violations.map((violation) => ({
+      let navigationError: string | undefined;
+      let screenshotError: string | undefined;
+      let horizontalOverflow = false;
+      let accessibilityViolations: VisualEvidence["accessibilityViolations"] = [];
+      try {
+        await page.goto(input.url, { waitUntil: "domcontentloaded", timeout: 30_000 });
+        await page.evaluate(() => document.fonts.ready);
+        await page.addScriptTag({ content: axe.source });
+        const accessibility = await page.evaluate(async () => {
+          const runner = (window as typeof window & { axe: { run(): Promise<{ violations: Array<{ id: string; impact: string | null; help: string; nodes: Array<{ target: string[] }> }> }> } }).axe;
+          return runner.run();
+        });
+        accessibilityViolations = accessibility.violations.map((violation) => ({
           id: violation.id, impact: violation.impact, help: violation.help, nodes: violation.nodes.length,
           targets: violation.nodes.flatMap((node) => node.target),
-        })),
+        }));
+        horizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+      } catch (error) {
+        navigationError = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+      }
+      const screenshot = path.join(input.outputDirectory, `viewport-${width}.png`);
+      try { await page.screenshot({ path: screenshot, fullPage: true, timeout: 15_000 }); }
+      catch (error) { screenshotError = error instanceof Error ? `${error.name}: ${error.message}` : String(error); }
+      evidence.push({
+        viewport: width, screenshot, ...(navigationError ? { navigationError } : {}),
+        ...(screenshotError ? { screenshotError } : {}), consoleErrors, failedRequests, horizontalOverflow,
+        accessibilityViolations,
       });
       await context.close();
     }

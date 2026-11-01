@@ -45,6 +45,40 @@ describe("controlador", () => {
     } finally { orchestrator.close(); }
   });
 
+  test("envia feedback para uma tarefa isolada e preserva todas as tarefas de implementação", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "harness-human-corrections-"));
+    const config = await createTestConfig(root);
+    const orchestrator = new Orchestrator(config);
+    try {
+      const runId = await orchestrator.run();
+      const before = orchestrator.store.listTasks(runId);
+      const milestoneId = String(before[0]?.milestone_id);
+      const feedback = "- Ao salvar um item, manter os dados anteriores visíveis até a confirmação.\n- Não alterar outras telas.";
+      const feedbackPath = await orchestrator.importFeedbackContent(runId, feedback, "human-corrections", milestoneId);
+      const correction = orchestrator.store.listTasks(runId).find((item) => item.id === `human-corrections-${milestoneId}`);
+
+      expect(correction?.state).toBe("changes_requested");
+      expect(JSON.parse(String(correction?.dependencies_json))).toEqual(before.map((item) => item.id));
+      expect(before.every((item) => orchestrator.store.listTasks(runId).find((current) => current.id === item.id)?.state === "passed")).toBe(true);
+      expect(orchestrator.store.getRun(runId)?.state).toBe("paused");
+
+      const prompt = await buildTaskContext({
+        config, store: orchestrator.store, runId,
+        task: {
+          id: String(correction?.id), runId, milestoneId, title: String(correction?.title), description: String(correction?.description),
+          state: "changes_requested", role: "implementer", requirementIds: [],
+          dependencies: JSON.parse(String(correction?.dependencies_json)) as string[],
+          acceptanceCriteria: JSON.parse(String(correction?.acceptance_json)) as string[],
+          plannedFiles: [], maxAttempts: Number(correction?.max_attempts),
+        },
+        requirements: [], attemptDirectory: path.join(root, "correction-attempt"),
+      });
+      expect(prompt).toContain("Não amplie o escopo");
+      expect(prompt).toContain(feedback);
+      expect(await readFile(feedbackPath, "utf8")).toContain("Não alterar outras telas");
+    } finally { orchestrator.close(); }
+  });
+
   test("executa fake, verifica e pausa no gate sem duplicar tarefas", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "harness-run-"));
     const config = await createTestConfig(root);

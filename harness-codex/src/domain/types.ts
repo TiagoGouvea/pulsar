@@ -79,6 +79,7 @@ export interface ExecutionRequest {
   outputDirectory: string;
   readOnly?: boolean | undefined;
   acceptedResultTaskIds?: string[] | undefined;
+  timeZone?: string | undefined;
 }
 
 export interface ExecutionResult {

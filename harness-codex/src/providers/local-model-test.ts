@@ -3,6 +3,7 @@ import path from "node:path";
 import type { HarnessConfig } from "../config/schema.js";
 import type { ModelCandidate } from "../domain/types.js";
 import { nowUtc, writeJson } from "../utils/core.js";
+import { terminalTimestamp } from "../utils/terminal.js";
 import { openAiEndpoint } from "./probes.js";
 import { listLmStudioModels, loadLmStudioModel, unloadLmStudioModels, withLmStudioModel, type LocalModelDiagnostic } from "./lmstudio.js";
 
@@ -163,14 +164,14 @@ export async function testStructuredLocalModels(
     const variants: StructuredOutputVariantResult["variant"][] = candidate.family === "gpt-oss"
       ? ["responses-json-schema", "chat-json-schema"]
       : ["chat-json-schema", "chat-json-schema-no-thinking"];
-    onProgress?.(`${nowUtc()} · test-json · início · ${candidate.alias} [local]`);
+    onProgress?.(`${terminalTimestamp(new Date(), config.project.timezone)} · test-json · início · ${candidate.alias} [local]`);
     try {
       const modelResults = await withLmStudioModel(config, candidate, async () => {
         const calls: StructuredOutputVariantResult[] = [];
         for (const variant of variants) {
           const result = await runStructuredVariant(candidate, variant);
           calls.push(result);
-          onProgress?.(`${nowUtc()} · test-json · ${result.status} · ${candidate.alias} · ${variant} · ${result.durationMs ?? "—"} ms${result.error ? ` · ${result.error.replace(/\s+/g, " ").slice(0, 300)}` : ""}`);
+          onProgress?.(`${terminalTimestamp(new Date(), config.project.timezone)} · test-json · ${result.status} · ${candidate.alias} · ${variant} · ${result.durationMs ?? "—"} ms${result.error ? ` · ${result.error.replace(/\s+/g, " ").slice(0, 300)}` : ""}`);
         }
         return calls;
       }, (diagnostic) => {
@@ -181,7 +182,7 @@ export async function testStructuredLocalModels(
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       for (const variant of variants) results.push({ alias: candidate.alias, modelId: candidate.modelId, variant, endpoint: "not-called", status: "load_error", outputChannel: null, durationMs: null, response: null, error: message });
-      onProgress?.(`${nowUtc()} · test-json · load_error · ${candidate.alias} · ${message.replace(/\s+/g, " ").slice(0, 500)}`);
+      onProgress?.(`${terminalTimestamp(new Date(), config.project.timezone)} · test-json · load_error · ${candidate.alias} · ${message.replace(/\s+/g, " ").slice(0, 500)}`);
     }
   }
   return { results, lifecycle };
@@ -213,7 +214,7 @@ export async function testLocalModels(
 ): Promise<LocalModelTestResult[]> {
   const results: LocalModelTestResult[] = [];
   for (const candidate of candidates) {
-    onProgress?.(`${nowUtc()} · test-local · início · ${candidate.alias} (${candidate.modelId})`);
+    onProgress?.(`${terminalTimestamp(new Date(), config.project.timezone)} · test-local · início · ${candidate.alias} (${candidate.modelId})`);
     const baseUrl = candidate.endpoint ?? config.localInference.baseUrl;
     const result: LocalModelTestResult = {
       alias: candidate.alias,
@@ -294,7 +295,7 @@ export async function testLocalModels(
         }
       }
       results.push(result);
-      onProgress?.(`${nowUtc()} · test-local · ${result.status} · ${candidate.alias} · carga=${result.loadDurationMs ?? "—"}ms · resposta=${result.responseDurationMs ?? "—"}ms · geração=${result.generationDurationMs ?? "—"}ms${result.error ? ` · ${result.error}` : ""}`);
+      onProgress?.(`${terminalTimestamp(new Date(), config.project.timezone)} · test-local · ${result.status} · ${candidate.alias} · carga=${result.loadDurationMs ?? "—"}ms · resposta=${result.responseDurationMs ?? "—"}ms · geração=${result.generationDurationMs ?? "—"}ms${result.error ? ` · ${result.error}` : ""}`);
     }
   }
   return results;

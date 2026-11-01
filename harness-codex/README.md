@@ -13,7 +13,9 @@ yarn install --frozen-lockfile
 # Verificações de ambiente e ferramentas
 yarn harness doctor --config harness.config.yaml
 yarn harness preflight --config harness.config.yaml
-yarn harness models test-local --config harness.config.yaml
+yarn harness models list --config harness.config.yaml
+# Smoke real, limitado ao alias escolhido; confere runtime Pi, tool de leitura e contrato JSON
+yarn harness models probe --config harness.config.yaml --alias deepseek-code --inference
 
 # Execução do ciclo autônomo
 yarn harness run --config harness.config.yaml
@@ -29,7 +31,7 @@ yarn harness pause --config harness.config.yaml --run <runId>
 yarn harness resume --config harness.config.yaml --run <runId>
 
 # Aprovação humana e relatórios
-yarn harness feedback import --config harness.config.yaml --run <runId> --task <taskId> --file ./human-feedback.md
+yarn harness feedback import --config harness.config.yaml --run <runId> --milestone <etapa> --task human-corrections --file ./feedback.md
 yarn harness approve --config harness.config.yaml --run <runId> --milestone <milestoneId> --revision <revision>
 yarn harness budget --config harness.config.yaml --run <runId>
 yarn harness report --config harness.config.yaml --run <runId>
@@ -37,6 +39,12 @@ yarn harness hosting snapshot --config harness.config.yaml --run <runId> --miles
 ```
 
 Logs, recuperação após crash, limites interativos e checagens Firebase: [Operação e recuperação](docs/OPERACAO_E_RECUPERACAO.md).
+
+## Preparação da etapa `2-registro`
+
+A política de modelos, fluxo de correções humanas, revisão visual e saída de terminal preparados para a próxima etapa estão descritos em [Preparação 2-registro](docs/PREPARACAO-2-REGISTRO.md). Modelos locais ficam cadastrados, mas desabilitados e fora de todos os pools; Claude não é usado.
+
+Após cada gate humano, o terminal imprime o comando exato para aprovar ou importar correções, o estado, progresso da etapa/projeto, custos, relatório, snapshot e etapa seguinte. O harness não troca de branch: a seleção continua manual.
 
 ## Política de branches
 

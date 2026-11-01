@@ -8,7 +8,7 @@ import { runProcess } from "../utils/process.js";
 export interface VerificationSummary {
   passed: boolean;
   revision: string;
-  results: Array<{ id: string; status: "passed" | "failed" | "skipped"; exitCode: number | null; outputPath?: string }>;
+  results: Array<{ id: string; status: "passed" | "failed" | "skipped"; exitCode: number | null; outputPath?: string; artifactPath?: string }>;
 }
 
 export async function verifyCommands(input: {
@@ -34,11 +34,13 @@ export async function verifyCommands(input: {
     }
     const verifierId = createId("verification");
     const outputPath = path.join(input.outputDirectory, `${name}.log`);
+    const artifactPath = name === "e2e" ? path.join(input.outputDirectory, "e2e-artifacts") : undefined;
     const startedAt = nowUtc();
     const result = await runProcess(command, {
       cwd: input.config.project.workspace,
       timeoutMs: input.config.execution.taskTimeoutMinutes * 60_000,
       outputPath,
+      ...(artifactPath ? { env: { ...process.env, PLAYWRIGHT_OUTPUT_DIR: artifactPath } } : {}),
       redactPatterns: input.config.security.redactPatterns,
     });
     const status = result.exitCode === 0 && !result.timedOut ? "passed" : "failed";
@@ -47,7 +49,7 @@ export async function verifyCommands(input: {
        command_json, exit_code, output_path, started_at, finished_at) VALUES (?, ?, ?, ?, ?, '1', ?, ?, ?, ?, ?, ?)`,
       verifierId, input.runId, input.taskId ?? null, revision, name, status, JSON.stringify(command), result.exitCode, outputPath, startedAt, nowUtc(),
     );
-    results.push({ id: name, status, exitCode: result.exitCode, outputPath });
+    results.push({ id: name, status, exitCode: result.exitCode, outputPath, ...(artifactPath ? { artifactPath } : {}) });
     if (status === "failed") break;
   }
   const summary = { passed: results.every((item) => item.status !== "failed"), revision, results };

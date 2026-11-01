@@ -47,8 +47,13 @@ export class ModelCatalog {
     return (candidates.find((candidate) => !excluded.has(candidate.alias)) ?? candidates[0]) as ModelCandidate;
   }
 
-  reviewerCandidates(role: Role, implementer: ModelCandidate, seed: string = role): ModelCandidate[] {
-    const eligible = this.eligible(role, ["text"]).filter((candidate) => candidate.executor === this.config.execution.executor);
+  reviewerCandidates(
+    role: Role,
+    implementer: ModelCandidate,
+    seed: string = role,
+    required: ModelCandidate["capabilities"] = role === "visualReviewer" ? ["text", "tools", "vision"] : ["text", "tools"],
+  ): ModelCandidate[] {
+    const eligible = this.eligible(role, required).filter((candidate) => candidate.executor === this.config.execution.executor);
     const aliases = this.configuredPool(role, false);
     const ordered = aliases
       ? aliases.map((alias) => eligible.find((candidate) => candidate.alias === alias)).filter((candidate): candidate is ModelCandidate => Boolean(candidate))
@@ -69,8 +74,7 @@ export class ModelCatalog {
         && candidate.enabled
         && candidate.executor === this.config.execution.executor
         && candidate.family !== implementer.family
-        && candidate.capabilities.includes("text")
-        && candidate.capabilities.includes("tools")
+        && required.every((capability) => candidate.capabilities.includes(capability))
         && !primaryAliases.has(candidate.alias),
       ))
       .sort((left, right) => Number(right.modality === "local") - Number(left.modality === "local"));
@@ -83,8 +87,9 @@ export class ModelCatalog {
     seed: string = role,
     attempt = 1,
     excludeAliases: string[] = [],
+    required: ModelCandidate["capabilities"] = role === "visualReviewer" ? ["text", "tools", "vision"] : ["text", "tools"],
   ): ModelCandidate {
-    const candidates = this.reviewerCandidates(role, implementer, seed);
+    const candidates = this.reviewerCandidates(role, implementer, seed, required);
     const excluded = new Set(excludeAliases);
     const startIndex = candidates.length ? ((Math.max(attempt - 1, 0) % candidates.length)) : 0;
     const ordered = [...candidates.slice(startIndex), ...candidates.slice(0, startIndex)];

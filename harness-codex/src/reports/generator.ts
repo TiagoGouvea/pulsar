@@ -314,10 +314,13 @@ export async function writeHumanReview(input: {
     ...requirements.map((requirement) => `- ${String(requirement.id)} → ${tasks.filter((task) => String(task.requirement_ids_json).includes(String(requirement.id))).map((task) => String(task.id)).join(", ") || "sem tarefa"}`), "",
     "## Roteiro humano", "",
     "1. Inicie o projeto alvo conforme seu README.",
-    "2. Execute os comportamentos descritos nos critérios dos requisitos acima.",
-    "3. Registre ajustes em um arquivo e importe com `feedback import` ou aprove a revisão exata.", "",
+    "2. Teste no snapshot publicado e no celular; registre cada ajuste como um item objetivo, com o comportamento esperado.",
+    "3. Para pedir ajustes, importe o arquivo no destino `human-corrections`. O harness cria uma tarefa isolada, preserva as tarefas originais e volta a executar as verificações e o gate humano.",
+    `   Exemplo: \`yarn harness feedback import --config harness.config.yaml --run ${input.runId} --milestone ${input.milestoneId} --task human-corrections --file ./feedback.md\``,
+    "4. Para aprovar esta revisão exata, use o comando impresso no terminal ou `yarn harness approve` com o hash de revisão acima.",
+    "5. Depois do aceite, a próxima etapa exige que a pessoa selecione/crie manualmente o branch desejado e rode `yarn harness resume`; o harness nunca troca de branch.", "",
     "## Decisões e dúvidas", "", "Nenhuma dúvida adicional foi criada automaticamente.", "",
-    "## Limitações", "", "Probes remotos e revisão visual por visão permanecem pendentes quando não há credencial/modelo elegível.", "",
+    "## Limitações", "", "A aprovação humana continua necessária. A tarefa `human-corrections` cobre apenas os pedidos enviados no feedback; itens ambíguos devem ser esclarecidos em vez de ampliar o escopo.", "",
     "## Atribuição de trabalho", "", "Consulte `../../work-attribution.md` para tentativas, modelos, arquivos tocados e feedback.", "",
   ].join("\n");
   await writeWorkAttributionReport(input.config, input.store, input.runId, input.milestoneId);

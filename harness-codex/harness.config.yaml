@@ -91,15 +91,15 @@ review:
     - 1440
 routing:
   pools:
-    planner: [gemini-mid, sol-top, openai-sol, local-review, local-gptoss-gguf, local-qwen, local-qwen-optiq]
-    testAuthor: [gemini-mid, terra-review, qwen-code, sol-top, local-coder, local-coder-mlx, local-qwen, local-qwen-optiq]
-    implementer: [deepseek-code, minimax-flash, qwen-code, local-qwen, local-qwen-optiq, local-coder, local-coder-mlx, local-review, local-gptoss-gguf, glm-cheap]
-    hardImplementer: [sol-top, openai-sol, gemini-mid, terra-review, local-coder, local-coder-mlx, local-review, local-gptoss-gguf, deepseek-code]
-    functionalReviewer: [gemini-mid, terra-review, luna-cheap, local-review, local-gptoss-gguf, local-qwen, local-qwen-optiq, local-coder, local-coder-mlx]
-    visualReviewer: [gemini-mid, terra-review, glm-cheap]
-    securityReviewer: [sol-top, openai-sol, gemini-mid, terra-review, local-review, local-gptoss-gguf, local-qwen, local-qwen-optiq, local-coder, local-coder-mlx]
-    diagnostic: [luna-cheap, glm-cheap, deepseek-code, minimax-flash, local-qwen, local-qwen-optiq, local-coder, local-coder-mlx, local-review, local-gptoss-gguf]
-    learningAnalyst: [gemini-mid, terra-review, local-review, local-gptoss-gguf, local-qwen, local-qwen-optiq]
+    planner: [terra-review, gemini-mid, glm-5, sol-top]
+    testAuthor: [terra-review, glm-5, deepseek-code, qwen-code, gemini-mid, minimax-flash]
+    implementer: [deepseek-code, glm-5, minimax-flash, kimi-pro, qwen-code, terra-review]
+    hardImplementer: [terra-review, kimi-pro, sol-top, openai-sol]
+    functionalReviewer: [gemini-mid, glm-5, glm-cheap, terra-review, kimi-pro]
+    visualReviewer: [gemini-mid, gemini-argon, terra-review]
+    securityReviewer: [gemini-argon, terra-review, sol-top, openai-sol, glm-5]
+    diagnostic: [glm-5, deepseek-code, minimax-flash, gemini-mid, luna-cheap]
+    learningAnalyst: [gemini-mid, terra-review, glm-5]
   hardTaskPatterns:
     - firestore|security rules|auth|privacidade|exclusão de conta
     - estatística|correlação|significância|insight
@@ -183,6 +183,48 @@ models:
     inputUsdPerMillion: "0.75"
     outputUsdPerMillion: "3.75"
     credentialEnv: OPENROUTER_API_KEY
+  - alias: gemini-argon
+    executor: pi
+    provider: openrouter
+    modelId: google/gemini-4-argon
+    family: google-gemini-4
+    modality: metered_api
+    capabilities: [text, vision, tools, reasoning]
+    roles: [planner, testAuthor, functionalReviewer, visualReviewer, securityReviewer, learningAnalyst]
+    enabled: true
+    contextTokens: 1000000
+    maxOutputTokens: 8192
+    inputUsdPerMillion: "2"
+    outputUsdPerMillion: "10"
+    credentialEnv: OPENROUTER_API_KEY
+  - alias: glm-5
+    executor: pi
+    provider: openrouter
+    modelId: z-ai/glm-5.3
+    family: glm-5.3
+    modality: metered_api
+    capabilities: [text, tools, reasoning]
+    roles: [planner, implementer, testAuthor, functionalReviewer, securityReviewer, diagnostic, learningAnalyst]
+    enabled: true
+    contextTokens: 1050000
+    maxOutputTokens: 8192
+    inputUsdPerMillion: "0.07"
+    outputUsdPerMillion: "1.40"
+    credentialEnv: OPENROUTER_API_KEY
+  - alias: kimi-pro
+    executor: pi
+    provider: openrouter
+    modelId: moonshotai/kimi-k3.1-pro
+    family: kimi-k3.1
+    modality: metered_api
+    capabilities: [text, vision, tools, reasoning]
+    roles: [implementer, testAuthor, functionalReviewer, visualReviewer, securityReviewer]
+    enabled: true
+    contextTokens: 1000000
+    maxOutputTokens: 8192
+    inputUsdPerMillion: "2"
+    outputUsdPerMillion: "10"
+    credentialEnv: OPENROUTER_API_KEY
   - alias: deepseek-code
     executor: pi
     provider: openrouter
@@ -194,7 +236,7 @@ models:
     enabled: true
     contextTokens: 1050000
     maxOutputTokens: 8192
-    inputUsdPerMillion: "0.05"
+    inputUsdPerMillion: "0.15"
     outputUsdPerMillion: "0.60"
     credentialEnv: OPENROUTER_API_KEY
   - alias: minimax-flash
@@ -246,12 +288,12 @@ models:
     family: glm-5
     modality: metered_api
     capabilities: [text, tools, reasoning]
-    roles: [implementer, diagnostic, visualReviewer]
+    roles: [implementer, diagnostic, functionalReviewer, visualReviewer]
     enabled: true
     contextTokens: 131072
     maxOutputTokens: 4096
     inputUsdPerMillion: "0.075"
-    outputUsdPerMillion: "0.25"
+    outputUsdPerMillion: "0.30"
     credentialEnv: OPENROUTER_API_KEY
   - alias: local-qwen
     executor: pi
@@ -272,7 +314,7 @@ models:
       - securityReviewer
       - diagnostic
       - learningAnalyst
-    enabled: true
+    enabled: false
     contextTokens: 24576
     maxOutputTokens: 2048
   - alias: local-coder
@@ -292,7 +334,7 @@ models:
       - functionalReviewer
       - securityReviewer
       - diagnostic
-    enabled: true
+    enabled: false
     contextTokens: 8192
     maxOutputTokens: 2048
   - alias: local-qwen-optiq
@@ -304,7 +346,7 @@ models:
     modality: local
     capabilities: [text, tools, reasoning]
     roles: [planner, implementer, testAuthor, functionalReviewer, diagnostic, securityReviewer, learningAnalyst]
-    enabled: true
+    enabled: false
     contextTokens: 24576
     maxOutputTokens: 2048
   - alias: local-coder-mlx
@@ -316,7 +358,7 @@ models:
     modality: local
     capabilities: [text, tools, reasoning]
     roles: [implementer, testAuthor, functionalReviewer, diagnostic, securityReviewer]
-    enabled: true
+    enabled: false
     contextTokens: 8192
     maxOutputTokens: 2048
   - alias: local-review
@@ -337,7 +379,7 @@ models:
       - functionalReviewer
       - securityReviewer
       - learningAnalyst
-    enabled: true
+    enabled: false
     contextTokens: 8192
     maxOutputTokens: 2048
   - alias: local-gptoss-gguf
@@ -349,7 +391,7 @@ models:
     modality: local
     capabilities: [text, tools, reasoning]
     roles: [planner, implementer, functionalReviewer, diagnostic, securityReviewer, learningAnalyst]
-    enabled: true
+    enabled: false
     contextTokens: 8192
     maxOutputTokens: 2048
 storage:

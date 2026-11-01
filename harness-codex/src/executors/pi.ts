@@ -12,6 +12,7 @@ import type { ExecutionRequest, ExecutionResult, ModelCandidate } from "../domai
 import { withLmStudioModel, type LocalModelDiagnostic } from "../providers/lmstudio.js";
 import { redact } from "../security/redaction.js";
 import { nowUtc, safeError, writeJson } from "../utils/core.js";
+import { colorTerminal, terminalLog, terminalTimestamp } from "../utils/terminal.js";
 import type { Executor } from "./types.js";
 
 const resultKeys = ["taskId", "outcome", "summary", "changedFiles", "claimedChecks", "decisions", "blockers", "suggestedFollowUps"];
@@ -197,7 +198,8 @@ function startLiveProgress(request: ExecutionRequest, tracePath: string, redacti
       idleMs: Date.now() - lastActivityAt, lastEvent, trail: trail.slice(-8),
     }) + (outcome ? ` · resultado ${outcome}` : "");
     if (printedSummaries > 0 && markersSinceSummary > 0) process.stdout.write("\n");
-    process.stdout.write(`[${nowUtc()}] ${current}\n`);
+    const tone = outcome === "success" ? "green" : outcome === "failure" ? "red" : "blue";
+    process.stdout.write(colorTerminal(`[${terminalTimestamp(new Date(), request.timeZone)}] ${current}`, tone) + "\n");
     printedSummaries += 1;
     markersSinceSummary = 0;
   };
@@ -206,7 +208,7 @@ function startLiveProgress(request: ExecutionRequest, tracePath: string, redacti
     log(message, at = nowUtc()) {
       if (markersSinceSummary > 0) process.stdout.write("\n");
       markersSinceSummary = 0;
-      process.stdout.write(`[${at}] ${message}\n`);
+      terminalLog(message, { at, timeZone: request.timeZone, tone: /não resolveu|não pôde|falha|failed/i.test(message) ? "red" : /acionado|alerta|warning/i.test(message) ? "yellow" : undefined });
     },
     event(summary) {
       sequence += 1;
@@ -234,7 +236,7 @@ function startLiveProgress(request: ExecutionRequest, tracePath: string, redacti
         counts: { turns, tools, errors },
       });
       if (marker) {
-        process.stdout.write(marker);
+        process.stdout.write(colorTerminal(marker, marker === "T" ? "blue" : marker === "!" ? "yellow" : marker === "×" ? "red" : "green"));
         markersSinceSummary += 1;
       }
     },
@@ -243,7 +245,7 @@ function startLiveProgress(request: ExecutionRequest, tracePath: string, redacti
       finished = true;
       const marker = outcome === "success" ? "✓" : outcome === "interrupted" ? "×" : "!";
       trail += marker;
-      process.stdout.write(marker);
+      process.stdout.write(colorTerminal(marker, marker === "✓" ? "green" : "red"));
       markersSinceSummary += 1;
       lastEvent = outcome === "success" ? "resposta concluída" : outcome === "interrupted" ? "interrompida" : "falha";
       appendEvent({
@@ -404,8 +406,9 @@ export class PiExecutor implements Executor {
           localDiagnostics.push(diagnostic);
           if (!["loaded", "load_failed", "unload_failed"].includes(diagnostic.phase)) return;
           const status = diagnostic.phase === "loaded" ? "carregado" : diagnostic.phase === "load_failed" ? "falha ao carregar" : "falha ao descarregar";
-          console.log(`[${diagnostic.at}] LM Studio · ${status} · ${diagnostic.modelId}${diagnostic.contextLength ? ` · contexto ${diagnostic.contextLength}` : ""}${diagnostic.durationMs == null ? "" : ` · ${diagnostic.durationMs} ms`}`);
-          if (diagnostic.error) console.log(`[${diagnostic.at}]   ↳ Detalhe: ${diagnostic.error.replace(/\s+/g, " ").slice(0, 2_000)}`);
+          const lifecycleTone = diagnostic.phase === "loaded" ? "green" : diagnostic.phase.includes("fail") ? "red" : "yellow";
+          terminalLog(`LM Studio · ${status} · ${diagnostic.modelId}${diagnostic.contextLength ? ` · contexto ${diagnostic.contextLength}` : ""}${diagnostic.durationMs == null ? "" : ` · ${diagnostic.durationMs} ms`}`, { at: diagnostic.at, timeZone: request.timeZone, tone: lifecycleTone });
+          if (diagnostic.error) terminalLog(`↳ Detalhe: ${diagnostic.error.replace(/\s+/g, " ").slice(0, 2_000)}`, { at: diagnostic.at, timeZone: request.timeZone, tone: "red" });
         });
       }
       enteredSession = true;
@@ -440,7 +443,7 @@ export class PiExecutor implements Executor {
           alias: request.candidate.alias,
           modelId: request.candidate.modelId,
           diagnostics: localDiagnostics,
-        }).catch((error: unknown) => console.error(`[${nowUtc()}] Não foi possível salvar o diagnóstico do LM Studio: ${safeError(error)}`));
+        }).catch((error: unknown) => terminalLog(`Não foi possível salvar o diagnóstico do LM Studio: ${safeError(error)}`, { at: new Date(), timeZone: request.timeZone, tone: "red" }));
       }
     }
   }

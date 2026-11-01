@@ -75,3 +75,15 @@ Os testes de saída estruturada indicaram causas diferentes, não uma incapacida
 - [Atribuição DeepSeek em `task-004`](../.harness/runs/run-mvnyl7vo-04a32244/tasks/task-004/attempt-001/work-attribution.json)
 - [Trace do timeout MiniMax em `task-004`](../.harness/runs/run-mvnyl7vo-04a32244/tasks/task-004/attempt-002/session-trace.jsonl)
 - [Atribuição MiniMax em `task-004`](../.harness/runs/run-mvnyl7vo-04a32244/tasks/task-004/attempt-002/work-attribution.json)
+
+## Melhorias incorporadas para `2-registro`
+
+- [Plano operacional e matriz de modelos da etapa 2-registro](PREPARACAO-2-REGISTRO.md).
+- Pools atualizados: sem Claude, sem modelos locais ativos; GLM completo, Gemini 4 Argon, GPT-6.1 Terra/Sol, Kimi K3.1 Pro, DeepSeek, Qwen Coder e MiniMax com papéis/ordens explícitos.
+- Comando `models probe --inference` valida um alias pelo runtime Pi real, incluindo ferramenta, resposta JSON e evidências; tem teto de diagnóstico explícito e não roda automaticamente.
+- Console usa `HH:mm:ss` em São Paulo e cores semânticas somente em TTY; timestamps persistidos continuam UTC.
+- Fechamento e resume imprimem progresso da etapa/projeto, custos, relatório, snapshot, próxima etapa e comandos completos de aprovação/feedback/resume.
+- Feedback humano tem destino padrão `human-corrections`, preserva tarefas originais e roda ciclo de validação/revisão até novo gate humano.
+- Gate de etapa conecta captura estrutural, screenshots e revisão visual independente; falhas geram tarefa de correção ou bloqueio acionável.
+- Playwright conserva trace, screenshot e vídeo de testes falhos em pasta apontada pelo diagnóstico de E2E.
+- Verificações finais deste bloco (lint, typecheck, testes) registradas após implementação completa.

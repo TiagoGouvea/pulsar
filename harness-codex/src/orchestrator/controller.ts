@@ -4,7 +4,7 @@ import { createInterface } from "node:readline/promises";
 import { stdin, stdout } from "node:process";
 import { fileURLToPath } from "node:url";
 import type { HarnessConfig } from "../config/schema.js";
-import type { ExecutionResult, ModelCandidate, Requirement, Task, TaskState } from "../domain/types.js";
+import type { ExecutionResult, ModelCandidate, Requirement, Role, Task, TaskState } from "../domain/types.js";
 import { BudgetLedger } from "../budget/ledger.js";
 import { buildTaskContext } from "../context/builder.js";
 import { createExecutor } from "../executors/index.js";
@@ -18,8 +18,10 @@ import { assertWorkspace } from "../security/workspace.js";
 import { captureInputs, detectInputChanges } from "../state/inputs.js";
 import { StateStore } from "../state/store.js";
 import { createId, formatMicros, nowUtc, parseUsdToMicros, safeError, sha256, writeJson } from "../utils/core.js";
+import { terminalLog, terminalTimestamp, toneForMessage } from "../utils/terminal.js";
 import { invalidateStaleVerifications, verifyCommands } from "../verification/commands.js";
 import { deployHostingSnapshot, persistHostingSnapshot, type HostingSnapshot } from "../verification/hosting-snapshot.js";
+import { captureVisualEvidence, type VisualEvidence } from "../verification/visual.js";
 
 const HARNESS_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 type ReviewDecision = "passed" | "changes_requested" | "retryable_failure" | "paused";
@@ -232,12 +234,12 @@ export class Orchestrator {
     if (staleSessions.length) {
       this.store.run("UPDATE run_sessions SET finished_at=?, outcome='interrupted' WHERE run_id=? AND finished_at IS NULL", priorHeartbeat, id);
       this.store.event(id, "run.crash_recovered", "run", id, { staleSessionIds: staleSessions.map((item) => item.id), estimatedStoppedAt: priorHeartbeat });
-      this.log(`Recuperação: ${staleSessions.length} sessão(ões) anterior(es) interrompida(s); duração encerrada no último heartbeat ${priorHeartbeat}.`);
+      this.log(`Recuperação: ${staleSessions.length} sessão(ões) anterior(es) interrompida(s); duração encerrada no último heartbeat ${terminalTimestamp(priorHeartbeat, this.config.project.timezone)}.`);
       const priorPid = typeof run.pid === "number" ? run.pid : null;
       if (priorPid != null && !this.isProcessAlive(priorPid)) await this.reconcileInterruptedProviderCalls(id, priorHeartbeat);
     }
     this.store.run("INSERT INTO run_sessions(id, run_id, started_at, pid) VALUES (?, ?, ?, ?)", sessionId, id, sessionStartedAt, process.pid);
-    this.log(`Run ${id} retomada; início desta sessão ${sessionStartedAt}.`);
+    this.log(`Run ${id} retomada; início desta sessão ${terminalTimestamp(sessionStartedAt, this.config.project.timezone)}.`);
     this.store.event(id, "run.session_started", "run_session", sessionId, { pid: process.pid, resumed: String(run.state) !== "created" });
     try {
       const activeMilestone = this.store.listMilestones(id).find((row) => row.state !== "approved");
@@ -354,7 +356,7 @@ export class Orchestrator {
   }
 
   private log(message: string): void {
-    console.log(`[${nowUtc()}] ${message}`);
+    terminalLog(message, { timeZone: this.config.project.timezone, tone: toneForMessage(message) });
   }
 
   private modelLocation(modality: string): "local" | "remoto" | "simulado" {
@@ -541,6 +543,7 @@ export class Orchestrator {
       result = await executor.execute({
         runId, attemptId, task, workspace: this.config.project.workspace, prompt, candidate,
         timeoutMs: this.config.execution.implementationTimeoutMinutes * 60_000, outputDirectory: attemptDirectory,
+        timeZone: this.config.project.timezone,
       });
       declaredChangedFiles = result.changedFiles;
     } finally {
@@ -590,7 +593,7 @@ export class Orchestrator {
   private async askForRetry(taskId: string, attempts: number, limit: number): Promise<boolean> {
     const prompt = createInterface({ input: stdin, output: stdout });
     try {
-      const answer = await prompt.question(`[${nowUtc()}] ${taskId} chegou ao limite de ${limit} tentativas (${attempts} consumidas). Autorizar mais uma tentativa? [s/N] `);
+      const answer = await prompt.question(`[${terminalTimestamp(new Date(), this.config.project.timezone)}] ${taskId} chegou ao limite de ${limit} tentativas (${attempts} consumidas). Autorizar mais uma tentativa? [s/N] `);
       return ["s", "sim", "y", "yes"].includes(answer.trim().toLocaleLowerCase("pt-BR"));
     } finally { prompt.close(); }
   }
@@ -660,7 +663,7 @@ export class Orchestrator {
     const prompt = createInterface({ input: stdin, output: stdout });
     try {
       const answer = await prompt.question(
-        `[${nowUtc()}] ${taskId}: ${failedAttempts} falhas técnicas; revisar ${inspectionPath}. ${budgetText}. Autorizar uma nova sessão? [s/N] `,
+        `[${terminalTimestamp(new Date(), this.config.project.timezone)}] ${taskId}: ${failedAttempts} falhas técnicas; revisar ${inspectionPath}. ${budgetText}. Autorizar uma nova sessão? [s/N] `,
       );
       return ["s", "sim", "y", "yes"].includes(answer.trim().toLocaleLowerCase("pt-BR"));
     } finally { prompt.close(); }
@@ -804,11 +807,11 @@ export class Orchestrator {
     );
   }
 
-  private unusedReviewCandidates(runId: string, task: Task, implementer: ModelCandidate): ModelCandidate[] {
-    const reviewAttempts = this.reviewAttemptRows(runId, `${task.id}-review`);
+  private unusedReviewCandidates(runId: string, task: Task, implementer: ModelCandidate, role: Role = "functionalReviewer"): ModelCandidate[] {
+    const reviewAttempts = this.reviewAttemptRows(runId, `${task.id}-${role === "visualReviewer" ? "visual-review" : "review"}`);
     const failedAliases = attemptedModelAliases(currentReviewFailureAttempts(reviewAttempts), this.catalog.list());
     const attempted = new Set(failedAliases);
-    return this.catalog.reviewerCandidates("functionalReviewer", implementer, task.id)
+    return this.catalog.reviewerCandidates(role, implementer, task.id)
       .filter((candidate) => !attempted.has(candidate.alias));
   }
 
@@ -1011,13 +1014,21 @@ export class Orchestrator {
     });
   }
 
-  private async reviewTask(runId: string, task: Task, implementer: ReturnType<ModelCatalog["get"]>, revision: string): Promise<ReviewDecision> {
+  private async reviewTask(
+    runId: string,
+    task: Task,
+    implementer: ReturnType<ModelCatalog["get"]>,
+    revision: string,
+    options: { role?: Role; suffix?: string; instructions?: string } = {},
+  ): Promise<ReviewDecision> {
+    const role = options.role ?? "functionalReviewer";
+    const suffix = options.suffix ?? "review";
     const reviewTask: Task = {
       ...task,
-      id: `${task.id}-review`,
-      title: `Revisão independente de ${task.id}`,
-      description: `Revise a implementação de ${task.id} na revisão ${revision}. Verifique os critérios sem editar arquivos.`,
-      role: "functionalReviewer",
+      id: `${task.id}-${suffix}`,
+      title: `${role === "visualReviewer" ? "Revisão visual" : "Revisão independente"} de ${task.id}`,
+      description: options.instructions ? `Revise visualmente a etapa na revisão ${revision}; não edite arquivos.` : `Revise a implementação de ${task.id} na revisão ${revision}. Verifique os critérios sem editar arquivos.`,
+      role,
       state: "running",
     };
     const declaredChangedFiles = this.implementerContext(runId, task)?.result.changedFiles ?? [];
@@ -1034,18 +1045,19 @@ export class Orchestrator {
     const failedAliases = attemptedModelAliases(failureAttempts, this.catalog.list());
     let candidate: ModelCandidate;
     try {
-      candidate = this.catalog.selectReviewer("functionalReviewer", implementer, task.id, reviewRound, failedAliases);
+      candidate = this.catalog.selectReviewer(role, implementer, task.id, reviewRound, failedAliases);
     } catch (error) {
       this.log(`POOL DE REVISÃO esgotado para ${task.id}; nenhum modelo será repetido. ${safeError(error)}`);
       return "retryable_failure";
     }
     const attemptId = createId("attempt");
-    const outputDirectory = path.join(this.config.storage.root, "runs", runId, "tasks", task.id, "independent-review", attemptId);
+    const outputDirectory = path.join(this.config.storage.root, "runs", runId, "tasks", task.id, suffix, attemptId);
     await mkdir(outputDirectory, { recursive: true });
     const prompt = [
       reviewTask.description,
       `Critérios:\n${task.acceptanceCriteria.map((item) => `- ${item}`).join("\n")}`,
       `Arquivos alterados declarados:\n${declaredChangedFiles.map((item) => `- ${item}`).join("\n") || "- nenhum"}`,
+      options.instructions ?? "",
       "Concentre a inspeção nesses arquivos e nas configurações diretamente relacionadas. Faça no máximo 8 chamadas de leitura e finalize a resposta.",
       "Use apenas ferramentas de leitura. Não considere a autoavaliação do implementador como evidência.",
       `Responda somente JSON. O campo taskId deve ser exatamente "${reviewTask.id}".`,
@@ -1078,8 +1090,8 @@ export class Orchestrator {
     }
     const sessionId = createId("session");
     this.store.run(
-      "INSERT INTO sessions(id, attempt_id, role, model_key, independent, started_at) VALUES (?, ?, 'functionalReviewer', ?, 1, ?)",
-      sessionId, attemptId, candidate.alias, nowUtc(),
+      "INSERT INTO sessions(id, attempt_id, role, model_key, independent, started_at) VALUES (?, ?, ?, ?, 1, ?)",
+      sessionId, attemptId, role, candidate.alias, nowUtc(),
     );
     const providerCallId = this.startProviderCall(attemptId, candidate, estimated);
     this.store.run("UPDATE cost_reservations SET provider_call_id=? WHERE id=? AND provider_call_id IS NULL", providerCallId, reservationId);
@@ -1091,7 +1103,7 @@ export class Orchestrator {
       result = await executor.execute({
         runId, attemptId, task: reviewTask, workspace: this.config.project.workspace, prompt, candidate,
         timeoutMs: this.config.execution.reviewTimeoutMinutes * 60_000, outputDirectory, readOnly: true,
-        acceptedResultTaskIds: [reviewTask.id, task.id],
+        acceptedResultTaskIds: [reviewTask.id, task.id], timeZone: this.config.project.timezone,
       });
     } finally {
       this.activeExecutor = undefined;
@@ -1105,7 +1117,7 @@ export class Orchestrator {
     this.ledger.reconcile({ runId, taskId: task.id, reservationId, providerCallId, amountMicros: uncertain ? estimated : actualMicros, uncertain });
     const reviewDurationMs = Math.round(performance.now() - reviewStarted);
     await writeJson(path.join(outputDirectory, "model-call.json"), {
-      providerCallId, runId, taskId: task.id, role: "functionalReviewer", alias: candidate.alias,
+      providerCallId, runId, taskId: task.id, role, alias: candidate.alias,
       provider: candidate.provider, modelId: candidate.modelId, modality: candidate.modality,
       durationMs: reviewDurationMs, outcome: result.outcome, inputTokens: result.usage?.inputTokens ?? null,
       outputTokens: result.usage?.outputTokens ?? null, cachedTokens: result.usage?.cachedTokens ?? null,
@@ -1166,6 +1178,64 @@ export class Orchestrator {
     return decision;
   }
 
+  private async reviewMilestoneVisuals(
+    runId: string,
+    milestoneId: string,
+    revision: string,
+    evidence: VisualEvidence[],
+  ): Promise<ReviewDecision> {
+    const stageTasks = this.store.listTasks(runId).filter((row) => row.milestone_id === milestoneId);
+    const baseRow = stageTasks.at(-1);
+    if (!baseRow) return "retryable_failure";
+    const task = rowToTask(baseRow);
+    const implementation = this.implementerContext(runId, task);
+    if (!implementation) {
+      this.store.event(runId, "visual_review.unavailable", "milestone", milestoneId, { reason: "No implementation context available for visual reviewer." });
+      return "retryable_failure";
+    }
+    const evidenceLines = evidence.map((item) => [
+      `Viewport ${item.viewport}px: screenshot=${item.screenshot}`,
+      item.navigationError ? `navigationError=${item.navigationError}` : "",
+      item.screenshotError ? `screenshotError=${item.screenshotError}` : "",
+      `consoleErrors=${JSON.stringify(item.consoleErrors)}`,
+      `failedRequests=${JSON.stringify(item.failedRequests)}`,
+      `horizontalOverflow=${item.horizontalOverflow}`,
+      `accessibilityViolations=${JSON.stringify(item.accessibilityViolations)}`,
+    ].filter(Boolean).join("\n")).join("\n\n");
+    const instructions = [
+      `Revise visualmente a etapa ${milestoneId}, revisão ${revision}. O harness capturou evidência real nos viewports configurados.`,
+      "Abra/inspecione os screenshots listados usando a ferramenta de leitura; verifique layout mobile, hierarquia, conteúdo cortado, overflow e aparência geral.",
+      "Considere desktop apenas como reflow/empilhamento, nunca como uma experiência desktop independente.",
+      "Não edite arquivos. Aponte somente problemas reproduzíveis e visíveis; não invente defeitos. Se estiver bom, aprove.",
+      "Evidências:\n" + evidenceLines,
+    ].join("\n\n");
+    let decision: ReviewDecision = "retryable_failure";
+    const reviewTaskId = `${task.id}-visual-review`;
+    const failures = this.currentReviewFailures(runId, reviewTaskId);
+    const attempted = attemptedModelAliases(
+      currentReviewFailureAttempts(this.reviewAttemptRows(runId, reviewTaskId)), this.catalog.list(),
+    );
+    for (let attempt = failures; attempt < this.config.review.maxAttempts; attempt += 1) {
+      const available = this.catalog.reviewerCandidates("visualReviewer", implementation.candidate, milestoneId)
+        .filter((candidate) => !attempted.includes(candidate.alias));
+      if (!available.length) break;
+      decision = await this.reviewTask(runId, task, implementation.candidate, revision, {
+        role: "visualReviewer", suffix: "visual-review", instructions,
+      });
+      const updated = this.reviewAttemptRows(runId, reviewTaskId);
+      const latest = updated.at(-1);
+      if (latest) {
+        const alias = this.catalog.list().find((candidate) => candidate.alias === latest.candidate_key)?.alias;
+        if (alias) attempted.push(alias);
+      }
+      if (decision !== "retryable_failure") return decision;
+    }
+    this.store.event(runId, "visual_review.failed", "milestone", milestoneId, {
+      attemptedAliases: attempted, evidencePath: path.join(this.config.storage.root, "runs", runId, "milestones", milestoneId, "visual", "visual-evidence.json"),
+    });
+    return "retryable_failure";
+  }
+
   private handleFailure(runId: string, task: Task, previous: Record<string, unknown>[], signature: string | null, result: ExecutionResult): boolean {
     this.log(`PROBLEMA ${task.id}: ${result.outcome} — ${result.summary}${result.blockers.length ? ` [${result.blockers.join(", ")}]` : ""}.`);
     const sameFailures = previous.filter((attempt) => attempt.failure_signature === signature).length + 1;
@@ -1198,6 +1268,7 @@ export class Orchestrator {
         command: failedCheck?.id ?? null,
         exitCode: failedCheck?.exitCode ?? null,
         outputPath: failedCheck?.outputPath ?? null,
+        artifactPath: failedCheck?.artifactPath ?? null,
       });
       return runId;
     }
@@ -1210,6 +1281,67 @@ export class Orchestrator {
       hostingSnapshot = deployed;
       await persistHostingSnapshot({ config: this.config, store: this.store, runId, snapshot: deployed });
       this.log(`Snapshot permanente da etapa ${milestoneId}: ${deployed.url} · versão ${deployed.siteId}.`);
+      const visualDirectory = path.join(this.config.storage.root, "runs", runId, "milestones", milestoneId, "visual");
+      let evidence: VisualEvidence[];
+      try {
+        evidence = await captureVisualEvidence({ config: this.config, url: deployed.url, outputDirectory: visualDirectory });
+      } catch (error) {
+        const evidencePath = path.join(visualDirectory, "visual-evidence.json");
+        this.store.event(runId, "visual_capture.failed", "milestone", milestoneId, { error: safeError(error), evidencePath });
+        this.store.setRunState(runId, "blocked", { cause: "visual_capture_failed", milestoneId, outputPath: evidencePath });
+        this.log(`BLOQUEIO visual ${milestoneId}: captura não concluída; veja ${evidencePath}. ${safeError(error)}`);
+        return runId;
+      }
+      const structuralFailures = evidence.filter((item) => item.navigationError || item.screenshotError || item.horizontalOverflow || item.consoleErrors.length || item.failedRequests.length || item.accessibilityViolations.length);
+      const evidencePath = path.join(visualDirectory, "visual-evidence.json");
+      this.store.event(runId, structuralFailures.length ? "visual_capture.findings" : "visual_capture.completed", "milestone", milestoneId, {
+        evidencePath, viewports: evidence.map((item) => item.viewport), failures: structuralFailures.length,
+      });
+      const visualVerifierId = createId("verification");
+      this.store.run(
+        `INSERT INTO verifier_runs(id, run_id, revision, verifier_id, verifier_version, status, output_path, started_at, finished_at)
+         VALUES (?, ?, ?, 'visual-structural', '2', ?, ?, ?, ?)`,
+        visualVerifierId, runId, verification.revision, structuralFailures.length ? "failed" : "passed", evidencePath, nowUtc(), nowUtc(),
+      );
+      if (structuralFailures.length) {
+        const details = structuralFailures.map((item) => [
+          `Viewport ${item.viewport}px`, item.navigationError ? `Navegação: ${item.navigationError}` : "",
+          item.screenshotError ? `Screenshot: ${item.screenshotError}` : "",
+          item.horizontalOverflow ? "Overflow horizontal detectado." : "",
+          ...item.consoleErrors.map((value) => `Erro de console: ${value}`),
+          ...item.failedRequests.map((value) => `Request falhou: ${value}`),
+          ...item.accessibilityViolations.map((value) => `Acessibilidade ${value.id}: ${value.help} (${value.targets.join(", ")})`),
+        ].filter(Boolean).join("\n")).join("\n\n");
+        const taskId = await this.queueHumanCorrections(runId, milestoneId, `Corrija somente estes achados automatizados de navegador/acessibilidade. Evidência JSON: ${evidencePath}\n\n${details}`, "verificação visual automatizada");
+        this.store.setRunState(runId, "paused", { cause: "visual_verification_failed", milestoneId, taskId, outputPath: evidencePath });
+        this.log(`ALERTA visual ${milestoneId}: ${structuralFailures.length}/${evidence.length} viewport(s) com achados. Tarefa ${taskId} criada; retome para corrigi-los. Evidência: ${evidencePath}`);
+        return runId;
+      }
+      const visualDecision = await this.reviewMilestoneVisuals(runId, milestoneId, verification.revision, evidence);
+      if (visualDecision === "paused") return runId;
+      if (visualDecision === "changes_requested") {
+        const lastTask = this.store.listTasks(runId).filter((row) => row.milestone_id === milestoneId).at(-1);
+        const lastTaskId = `${typeof lastTask?.id === "string" ? lastTask.id : "missing-task"}-visual-review`;
+        const review = this.store.get<Record<string, unknown>>(
+          "SELECT result_json FROM attempts WHERE run_id=? AND task_id=? ORDER BY started_at DESC LIMIT 1", runId, lastTaskId,
+        );
+        let summary = "Revisor visual solicitou ajustes; consulte o resultado detalhado da revisão.";
+        if (typeof review?.result_json === "string") {
+          try {
+            const result = JSON.parse(review.result_json) as ExecutionResult;
+            summary = [result.summary, ...result.decisions, ...result.suggestedFollowUps].join("\n- ");
+          } catch { /* Keep fallback message. */ }
+        }
+        const taskId = await this.queueHumanCorrections(runId, milestoneId, `${summary}\n\nEvidência visual: ${evidencePath}`, "revisão visual independente");
+        this.log(`ALERTA visual: modelo apontou ajustes. Tarefa isolada ${taskId} criada; retome para corrigi-los.`);
+        return runId;
+      }
+      if (visualDecision !== "passed") {
+        this.store.setRunState(runId, "blocked", { cause: "visual_review_execution_failed", milestoneId, outputPath: evidencePath });
+        this.log(`BLOQUEIO visual ${milestoneId}: nenhum revisor visual concluiu; evidência em ${evidencePath}.`);
+        return runId;
+      }
+      this.log(`Revisão visual independente aprovada · ${evidence.length} viewports · evidência ${evidencePath}.`);
     }
     if (this.config.execution.humanGate === "every_milestone" || (this.config.execution.humanGate === "final_only" && isFinal)) {
       this.store.setMilestoneState(runId, milestoneId, "awaiting_human", revision);
@@ -1306,10 +1438,12 @@ export class Orchestrator {
     return snapshot;
   }
 
-  async importFeedback(runId: string, source: string, taskId: string, milestoneId = this.config.project.milestones[0]?.id): Promise<string> {
+  async importFeedback(runId: string, source: string, taskId: string, milestoneId?: string): Promise<string> {
+    milestoneId ??= this.activeHumanReviewMilestone(runId);
     if (!milestoneId) throw new Error("Nenhuma etapa configurada para receber feedback.");
     const content = await readFile(source, "utf8");
     if (!content.trim()) throw new Error("Feedback vazio.");
+    taskId = this.normalizeFeedbackTask(runId, milestoneId, taskId);
     this.assertFeedbackTask(runId, milestoneId, taskId);
     await this.assertMilestoneBranch(runId, milestoneId);
     const directory = path.join(this.config.storage.root, "runs", runId, "milestones", milestoneId);
@@ -1325,9 +1459,11 @@ export class Orchestrator {
     return destination;
   }
 
-  async importFeedbackContent(runId: string, content: string, taskId: string, milestoneId = this.config.project.milestones[0]?.id, actor = "dashboard-human"): Promise<string> {
+  async importFeedbackContent(runId: string, content: string, taskId: string, milestoneId?: string, actor = "dashboard-human"): Promise<string> {
+    milestoneId ??= this.activeHumanReviewMilestone(runId);
     if (!milestoneId) throw new Error("Nenhuma etapa configurada para receber feedback.");
     if (!content.trim()) throw new Error("Feedback vazio.");
+    taskId = this.normalizeFeedbackTask(runId, milestoneId, taskId);
     this.assertFeedbackTask(runId, milestoneId, taskId);
     await this.assertMilestoneBranch(runId, milestoneId);
     const directory = path.join(this.config.storage.root, "runs", runId, "milestones", milestoneId);
@@ -1343,7 +1479,64 @@ export class Orchestrator {
     return destination;
   }
 
+  private activeHumanReviewMilestone(runId: string): string | undefined {
+    const awaitingReview = this.store.listMilestones(runId).find((item) => item.state === "awaiting_human");
+    return typeof awaitingReview?.id === "string" ? awaitingReview.id : undefined;
+  }
+
+  private normalizeFeedbackTask(runId: string, milestoneId: string, requestedTaskId: string): string {
+    if (requestedTaskId !== "human-corrections") return requestedTaskId;
+    const milestone = this.store.get<Record<string, unknown>>("SELECT state FROM milestones WHERE run_id=? AND id=?", runId, milestoneId);
+    if (milestone?.state !== "awaiting_human") throw new Error(`Feedback só pode ser importado quando a etapa ${milestoneId} estiver aguardando revisão humana.`);
+    const taskId = this.ensureHumanCorrectionsTask(runId, milestoneId);
+    this.store.setTaskState(runId, taskId, "changes_requested");
+    return taskId;
+  }
+
+  private ensureHumanCorrectionsTask(runId: string, milestoneId: string): string {
+    const taskId = `human-corrections-${milestoneId}`;
+    const existing = this.store.listTasks(runId).find((item) => item.id === taskId);
+    if (!existing) {
+      const milestoneTasks = this.store.listTasks(runId).filter((item) => item.milestone_id === milestoneId);
+      this.store.saveTask({
+        id: taskId,
+        runId,
+        milestoneId,
+        title: `Correções humanas solicitadas — ${milestoneId}`,
+        description: "Aplique exclusivamente os itens objetivos registrados nos relatórios de revisão visual e/ou feedback humano desta etapa. Não amplie o escopo, não refatore áreas não relacionadas e não altere comportamento que não foi solicitado. Se um item for ambíguo ou conflitar com requisitos, explique o bloqueio em vez de inferir uma mudança ampla.",
+        state: "pending",
+        role: "implementer",
+        requirementIds: [],
+        dependencies: milestoneTasks.map((item) => String(item.id)),
+        acceptanceCriteria: [
+          "Cada item explícito do feedback humano foi implementado, ou registrado como bloqueado com justificativa concreta.",
+          "Nenhuma mudança fora do feedback solicitado foi incluída.",
+          "Os testes relevantes passaram e a revisão independente confirmou o escopo delimitado.",
+        ],
+        plannedFiles: [],
+        maxAttempts: this.config.execution.maxAttemptsPerTask,
+      });
+      this.store.event(runId, "human_corrections.created", "task", taskId, { milestoneId });
+    }
+    return taskId;
+  }
+
+  private async queueHumanCorrections(runId: string, milestoneId: string, feedback: string, source: string): Promise<string> {
+    const taskId = this.ensureHumanCorrectionsTask(runId, milestoneId);
+    const directory = path.join(this.config.storage.root, "runs", runId, "milestones", milestoneId);
+    await mkdir(directory, { recursive: true });
+    const feedbackPath = path.join(directory, `human-feedback-${encodeURIComponent(taskId)}-${Date.now()}.md`);
+    await writeFile(feedbackPath, `# Ajustes delimitados — ${source}\n\n${feedback.trim()}\n`, { mode: 0o600, flag: "wx" });
+    this.store.setTaskState(runId, taskId, "changes_requested");
+    this.store.setMilestoneState(runId, milestoneId, "changes_requested");
+    this.store.setRunState(runId, "paused", { cause: "human_corrections_queued", milestoneId, taskId, feedbackPath });
+    this.store.event(runId, "human_corrections.queued", "task", taskId, { milestoneId, source, feedbackPath });
+    return taskId;
+  }
+
   private assertFeedbackTask(runId: string, milestoneId: string, taskId: string): void {
+    const milestone = this.store.get<Record<string, unknown>>("SELECT state FROM milestones WHERE run_id=? AND id=?", runId, milestoneId);
+    if (milestone?.state !== "awaiting_human") throw new Error(`Feedback só pode ser importado quando a etapa ${milestoneId} estiver aguardando revisão humana.`);
     const task = this.store.listTasks(runId).find((item) => item.id === taskId);
     if (!task) throw new Error(`Tarefa ${taskId} inexistente nesta execução.`);
     if (task.milestone_id !== milestoneId) throw new Error(`Tarefa ${taskId} não pertence à etapa ${milestoneId}.`);

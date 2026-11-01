@@ -8,6 +8,8 @@ import { parse, stringify } from "yaml";
 import { loadConfig } from "../config/load.js";
 import { startDashboard } from "../dashboard/server.js";
 import { Orchestrator } from "../orchestrator/controller.js";
+import { BudgetLedger } from "../budget/ledger.js";
+import { PiExecutor } from "../executors/pi.js";
 import { reconcileInterruptedCall } from "../orchestrator/reconcile.js";
 import { doctor, preflight, writePreflightReport } from "../preflight/doctor.js";
 import { probeCandidate } from "../providers/probes.js";
@@ -15,9 +17,11 @@ import { loadLmStudioModel, unloadLmStudioModels } from "../providers/lmstudio.j
 import { writeBudgetReport, writeFinalReport, writeModelPerformanceReport, writeWorkAttributionReport } from "../reports/generator.js";
 import { testLocalModels, testStructuredLocalModels, writeLocalModelTestReport, writeStructuredOutputTestReport } from "../providers/local-model-test.js";
 import { StateStore } from "../state/store.js";
-import { createId, ensureDirectory, formatMicros, nowUtc, safeError } from "../utils/core.js";
+import { createId, ensureDirectory, formatMicros, nowUtc, parseUsdToMicros, safeError, writeJson } from "../utils/core.js";
 import { captureVisualEvidence } from "../verification/visual.js";
 import { currentRevision } from "../git/workspace.js";
+import { terminalLog } from "../utils/terminal.js";
+import type { ExecutionResult, ModelCandidate, Task } from "../domain/types.js";
 
 const program = new Command();
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -88,7 +92,16 @@ models.command("probe").requiredOption("--config <path>").requiredOption("--alia
     const config = await loadConfig(options.config);
     const candidate = config.models.find((item) => item.alias === options.alias);
     if (!candidate) throw new Error(`Alias desconhecido: ${options.alias}`);
-    printChecks(await probeCandidate(config, candidate, { inference: options.inference ?? false }));
+    const checks = await probeCandidate(config, candidate, { inference: options.inference ?? false });
+    printChecks(checks);
+    if (checks.some((check) => check.status === "block")) {
+      process.exitCode = 2;
+      return;
+    }
+    if (options.inference && candidate.modality === "metered_api") {
+      const result = await runPiModelSmoke(config, candidate);
+      if (result.outcome !== "ready_for_verification" || result.toolCalls < 1) process.exitCode = 2;
+    }
   });
 models.command("test-local")
   .description("Testa sequencialmente modelos locais pela API, medindo carga e resposta")
@@ -177,7 +190,7 @@ program.command("run").description("Executa ou retoma o controlador")
       try {
         await orchestrator.run(runId);
         const run = orchestrator.store.getRun(runId);
-        printRunOutcome(orchestrator.store, runId, String(run?.state), config.storage.root);
+        printRunOutcome(config, orchestrator.store, runId, String(run?.state));
       } finally {
         process.removeListener("SIGINT", onSigint); process.removeListener("SIGTERM", onSigterm); process.removeListener("SIGHUP", onSighup);
       }
@@ -207,7 +220,7 @@ for (const command of ["status", "pause", "resume", "stop"] as const) {
         const orchestrator = new Orchestrator(config);
         try {
           await orchestrator.run(options.run, options.retryReview ? { retryReviewTaskId: options.retryReview } : {});
-          printRunOutcome(orchestrator.store, options.run, String(orchestrator.store.getRun(options.run)?.state), config.storage.root);
+          printRunOutcome(config, orchestrator.store, options.run, String(orchestrator.store.getRun(options.run)?.state));
         } finally { orchestrator.close(); }
         return;
       }
@@ -243,16 +256,27 @@ hosting.command("snapshot").requiredOption("--config <path>").requiredOption("--
   }));
 
 const feedback = program.command("feedback");
-feedback.command("import").requiredOption("--config <path>").requiredOption("--run <id>").requiredOption("--file <path>").requiredOption("--task <id>", "Tarefa que receberá os ajustes")
-  .option("--milestone <id>", "Marco; por padrão usa o primeiro configurado")
+feedback.command("import").requiredOption("--config <path>").requiredOption("--run <id>").requiredOption("--file <path>").option("--task <id>", "Use human-corrections para uma tarefa isolada com todo o feedback da etapa", "human-corrections")
+  .option("--milestone <id>", "Etapa aguardando revisão humana; detectada automaticamente quando omitida")
   .action(async (options: { config: string; run: string; file: string; task: string; milestone?: string }) => withOrchestrator(options.config, async (orchestrator) => {
-    console.log(await orchestrator.importFeedback(options.run, path.resolve(options.file), options.task, options.milestone));
+    const feedbackPath = await orchestrator.importFeedback(options.run, path.resolve(options.file), options.task, options.milestone);
+    const config = await loadConfig(options.config);
+    terminalLog(`Feedback registrado na tarefa isolada de correções: ${feedbackPath}`, { timeZone: config.project.timezone, tone: "yellow" });
+    terminalLog(`Próximo passo: yarn harness resume --config ${config.configPath} --run ${options.run}`, { timeZone: config.project.timezone });
   }));
 
 program.command("approve").requiredOption("--config <path>").requiredOption("--run <id>").requiredOption("--milestone <id>").requiredOption("--revision <revision>")
   .action(async (options: { config: string; run: string; milestone: string; revision: string }) => withOrchestrator(options.config, async (orchestrator) => {
     await orchestrator.approve(options.run, options.milestone, options.revision, process.env.USER ?? "human");
-    console.log("Aprovação registrada para a revisão exata.");
+    const config = await loadConfig(options.config);
+    terminalLog("Aprovação registrada para a revisão exata.", { timeZone: config.project.timezone, tone: "green" });
+    const next = config.project.milestones.find((item) => item.id !== options.milestone && orchestrator.store.listMilestones(options.run).find((row) => row.id === item.id)?.state !== "approved");
+    if (next) {
+      terminalLog(`Próxima etapa: ${next.id} — ${next.title}. O branch não será alterado pelo harness; selecione manualmente o branch desejado antes de retomar.`, { timeZone: config.project.timezone, tone: "cyan" });
+      terminalLog(`Comando: yarn harness resume --config ${config.configPath} --run ${options.run}`, { timeZone: config.project.timezone });
+    } else {
+      terminalLog("Todas as etapas foram aprovadas. Relatório final disponível em " + path.join(config.storage.root, "runs", options.run, "final-report.md"), { timeZone: config.project.timezone, tone: "green" });
+    }
   }));
 
 program.command("budget").requiredOption("--config <path>").requiredOption("--run <id>").action(async (options: { config: string; run: string }) => {
@@ -399,22 +423,139 @@ async function withOrchestrator(configPath: string, work: (orchestrator: Orchest
 }
 
 function printChecks(checks: Array<{ status: string; id: string; summary: string; evidence: string }>): void {
-  for (const check of checks) console.log(`[${check.status.toUpperCase()}] ${check.id}: ${check.summary}\n  ${check.evidence}`);
+  for (const check of checks) {
+    const tone = check.status === "pass" ? "green" : check.status === "block" ? "red" : check.status === "warn" ? "yellow" : "cyan";
+    terminalLog(`${check.status.toUpperCase()} ${check.id}: ${check.summary}`, { tone });
+    terminalLog(`↳ ${check.evidence}`);
+  }
 }
 
-function printRunOutcome(store: StateStore, runId: string, state: string, storageRoot: string): void {
-  console.log(`[${nowUtc()}] Run ${runId}: ${state}`);
-  const runDirectory = path.join(storageRoot, "runs", runId);
-  if (state === "awaiting_human") {
-    const milestone = store.listMilestones(runId).find((item) => item.state === "awaiting_human");
-    const milestoneId = typeof milestone?.id === "string" ? milestone.id : "etapa";
-    console.log(`Próximo passo: revise ${path.join(runDirectory, "milestones", milestoneId, "human-review.md")} e use yarn harness approve ou feedback import.`);
+async function runPiModelSmoke(
+  config: Awaited<ReturnType<typeof loadConfig>>,
+  candidate: ModelCandidate,
+): Promise<{ outcome: ExecutionResult["outcome"]; toolCalls: number }> {
+  if (config.budget.diagnosticsLimit == null) throw new Error("Smoke test remoto bloqueado: defina diagnosticsLimit como teto explícito.");
+  const promptTokensEstimate = 500;
+  const outputTokensEstimate = 384;
+  const inputRate = parseUsdToMicros(candidate.inputUsdPerMillion);
+  const outputRate = parseUsdToMicros(candidate.outputUsdPerMillion);
+  if (inputRate == null || outputRate == null) throw new Error(`Preços não configurados para ${candidate.alias}; smoke test não iniciado.`);
+  const estimatedMicros = (inputRate * BigInt(promptTokensEstimate) + outputRate * BigInt(outputTokensEstimate) + 999_999n) / 1_000_000n;
+  const diagnosticsLimit = parseUsdToMicros(config.budget.diagnosticsLimit);
+  if (diagnosticsLimit == null || estimatedMicros > diagnosticsLimit) {
+    throw new Error(`Smoke test de ${candidate.alias} excede diagnosticsLimit (estimado USD ${formatMicros(estimatedMicros)}).`);
+  }
+  const probeId = createId(`probe-${candidate.alias}`);
+  const outputDirectory = path.join(config.storage.root, "model-probes", candidate.alias, probeId);
+  await ensureDirectory(outputDirectory);
+  const task: Task = {
+    id: probeId, runId: probeId, milestoneId: "model-probe", title: `Smoke test Pi: ${candidate.alias}`,
+    description: "Valide apenas a comunicação do modelo pelo runtime Pi, chamada de ferramenta de leitura e contrato JSON final.",
+    state: "running", role: "implementer", requirementIds: [], dependencies: [],
+    acceptanceCriteria: ["Uma ferramenta de leitura foi executada.", "A resposta final atende ao contrato JSON do harness."],
+    plannedFiles: [], maxAttempts: 1,
+  };
+  terminalLog(`Smoke test do runtime Pi · ${candidate.alias} (${candidate.modelId}) [remoto] · estimativa até USD ${formatMicros(estimatedMicros)}.`, { timeZone: config.project.timezone, tone: "blue" });
+  const result = await new PiExecutor(config).execute({
+    runId: probeId,
+    attemptId: createId("attempt"),
+    task,
+    workspace: config.project.workspace,
+    candidate: { ...candidate, maxOutputTokens: Math.min(candidate.maxOutputTokens, 1024) },
+    timeoutMs: 120_000,
+    outputDirectory,
+    readOnly: true,
+    timeZone: config.project.timezone,
+    prompt: [
+      "Esta é uma chamada de diagnóstico; não altere arquivos.",
+      "Use a ferramenta de leitura para abrir package.json no workspace e confirme o nome do projeto.",
+      `Responda ao final somente com o contrato JSON completo e taskId exatamente ${probeId}.`,
+      "Use outcome ready_for_verification, summary curta e arrays vazios nos demais campos.",
+    ].join("\n\n"),
+  });
+  const tracePath = path.join(outputDirectory, "session-trace.jsonl");
+  const trace = existsSync(tracePath) ? readFileSync(tracePath, "utf8") : "";
+  const toolCalls = trace.split(/\r?\n/).filter((line) => line.includes('"type":"tool_execution_start"')).length;
+  await writeJson(path.join(outputDirectory, "smoke-result.json"), {
+    alias: candidate.alias, provider: candidate.provider, modelId: candidate.modelId,
+    modality: candidate.modality, estimatedCostUsd: formatMicros(estimatedMicros),
+    actualCostUsd: result.usage?.costUsd ?? null, toolCalls, result,
+  });
+  const tone = result.outcome === "ready_for_verification" && toolCalls > 0 ? "green" : "red";
+  terminalLog(`Smoke Pi ${candidate.alias} [remoto] · ${result.outcome} · ferramentas ${toolCalls} · USD ${result.usage?.costUsd ?? "incerto"} · evidência ${outputDirectory}`, { timeZone: config.project.timezone, tone });
+  if (result.outcome === "failed") terminalLog(`↳ ${result.summary}`, { timeZone: config.project.timezone, tone: "red" });
+  return { outcome: result.outcome, toolCalls };
+}
+
+function printRunOutcome(config: Awaited<ReturnType<typeof loadConfig>>, store: StateStore, runId: string, state: string): void {
+  const tone = state === "awaiting_human" || state === "completed" ? "green" : state === "blocked" || state === "failed" ? "red" : "yellow";
+  terminalLog(`Run ${runId}: ${stateLabel(state)}`, { timeZone: config.project.timezone, tone });
+  const runDirectory = path.join(config.storage.root, "runs", runId);
+  const milestones = store.listMilestones(runId);
+  const tasks = store.listTasks(runId);
+  const active = milestones.find((item) => item.state !== "approved");
+  const milestoneId = typeof active?.id === "string" ? active.id : undefined;
+  const stageTasks = milestoneId ? tasks.filter((item) => item.milestone_id === milestoneId) : [];
+  const featuresFor = (rows: typeof tasks): { done: number; total: number } => {
+    const linked = new Map<string, boolean>();
+    for (const row of rows) {
+      let ids: string[] = [];
+      try { ids = JSON.parse(String(row.requirement_ids_json)) as string[]; } catch { /* Ignore legacy rows. */ }
+      for (const id of ids) linked.set(id, (linked.get(id) ?? true) && row.state === "passed");
+    }
+    return { done: [...linked.values()].filter(Boolean).length, total: linked.size };
+  };
+  const stageFeatures = featuresFor(stageTasks);
+  const projectFeatures = featuresFor(tasks);
+  const passedStage = stageTasks.filter((item) => item.state === "passed").length;
+  const passedProject = tasks.filter((item) => item.state === "passed").length;
+  const budget = new BudgetLedger(store, config).snapshot(runId);
+  const usd = (micros: bigint): string => (Number(micros) / 1_000_000).toFixed(6).replace(/0+$/, "").replace(/\.$/, "");
+  terminalLog(`Etapa ${milestoneId ?? "—"}: tarefas ${passedStage}/${stageTasks.length}, features ${stageFeatures.done}/${stageFeatures.total}. Projeto: tarefas ${passedProject}/${tasks.length}, features ${projectFeatures.done}/${projectFeatures.total}.`, { timeZone: config.project.timezone });
+  terminalLog(`Custo: USD ${usd(budget.confirmedMicros)} confirmado · USD ${usd(budget.uncertainMicros)} incerto${budget.limitMicros == null ? "" : ` · teto USD ${usd(budget.limitMicros)}`}.`, { timeZone: config.project.timezone });
+  terminalLog(`Relatório: ${path.join(runDirectory, "final-report.md")}`, { timeZone: config.project.timezone });
+  if (milestoneId) {
+    const snapshotEvent = store.get<Record<string, unknown>>(
+      "SELECT payload_json FROM events WHERE run_id=? AND type='hosting.snapshot_deployed' AND entity_id=? ORDER BY sequence DESC LIMIT 1",
+      runId, milestoneId,
+    );
+    if (typeof snapshotEvent?.payload_json === "string") {
+      try {
+        const snapshot = JSON.parse(snapshotEvent.payload_json) as { url?: string };
+        if (snapshot.url) terminalLog(`Snapshot: ${snapshot.url}`, { timeZone: config.project.timezone, tone: "cyan" });
+      } catch { /* Ignore malformed legacy events. */ }
+    }
+  }
+  if (state === "awaiting_human" && milestoneId) {
+    const reviewPath = path.join(runDirectory, "milestones", milestoneId, "human-review.md");
+    const revision = typeof active?.revision === "string" ? active.revision : "<revisao>";
+    terminalLog(`Revisão humana: ${reviewPath}`, { timeZone: config.project.timezone, tone: "yellow" });
+    terminalLog(`Para pedir ajustes: yarn harness feedback import --config ${config.configPath} --run ${runId} --milestone ${milestoneId} --task human-corrections --file ./feedback.md`, { timeZone: config.project.timezone });
+    terminalLog(`Para aprovar: yarn harness approve --config ${config.configPath} --run ${runId} --milestone ${milestoneId} --revision ${revision}`, { timeZone: config.project.timezone, tone: "green" });
+    const next = config.project.milestones.findIndex((item) => item.id === milestoneId) + 1;
+    if (next > 0 && next < config.project.milestones.length) {
+      const nextMilestone = config.project.milestones[next];
+      terminalLog(`Depois do aceite, próxima etapa: ${nextMilestone?.id} — ${nextMilestone?.title}. Se for usar branch próprio, troque manualmente; o harness nunca troca branch.`, { timeZone: config.project.timezone, tone: "cyan" });
+      terminalLog(`Comando após o aceite: yarn harness resume --config ${config.configPath} --run ${runId}`, { timeZone: config.project.timezone });
+    }
   } else if (state === "paused_budget") {
-    console.log(`Próximo passo: veja yarn harness budget --config harness.config.yaml --run ${runId}; não houve autorização para exceder o teto.`);
+    terminalLog(`Próximo passo: yarn harness budget --config ${config.configPath} --run ${runId}; o teto não foi excedido.`, { timeZone: config.project.timezone, tone: "yellow" });
   } else if (state === "completed") {
-    console.log(`Sucesso. Relatório: ${path.join(runDirectory, "final-report.md")}`);
+    terminalLog("Todas as etapas configuradas concluídas e aprovadas.", { timeZone: config.project.timezone, tone: "green" });
   } else if (state === "paused") {
-    console.log(`Pausado. Retome com yarn harness resume --config harness.config.yaml --run ${runId}.`);
+    const paused = store.get<Record<string, unknown>>(
+      "SELECT payload_json FROM events WHERE run_id=? AND type='run.paused' ORDER BY sequence DESC LIMIT 1", runId,
+    );
+    if (typeof paused?.payload_json === "string") {
+      try {
+        const payload = JSON.parse(paused.payload_json) as Record<string, unknown>;
+        if (payload.cause === "human_corrections_queued" && typeof payload.taskId === "string") {
+          const feedbackPath = typeof payload.feedbackPath === "string" ? payload.feedbackPath : "consulte a pasta da etapa";
+          terminalLog(`Correções prontas na tarefa ${payload.taskId}; feedback: ${feedbackPath}.`, { timeZone: config.project.timezone, tone: "yellow" });
+        }
+      } catch { /* Ignore malformed legacy event. */ }
+    }
+    terminalLog(`Retome com: yarn harness resume --config ${config.configPath} --run ${runId}`, { timeZone: config.project.timezone, tone: "yellow" });
   }
   if (state !== "blocked") return;
   const event = store.get<Record<string, unknown>>(
@@ -425,10 +566,24 @@ function printRunOutcome(store: StateStore, runId: string, state: string, storag
   const payload = JSON.parse(event.payload_json) as Record<string, unknown>;
   const cause = typeof payload.cause === "string" ? payload.cause : "causa não informada";
   const task = typeof payload.taskId === "string" ? ` (${payload.taskId})` : "";
-  console.log(`Bloqueio: ${cause}${task}`);
-  if (typeof payload.command === "string") console.log(`Comando: ${payload.command}`);
-  if (typeof payload.outputPath === "string") console.log(`Log: ${payload.outputPath}`);
-  console.log(`Diagnóstico: yarn harness diagnostics --config harness.config.yaml --run ${runId}`);
+  terminalLog(`Bloqueio: ${cause}${task}`, { timeZone: config.project.timezone, tone: "red" });
+  if (typeof payload.command === "string") terminalLog(`Comando que falhou: ${payload.command}`, { timeZone: config.project.timezone });
+  if (typeof payload.outputPath === "string") terminalLog(`Log: ${payload.outputPath}`, { timeZone: config.project.timezone });
+  if (typeof payload.artifactPath === "string") terminalLog(`Trace, screenshots e vídeo do Playwright: ${payload.artifactPath}`, { timeZone: config.project.timezone, tone: "yellow" });
+  terminalLog(`Diagnóstico: yarn harness diagnostics --config ${config.configPath} --run ${runId}`, { timeZone: config.project.timezone, tone: "yellow" });
+}
+
+function stateLabel(state: string): string {
+  const labels: Record<string, string> = {
+    awaiting_human: "PRONTO PARA REVISÃO HUMANA",
+    completed: "SUCESSO — TODAS AS ETAPAS CONCLUÍDAS",
+    blocked: "BLOQUEADO — AÇÃO NECESSÁRIA",
+    failed: "FALHA",
+    paused_budget: "PAUSADO PELO TETO DE CUSTO",
+    paused: "PAUSADO",
+    running: "EM EXECUÇÃO",
+  };
+  return labels[state] ?? state.toUpperCase();
 }
 
 program.parseAsync().catch((error: unknown) => {
