@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import type { ModelCandidate } from "../../src/domain/types.js";
-import { extractResult, lastAssistantOutput, localApiFor } from "../../src/executors/pi.js";
+import { extractResult, lastAssistantOutput, localApiFor, supportsPiReasoningEffort } from "../../src/executors/pi.js";
 
 const result = {
   taskId: "task-001",
@@ -64,6 +64,16 @@ describe("protocolo local do Pi", () => {
     expect(localApiFor(localCandidate({ modelId: "mlx-community/gpt-oss-20b", family: "gpt-oss" })))
       .toBe("openai-responses");
     expect(localApiFor(localCandidate({}))).toBe("openai-completions");
+  });
+
+  test("não anuncia reasoning effort ao Pi para Qwen 3.5 do LM Studio", () => {
+    expect(supportsPiReasoningEffort(localCandidate({ capabilities: ["text", "tools", "reasoning"] }))).toBe(false);
+    expect(supportsPiReasoningEffort(localCandidate({
+      provider: "openrouter", modality: "metered_api", capabilities: ["text", "reasoning"],
+    }))).toBe(true);
+    expect(supportsPiReasoningEffort(localCandidate({
+      family: "gpt-oss", modelId: "mlx-community/gpt-oss-20b", capabilities: ["text", "reasoning"],
+    }))).toBe(true);
   });
 
   test("só usa raciocínio quando ele é um objeto JSON completo", () => {

@@ -27,6 +27,11 @@ export function localApiFor(candidate: ModelCandidate): "openai-completions" | "
     : "openai-completions";
 }
 
+export function supportsPiReasoningEffort(candidate: ModelCandidate): boolean {
+  if (!candidate.capabilities.includes("reasoning")) return false;
+  return !(candidate.modality === "local" && candidate.provider === "lmstudio" && candidate.family === "qwen3.5");
+}
+
 export function lastAssistantOutput(messages: readonly unknown[], preferredText?: string): string | undefined {
   if (preferredText?.trim()) return preferredText.trim();
   for (let index = messages.length - 1; index >= 0; index -= 1) {
@@ -270,7 +275,7 @@ async function createRuntime(candidate: ModelCandidate): Promise<{ runtime: Mode
         name: candidate.alias,
         input: candidate.capabilities.includes("vision") ? ["text", "image"] : ["text"],
         cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
-        reasoning: candidate.capabilities.includes("reasoning"),
+        reasoning: supportsPiReasoningEffort(candidate),
         contextWindow: candidate.contextTokens,
         maxTokens: candidate.maxOutputTokens,
       }],
