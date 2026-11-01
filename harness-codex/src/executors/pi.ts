@@ -160,6 +160,7 @@ function statusLine(input: {
 
 function startLiveProgress(request: ExecutionRequest, tracePath: string, redactionPatterns: string[]): {
   event: (summary: Record<string, unknown>) => void;
+  log: (message: string, at?: string) => void;
   finish: (outcome: "success" | "failure" | "interrupted") => void;
 } {
   const startedAt = Date.now();
@@ -188,6 +189,11 @@ function startLiveProgress(request: ExecutionRequest, tracePath: string, redacti
   };
   printSummary();
   return {
+    log(message, at = nowUtc()) {
+      if (markersSinceSummary > 0) process.stdout.write("\n");
+      markersSinceSummary = 0;
+      process.stdout.write(`[${at}] ${message}\n`);
+    },
     event(summary) {
       sequence += 1;
       const marker = eventMarker(summary);
@@ -382,11 +388,10 @@ export class PiExecutor implements Executor {
           return this.executeSession(request);
         }, (diagnostic) => {
           localDiagnostics.push(diagnostic);
-          console.log(`[${diagnostic.at}] LM Studio · ${diagnostic.phase} · ${diagnostic.modelId}${diagnostic.contextLength ? ` · contexto ${diagnostic.contextLength}` : ""}${diagnostic.durationMs == null ? "" : ` · ${diagnostic.durationMs} ms`}`);
-          if (diagnostic.error) {
-            const details = diagnostic.error.replace(/\s+/g, " ").slice(0, 2_000);
-            console.log(`[${diagnostic.at}]   ↳ Detalhe: ${details}`);
-          }
+          if (!["loaded", "load_failed", "unload_failed"].includes(diagnostic.phase)) return;
+          const status = diagnostic.phase === "loaded" ? "carregado" : diagnostic.phase === "load_failed" ? "falha ao carregar" : "falha ao descarregar";
+          console.log(`[${diagnostic.at}] LM Studio · ${status} · ${diagnostic.modelId}${diagnostic.contextLength ? ` · contexto ${diagnostic.contextLength}` : ""}${diagnostic.durationMs == null ? "" : ` · ${diagnostic.durationMs} ms`}`);
+          if (diagnostic.error) console.log(`[${diagnostic.at}]   ↳ Detalhe: ${diagnostic.error.replace(/\s+/g, " ").slice(0, 2_000)}`);
         });
       }
       enteredSession = true;
@@ -443,6 +448,13 @@ export class PiExecutor implements Executor {
     const { session } = created;
     const tracePath = path.join(request.outputDirectory, "session-trace.jsonl");
     const responseRepairLogPath = path.join(request.outputDirectory, "response-repair.jsonl");
+    appendFileSync(tracePath, `${JSON.stringify({
+      at: nowUtc(), type: "session_start", provider: request.candidate.provider,
+      modelId: request.candidate.modelId, alias: request.candidate.alias,
+      modality: request.candidate.modality, taskId: request.task.id, taskRole: request.task.role,
+      runId: request.runId, attemptId: request.attemptId, timeoutMs: request.timeoutMs,
+    })}\n`, { encoding: "utf8", mode: 0o600 });
+    const progress = startLiveProgress(request, tracePath, this.config.security.redactPatterns);
     const observeResponseRepair: ResultRepairObserver = (diagnostic) => {
       const safeDiagnostic = {
         at: nowUtc(),
@@ -453,19 +465,15 @@ export class PiExecutor implements Executor {
       const status = {
         started: "acionado",
         resolved: "recuperou resposta válida",
-        unresolved: "não resolveu; revisar o caso para ampliar o parser",
+        unresolved: "não resolveu",
         skipped: "não pôde atuar",
       }[diagnostic.status];
-      const detail = safeDiagnostic.detail ? ` · ${safeDiagnostic.detail.replace(/\s+/g, " ").slice(0, 400)}` : "";
-      console.log(`[${safeDiagnostic.at}] json-llm-repair · ${status} · ${diagnostic.reason} · ${diagnostic.responseChars} caracteres · log ${responseRepairLogPath}${detail}`);
+      progress.log(`json-llm-repair · ${status} · ${diagnostic.reason}`, safeDiagnostic.at);
+      if (diagnostic.status === "unresolved" || diagnostic.status === "skipped") {
+        const detail = safeDiagnostic.detail ? ` · ${safeDiagnostic.detail.replace(/\s+/g, " ").slice(0, 400)}` : "";
+        progress.log(`  ↳ ${diagnostic.responseChars} caracteres · log ${responseRepairLogPath}${detail}`, safeDiagnostic.at);
+      }
     };
-    appendFileSync(tracePath, `${JSON.stringify({
-      at: nowUtc(), type: "session_start", provider: request.candidate.provider,
-      modelId: request.candidate.modelId, alias: request.candidate.alias,
-      modality: request.candidate.modality, taskId: request.task.id, taskRole: request.task.role,
-      runId: request.runId, attemptId: request.attemptId, timeoutMs: request.timeoutMs,
-    })}\n`, { encoding: "utf8", mode: 0o600 });
-    const progress = startLiveProgress(request, tracePath, this.config.security.redactPatterns);
     const unsubscribe = session.subscribe((event) => {
       const summary = eventSummary(event);
       if (summary) progress.event(summary);

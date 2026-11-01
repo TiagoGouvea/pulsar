@@ -294,7 +294,8 @@ export class Orchestrator {
       if (["completed", "awaiting_human", "blocked", "paused_budget"].includes(finalState)) {
         await writeFinalReport(this.config, this.store, id).catch((error: unknown) => this.log(`Não foi possível atualizar o relatório final: ${safeError(error)}`));
       }
-      this.log(`Sessão encerrada: ${finalState}; ${this.progress(id)}; consulte ${path.join(this.config.storage.root, "runs", id, "final-report.md")}.`);
+      this.log(`Sessão encerrada: ${finalState}.`);
+      this.log(`  ↳ ${this.progress(id)}; relatório: ${path.join(this.config.storage.root, "runs", id, "final-report.md")}`);
     }
   }
 
