@@ -19,6 +19,7 @@ import { captureInputs, detectInputChanges } from "../state/inputs.js";
 import { StateStore } from "../state/store.js";
 import { createId, formatMicros, nowUtc, parseUsdToMicros, safeError, sha256, writeJson } from "../utils/core.js";
 import { invalidateStaleVerifications, verifyCommands } from "../verification/commands.js";
+import { deployHostingSnapshot, persistHostingSnapshot, type HostingSnapshot } from "../verification/hosting-snapshot.js";
 
 const HARNESS_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 type ReviewDecision = "passed" | "changes_requested" | "retryable_failure" | "paused";
@@ -1200,10 +1201,23 @@ export class Orchestrator {
       });
       return runId;
     }
+    let hostingSnapshot: HostingSnapshot | undefined;
+    if (this.config.hostingSnapshots?.enabled) {
+      const current = await currentRevision(this.config.project.workspace);
+      if (current !== verification.revision) throw new Error("O workspace mudou depois das verificações; o snapshot Hosting não foi publicado.");
+      const deployed = await deployHostingSnapshot({ config: this.config, milestoneId, revision: verification.revision });
+      if (!deployed) throw new Error("Hosting snapshots estão habilitados, mas nenhum site foi publicado.");
+      hostingSnapshot = deployed;
+      await persistHostingSnapshot({ config: this.config, store: this.store, runId, snapshot: deployed });
+      this.log(`Snapshot permanente da etapa ${milestoneId}: ${deployed.url} · versão ${deployed.siteId}.`);
+    }
     if (this.config.execution.humanGate === "every_milestone" || (this.config.execution.humanGate === "final_only" && isFinal)) {
       this.store.setMilestoneState(runId, milestoneId, "awaiting_human", revision);
       this.store.setRunState(runId, "awaiting_human");
-      await writeHumanReview({ config: this.config, store: this.store, runId, milestoneId, revision, verificationPassed: true });
+      await writeHumanReview({
+        config: this.config, store: this.store, runId, milestoneId, revision, verificationPassed: true,
+        ...(hostingSnapshot ? { hostingSnapshot } : {}),
+      });
       return runId;
     }
     this.store.setMilestoneState(runId, milestoneId, "approved", revision);
@@ -1268,6 +1282,28 @@ export class Orchestrator {
       this.store.setRunState(runId, "completed");
       await writeFinalReport(this.config, this.store, runId);
     }
+  }
+
+  async publishHostingSnapshotForReview(runId: string, milestoneId: string): Promise<HostingSnapshot> {
+    if (!this.config.hostingSnapshots?.enabled) throw new Error("Snapshots permanentes do Hosting não estão habilitados na configuração.");
+    const milestone = this.store.get<Record<string, unknown>>(
+      "SELECT * FROM milestones WHERE run_id=? AND id=?", runId, milestoneId,
+    );
+    if (!milestone) throw new Error("Etapa inexistente nesta execução.");
+    if (milestone.state !== "awaiting_human" || typeof milestone.revision !== "string") {
+      throw new Error("Só é possível publicar uma versão que passou pelas verificações e aguarda revisão humana.");
+    }
+    await this.assertMilestoneBranch(runId, milestoneId);
+    const current = await currentRevision(this.config.project.workspace);
+    if (current !== milestone.revision) throw new Error("O workspace mudou desde as verificações; rode o harness novamente antes de publicar.");
+    const snapshot = await deployHostingSnapshot({ config: this.config, milestoneId, revision: current });
+    if (!snapshot) throw new Error("Nenhum snapshot foi publicado.");
+    await persistHostingSnapshot({ config: this.config, store: this.store, runId, snapshot });
+    await writeHumanReview({
+      config: this.config, store: this.store, runId, milestoneId, revision: current,
+      verificationPassed: true, hostingSnapshot: snapshot,
+    });
+    return snapshot;
   }
 
   async importFeedback(runId: string, source: string, milestoneId = this.config.project.milestones[0]?.id): Promise<string> {

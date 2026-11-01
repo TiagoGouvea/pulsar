@@ -35,6 +35,18 @@ Para verificar modelos locais individualmente em sequência (incluindo carga, re
 
 O feedback humano é importado explicitamente e versionado. Editar silenciosamente `human-review.md` não aprova nada.
 
+### URLs permanentes por versão
+
+Com `hostingSnapshots.enabled: true`, cada revisão que passa nas verificações automatizadas ganha um site Firebase Hosting próprio, com URL permanente `https://<siteId>.web.app`. O ID deriva da etapa, revisão e conteúdo do build, então novas versões não sobrescrevem versões anteriores. O harness publica somente Hosting — não publica Functions, regras ou banco — e os sites compartilham Auth e demais recursos do mesmo projeto Firebase. O Firebase Hosting permite até 36 sites por projeto; snapshots não são apagados automaticamente.
+
+Para publicar manualmente uma revisão já verificada que aguarda revisão humana (por exemplo, uma etapa concluída antes de habilitar snapshots):
+
+```bash
+yarn harness hosting snapshot --config harness.config.yaml --run <runId> --milestone <id>
+```
+
+O link é registrado no `human-review.md`; os dados de todas as versões ficam em `hosting-snapshots/` na pasta da execução. A publicação exige Firebase CLI autenticado (`firebase login --reauth`) e cota de sites disponível.
+
 Cada tarefa executa `typecheck`, `lint` e `test` que estiverem configurados, interrompendo na primeira falha; a verificação final da etapa ainda inclui build e E2E. A CLI carrega credenciais de `harness-codex/.env` e sobrepõe variáveis homônimas herdadas do terminal.
 
 ## Branch por etapa

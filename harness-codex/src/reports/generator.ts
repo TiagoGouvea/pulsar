@@ -4,6 +4,7 @@ import type { HarnessConfig } from "../config/schema.js";
 import type { StateStore } from "../state/store.js";
 import { BudgetLedger } from "../budget/ledger.js";
 import { formatMicros, nowUtc, writeJson } from "../utils/core.js";
+import type { HostingSnapshot } from "../verification/hosting-snapshot.js";
 
 function runDirectory(config: HarnessConfig, runId: string): string {
   return path.join(config.storage.root, "runs", runId);
@@ -292,6 +293,7 @@ export async function writeHumanReview(input: {
   milestoneId: string;
   revision: string;
   verificationPassed: boolean;
+  hostingSnapshot?: HostingSnapshot;
 }): Promise<string> {
   const directory = path.join(runDirectory(input.config, input.runId), "milestones", input.milestoneId);
   const tasks = input.store.listTasks(input.runId).filter((task) => task.milestone_id === input.milestoneId);
@@ -300,6 +302,12 @@ export async function writeHumanReview(input: {
     `# Revisão humana — ${input.milestoneId}`, "",
     `Revisão: \`${input.revision}\``,
     `Verificações automatizadas: **${input.verificationPassed ? "aprovadas" : "falharam"}**`, "",
+    ...(input.hostingSnapshot ? [
+      "## Versão permanente publicada", "",
+      `- URL: ${input.hostingSnapshot.url}`,
+      `- Site: \`${input.hostingSnapshot.siteId}\``,
+      `- Publicada em: ${input.hostingSnapshot.deployedAt}`, "",
+    ] : []),
     "## Entregue", "",
     ...tasks.map((task) => `- ${String(task.id)}: ${String(task.title)} (${String(task.state)})`), "",
     "## Matriz de requisitos", "",

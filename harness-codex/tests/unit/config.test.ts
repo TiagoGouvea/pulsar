@@ -4,6 +4,7 @@ import path from "node:path";
 import { describe, expect, test } from "vitest";
 import { createTestConfig } from "../helpers/config.js";
 import { extractRequirements, createTasks, milestoneFromRequirementId } from "../../src/planning/requirements.js";
+import { makeHostingSnapshotSiteId } from "../../src/verification/hosting-snapshot.js";
 
 describe("configuração e requisitos", () => {
   test("resolve caminhos com espaços e preserva obrigatórios", async () => {
@@ -29,5 +30,13 @@ describe("configuração e requisitos", () => {
     ].map((id) => ({ id, title: id, objective: id }));
     expect(config.project.milestones.map((_, index) => milestoneFromRequirementId(`REQ-${index}-001`, config)))
       .toEqual(config.project.milestones.map((item) => item.id));
+  });
+
+  test("gera site permanente determinístico dentro do limite do Firebase", () => {
+    const version = "a".repeat(64);
+    const siteId = makeHostingSnapshotSiteId("pulsar", "6-ia-generativa", version);
+    expect(siteId).toBe("pulsar-6-ia-generat-aaaaaaaaaa");
+    expect(siteId.length).toBeLessThanOrEqual(30);
+    expect(makeHostingSnapshotSiteId("pulsar", "6-ia-generativa", version)).toBe(siteId);
   });
 });

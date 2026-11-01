@@ -48,6 +48,11 @@ execution:
   allowProductionDeploy: false
   continueWhileAwaitingHuman: false
   allowBranchSwitch: false
+hostingSnapshots:
+  enabled: true
+  firebaseProjectId: pulsar-codex
+  sitePrefix: pulsar
+  firebaseConfig: firebase.json
 budget:
   currency: USD
   projectLimit: "60"

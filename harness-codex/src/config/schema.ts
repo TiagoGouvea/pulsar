@@ -47,6 +47,12 @@ export const harnessConfigSchema = z.object({
     continueWhileAwaitingHuman: z.boolean().default(false),
     allowBranchSwitch: z.literal(false).default(false),
   }),
+  hostingSnapshots: z.object({
+    enabled: z.boolean().default(false),
+    firebaseProjectId: z.string().min(1),
+    sitePrefix: z.string().max(17).regex(/^[a-z][a-z0-9-]*$/).default("pulsar"),
+    firebaseConfig: z.string().min(1).default("firebase.json"),
+  }).optional(),
   budget: z.object({
     currency: z.literal("USD").default("USD"),
     projectLimit: moneySchema.default(null),
@@ -135,6 +141,9 @@ export const harnessConfigSchema = z.object({
   const milestoneIds = config.project.milestones.map((item) => item.id);
   if (new Set(milestoneIds).size !== milestoneIds.length) {
     context.addIssue({ code: "custom", path: ["project", "milestones"], message: "IDs de etapas devem ser únicos." });
+  }
+  if (config.hostingSnapshots?.enabled && config.hostingSnapshots.firebaseProjectId !== config.project.id) {
+    context.addIssue({ code: "custom", path: ["hostingSnapshots", "firebaseProjectId"], message: "O Firebase Hosting deve usar o mesmo projeto Firebase definido em project.id." });
   }
   for (const id of Object.keys(config.budget.milestoneLimits)) {
     if (!milestoneIds.includes(id)) {

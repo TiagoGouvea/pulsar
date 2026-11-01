@@ -33,6 +33,7 @@ yarn harness feedback import --config harness.config.yaml --run <runId> --file .
 yarn harness approve --config harness.config.yaml --run <runId> --milestone <milestoneId> --revision <revision>
 yarn harness budget --config harness.config.yaml --run <runId>
 yarn harness report --config harness.config.yaml --run <runId>
+yarn harness hosting snapshot --config harness.config.yaml --run <runId> --milestone <id>
 ```
 
 Logs, recuperação após crash, limites interativos e checagens Firebase: [Operação e recuperação](docs/OPERACAO_E_RECUPERACAO.md).

@@ -233,6 +233,15 @@ program.command("review").requiredOption("--config <path>").requiredOption("--ru
     console.log(path.join(config.storage.root, "runs", options.run, "milestones", options.milestone, "human-review.md"));
   });
 
+const hosting = program.command("hosting").description("Publicação permanente de snapshots por versão");
+hosting.command("snapshot").requiredOption("--config <path>").requiredOption("--run <id>").requiredOption("--milestone <id>")
+  .description("Publica uma versão já verificada em um site Hosting exclusivo e permanente")
+  .action(async (options: { config: string; run: string; milestone: string }) => withOrchestrator(options.config, async (orchestrator) => {
+    const snapshot = await orchestrator.publishHostingSnapshotForReview(options.run, options.milestone);
+    console.log(`Versão publicada: ${snapshot.url}`);
+    console.log(`Site: ${snapshot.siteId} · etapa ${snapshot.milestoneId} · revisão ${snapshot.revision}`);
+  }));
+
 const feedback = program.command("feedback");
 feedback.command("import").requiredOption("--config <path>").requiredOption("--run <id>").requiredOption("--file <path>")
   .option("--milestone <id>", "Marco; por padrão usa o primeiro configurado")
