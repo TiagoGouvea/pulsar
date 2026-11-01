@@ -43,6 +43,13 @@ describe("router", () => {
     expect(loadStats(ctx)["fake-openai|implement|*"].tentativas).toBeGreaterThan(200);
   });
 
+  it("worker sem histórico é pontuado pelo preço, não pelo tier", async () => {
+    const { ctx } = await makeProject();
+    ctx.config.roles.implement.pool = ["fake-anthropic", "fake-openai"];
+    ctx.prices = { "fake-anthropic": { input: 10, output: 50 }, "fake-openai": { input: 0.1, output: 0.5 } };
+    expect(pick(ctx, { role: "implement", rng: () => 0.99 })!.id).toBe("fake-openai");
+  });
+
   it("concorrência e exclusividade de modelos locais", async () => {
     const { ctx } = await makeProject();
     Object.assign(ctx.config.workers["fake-cheap"], { tier: "local", concurrency: 1 });

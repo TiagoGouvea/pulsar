@@ -415,10 +415,10 @@
     "falhasPorGate": {}
   },
   "kimi-pro|smoke|*": {
-    "tentativas": 1,
-    "sucessos": 0,
-    "custoMedio": 0,
-    "duracaoMedia": 974,
+    "tentativas": 2,
+    "sucessos": 1,
+    "custoMedio": 0.0034248000000000004,
+    "duracaoMedia": 6466.5,
     "falhasPorGate": {}
   },
   "gptoss-or|smoke|*": {
@@ -433,6 +433,20 @@
     "sucessos": 1,
     "custoMedio": 0.0005860800000000001,
     "duracaoMedia": 11483,
+    "falhasPorGate": {}
+  },
+  "glm-or|smoke|*": {
+    "tentativas": 1,
+    "sucessos": 1,
+    "custoMedio": 0.001575248,
+    "duracaoMedia": 4971,
+    "falhasPorGate": {}
+  },
+  "glm-flash|smoke|*": {
+    "tentativas": 1,
+    "sucessos": 1,
+    "custoMedio": 0.00054083,
+    "duracaoMedia": 2387,
     "falhasPorGate": {}
   }
 }

@@ -24,7 +24,7 @@ Você prepara o projeto Pulsar para ser construído feature por feature por outr
    ```
    - IDs `F-<etapa>.<nn>`. Cada feature cabe numa sessão de agente (até ~5 arquivos alterados); divida as maiores.
    - `covers`: ids dos critérios de aceite abaixo. **Todo critério precisa estar em pelo menos uma feature.**
-   - Tags usadas pelo harness: `ui` (gera avaliação visual), `statistics`, `security-rules`, `sync`, `privacy-mode` (vão para implementadores fortes e torneio).
+   - Tags usadas pelo harness: `ui` (gera avaliação visual), `statistics`, `security-rules`, `sync`, `privacy-mode` (as listadas em routing.hardTags vão para implementadores fortes; marque `difficulty: hard` no que for realmente difícil).
    - `tests`/`protectedTests`: caminhos que o escritor de testes vai criar (não crie esses testes agora).
 2. **`{{decisionsFile}}`**: complete as pendências não decididas pelo humano, uma por linha, com default conservador e justificativa. Cada default vira uma linha em `.harness/inbox/questions.jsonl`.
 3. **Scaffold do app (etapa 0)** em `app/`: Vite + React + TypeScript strict + Tailwind, Firebase (Auth, Firestore, Hosting) com emuladores, ESLint + Prettier, Vitest (com cobertura), Playwright (projeto `mobile` 375×812, alvo do app; `desktop` 1280×800 só para smoke: o app é somente mobile e no computador apenas estica/desempilha), `@axe-core/playwright`, `@firebase/rules-unit-testing`. Scripts obrigatórios no `app/package.json`:

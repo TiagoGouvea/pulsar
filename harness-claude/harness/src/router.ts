@@ -1,3 +1,4 @@
+import { readLedger, typicalCost } from "./budget.js";
 import { type Ctx, enabledWorkers } from "./config.js";
 import type { WorkerSpec } from "./adapters/types.js";
 import { hp, readJson, writeJson } from "./state.js";
@@ -16,7 +17,6 @@ export interface PickOpts {
   rng?: () => number;
 }
 
-const TIER_COST: Record<string, number> = { high: 1.0, mid: 0.4, low: 0.05, local: 0 };
 const statsFile = (ctx: Ctx) => hp(ctx, "routing-stats.json");
 export const loadStats = (ctx: Ctx): RoutingStats => readJson(statsFile(ctx), {});
 const key = (w: string, role: string, tag = "*") => `${w}|${role}|${tag}`;
@@ -38,15 +38,15 @@ export function candidates(ctx: Ctx, o: PickOpts): WorkerSpec[] {
   return list;
 }
 
-/** Expected value: Laplace-smoothed success rate, penalized by expected cost and duration. */
-export function score(stats: RoutingStats, w: WorkerSpec, role: string, tags: string[] = []) {
+/** Expected value: Laplace-smoothed success rate, penalized by expected cost and duration.
+ * Without history in the role, cost comes from `coldCost` (prices.yaml); smoke priors only count for success. */
+export function score(stats: RoutingStats, w: WorkerSpec, role: string, tags: string[] = [], coldCost = 0) {
   const s = [key(w.id, role), ...tags.map((t) => key(w.id, role, t))].map((k) => stats[k]).filter(Boolean);
   const prior = stats[key(w.id, "smoke")];
   const n = s.reduce((a, x) => a + x.tentativas, 0) + (prior?.tentativas ?? 0);
   const ok = s.reduce((a, x) => a + x.sucessos, 0) + (prior?.sucessos ?? 0);
-  const base = s[0] ?? prior;
-  const cost = base?.custoMedio ?? (w.billing === "api" ? TIER_COST[w.tier] : 0);
-  const dur = base?.duracaoMedia ?? 600_000;
+  const cost = s[0]?.custoMedio ?? coldCost;
+  const dur = s[0]?.duracaoMedia ?? 600_000;
   return ((ok + 1) / (n + 2)) / (1 + cost / 2) / (1 + dur / 3_600_000);
 }
 
@@ -55,7 +55,9 @@ export function pick(ctx: Ctx, o: PickOpts): WorkerSpec | undefined {
   const list = candidates(ctx, o);
   if (list.length <= 1) return list[0];
   const stats = loadStats(ctx);
-  const ranked = [...list].sort((a, b) => score(stats, b, o.role, o.tags) - score(stats, a, o.role, o.tags));
+  const rows = readLedger(ctx);
+  const sc = new Map(list.map((w) => [w.id, score(stats, w, o.role, o.tags, typicalCost(ctx, w, o.role, rows))]));
+  const ranked = [...list].sort((a, b) => sc.get(b.id)! - sc.get(a.id)!);
   const rng = o.rng ?? Math.random;
   return rng() < ctx.config.routing.explorationRate ? ranked[1 + Math.floor(rng() * (ranked.length - 1))] : ranked[0];
 }

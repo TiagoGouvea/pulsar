@@ -18,7 +18,7 @@ const defaultKeys: Record<string, Record<string, string>> = {
   claude: { ANTHROPIC_API_KEY: "ANTHROPIC_API_KEY" },
   codex: { OPENAI_API_KEY: "OPENAI_API_KEY", CODEX_API_KEY: "OPENAI_API_KEY" },
   agy: {},   // agy uses its own login
-  pi: { OPENROUTER_API_KEY: "OPENROUTER_API_KEY", LMSTUDIO_BASE_URL: "LMSTUDIO_BASE_URL" },
+  pi: { OPENROUTER_API_KEY: "OPENROUTER_API_KEY", GEMINI_API_KEY: "GEMINI_API_KEY", LMSTUDIO_BASE_URL: "LMSTUDIO_BASE_URL" },
   fake: {},
 };
 
@@ -44,6 +44,6 @@ export function piAgentDir(ctx: Ctx) {
   return dir;
 }
 
-/** .env vars that must be filled for the worker (LM Studio URL has a default; OpenRouter key only for openrouter/ models). */
+/** .env vars that must be filled for the worker (LM Studio URL has a default; provider keys only for their own models). */
 export const requiredEnv = (spec: WorkerSpec) => [...new Set(Object.values(envMapping(spec)))]
-  .filter((src) => src !== "LMSTUDIO_BASE_URL" && !(src === "OPENROUTER_API_KEY" && !spec.model.startsWith("openrouter/")));
+  .filter((src) => src !== "LMSTUDIO_BASE_URL" && !(src === "OPENROUTER_API_KEY" && !spec.model.startsWith("openrouter/")) && !(src === "GEMINI_API_KEY" && !spec.model.startsWith("google/")));

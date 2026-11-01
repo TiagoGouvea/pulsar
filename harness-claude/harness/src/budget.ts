@@ -48,7 +48,16 @@ export function spent(ctx: Ctx, f: { stage?: number; featureId?: string; provide
 export function estimate(ctx: Ctx, w: WorkerSpec, role: string, rows = readLedger(ctx)) {
   if (w.billing !== "api") return 0;
   const hist = rows.filter((r) => r.workerId === w.id && r.role === role).slice(-20);
-  return hist.length ? sum(hist) / hist.length : TIER_EST[w.tier];
+  return hist.length ? sum(hist) / hist.length : typicalCost(ctx, w, role, rows);
+}
+
+/** Cost of a typical call with no history: prices.yaml x the role's mean tokens in the ledger (30k/3k when none). */
+export function typicalCost(ctx: Ctx, w: WorkerSpec, role: string, rows = readLedger(ctx)) {
+  if (w.billing !== "api") return 0;
+  if (!ctx.prices[w.id]) return TIER_EST[w.tier];
+  const rs = rows.filter((r) => r.role === role && r.tokensIn > 0);
+  const avg = (k: "tokensIn" | "tokensOut") => rs.reduce((a, r) => a + r[k], 0) / rs.length;
+  return costOf(ctx, w, rs.length ? { inputTokens: avg("tokensIn"), outputTokens: avg("tokensOut") } : { inputTokens: 30_000, outputTokens: 3_000 });
 }
 
 export const stageCap = (ctx: Ctx, stage: number) => ctx.budget.caps.byStage[String(stage)] ?? ctx.budget.caps.stage;

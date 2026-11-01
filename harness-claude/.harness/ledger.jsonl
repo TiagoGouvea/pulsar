@@ -126,3 +126,6 @@
 {"ts":"2026-10-31T18:22:01.114Z","workerId":"kimi-pro","provider":"openrouter","role":"smoke","stage":-1,"tokensIn":0,"tokensOut":0,"costUsd":0,"billing":"api"}
 {"ts":"2026-11-01T15:27:17.308Z","workerId":"gptoss-or","provider":"openrouter","role":"smoke","stage":-1,"tokensIn":4841,"tokensOut":414,"costUsd":0.000124398,"billing":"api"}
 {"ts":"2026-11-01T15:27:35.776Z","workerId":"qwen-small-or","provider":"openrouter","role":"smoke","stage":-1,"tokensIn":6416,"tokensOut":560,"costUsd":0.0005860800000000001,"billing":"api"}
+{"ts":"2026-11-01T17:52:13.647Z","workerId":"glm-or","provider":"openrouter","role":"smoke","stage":-1,"tokensIn":678,"tokensOut":359,"costUsd":0.001575248,"billing":"api"}
+{"ts":"2026-11-01T17:52:22.959Z","workerId":"glm-flash","provider":"openrouter","role":"smoke","stage":-1,"tokensIn":2145,"tokensOut":346,"costUsd":0.00054083,"billing":"api"}
+{"ts":"2026-11-01T17:52:42.165Z","workerId":"kimi-pro","provider":"openrouter","role":"smoke","stage":-1,"tokensIn":1660,"tokensOut":312,"costUsd":0.006849600000000001,"billing":"api"}

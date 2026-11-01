@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-01T17:52:22.960Z",
+  "workerId": "glm-flash",
+  "role": "smoke",
+  "stage": -1,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.00054083,
+  "durationMs": 2387,
+  "usage": {
+    "inputTokens": 2145,
+    "outputTokens": 346,
+    "cachedTokens": 1536,
+    "costUsd": 0.00054083
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "Criados os dois arquivos:\n\n- `hello.ts` — exporta `hello(name: string): string` retornando `Olá, ${name}!`\n- `hello.test.ts` — teste com vitest verificando `hello(\"Pulsar\")` retorna `\"Olá, Pulsar!\"`\n\nNenhuma dependência foi instalada, conforme solicitado; por isso os testes não foram executados (vitest não está disponível no diretório).\n\n```json\n{\"summary\": \"Criados hello.ts (função hello que retorna 'Olá, ${name}!') e hello.test.ts (teste vitest verificando hello('Pulsar') === 'Olá, Pulsar!')\", \"filesChanged\": [\"hello.ts\", \"hello.test.ts\"], \"testsRun\": [], \"confidence\": \"high\", \"notes\": \"Dependências não instaladas conforme instrução; teste escrito mas não executado.\"}\n```"
+}
