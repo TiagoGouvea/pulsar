@@ -172,7 +172,6 @@ function startLiveProgress(request: ExecutionRequest, tracePath: string, redacti
     markersSinceSummary = 0;
   };
   printSummary();
-  const ticker = setInterval(printSummary, 60_000);
   return {
     event(summary) {
       sequence += 1;
@@ -207,7 +206,6 @@ function startLiveProgress(request: ExecutionRequest, tracePath: string, redacti
     finish(outcome) {
       if (finished) return;
       finished = true;
-      clearInterval(ticker);
       const marker = outcome === "success" ? "✓" : outcome === "interrupted" ? "×" : "!";
       trail += marker;
       process.stdout.write(marker);
