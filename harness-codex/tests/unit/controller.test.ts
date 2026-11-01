@@ -3,6 +3,7 @@ import type { ExecutionResult, ModelCandidate } from "../../src/domain/types.js"
 import {
   consumesTaskAttempt,
   attemptedModelAliases,
+  canAuthorizeExtraReviewRetry,
   countCurrentReviewFailures,
   effectiveTaskAttemptLimit,
   executionFailureSignature,
@@ -81,6 +82,21 @@ describe("rodada de revisão", () => {
 
   test("mantém a contagem quando ainda não houve revisão válida", () => {
     expect(countCurrentReviewFailures([technicalFailure, technicalFailure])).toBe(2);
+  });
+
+  test("autoriza tentativa extra somente após esgotar revisão independente da tarefa indicada", () => {
+    const eligible = {
+      blockedCause: "independent_review_execution_failed",
+      blockedTaskId: "task-004",
+      taskId: "task-004",
+      taskState: "verifying",
+      priorFailures: 9,
+      maxAttempts: 9,
+    };
+    expect(canAuthorizeExtraReviewRetry(eligible)).toBe(true);
+    expect(canAuthorizeExtraReviewRetry({ ...eligible, priorFailures: 8 })).toBe(false);
+    expect(canAuthorizeExtraReviewRetry({ ...eligible, taskState: "blocked" })).toBe(false);
+    expect(canAuthorizeExtraReviewRetry({ ...eligible, blockedTaskId: "task-003" })).toBe(false);
   });
 
   test("reconhece os estados atual e legados de alterações solicitadas", () => {

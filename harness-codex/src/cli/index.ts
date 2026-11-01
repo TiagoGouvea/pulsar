@@ -185,7 +185,11 @@ program.command("run").description("Executa ou retoma o controlador")
   });
 
 for (const command of ["status", "pause", "resume", "stop"] as const) {
-  program.command(command).requiredOption("--config <path>").requiredOption("--run <id>").action(async (options: { config: string; run: string }) => {
+  const commandBuilder = program.command(command).requiredOption("--config <path>").requiredOption("--run <id>");
+  if (command === "resume") {
+    commandBuilder.option("--retry-review <task-id>", "Autoriza uma tentativa extra para revisão independente esgotada");
+  }
+  commandBuilder.action(async (options: { config: string; run: string; retryReview?: string }) => {
     const config = await loadConfig(options.config);
     const store = new StateStore(config.storage.root);
     try {
@@ -202,7 +206,7 @@ for (const command of ["status", "pause", "resume", "stop"] as const) {
         store.close();
         const orchestrator = new Orchestrator(config);
         try {
-          await orchestrator.run(options.run);
+          await orchestrator.run(options.run, options.retryReview ? { retryReviewTaskId: options.retryReview } : {});
           printRunOutcome(orchestrator.store, options.run, String(orchestrator.store.getRun(options.run)?.state), config.storage.root);
         } finally { orchestrator.close(); }
         return;

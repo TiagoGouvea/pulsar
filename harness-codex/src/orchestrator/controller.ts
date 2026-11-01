@@ -67,6 +67,20 @@ export function countCurrentReviewFailures(attempts: Record<string, unknown>[]):
   return failures;
 }
 
+export function canAuthorizeExtraReviewRetry(input: {
+  blockedCause: unknown;
+  blockedTaskId: unknown;
+  taskId: string;
+  taskState: unknown;
+  priorFailures: number;
+  maxAttempts: number;
+}): boolean {
+  return input.blockedCause === "independent_review_execution_failed"
+    && input.blockedTaskId === input.taskId
+    && input.taskState === "verifying"
+    && input.priorFailures >= input.maxAttempts;
+}
+
 export function effectiveTaskAttemptLimit(taskLimit: number, configuredLimit: number): number {
   return Math.max(taskLimit, configuredLimit);
 }
@@ -98,6 +112,7 @@ export class Orchestrator {
   private readonly catalog: ModelCatalog;
   private readonly ledger: BudgetLedger;
   private activeExecutor: Executor | undefined;
+  private reviewRetryAuthorization: { taskId: string; used: boolean } | undefined;
 
   constructor(readonly config: HarnessConfig) {
     this.store = new StateStore(config.storage.root);
@@ -144,11 +159,32 @@ export class Orchestrator {
     return id;
   }
 
-  async run(runId?: string): Promise<string> {
+  async run(runId?: string, options: { retryReviewTaskId?: string } = {}): Promise<string> {
     const id = runId ?? await this.plan();
     const run = this.store.getRun(id);
     if (!run) throw new Error(`Run inexistente: ${id}`);
     if (["completed", "cancelled", "failed", "awaiting_human"].includes(String(run.state))) return id;
+    if (options.retryReviewTaskId) {
+      const blocked = this.store.get<Record<string, unknown>>(
+        "SELECT payload_json FROM events WHERE run_id=? AND type='run.blocked' ORDER BY sequence DESC LIMIT 1",
+        id,
+      );
+      const blockedPayload = typeof blocked?.payload_json === "string"
+        ? JSON.parse(blocked.payload_json) as Record<string, unknown>
+        : {};
+      const task = this.store.listTasks(id).find((item) => item.id === options.retryReviewTaskId);
+      const reviewFailures = this.currentReviewFailures(id, `${options.retryReviewTaskId}-review`);
+      if (!canAuthorizeExtraReviewRetry({
+        blockedCause: blockedPayload.cause,
+        blockedTaskId: blockedPayload.taskId,
+        taskId: options.retryReviewTaskId,
+        taskState: task?.state,
+        priorFailures: reviewFailures,
+        maxAttempts: this.config.review.maxAttempts,
+      })) {
+        throw new Error("--retry-review só se aplica à tarefa em verifying bloqueada por independent_review_execution_failed após esgotar as tentativas de revisão.");
+      }
+    }
     const inputChanges = await detectInputChanges(this.config, this.store, id);
     if (inputChanges.length) {
       this.store.event(id, "inputs.changed", "run", id, { changes: inputChanges });
@@ -158,6 +194,14 @@ export class Orchestrator {
     const owner = `${process.pid}:${createId("lease")}`;
     if (!this.store.acquireLease(id, owner, this.config.execution.staleHeartbeatSeconds)) {
       throw new Error("Esta execução já possui um controlador ativo.");
+    }
+    if (options.retryReviewTaskId) {
+      const priorFailures = this.currentReviewFailures(id, `${options.retryReviewTaskId}-review`);
+      this.reviewRetryAuthorization = { taskId: options.retryReviewTaskId, used: false };
+      this.store.event(id, "task.review_retry_authorized", "task", options.retryReviewTaskId, {
+        priorFailures, additionalAttempts: 1, authorizedBy: "explicit resume --retry-review option",
+      });
+      this.log(`Autorizada uma tentativa extra de revisão para ${options.retryReviewTaskId}; histórico anterior preservado.`);
     }
     const heartbeat = setInterval(() => this.store.heartbeat(id, owner, this.config.execution.staleHeartbeatSeconds), Math.max(5_000, this.config.execution.staleHeartbeatSeconds * 500));
     const sessionId = createId("run-session");
@@ -239,6 +283,7 @@ export class Orchestrator {
     } finally {
       clearInterval(heartbeat);
       this.store.releaseLease(id, owner);
+      this.reviewRetryAuthorization = undefined;
       const endedAt = nowUtc();
       const storedState = this.store.getRun(id)?.state;
       const finalState = typeof storedState === "string" ? storedState : "unknown";
@@ -944,11 +989,14 @@ export class Orchestrator {
     };
     const declaredChangedFiles = this.implementerContext(runId, task)?.result.changedFiles ?? [];
     const priorCompletedFailures = this.currentReviewFailures(runId, reviewTask.id);
-    if (priorCompletedFailures >= this.config.review.maxAttempts) {
+    const authorizedExtraRetry = this.reviewRetryAuthorization?.taskId === task.id
+      && !this.reviewRetryAuthorization.used
+      && priorCompletedFailures >= this.config.review.maxAttempts;
+    if (priorCompletedFailures >= this.config.review.maxAttempts && !authorizedExtraRetry) {
       this.store.event(runId, "task.review_attempts_exhausted", "task", task.id, { attempts: priorCompletedFailures });
       return "retryable_failure";
     }
-    const reviewRound = priorCompletedFailures + 1;
+    const reviewRound = authorizedExtraRetry ? 1 : priorCompletedFailures + 1;
     const candidate = this.catalog.selectReviewer("functionalReviewer", implementer, task.id, reviewRound);
     const attemptId = createId("attempt");
     const outputDirectory = path.join(this.config.storage.root, "runs", runId, "tasks", task.id, "independent-review", attemptId);
@@ -979,6 +1027,12 @@ export class Orchestrator {
       "INSERT INTO attempts(id, run_id, task_id, number, executor, candidate_key, status, started_at) VALUES (?, ?, ?, ?, ?, ?, 'running', ?)",
       attemptId, runId, reviewTask.id, attemptNumber, candidate.executor, candidate.alias, nowUtc(),
     );
+    if (authorizedExtraRetry && this.reviewRetryAuthorization) {
+      this.reviewRetryAuthorization.used = true;
+      this.store.event(runId, "task.review_retry_consumed", "task", task.id, {
+        attemptId, candidate: candidate.alias, priorFailures: priorCompletedFailures,
+      });
+    }
     const sessionId = createId("session");
     this.store.run(
       "INSERT INTO sessions(id, attempt_id, role, model_key, independent, started_at) VALUES (?, ?, 'functionalReviewer', ?, 1, ?)",

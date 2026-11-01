@@ -13,6 +13,8 @@
 
 Retome com `yarn harness resume --config harness.config.yaml --run <id>`. Sessões interrompidas são fechadas no último heartbeat registrado, e não no momento do resume, para que o tempo parado não seja contado. Chamadas interrompidas permanecem sujeitas à reconciliação do orçamento; custo sem uso confirmado é marcado como incerto e não é tratado como zero.
 
+Se a revisão independente esgotar o limite de modelos e a tarefa ficar em `verifying`, o resume normal não inicia novas chamadas. Após revisar o diagnóstico, autorize uma única chamada adicional com `yarn harness resume --config harness.config.yaml --run <id> --retry-review <task-id>`. A autorização é registrada como evento, preserva todas as tentativas anteriores e reinicia a rotação normal de revisores. Se essa tentativa também falhar, uma nova autorização explícita será necessária.
+
 Para reconciliar uma cobrança incerta, confira o custo no histórico do provedor e use `yarn harness reconcile-call --config harness.config.yaml --run <id> --call <callId> --actual-cost <usd> --note "fonte/evidência"`. Isso substitui a reserva incerta pelo custo confirmado e grava a auditoria. Se uma implementação foi interrompida sem resultado, acrescente `--retry-task` para marcá-la como falha técnica e deixar a tarefa apta ao próximo `resume`. Informe custo `0` somente quando o histórico confirmar que não houve cobrança. A mesma chamada não pode ser reconciliada duas vezes.
 
 SIGINT, SIGTERM e SIGHUP solicitam pausa controlada. Encerramento forçado do processo não pode ser gravado no instante do crash; o próximo resume registra a sessão anterior como interrompida. Preserve `.harness/runs/<id>` para manter logs, banco e evidências.
