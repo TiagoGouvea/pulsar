@@ -10,7 +10,7 @@ describe("configuração e requisitos", () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "harness config "));
     const config = await createTestConfig(root);
     expect(config.project.workspace).toContain("workspace com espaços");
-    expect(config.execution.implementationTimeoutMinutes).toBe(15);
+    expect(config.execution.implementationTimeoutMinutes).toBe(20);
     expect(config.execution.reviewTimeoutMinutes).toBe(2);
     expect(config.review.maxAttempts).toBe(9);
     const requirements = await extractRequirements(config);
