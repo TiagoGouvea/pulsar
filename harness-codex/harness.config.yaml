@@ -208,8 +208,8 @@ models:
     enabled: true
     contextTokens: 1050000
     maxOutputTokens: 8192
-    inputUsdPerMillion: "0.07"
-    outputUsdPerMillion: "1.40"
+    inputUsdPerMillion: "0.08"
+    outputUsdPerMillion: "3.60"
     credentialEnv: OPENROUTER_API_KEY
   - alias: kimi-pro
     executor: pi
