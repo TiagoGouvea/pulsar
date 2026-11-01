@@ -4,7 +4,7 @@ import { createInterface } from "node:readline/promises";
 import { stdin, stdout } from "node:process";
 import { fileURLToPath } from "node:url";
 import type { HarnessConfig } from "../config/schema.js";
-import type { ExecutionResult, Requirement, Task, TaskState } from "../domain/types.js";
+import type { ExecutionResult, ModelCandidate, Requirement, Task, TaskState } from "../domain/types.js";
 import { BudgetLedger } from "../budget/ledger.js";
 import { buildTaskContext } from "../context/builder.js";
 import { createExecutor } from "../executors/index.js";
@@ -69,6 +69,24 @@ export function countCurrentReviewFailures(attempts: Record<string, unknown>[]):
 
 export function effectiveTaskAttemptLimit(taskLimit: number, configuredLimit: number): number {
   return Math.max(taskLimit, configuredLimit);
+}
+
+export function shouldUseHardImplementerPool(critical: boolean, priorAttemptCount: number): boolean {
+  return critical && priorAttemptCount >= 2;
+}
+
+export function executionFailureSignature(candidateAlias: string, result: ExecutionResult): string | null {
+  if (result.outcome === "ready_for_verification") return null;
+  return sha256(`${candidateAlias}:${result.outcome}:${result.summary}:${result.blockers.join(",")}`);
+}
+
+export function attemptedModelAliases(attempts: Record<string, unknown>[], candidates: ModelCandidate[]): string[] {
+  return attempts.flatMap((attempt) => {
+    const candidate = candidates.find((item) =>
+      `${item.executor}:${item.provider}:${item.modelId}:${item.version ?? "current"}` === attempt.candidate_key,
+    );
+    return candidate ? [candidate.alias] : [];
+  });
 }
 
 export function reviewRequestedChanges(status: unknown): boolean {
@@ -411,21 +429,8 @@ export class Orchestrator {
     }
     const attemptNumber = priorAttempts.length + 1;
     const critical = this.catalog.isHardTask([task.title, task.description, ...task.acceptanceCriteria].join("\n"));
-    const hard = critical && consumedAttempts.length >= 2;
-    const attemptedAliases = priorAttempts.flatMap((prior) => {
-      const candidate = this.catalog.list().find((item) =>
-        `${item.executor}:${item.provider}:${item.modelId}:${item.version ?? "current"}` === prior.candidate_key,
-      );
-      if (!candidate) return [];
-      if (typeof prior.result_json !== "string") return [candidate.alias];
-      try {
-        const result = JSON.parse(prior.result_json) as ExecutionResult;
-        const phase = result.diagnostics?.phase;
-        return phase === "model_load" || phase === "runtime_setup" ? [] : [candidate.alias];
-      } catch {
-        return [candidate.alias];
-      }
-    });
+    const hard = shouldUseHardImplementerPool(critical, priorAttempts.length);
+    const attemptedAliases = attemptedModelAliases(priorAttempts, this.catalog.list());
     const candidate = this.catalog.select(task.role, ["text", "tools"], {
       attempt: consumedAttempts.length + 1,
       seed: task.id,
@@ -488,7 +493,7 @@ export class Orchestrator {
     }
     await writeJson(path.join(attemptDirectory, "result.json"), result);
     this.recordExecutionFailure(runId, task.id, attemptId, candidate.alias, result);
-    const failureSignature = result.outcome === "ready_for_verification" ? null : sha256(`${result.outcome}:${result.summary}:${result.blockers.join(",")}`);
+    const failureSignature = executionFailureSignature(candidate.alias, result);
     this.store.run(
       "UPDATE attempts SET status=?, failure_signature=?, result_json=?, finished_at=? WHERE id=?",
       result.outcome, failureSignature, JSON.stringify(result), nowUtc(), attemptId,
