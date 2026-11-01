@@ -9,7 +9,7 @@ import {
   addQuestion, addRisk, ApprovalSchema, type Approval, buildCheckpoint, checkpointDir, computeHash, deployPreview,
   freezeSpec, markAnswered, parseApprovalFiles, resolveAnswer, storedHash, writeSpecChange,
 } from "./checkpoint.js";
-import type { Ctx } from "./config.js";
+import { type Ctx, remoteTwin } from "./config.js";
 import { formatIssues, judge, reviewCode, reviewFeatures, reviewUi, TriageSchema, type Verdict } from "./evaluator.js";
 import {
   type Feature, FeaturesFileSchema, loadFeatures, nextFeature, resetInProgress, saveFeatures, stageFeatures, stageSettled,
@@ -382,7 +382,11 @@ export class Orchestrator {
       const prompt = render(ctx, role, featureVars(ctx, f, { diagnostic: diag || "(primeira tentativa)", attempt: String(attempt) }), f.tags);
       this.clearInbox(wt);
       const useTournament = attempt === 1 && cfg.tournament.enabled && f.tags.some((t) => cfg.tournament.tags.includes(t));
-      const res = useTournament ? await this.tournament(f, wt, prompt, testsBase) : await this.rt.invoke({ role, taskId: f.id, featureId: f.id, stage: f.stage, attempt, cwd: wt, prompt, schema: WorkerFinal, tags: f.tags, deferEvent: true });
+      // last attempt failed on a local model: same model served remotely (unless escalated to implement_hard)
+      const prev = f.history.at(-1);
+      const twin = prev && prev.outcome !== "success" && role !== "implement_hard" ? remoteTwin(ctx, prev.workerId) : undefined;
+      if (twin) log(`↻ ${f.id} ${prev!.workerId} (local) ✖ ${prev!.outcome}: tentativa ${attempt} com o mesmo modelo remoto (${twin})`);
+      const res = useTournament ? await this.tournament(f, wt, prompt, testsBase) : await this.rt.invoke({ role, taskId: f.id, featureId: f.id, stage: f.stage, attempt, cwd: wt, prompt, schema: WorkerFinal, tags: f.tags, deferEvent: true, workerId: twin });
       this.harvestInbox(wt, f.id);
       await g.commitAll(wt, `wip(${f.id}): tentativa ${attempt} (${res.worker.id})`);
 

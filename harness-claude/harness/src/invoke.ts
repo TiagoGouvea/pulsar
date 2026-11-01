@@ -4,7 +4,7 @@ import type { z } from "zod";
 import { adapters, workerEnv } from "./adapters/index.js";
 import { FatalError, type Role, type WorkerResult, type WorkerSpec } from "./adapters/types.js";
 import { breach, type Cap, estimate, record, spent, stageCap, usageRatio } from "./budget.js";
-import { type Ctx, enabledWorkers } from "./config.js";
+import { type Ctx, enabledWorkers, remoteTwin, workerTag } from "./config.js";
 import { loadFeatures, stageFeatures } from "./features.js";
 import { fmtDur, log, logEvent } from "./logger.js";
 import { extractJson } from "./prompts.js";
@@ -59,13 +59,19 @@ export class Runtime {
   quotaHit = new Set<string>();
 
   async invoke<T>(r: InvokeReq<T>): Promise<InvokeRes<T>> {
+    let res: InvokeRes<T>;
     try {
-      return await this.invokeOnce(r);
+      res = await this.invokeOnce(r);
     } catch (e) {
       if (!(e instanceof QuotaHit)) throw e;
       if (r.workerId) throw new NoWorkerError(e.message);
       return this.invoke(r);   // same request, another worker
     }
+    // a failed local run is retried once with the same model served remotely (feature attempts: see orchestrator)
+    const twin = remoteTwin(this.ctx, res.worker.id);
+    if (res.outcome === "success" || !twin || r.workerId || r.deferEvent) return res;
+    log(`↻ ${r.featureId ?? r.taskId} ${r.role} ${res.worker.id} (local) ✖ ${res.outcome}: repetindo com o mesmo modelo remoto (${twin})`);
+    return this.invoke({ ...r, workerId: twin });
   }
 
   private async invokeOnce<T>(r: InvokeReq<T>): Promise<InvokeRes<T>> {
@@ -135,7 +141,7 @@ export class Runtime {
   private callLine(r: InvokeReq<any>, w: WorkerSpec, outcome: string, costUsd: number, ms: number) {
     const fs = stageFeatures(loadFeatures(this.ctx), r.stage);
     const progress = fs.length ? ` │ features ${fs.filter((f) => f.status === "passing").length}/${fs.length}` : "";
-    log(`${r.featureId ?? r.taskId} ${r.role} ${w.id}${w.billing === "local" ? " (local)" : ""} t${r.attempt} ${outcome === "success" ? "✔" : `✖ ${outcome}`} ${fmtDur(ms)} US$${costUsd.toFixed(2)} │ etapa US$${spent(this.ctx, { stage: r.stage }).toFixed(2)}/${stageCap(this.ctx, r.stage)}${progress}`);
+    log(`${r.featureId ?? r.taskId} ${r.role} ${w.id}${workerTag(this.ctx, w.id)} t${r.attempt} ${outcome === "success" ? "✔" : `✖ ${outcome}`} ${fmtDur(ms)} US$${costUsd.toFixed(2)} │ etapa US$${spent(this.ctx, { stage: r.stage }).toFixed(2)}/${stageCap(this.ctx, r.stage)}${progress}`);
   }
 
   private parse<T>(schema: z.ZodType<T>, text: string): T | undefined {

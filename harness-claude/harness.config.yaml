@@ -51,9 +51,12 @@ workers:
   # mesmo preço do sonnet (US$ 2/10): alternativa de outra família no implement_hard, nunca antes do sonnet
   kimi-pro:     { cli: pi,     model: "openrouter/moonshotai/kimi-k3.1-pro",  family: moonshot, tier: high, vision: true, billing: api, concurrency: 2, timeoutMin: 45, enabled: false }   # pi 1.2 não conhece o modelo e pede max_tokens 236k (402 no OpenRouter)
   # --- Locais (LM Studio, LMSTUDIO_BASE_URL, padrão http://localhost:1235/v1) ---
-  local-gptoss: { cli: pi, model: "lmstudio/mlx-community/gpt-oss-20b",         family: openai, tier: local, vision: false, billing: local, concurrency: 1, timeoutMin: 30, maxContextTokens: 65536 }
+  local-gptoss: { cli: pi, model: "lmstudio/mlx-community/gpt-oss-20b",         family: openai, tier: local, vision: false, billing: local, concurrency: 1, timeoutMin: 30, maxContextTokens: 65536, remote: gptoss-or, enabled: false }   # etapa 1: só remotos
   local-coder:  { cli: pi, model: "lmstudio/qwen3-coder-30b-a3b-instruct-mlx",  family: qwen,   tier: local, vision: false, billing: local, concurrency: 1, timeoutMin: 40, maxContextTokens: 32000, requiresFreeRamGb: 18, enabled: false }   # não carrega com 24 GB
-  local-small:  { cli: pi, model: "lmstudio/qwen3.5-9b-mlx",                    family: qwen,   tier: local, vision: false, billing: local, concurrency: 1, timeoutMin: 15, maxContextTokens: 65536 }
+  local-small:  { cli: pi, model: "lmstudio/qwen3.5-9b-mlx",                    family: qwen,   tier: local, vision: false, billing: local, concurrency: 1, timeoutMin: 15, maxContextTokens: 65536, remote: qwen-small-or, enabled: false }   # etapa 1: só remotos
+  # mesmos modelos dos locais, via OpenRouter: fallback quando o local falha e base do benchmark local x remoto
+  gptoss-or:    { cli: pi, model: "openrouter/openai/gpt-oss-20b", family: openai, tier: low, vision: false, billing: api, concurrency: 2, timeoutMin: 30 }
+  qwen-small-or: { cli: pi, model: "openrouter/qwen/qwen3.5-9b",   family: qwen,   tier: low, vision: false, billing: api, concurrency: 2, timeoutMin: 20 }
   # "lmstudio/<key>": key de GET /api/v1/models. O harness descarrega tudo, carrega só o modelo da chamada e o descarrega ao final.
   # --- Testes ---
   fake:         { cli: fake,   model: fake, family: local-other, tier: low, vision: true, billing: local, concurrency: 4, timeoutMin: 1, enabled: false }
@@ -63,12 +66,12 @@ roles:
   initializer:     { pool: [opus],                              note: "decompõe spec, scaffold, design system" }
   test_writer:     { pool: [sonnet, codex-mid],                 note: "escreve testes de aceite ANTES da implementação" }
   implement:       { pool: [qwen-coder, minimax, deepseek-flash, deepseek, glm, kimi, sonnet], note: "features comuns" }
-  implement_easy:  { pool: [local-gptoss, local-small, qwen-coder, minimax], note: "features difficulty=easy: local primeiro (teste controlado de modelo local)" }
+  implement_easy:  { pool: [gptoss-or, qwen-small-or, qwen-coder, minimax], note: "features difficulty=easy (locais local-gptoss/local-small fora na etapa 1)" }
   implement_hard:  { pool: [sonnet, opus, kimi-pro],                        note: "estatística, security rules, sincronização, privacidade" }
   review_code:     { pool: [gemini-pro-or, gemini-pro, codex-mid, sonnet],     rule: different_family_from_implementer }
   review_ui:       { pool: [gemini-pro, gemini-pro-or, sonnet],                rule: different_family_from_implementer, requires: vision }
-  triage:          { pool: [local-small, local-gptoss, gemini-flash, gemini-flash-or, deepseek-flash, deepseek, haiku] }
-  approval_parser: { pool: [gemini-flash, gemini-flash-or, haiku, local-small, local-gptoss],  note: "converte APROVACAO.md/DUVIDAS.md em JSON" }
+  triage:          { pool: [qwen-small-or, gptoss-or, gemini-flash, gemini-flash-or, deepseek-flash, deepseek, haiku] }
+  approval_parser: { pool: [gemini-flash, gemini-flash-or, haiku, qwen-small-or, gptoss-or],  note: "converte APROVACAO.md/DUVIDAS.md em JSON" }
   retro:           { pool: [sonnet] }
   postmortem:      { pool: [sonnet] }
 

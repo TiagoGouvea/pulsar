@@ -420,5 +420,19 @@
     "custoMedio": 0,
     "duracaoMedia": 974,
     "falhasPorGate": {}
+  },
+  "gptoss-or|smoke|*": {
+    "tentativas": 1,
+    "sucessos": 1,
+    "custoMedio": 0.000124398,
+    "duracaoMedia": 13495,
+    "falhasPorGate": {}
+  },
+  "qwen-small-or|smoke|*": {
+    "tentativas": 1,
+    "sucessos": 1,
+    "custoMedio": 0.0005860800000000001,
+    "duracaoMedia": 11483,
+    "falhasPorGate": {}
   }
 }

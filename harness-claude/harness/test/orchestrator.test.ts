@@ -8,7 +8,7 @@ import { git, listWorktrees } from "../src/git.js";
 import { loadLessons } from "../src/learning.js";
 import { readEvents } from "../src/logger.js";
 import { hp, loadState, readJsonl } from "../src/state.js";
-import { approveFile, deps, makeProject, orch, script, setFakeScript } from "./helpers.js";
+import { approveFile, config, deps, makeProject, orch, script, setFakeScript, WORKERS } from "./helpers.js";
 
 afterEach(() => setFakeScript(undefined));
 
@@ -105,6 +105,14 @@ describe("orquestrador (adapter fake)", () => {
     const f = feature(ctx.root, "F-0.01");
     expect(f.history.map((h) => h.workerId)).toEqual(["fake-anthropic", "fake-cheap"]);
     expect(f.status).toBe("passing");
+  });
+
+  it("6c. local falhou → próxima tentativa com o mesmo modelo remoto", async () => {
+    const local = { ...WORKERS["fake-cheap"], tier: "local", billing: "local", remote: "fake-remote" };
+    const { ctx } = await makeProject({ config: { workers: { ...WORKERS, "fake-local": local, "fake-remote": WORKERS["fake-cheap"] }, roles: { ...config().roles, implement: { pool: ["fake-local"] } } } });
+    setFakeScript(script([{ id: "F-0.01", stage: 0 }]));
+    await orch(ctx, deps((_c, o, n) => o.mode === "stage" || n > 1)).start();
+    expect(feature(ctx.root, "F-0.01").history.map((h) => h.workerId)).toEqual(["fake-local", "fake-remote"]);
   });
 
   it("6b. teto de etapa → pausa com checkpoint parcial; resume após ajuste", async () => {

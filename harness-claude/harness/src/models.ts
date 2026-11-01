@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { readLedger, spent } from "./budget.js";
-import type { Ctx } from "./config.js";
+import { type Ctx, workerTag } from "./config.js";
 import { loadFeatures } from "./features.js";
 import { fmtDur, readEvents } from "./logger.js";
 import { hp, readJsonl } from "./state.js";
@@ -31,7 +31,7 @@ export function modelsReport(ctx: Ctx, stage?: number): string {
     const cost = ledger.filter((r) => r.workerId === worker && roleOf(r) === role).reduce((a, r) => a + r.costUsd, 0);
     const rv = reviews.filter((r) => r.workerId === worker && `review_${r.kind}` === role);
     const gates = Object.entries(es.flatMap((e) => e.failedGates ?? []).reduce<Record<string, number>>((a, g) => ((a[g] = (a[g] ?? 0) + 1), a), {})).map(([g, n]) => `${g}×${n}`).join(" ");
-    return [role, `${worker}${ctx.config.workers[worker]?.billing === "local" ? " (local)" : ""}`, `${ok}/${es.length}`, `${Math.round((100 * ok) / es.length)}%`, rv.length ? `${rv.filter((r) => r.pass).length}✔ ${rv.filter((r) => !r.pass).length}✖` : "", role.startsWith("implement") && adjBy[worker] ? String(adjBy[worker]) : "", `US$${(cost / es.length).toFixed(3)}`, `US$${cost.toFixed(2)}`, fmtDur(es.reduce((a, e) => a + (e.durationMs ?? 0), 0) / es.length), gates];
+    return [role, `${worker}${workerTag(ctx, worker)}`, `${ok}/${es.length}`, `${Math.round((100 * ok) / es.length)}%`, rv.length ? `${rv.filter((r) => r.pass).length}✔ ${rv.filter((r) => !r.pass).length}✖` : "", role.startsWith("implement") && adjBy[worker] ? String(adjBy[worker]) : "", `US$${(cost / es.length).toFixed(3)}`, `US$${cost.toFixed(2)}`, fmtDur(es.reduce((a, e) => a + (e.durationMs ?? 0), 0) / es.length), gates];
   });
   const head = ["papel", "modelo", "ok", "%", "veredito", "ajustes", "custo/chamada", "custo total", "tempo médio", "gates que falharam"];
   const w = head.map((h, i) => Math.max(h.length, ...rows.map((r) => r[i].length)));

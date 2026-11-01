@@ -124,3 +124,5 @@
 {"ts":"2026-10-31T18:21:46.802Z","workerId":"qwen-coder","provider":"openrouter","role":"smoke","stage":-1,"tokensIn":3036,"tokensOut":205,"costUsd":0.0007568,"billing":"api"}
 {"ts":"2026-10-31T18:22:00.107Z","workerId":"minimax","provider":"openrouter","role":"smoke","stage":-1,"tokensIn":2301,"tokensOut":399,"costUsd":0.0006509549999999999,"billing":"api"}
 {"ts":"2026-10-31T18:22:01.114Z","workerId":"kimi-pro","provider":"openrouter","role":"smoke","stage":-1,"tokensIn":0,"tokensOut":0,"costUsd":0,"billing":"api"}
+{"ts":"2026-11-01T15:27:17.308Z","workerId":"gptoss-or","provider":"openrouter","role":"smoke","stage":-1,"tokensIn":4841,"tokensOut":414,"costUsd":0.000124398,"billing":"api"}
+{"ts":"2026-11-01T15:27:35.776Z","workerId":"qwen-small-or","provider":"openrouter","role":"smoke","stage":-1,"tokensIn":6416,"tokensOut":560,"costUsd":0.0005860800000000001,"billing":"api"}

@@ -13,6 +13,8 @@ deepseek:     { input: 1.60, output: 3.20, cached: 0.135 }  # deepseek/deepseek-
 deepseek-flash: { input: 0.15, output: 0.60, cached: 0.003 } # deepseek/deepseek-v4.1-flash-1017
 qwen-coder:   { input: 0.12, output: 0.80, cached: 0.07 }   # qwen/qwen3-coder-next
 minimax:      { input: 0.075, output: 0.30, cached: 0.007 } # minimax/minimax-m3.1-flash
+gptoss-or:    { input: 0.03, output: 0.13, cached: 0.015 }  # openai/gpt-oss-20b (remoto do local-gptoss)
+qwen-small-or: { input: 0.17, output: 0.25, cached: 0.085 } # qwen/qwen3.5-9b (remoto do local-small)
 kimi-pro:     { input: 2,    output: 10,   cached: 0.20 }   # moonshotai/kimi-k3.1-pro
 gemini-pro-or:   { input: 0.825, output: 4.125, cached: 0.08 }   # google/gemini-3.8-flash (OpenRouter)
 gemini-flash-or: { input: 0.25,  output: 1.50,  cached: 0.025 }  # google/gemini-3.1-flash-lite (OpenRouter)

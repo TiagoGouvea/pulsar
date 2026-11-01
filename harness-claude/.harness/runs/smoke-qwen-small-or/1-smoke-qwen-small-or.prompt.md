@@ -1,0 +1,1 @@
+Crie `hello.ts` exportando `export function hello(name: string): string` que retorna `Olá, ${name}!` e um teste `hello.test.ts` (vitest) que verifica `hello("Pulsar") === "Olá, Pulsar!"`. Não instale dependências. Termine com um bloco ```json {"summary": "...", "filesChanged": [...], "testsRun": [], "confidence": "high", "notes": ""}```.

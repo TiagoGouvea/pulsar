@@ -15,6 +15,7 @@ const Worker = z.object({
   env: z.record(z.string(), z.string()).optional(),
   maxContextTokens: z.number().optional(),
   requiresFreeRamGb: z.number().optional(),
+  remote: z.string().optional(),   // local workers: id of the same model served remotely (fallback + benchmark)
   concurrency: z.number().int().min(1),
   timeoutMin: z.number().positive(),
   enabled: z.boolean().default(true),
@@ -160,6 +161,19 @@ export const enabledWorkers = (ctx: Ctx) =>
   Object.entries(ctx.config.workers)
     .filter(([, w]) => w.enabled)
     .map(([id, w]) => ({ id, ...w }));
+
+/** Enabled remote twin of a local worker (same model via API), used when the local run fails. */
+export function remoteTwin(ctx: Ctx, id: string) {
+  const t = ctx.config.workers[id]?.remote;
+  return t && ctx.config.workers[t]?.enabled ? t : undefined;
+}
+
+/** " (local)" / " (remoto de <local>)" so local and remote runs of the same model stand apart in logs and reports. */
+export function workerTag(ctx: Ctx, id: string) {
+  if (ctx.config.workers[id]?.billing === "local") return " (local)";
+  const local = Object.keys(ctx.config.workers).find((k) => ctx.config.workers[k].remote === id);
+  return local ? ` (remoto de ${local})` : "";
+}
 
 /** Provider used for daily caps and reporting. */
 export function providerOf(w: WorkerCfg): string {
