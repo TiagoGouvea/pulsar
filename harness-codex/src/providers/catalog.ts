@@ -47,23 +47,19 @@ export class ModelCatalog {
     return (candidates.find((candidate) => !excluded.has(candidate.alias)) ?? candidates[0]) as ModelCandidate;
   }
 
-  selectReviewer(role: Role, implementer: ModelCandidate, seed: string = role, attempt = 1): ModelCandidate {
+  reviewerCandidates(role: Role, implementer: ModelCandidate, seed: string = role): ModelCandidate[] {
     const eligible = this.eligible(role, ["text"]).filter((candidate) => candidate.executor === this.config.execution.executor);
     const aliases = this.configuredPool(role, false);
     const ordered = aliases
       ? aliases.map((alias) => eligible.find((candidate) => candidate.alias === alias)).filter((candidate): candidate is ModelCandidate => Boolean(candidate))
       : eligible;
-    const candidates = this.config.review.preferDifferentModelFamily
+    const primary = this.config.review.preferDifferentModelFamily
       ? ordered.filter((candidate) => candidate.family !== implementer.family)
       : ordered;
-    if (!candidates.length) {
-      const candidate = ordered[0];
-      if (!candidate) throw new Error(`Nenhum revisor elegível para ${role}.`);
-      return candidate;
-    }
-    const primaryIndex = (hashSeed(seed) + Math.min(Math.max(0, attempt - 1), candidates.length - 1)) % candidates.length;
-    if (attempt <= candidates.length + 2) return candidates[primaryIndex] as ModelCandidate;
-
+    const primaryCandidates = primary.length ? primary : ordered;
+    if (!primaryCandidates.length) return [];
+    const primaryIndex = hashSeed(seed) % primaryCandidates.length;
+    const rotatedPrimary = [...primaryCandidates.slice(primaryIndex), ...primaryCandidates.slice(0, primaryIndex)];
     const primaryAliases = new Set(ordered.map((candidate) => candidate.alias));
     const diagnosticAliases = this.config.routing?.pools.diagnostic ?? [];
     const emergency = diagnosticAliases
@@ -78,9 +74,21 @@ export class ModelCatalog {
         && !primaryAliases.has(candidate.alias),
       ))
       .sort((left, right) => Number(right.modality === "local") - Number(left.modality === "local"));
-    const emergencyIndex = emergency.length > 0 ? (attempt - candidates.length - 3) % emergency.length : 0;
-    const candidate = emergency[emergencyIndex] ?? candidates[primaryIndex];
-    if (!candidate) throw new Error(`Nenhum revisor elegível para ${role}.`);
+    return [...rotatedPrimary, ...emergency];
+  }
+
+  selectReviewer(
+    role: Role,
+    implementer: ModelCandidate,
+    seed: string = role,
+    attempt = 1,
+    excludeAliases: string[] = [],
+  ): ModelCandidate {
+    const candidates = this.reviewerCandidates(role, implementer, seed);
+    const excluded = new Set(excludeAliases);
+    const startIndex = Math.min(Math.max(attempt - 1, 0), candidates.length - 1);
+    const candidate = candidates.slice(startIndex).find((item) => !excluded.has(item.alias));
+    if (!candidate) throw new Error(`Pool de revisão esgotado para ${role}; não há revisor elegível ainda não tentado.`);
     return candidate;
   }
 }

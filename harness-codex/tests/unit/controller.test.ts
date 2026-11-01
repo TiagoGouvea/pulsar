@@ -5,6 +5,7 @@ import {
   attemptedModelAliases,
   canAuthorizeExtraReviewRetry,
   countCurrentReviewFailures,
+  currentReviewFailureAttempts,
   effectiveTaskAttemptLimit,
   executionFailureSignature,
   hasOnlyTechnicalFailures,
@@ -82,6 +83,20 @@ describe("rodada de revisão", () => {
 
   test("mantém a contagem quando ainda não houve revisão válida", () => {
     expect(countCurrentReviewFailures([technicalFailure, technicalFailure])).toBe(2);
+  });
+
+  test("retorna apenas modelos da sequência consecutiva de falhas técnicas", () => {
+    const earlierFailure = { candidate_key: "old", ...technicalFailure };
+    const valid = { candidate_key: "reviewed", result_json: validReview.result_json };
+    const currentFailure = { candidate_key: "next", ...technicalFailure };
+    expect(currentReviewFailureAttempts([earlierFailure, valid, currentFailure])).toEqual([currentFailure]);
+  });
+
+  test("mapeia aliases já gravados nas tentativas de revisão", () => {
+    const aliases = attemptedModelAliases([
+      { candidate_key: "review-alias", result_json: technicalFailure.result_json },
+    ], [{ alias: "review-alias" } as ModelCandidate]);
+    expect(aliases).toEqual(["review-alias"]);
   });
 
   test("autoriza tentativa extra somente após esgotar revisão independente da tarefa indicada", () => {

@@ -268,6 +268,9 @@ describe("controlador", () => {
   test("recupera bloqueio causado por resposta inválida do revisor", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "harness-review-contract-"));
     const config = await createTestConfig(root);
+    const fakeModel = config.models[0];
+    if (!fakeModel) throw new Error("Modelo fake ausente.");
+    config.models.push({ ...fakeModel, alias: "fake-review-next", modelId: "v2", family: "fake-review", roles: ["functionalReviewer"] });
     const orchestrator = new Orchestrator(config);
     try {
       const runId = await orchestrator.plan();
@@ -308,7 +311,10 @@ describe("controlador", () => {
       expect(orchestrator.store.getRun(runId)?.state).toBe("awaiting_human");
       expect(orchestrator.store.listTasks(runId)[0]?.state).toBe("passed");
       expect(orchestrator.store.all("SELECT id FROM attempts WHERE run_id=? AND task_id=?", runId, taskId)).toHaveLength(1);
-      expect(orchestrator.store.all("SELECT id FROM attempts WHERE run_id=? AND task_id=?", runId, `${taskId}-review`)).toHaveLength(2);
+      expect(orchestrator.store.all<Record<string, unknown>>(
+        "SELECT id, candidate_key FROM attempts WHERE run_id=? AND task_id=? ORDER BY number",
+        runId, `${taskId}-review`,
+      )).toMatchObject([{ candidate_key: "fake" }, { candidate_key: "fake-review-next" }]);
       expect(orchestrator.store.listEvents(runId).some((event) => event.type === "task.recovery_resumed")).toBe(true);
     } finally { orchestrator.close(); }
   });

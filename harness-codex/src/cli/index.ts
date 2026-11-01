@@ -187,7 +187,7 @@ program.command("run").description("Executa ou retoma o controlador")
 for (const command of ["status", "pause", "resume", "stop"] as const) {
   const commandBuilder = program.command(command).requiredOption("--config <path>").requiredOption("--run <id>");
   if (command === "resume") {
-    commandBuilder.option("--retry-review <task-id>", "Autoriza uma tentativa extra para revisão independente esgotada");
+    commandBuilder.option("--retry-review <task-id>", "Continua a revisão independente pelos modelos elegíveis ainda não tentados");
   }
   commandBuilder.action(async (options: { config: string; run: string; retryReview?: string }) => {
     const config = await loadConfig(options.config);

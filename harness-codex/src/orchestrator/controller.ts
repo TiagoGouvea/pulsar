@@ -67,6 +67,15 @@ export function countCurrentReviewFailures(attempts: Record<string, unknown>[]):
   return failures;
 }
 
+export function currentReviewFailureAttempts(attempts: Record<string, unknown>[]): Record<string, unknown>[] {
+  const current: Record<string, unknown>[] = [];
+  for (const attempt of attempts) {
+    if (isTechnicalExecutionFailure(attempt)) current.push(attempt);
+    else current.length = 0;
+  }
+  return current;
+}
+
 export function canAuthorizeExtraReviewRetry(input: {
   blockedCause: unknown;
   blockedTaskId: unknown;
@@ -97,7 +106,8 @@ export function executionFailureSignature(candidateAlias: string, result: Execut
 export function attemptedModelAliases(attempts: Record<string, unknown>[], candidates: ModelCandidate[]): string[] {
   return attempts.flatMap((attempt) => {
     const candidate = candidates.find((item) =>
-      `${item.executor}:${item.provider}:${item.modelId}:${item.version ?? "current"}` === attempt.candidate_key,
+      item.alias === attempt.candidate_key
+      || `${item.executor}:${item.provider}:${item.modelId}:${item.version ?? "current"}` === attempt.candidate_key,
     );
     return candidate ? [candidate.alias] : [];
   });
@@ -112,7 +122,7 @@ export class Orchestrator {
   private readonly catalog: ModelCatalog;
   private readonly ledger: BudgetLedger;
   private activeExecutor: Executor | undefined;
-  private reviewRetryAuthorization: { taskId: string; used: boolean } | undefined;
+  private reviewRetryAuthorization: { taskId: string; remainingAttempts: number } | undefined;
 
   constructor(readonly config: HarnessConfig) {
     this.store = new StateStore(config.storage.root);
@@ -164,6 +174,7 @@ export class Orchestrator {
     const run = this.store.getRun(id);
     if (!run) throw new Error(`Run inexistente: ${id}`);
     if (["completed", "cancelled", "failed", "awaiting_human"].includes(String(run.state))) return id;
+    let retryReviewCandidates: ModelCandidate[] = [];
     if (options.retryReviewTaskId) {
       const blocked = this.store.get<Record<string, unknown>>(
         "SELECT payload_json FROM events WHERE run_id=? AND type='run.blocked' ORDER BY sequence DESC LIMIT 1",
@@ -184,6 +195,13 @@ export class Orchestrator {
       })) {
         throw new Error("--retry-review só se aplica à tarefa em verifying bloqueada por independent_review_execution_failed após esgotar as tentativas de revisão.");
       }
+      const taskDefinition = rowToTask(task as Record<string, unknown>);
+      const implementation = this.implementerContext(id, taskDefinition);
+      if (!implementation) throw new Error(`Não foi possível recuperar o modelo implementador de ${options.retryReviewTaskId}; nenhuma revisão foi iniciada.`);
+      retryReviewCandidates = this.unusedReviewCandidates(id, taskDefinition, implementation.candidate);
+      if (!retryReviewCandidates.length) {
+        throw new Error(`Pool de revisão esgotado para ${options.retryReviewTaskId}; todos os revisores elegíveis já foram tentados. Nenhuma chamada foi iniciada.`);
+      }
     }
     const inputChanges = await detectInputChanges(this.config, this.store, id);
     if (inputChanges.length) {
@@ -197,11 +215,13 @@ export class Orchestrator {
     }
     if (options.retryReviewTaskId) {
       const priorFailures = this.currentReviewFailures(id, `${options.retryReviewTaskId}-review`);
-      this.reviewRetryAuthorization = { taskId: options.retryReviewTaskId, used: false };
+      this.reviewRetryAuthorization = { taskId: options.retryReviewTaskId, remainingAttempts: retryReviewCandidates.length };
       this.store.event(id, "task.review_retry_authorized", "task", options.retryReviewTaskId, {
-        priorFailures, additionalAttempts: 1, authorizedBy: "explicit resume --retry-review option",
+        priorFailures, additionalAttempts: retryReviewCandidates.length,
+        candidateAliases: retryReviewCandidates.map((candidate) => candidate.alias),
+        authorizedBy: "explicit resume --retry-review option",
       });
-      this.log(`Autorizada uma tentativa extra de revisão para ${options.retryReviewTaskId}; histórico anterior preservado.`);
+      this.log(`Autorizadas ${retryReviewCandidates.length} tentativa(s) de revisão ainda não realizadas para ${options.retryReviewTaskId}: ${retryReviewCandidates.map((candidate) => candidate.alias).join(", ")}; histórico preservado.`);
     }
     const heartbeat = setInterval(() => this.store.heartbeat(id, owner, this.config.execution.staleHeartbeatSeconds), Math.max(5_000, this.config.execution.staleHeartbeatSeconds * 500));
     const sessionId = createId("run-session");
@@ -773,11 +793,22 @@ export class Orchestrator {
   }
 
   private currentReviewFailures(runId: string, reviewTaskId: string): number {
-    const attempts = this.store.all<Record<string, unknown>>(
-      "SELECT result_json FROM attempts WHERE run_id=? AND task_id=? AND result_json IS NOT NULL ORDER BY started_at, number",
+    return countCurrentReviewFailures(this.reviewAttemptRows(runId, reviewTaskId));
+  }
+
+  private reviewAttemptRows(runId: string, reviewTaskId: string): Record<string, unknown>[] {
+    return this.store.all<Record<string, unknown>>(
+      "SELECT candidate_key, result_json FROM attempts WHERE run_id=? AND task_id=? AND result_json IS NOT NULL ORDER BY started_at, number",
       runId, reviewTaskId,
     );
-    return countCurrentReviewFailures(attempts);
+  }
+
+  private unusedReviewCandidates(runId: string, task: Task, implementer: ModelCandidate): ModelCandidate[] {
+    const reviewAttempts = this.reviewAttemptRows(runId, `${task.id}-review`);
+    const failedAliases = attemptedModelAliases(currentReviewFailureAttempts(reviewAttempts), this.catalog.list());
+    const attempted = new Set(failedAliases);
+    return this.catalog.reviewerCandidates("functionalReviewer", implementer, task.id)
+      .filter((candidate) => !attempted.has(candidate.alias));
   }
 
   private applyReviewDecision(runId: string, taskId: string, decision: ReviewDecision): boolean {
@@ -991,14 +1022,22 @@ export class Orchestrator {
     const declaredChangedFiles = this.implementerContext(runId, task)?.result.changedFiles ?? [];
     const priorCompletedFailures = this.currentReviewFailures(runId, reviewTask.id);
     const authorizedExtraRetry = this.reviewRetryAuthorization?.taskId === task.id
-      && !this.reviewRetryAuthorization.used
+      && this.reviewRetryAuthorization.remainingAttempts > 0
       && priorCompletedFailures >= this.config.review.maxAttempts;
     if (priorCompletedFailures >= this.config.review.maxAttempts && !authorizedExtraRetry) {
       this.store.event(runId, "task.review_attempts_exhausted", "task", task.id, { attempts: priorCompletedFailures });
       return "retryable_failure";
     }
-    const reviewRound = authorizedExtraRetry ? 1 : priorCompletedFailures + 1;
-    const candidate = this.catalog.selectReviewer("functionalReviewer", implementer, task.id, reviewRound);
+    const reviewRound = priorCompletedFailures + 1;
+    const failureAttempts = currentReviewFailureAttempts(this.reviewAttemptRows(runId, reviewTask.id));
+    const failedAliases = attemptedModelAliases(failureAttempts, this.catalog.list());
+    let candidate: ModelCandidate;
+    try {
+      candidate = this.catalog.selectReviewer("functionalReviewer", implementer, task.id, reviewRound, failedAliases);
+    } catch (error) {
+      this.log(`POOL DE REVISÃO esgotado para ${task.id}; nenhum modelo será repetido. ${safeError(error)}`);
+      return "retryable_failure";
+    }
     const attemptId = createId("attempt");
     const outputDirectory = path.join(this.config.storage.root, "runs", runId, "tasks", task.id, "independent-review", attemptId);
     await mkdir(outputDirectory, { recursive: true });
@@ -1029,9 +1068,10 @@ export class Orchestrator {
       attemptId, runId, reviewTask.id, attemptNumber, candidate.executor, candidate.alias, nowUtc(),
     );
     if (authorizedExtraRetry && this.reviewRetryAuthorization) {
-      this.reviewRetryAuthorization.used = true;
+      this.reviewRetryAuthorization.remainingAttempts -= 1;
       this.store.event(runId, "task.review_retry_consumed", "task", task.id, {
         attemptId, candidate: candidate.alias, priorFailures: priorCompletedFailures,
+        remainingAuthorizedAttempts: this.reviewRetryAuthorization.remainingAttempts,
       });
     }
     const sessionId = createId("session");
@@ -1095,14 +1135,30 @@ export class Orchestrator {
     revision: string,
   ): Promise<ReviewDecision> {
     let decision: ReviewDecision = "retryable_failure";
-    for (let fallback = 0; fallback < this.config.review.maxAttempts; fallback += 1) {
+    const authorizedExtraAttempts = this.reviewRetryAuthorization?.taskId === task.id
+      ? this.reviewRetryAuthorization.remainingAttempts
+      : 0;
+    const attemptLimit = this.config.review.maxAttempts + authorizedExtraAttempts;
+    for (let fallback = 0; fallback < attemptLimit; fallback += 1) {
+      if (!this.unusedReviewCandidates(runId, task, implementer).length) {
+        this.log(`POOL DE REVISÃO esgotado para ${task.id}; todos os modelos elegíveis já foram tentados.`);
+        this.store.event(runId, "task.review_pool_exhausted", "task", task.id, {
+          attemptedAliases: attemptedModelAliases(
+            currentReviewFailureAttempts(this.reviewAttemptRows(runId, `${task.id}-review`)), this.catalog.list(),
+          ),
+        });
+        return "retryable_failure";
+      }
       decision = await this.reviewTask(runId, task, implementer, revision);
       if (decision !== "retryable_failure") return decision;
       const failures = this.currentReviewFailures(runId, `${task.id}-review`);
-      if (failures >= this.config.review.maxAttempts) return decision;
+      const hasAuthorizedAttempts = this.reviewRetryAuthorization?.taskId === task.id
+        && this.reviewRetryAuthorization.remainingAttempts > 0;
+      if (failures >= this.config.review.maxAttempts && !hasAuthorizedAttempts) return decision;
       this.store.event(runId, "task.review_fallback", "task", task.id, {
         completedFailures: failures,
-        remainingAttempts: this.config.review.maxAttempts - failures,
+        remainingAttempts: Math.max(0, this.config.review.maxAttempts - failures)
+          + (this.reviewRetryAuthorization?.taskId === task.id ? this.reviewRetryAuthorization.remainingAttempts : 0),
       });
     }
     return decision;
