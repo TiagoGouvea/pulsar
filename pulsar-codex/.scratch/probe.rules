@@ -1,0 +1,15 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function letTest(data) {
+      let value = data.get('missing', null);
+      return value == null;
+    }
+    match /c1/{id} { allow create: if true; allow update: if false && request.resource.data.missing == 1; }
+    match /c2/{id} { allow create: if true; allow update: if true && request.resource.data.missing == 1; }
+    match /c3/{id} { allow create: if true; allow update: if letTest(request.resource.data); }
+    match /c4/{id} { allow create: if true; allow update: if request.resource.data.get('nested', null).get('x', null) == null; }
+    match /c5/{id} { allow create: if true; allow update: if request.resource.data.get('nested', null) == null ? true : request.resource.data.get('nested', null).get('x', null) == null; }
+    match /c6/{id} { allow create: if true; allow update: if request.resource.data.keys().hasAny(['value']) ? request.resource.data.get('value', null) == 1 : true; }
+  }
+}
