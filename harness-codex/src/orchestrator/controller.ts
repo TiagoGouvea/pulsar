@@ -1014,8 +1014,10 @@ export class Orchestrator {
       outputTokens: result.usage?.outputTokens ?? null, cachedTokens: result.usage?.cachedTokens ?? null,
       costUsd: uncertain ? null : result.usage?.costUsd ?? "0", estimatedCostUsd: String(estimated), uncertain,
     });
-    const failureDetail = result.outcome === "failed" ? ` · motivo: ${result.summary.replace(/\s+/g, " ").slice(0, 220)}` : "";
-    this.log(`Revisão ${candidate.alias} [${this.modelLocation(candidate.modality)}] · ${result.outcome} · ${result.usage?.inputTokens ?? "?"}/${result.usage?.outputTokens ?? "?"} tokens · USD ${uncertain ? "incerto" : result.usage?.costUsd ?? "0"} · ${reviewDurationMs} ms${failureDetail}.`);
+    this.log(`Revisão ${candidate.alias} [${this.modelLocation(candidate.modality)}] · ${result.outcome} · ${result.usage?.inputTokens ?? "?"}/${result.usage?.outputTokens ?? "?"} tokens · USD ${uncertain ? "incerto" : result.usage?.costUsd ?? "0"} · ${reviewDurationMs} ms.`);
+    if (result.outcome === "failed") {
+      this.log(`  ↳ Motivo: ${result.summary.replace(/\s+/g, " ").slice(0, 1000)}`);
+    }
     this.store.run("UPDATE attempts SET status=?, result_json=?, finished_at=? WHERE id=?", result.outcome, JSON.stringify(result), nowUtc(), attemptId);
     const decision: ReviewDecision = result.outcome === "ready_for_verification" && result.blockers.length === 0
       ? "passed"

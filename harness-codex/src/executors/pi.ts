@@ -382,8 +382,11 @@ export class PiExecutor implements Executor {
           return this.executeSession(request);
         }, (diagnostic) => {
           localDiagnostics.push(diagnostic);
-          const details = diagnostic.error ? ` · ${diagnostic.error.replace(/\s+/g, " ").slice(0, 500)}` : "";
-          console.log(`[${diagnostic.at}] LM Studio · ${diagnostic.phase} · ${diagnostic.modelId}${diagnostic.contextLength ? ` · contexto ${diagnostic.contextLength}` : ""}${diagnostic.durationMs == null ? "" : ` · ${diagnostic.durationMs} ms`}${details}`);
+          console.log(`[${diagnostic.at}] LM Studio · ${diagnostic.phase} · ${diagnostic.modelId}${diagnostic.contextLength ? ` · contexto ${diagnostic.contextLength}` : ""}${diagnostic.durationMs == null ? "" : ` · ${diagnostic.durationMs} ms`}`);
+          if (diagnostic.error) {
+            const details = diagnostic.error.replace(/\s+/g, " ").slice(0, 2_000);
+            console.log(`[${diagnostic.at}]   ↳ Detalhe: ${details}`);
+          }
         });
       }
       enteredSession = true;
