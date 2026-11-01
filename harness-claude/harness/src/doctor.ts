@@ -10,7 +10,7 @@ import { type Ctx, enabledWorkers, PLACEHOLDER, providerOf } from "./config.js";
 import { loadFeatures, uncovered } from "./features.js";
 import * as g from "./git.js";
 import { Runtime } from "./invoke.js";
-import { logEvent } from "./logger.js";
+import { log, logEvent } from "./logger.js";
 import { acceptanceCriteria, designRefs } from "./prompts.js";
 import { recordStats } from "./router.js";
 import { hp } from "./state.js";
@@ -189,6 +189,8 @@ export async function smoke(ctx: Ctx, only?: string[]) {
     rmSync(dir, { recursive: true, force: true });
     mkdirSync(dir, { recursive: true });
     await g.git(dir, "init", "-q");
+    ctx.config.workers[w.id].timeoutMin = Math.min(ctx.config.workers[w.id].timeoutMin, 3);   // a micro task: don't wait the worker's full timeout
+    log(`▶ smoke ${w.id} (${w.model}) — até 3 min`);
     const prompt = "Crie `hello.ts` exportando `export function hello(name: string): string` que retorna `Olá, ${name}!` e um teste `hello.test.ts` (vitest) que verifica `hello(\"Pulsar\") === \"Olá, Pulsar!\"`. Não instale dependências. Termine com um bloco ```json {\"summary\": \"...\", \"filesChanged\": [...], \"testsRun\": [], \"confidence\": \"high\", \"notes\": \"\"}```.";
     const r = await rt.invoke({ role: "smoke", taskId: `smoke-${w.id}`, stage: -1, attempt: 1, cwd: dir, prompt, workerId: w.id, schema: HelloFinal, deferEvent: true })
       .catch((e) => ({ outcome: "failure", costUsd: 0, worker: w, result: { durationMs: 0, finalText: String(e.message), usage: { inputTokens: 0, outputTokens: 0 } } }) as any);

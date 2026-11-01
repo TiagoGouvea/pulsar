@@ -76,3 +76,6 @@
 {"id":"evt-76","ts":"2026-11-01T17:52:13.662Z","taskId":"smoke-glm-or","stage":-1,"role":"smoke","workerId":"glm-or","family":"zhipu","attempt":1,"outcome":"success","costUsd":0.001575248,"durationMs":4971}
 {"id":"evt-77","ts":"2026-11-01T17:52:22.966Z","taskId":"smoke-glm-flash","stage":-1,"role":"smoke","workerId":"glm-flash","family":"zhipu","attempt":1,"outcome":"success","costUsd":0.00054083,"durationMs":2387}
 {"id":"evt-78","ts":"2026-11-01T17:52:42.171Z","taskId":"smoke-kimi-pro","stage":-1,"role":"smoke","workerId":"kimi-pro","family":"moonshot","attempt":1,"outcome":"success","costUsd":0.006849600000000001,"durationMs":11959}
+{"id":"evt-79","ts":"2026-11-01T18:09:18.155Z","taskId":"smoke-gemini-lite","stage":-1,"role":"smoke","workerId":"gemini-lite","family":"google","attempt":1,"outcome":"success","costUsd":0.0021445,"durationMs":29485}
+{"id":"evt-80","ts":"2026-11-01T18:09:39.767Z","taskId":"smoke-gemini","stage":-1,"role":"smoke","workerId":"gemini","family":"google","attempt":1,"outcome":"success","costUsd":0.012642750000000001,"durationMs":17281}
+{"id":"evt-81","ts":"2026-11-01T18:10:11.376Z","taskId":"smoke-gemini-argon","stage":-1,"role":"smoke","workerId":"gemini-argon","family":"google","attempt":1,"outcome":"success","costUsd":0.010176000000000001,"durationMs":31566}

@@ -129,3 +129,6 @@
 {"ts":"2026-11-01T17:52:13.647Z","workerId":"glm-or","provider":"openrouter","role":"smoke","stage":-1,"tokensIn":678,"tokensOut":359,"costUsd":0.001575248,"billing":"api"}
 {"ts":"2026-11-01T17:52:22.959Z","workerId":"glm-flash","provider":"openrouter","role":"smoke","stage":-1,"tokensIn":2145,"tokensOut":346,"costUsd":0.00054083,"billing":"api"}
 {"ts":"2026-11-01T17:52:42.165Z","workerId":"kimi-pro","provider":"openrouter","role":"smoke","stage":-1,"tokensIn":1660,"tokensOut":312,"costUsd":0.006849600000000001,"billing":"api"}
+{"ts":"2026-11-01T18:09:18.148Z","workerId":"gemini-lite","provider":"google","role":"smoke","stage":-1,"tokensIn":7294,"tokensOut":214,"costUsd":0.0021445,"billing":"api"}
+{"ts":"2026-11-01T18:09:39.759Z","workerId":"gemini","provider":"google","role":"smoke","stage":-1,"tokensIn":13397,"tokensOut":692,"costUsd":0.012642750000000001,"billing":"api"}
+{"ts":"2026-11-01T18:10:11.370Z","workerId":"gemini-argon","provider":"google","role":"smoke","stage":-1,"tokensIn":3708,"tokensOut":276,"costUsd":0.010176000000000001,"billing":"api"}

@@ -448,5 +448,26 @@
     "custoMedio": 0.00054083,
     "duracaoMedia": 2387,
     "falhasPorGate": {}
+  },
+  "gemini-lite|smoke|*": {
+    "tentativas": 1,
+    "sucessos": 1,
+    "custoMedio": 0.0021445,
+    "duracaoMedia": 29485,
+    "falhasPorGate": {}
+  },
+  "gemini|smoke|*": {
+    "tentativas": 1,
+    "sucessos": 1,
+    "custoMedio": 0.012642750000000001,
+    "duracaoMedia": 17281,
+    "falhasPorGate": {}
+  },
+  "gemini-argon|smoke|*": {
+    "tentativas": 1,
+    "sucessos": 1,
+    "custoMedio": 0.010176000000000001,
+    "duracaoMedia": 31566,
+    "falhasPorGate": {}
   }
 }
