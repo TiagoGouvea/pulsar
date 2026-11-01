@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-01T18:39:51.828Z",
+  "workerId": "deepseek",
+  "role": "triage",
+  "featureId": "F-1.01",
+  "stage": 1,
+  "attempt": 4,
+  "outcome": "success",
+  "costUsd": 0.0041484,
+  "durationMs": 5588,
+  "usage": {
+    "inputTokens": 3561,
+    "outputTokens": 629,
+    "cachedTokens": 0,
+    "costUsd": 0.0041484
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"causaRaiz\": \"Esbuild com keepNames=true injeta `var __name = (fn, name) => …` ao serializar funções, mas `page.evaluate(fn)` envia a função stringificada para o browser, onde `__name` não existe. A falha é do G8 (e2e), não do domínio: os helpers em `app/e2e/support.ts` passavam closures para `page.evaluate` em vez de strings.\",\n  \"categoria\": \"test\",\n  \"padrao\": true,\n  \"dica\": \"Nunca passe closures/funções para `page.evaluate` — sempre use strings (ex.: `page.evaluate('window.__myHelper(arg)')`) para evitar que o esbuild keepNames injete `__name` no contexto do browser. Se precisar passar argumentos, use o segundo parâmetro de `page.evaluate(stringExpr, arg)`.\"\n}\n```"
+}

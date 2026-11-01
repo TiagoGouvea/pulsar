@@ -348,12 +348,23 @@ export class Orchestrator {
 
   private async ensureAcceptanceTests(f: Feature, wt: string) {
     if (f.protectedTests.length && f.protectedTests.every((p) => existsSync(join(wt, p)))) return f;
+    let retry = "";
     for (let i = 1; i <= 2; i++) {
       this.clearInbox(wt);
-      const r = await this.rt.invoke({ role: "test_writer", taskId: f.id, featureId: f.id, stage: f.stage, attempt: 0, cwd: wt, prompt: render(this.ctx, "test_writer", featureVars(this.ctx, f), f.tags), schema: WorkerFinal, tags: f.tags });
+      const r = await this.rt.invoke({ role: "test_writer", taskId: f.id, featureId: f.id, stage: f.stage, attempt: 0, cwd: wt, prompt: render(this.ctx, "test_writer", featureVars(this.ctx, f), f.tags) + retry, schema: WorkerFinal, tags: f.tags });
       this.harvestInbox(wt, f.id);
       const base = await g.head(wt);
       if (r.outcome !== "success" || !(await g.commitAll(wt, `test(${f.id}): testes de aceite`))) { await g.resetHard(wt, base); continue; }
+      // protected tests are hashed as they will stay: formatted now (a later autofix broke G7) and type-correct (implementers can't fix them)
+      await this.tidy(wt, f.id);
+      const tc = this.ctx.config.gates.G3?.cmd;
+      const typed = tc ? await execa(tc, { shell: true, cwd: this.appAbs(wt), reject: false, all: true, timeout: 300_000 }) : undefined;
+      if (typed?.exitCode) {
+        log(`↻ ${f.id} test_writer ${r.worker.id}: testes não passam no typecheck, nova tentativa`);
+        retry = `\n\n## Tentativa anterior rejeitada\nSeus testes não passaram em \`${tc}\` e foram descartados. Corrija os tipos (dados inválidos de propósito: use cast explícito, ex. \`as never\`). Um crash interno do tsc ("reading 'kind'") costuma vir de uniões de tipos passadas a APIs do Firestore.\n\`\`\`\n${String(typed.all ?? "").slice(-2500)}\n\`\`\``;
+        await g.resetHard(wt, base);
+        continue;
+      }
       const written = (await g.changedFiles(wt, base)).filter((p) => TEST_FILE.test(p));
       const declared = f.protectedTests.length ? f.protectedTests : f.tests;
       const prot = declared.filter((p) => existsSync(join(wt, p)));

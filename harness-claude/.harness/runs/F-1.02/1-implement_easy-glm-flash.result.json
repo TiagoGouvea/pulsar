@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-01T18:16:50.732Z",
+  "workerId": "glm-flash",
+  "role": "implement_easy",
+  "featureId": "F-1.02",
+  "stage": 1,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.0074011400000000005,
+  "durationMs": 118686,
+  "usage": {
+    "inputTokens": 14738,
+    "outputTokens": 3346,
+    "cachedTokens": 117248,
+    "costUsd": 0.0074011400000000005
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "Tudo verde. A feature era utilitário puro (`app/src/lib/time.ts`), sem tela nova — nada a acrescentar em `routes.json` nem no design system.\n\nImplementação:\n- `localDate` / `brasiliaDateKey` via `Intl.DateTimeFormat` + `formatToParts` (`en-CA` para ISO `YYYY-MM-DD`), fuso do navegador e `America/Sao_Paulo` respectivamente, sem qualquer correção de viagem.\n- `toUtcIso` persiste em UTC (`toISOString`).\n- `formatDate` / `formatTime` / `formatDateTime` em pt-BR no fuso do navegador (`hourCycle: h23`).\n- `shiftLocalDate` usa aritmética `Date.UTC` sobre o dia calendário → estável em DST; `daysWindow` gera 30 dias consecutivos terminando hoje, mais antigo primeiro.\n\n```json\n{\n  \"summary\": \"Implementado src/lib/time.ts: localDate no fuso do navegador (YYYY-MM-DD), toUtcIso (UTC), formatDate/formatTime/formatDateTime pt-BR no fuso local, brasiliaDateKey fixo em America/Sao_Paulo (quota de IA/lembrete), shiftLocalDate (DST-safe via UTC) e daysWindow (janela de 30 dias corridos, mais antigo primeiro). Sem lógica de viagens.\",\n  \"filesChanged\": [\"app/src/lib/time.ts\"],\n  \"testsRun\": \"yarn test:unit (8 arquivos, 62 testes — inclui o protegido time.test.ts), yarn lint, yarn typecheck, yarn test:e2e (8 testes)\",\n  \"confidence\": \"high\",\n  \"notes\": \"Instalei node_modules (yarn install --frozen-lockfile) pois o worktree estava sem dependências. Nenhuma dúvida ou risco a registrar: assinaturas e comportamentos foram definidos pelo teste protegido + spec 5.2/arquitetura 1.1/3.3. Feature lib-only: sem rota nova, sem UI.\"\n}\n```"
+}

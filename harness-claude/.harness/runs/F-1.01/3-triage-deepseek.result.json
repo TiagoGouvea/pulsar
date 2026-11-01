@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-01T18:38:06.477Z",
+  "workerId": "deepseek",
+  "role": "triage",
+  "featureId": "F-1.01",
+  "stage": 1,
+  "attempt": 3,
+  "outcome": "success",
+  "costUsd": 0.12473503999999998,
+  "durationMs": 134711,
+  "usage": {
+    "inputTokens": 21821,
+    "outputTokens": 10800,
+    "cachedTokens": 409344,
+    "costUsd": 0.12473503999999998
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\"causaRaiz\": \"O gate privacy-leak falha dentro de page.evaluate: a função passada foi transpilada pelo esbuild com keepNames:true e serializada como __name(() => {...}, \\\"...\\\"), mas __name não existe no contexto do navegador (ReferenceError). É falha de tooling/infraestrutura do gate (esbuild + Playwright), não do código da feature, que só adiciona lógica pura de domínio sem UI/rota.\", \"categoria\": \"env\", \"padrao\": true, \"dica\": \"Evite passar funções para page.evaluate quando o bundle usa esbuild keepNames: use page.evaluate com string (ex.: reescrever e2e/support.ts para 'document.body…' em string) ou defina globalThis.__name antes. Rode yarn test:e2e antes de entregar.\"}\n```"
+}

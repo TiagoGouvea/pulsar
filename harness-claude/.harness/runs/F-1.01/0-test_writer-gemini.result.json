@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-01T18:21:00.637Z",
+  "workerId": "gemini",
+  "role": "test_writer",
+  "featureId": "F-1.01",
+  "stage": 1,
+  "attempt": 0,
+  "outcome": "success",
+  "costUsd": 0.43573710000000004,
+  "durationMs": 438071,
+  "usage": {
+    "inputTokens": 167620,
+    "outputTokens": 35079,
+    "cachedTokens": 2379678,
+    "costUsd": 0.43573710000000004
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "Testes de aceite da feature **F-1.01** (`Modelo de domínio de indicadores e registros (puro)`) criados com sucesso conforme especificado, cobrindo todos os critérios de aceitação e regras da spec/arquitetura.\n\nOs testes foram escritos antes da implementação e falham atualmente como esperado, aguardando a etapa de implementação.\n\n```json\n{\n  \"summary\": \"Escrita dos testes de aceite para F-1.01 cobrindo validação e agregação do modelo de domínio puro (Indicator, Entry, EntryValue) em app/src/domain/__tests__/\",\n  \"filesChanged\": [\n    \"app/src/domain/__tests__/indicator.test.ts\",\n    \"app/src/domain/__tests__/entry.test.ts\"\n  ],\n  \"testsRun\": [\n    \"app/src/domain/__tests__/indicator.test.ts\",\n    \"app/src/domain/__tests__/entry.test.ts\"\n  ],\n  \"confidence\": \"high\",\n  \"notes\": \"Os testes falham hoje com erro de resolução de módulo (arquivos de domínio ainda não implementados). Cobrem determinismo e independência de nome em suggestAggregation, allowedAggregations por tipo/frequência, direções e idealRange de Resultado/Fator, restrições estruturais de Indicator (nome, sigla, escala, opções ordinais) e validação de Entry/EntryValue com verificação de tipo e opções existentes.\"\n}\n```"
+}

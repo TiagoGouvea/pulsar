@@ -1,19 +1,19 @@
 {
-  "ts": "2026-10-31T18:22:00.107Z",
+  "ts": "2026-11-01T18:41:43.030Z",
   "workerId": "minimax",
   "role": "smoke",
   "stage": -1,
   "attempt": 1,
   "outcome": "success",
-  "costUsd": 0.0006509549999999999,
-  "durationMs": 6100,
+  "costUsd": 0.00070308,
+  "durationMs": 3152,
   "usage": {
-    "inputTokens": 2301,
-    "outputTokens": 399,
-    "cachedTokens": 4427,
-    "costUsd": 0.0006509549999999999
+    "inputTokens": 2184,
+    "outputTokens": 517,
+    "cachedTokens": 4352,
+    "costUsd": 0.00070308
   },
   "exitCode": 0,
   "timedOut": false,
-  "finalTail": "Arquivos criados em `/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/.harness/smoke/minimax/`. Nenhuma dependência instalada e nenhum teste executado (não há `package.json`/vitest no diretório).\n\n```json\n{\"summary\": \"Criados hello.ts com a função hello() exportada e hello.test.ts com teste vitest verificando a saudação de 'Pulsar'\", \"filesChanged\": [\"hello.ts\", \"hello.test.ts\"], \"testsRun\": [], \"confidence\": \"high\", \"notes\": \"Dependências não instaladas conforme instrução; vitest não pôde ser executado neste diretório (sem package.json).\"}\n```"
+  "finalTail": "Arquivos criados em `/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/.harness/smoke/minimax`:\n\n- `hello.ts` — exporta `hello(name: string): string` retornando `Olá, ${name}!`\n- `hello.test.ts` — teste vitest com `expect(hello(\"Pulsar\")).toBe(\"Olá, Pulsar!\")`\n\nNão instalei dependências conforme solicitado; por isso o vitest não pôde ser executado (sem `node_modules`/`package.json` no diretório). O teste é padrão e roda com `npx vitest` assim que as dependências estiverem disponíveis.\n\n```json\n{\"summary\": \"Criados hello.ts com a função hello(name) retornando 'Olá, <nome>!' e hello.test.ts com um teste vitest verificando hello(\\\"Pulsar\\\") === \\\"Olá, Pulsar!\\\"\", \"filesChanged\": [\"hello.ts\", \"hello.test.ts\"], \"testsRun\": [], \"confidence\": \"high\", \"notes\": \"Testes não executados: dependências (vitest) não instaladas, conforme instrução de não instalar.\"}\n```"
 }

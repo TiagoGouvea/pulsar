@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-01T18:45:14.101Z",
+  "workerId": "deepseek",
+  "role": "triage",
+  "featureId": "F-1.10",
+  "stage": 1,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.003989182,
+  "durationMs": 30828,
+  "usage": {
+    "inputTokens": 1194,
+    "outputTokens": 1364,
+    "cachedTokens": 3416,
+    "costUsd": 0.003989182
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"causaRaiz\": \"engines.node fixado em '22' no app/functions/package.json, mas o runner do CI usa Node 24. O emulador de functions (emulators:exec / e2e:serve) recusa iniciar com engines incompatíveis, derrubando G6 (e2e), G8, G9 e G10 em cascata. Além disso, app/.prettierignore pode ter sido sobrescrito e perdeu a entrada 'dist/', fazendo G2 (format) falhar em arquivos de build.\",\n  \"categoria\": \"env\",\n  \"padrao\": true,\n  \"dica\": \"Troque 'engines.node: \\\"22\\\"' por '\\\">=22\\\"' no package.json de functions e adicione 'dist/' ao .prettierignore. Se o harness usar yarn, passe --ignore-engines no script de build das functions como segurança adicional.\"\n}\n```"
+}

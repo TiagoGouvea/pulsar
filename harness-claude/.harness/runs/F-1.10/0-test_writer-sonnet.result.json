@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-01T18:42:57.478Z",
+  "workerId": "sonnet",
+  "role": "test_writer",
+  "featureId": "F-1.10",
+  "stage": 1,
+  "attempt": 0,
+  "outcome": "success",
+  "costUsd": 0.090593,
+  "durationMs": 26613,
+  "usage": {
+    "inputTokens": 18067,
+    "outputTokens": 3380,
+    "cachedTokens": 116315,
+    "costUsd": 0.090593
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "outDir` set to `lib`.\n- **Default region:** `src/index.ts` calls `setGlobalOptions` with `region: 'southamerica-east1'`.\n- **Healthcheck:** `src/index.ts` exports an internal `healthcheck`.\n- **Firebase config:** `firebase.json` has a `functions` entry with `source` set to `functions`, plus a numeric port for the functions emulator.\n- **Scripts:**\n  - `test:functions` uses `emulators:exec` and `vitest`.\n  - `e2e:serve` has `functions` in its `--only` list.\n- **Build hygiene:**\n  - `functions/lib` stays in the ESLint ignores and in `.prettierignore`. Both already have it.\n  - A `.gitignore` mentions `lib`. This check is loose and matches any `lib` entry.\n\nThe checks don't cover three things:\n- The test only checks that the source mentions the region. It doesn't call the function, so it doesn't prove the deployed function runs in that region.\n- It doesn't prove `yarn test:functions` actually runs against the emulators.\n- The ignore checks already pass today, so they only guard against regressions.\n\nTwo things for the implementer:\n- Add `functions/vitest.config.ts` and make sure the root `yarn test:unit` and ESLint don't pick up `functions/**` tests with the wrong config.\n- `functions/src/index.ts` is linted by the root config, which allows Node globals, so it should lint cleanly.\n\n```json\n{\"summary\":\"Added static acceptance tests for the functions workspace (Node 22, v2, region southamerica-east1, healthcheck, firebase.json emulator, test:functions and e2e:serve scripts, lib ignored by lint/format). Not run: Bash was denied.\",\"filesChanged\":[\"app/functions/src/__tests__/setup.test.ts\"],\"testsRun\":[],\"confidence\":\"med\",\"notes\":\"Tests were not executed (no shell access). They should fail today because app/functions does not exist. The region and healthcheck checks are textual, matching setGlobalOptions({region}) and 'export const healthcheck' in src/index.ts. The functions package needs its own vitest config so the test resolves __dirname and the node environment.\"}\n```"
+}

@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-01T19:01:07.192Z",
+  "workerId": "deepseek",
+  "role": "triage",
+  "featureId": "F-1.10",
+  "stage": 1,
+  "attempt": 5,
+  "outcome": "success",
+  "costUsd": 0.004046144844,
+  "durationMs": 31308,
+  "usage": {
+    "inputTokens": 4973,
+    "outputTokens": 2318,
+    "cachedTokens": 9600,
+    "costUsd": 0.004046144844
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\"causaRaiz\": \"O gate G8 (harness/src/gates/privacy-leak.ts) referencia um helper nomeado dentro do callback passado a page.evaluate. Ao ser transpilado (tsx/esbuild com keepNames), o esbuild injeta chamadas a `__name` no corpo da função; quando o Playwright serializa esse callback para rodar no navegador, `__name` não existe no contexto, causando `ReferenceError: __name is not defined`. É um bug do harness, não do app/feature.\", \"categoria\": \"test\", \"padrao\": true, \"dica\": \"No harness (fora desta worktree), remover o helper nomeado de dentro do callback do page.evaluate: inline a lógica (ex.: !!el.closest(...)) ou avalie uma string montada em runtime, para que o esbuild não injete `__name` no código serializado.\"}\n```"
+}

@@ -55,6 +55,7 @@ export async function makeProject(o: { config?: Record<string, any>; budget?: Re
   const root = o.sub ? join(top, "harness") : top, repo = o.sub ? join(top, "proj") : top;
   const w = (dir: string, f: string, c: string) => { mkdirSync(join(dir, f, ".."), { recursive: true }); writeFileSync(join(dir, f), c); };
   const cfg = config(o.config);
+  Object.assign(cfg.browser, { portLock: join(top, "ports.lock") });   // never the real app's lock
   if (o.sub) Object.assign(cfg.project, { repo: "../proj" });
   w(root, "harness.config.yaml", stringify(cfg));
   w(root, "budget.yaml", stringify({ currency: "USD", caps: { run: 100, stage: 50, feature: 20, dailyByProvider: {} }, alerts: [0.5, 0.8, 1.0], onSoftLimit: "prefer_cheap", onHardLimit: "pause_and_checkpoint", ...o.budget }));

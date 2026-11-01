@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-01T18:37:10.539Z",
+  "workerId": "opus",
+  "role": "implement_hard",
+  "featureId": "F-1.02",
+  "stage": 1,
+  "attempt": 5,
+  "outcome": "success",
+  "costUsd": 0.19779059999999998,
+  "durationMs": 50330,
+  "usage": {
+    "inputTokens": 19177,
+    "outputTokens": 2785,
+    "cachedTokens": 231128,
+    "costUsd": 0.19779059999999998
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "es from `harness-claude/harness/src/gates/privacy-leak.ts`, which is outside the worktree and which I didn't touch. The harness runs under tsx/esbuild, which adds a `__name` helper inside the function it passes to `page.evaluate`, and that helper doesn't exist in the browser. Changing the app can't fix this. I logged it in `.harness/inbox/risks.jsonl` with two possible fixes in the harness:\n- pass the gate's page code to `page.evaluate` as a string instead of a function, or\n- define a stand-in with `page.addInitScript('globalThis.__name = (f) => f')` before the gate runs.\n\n**What `app/src/lib/time.ts` provides:**\n- `localDate`, the day key in the browser's time zone.\n- `brasiliaDateKey`, the day key in `America/Sao_Paulo` whatever the browser's zone.\n- `toUtcIso`, for storing timestamps in UTC.\n- pt-BR display helpers: `formatDate`, `formatTime`, `formatDateTime`.\n- `shiftLocalDate` and `daysWindow` (30 calendar days by default).\n- No correction for travel or time-zone changes.\n\n**Test results:**\n- `yarn lint`, `yarn typecheck` and `yarn format:check` pass.\n- `yarn test:unit`: 62/62, including the 24 tests in `time.test.ts`.\n- `yarn test:e2e`: 8/8.\n\n```json\n{\n  \"summary\": \"F-1.02 time utilities implemented in app/src/lib/time.ts and all worktree checks pass. G8 still fails in the harness (outside the worktree): under tsx/esbuild, page.evaluate receives a function that references the __name helper, which the browser does not have. Not fixable in the app; logged in .harness/inbox/risks.jsonl with suggested fixes.\",\n  \"filesChanged\": [\"app/src/lib/time.ts\", \"app/e2e/support.ts\", \".harness/inbox/risks.jsonl\"],\n  \"testsRun\": [\"yarn lint\", \"yarn typecheck\", \"yarn format:check\", \"yarn test:unit (62/62, time.test.ts 24/24)\", \"yarn test:e2e (8/8)\"],\n  \"confidence\": \"high\",\n  \"notes\": \"G8 will keep failing until privacy-leak.ts in the harness passes a string to page.evaluate or defines globalThis.__name via page.addInitScript. Retrying with app changes will not fix it.\"\n}\n```"
+}

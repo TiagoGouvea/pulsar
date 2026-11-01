@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-01T18:38:43.502Z",
+  "workerId": "sonnet",
+  "role": "implement_hard",
+  "featureId": "F-1.01",
+  "stage": 1,
+  "attempt": 4,
+  "outcome": "success",
+  "costUsd": 0.09463100000000002,
+  "durationMs": 36922,
+  "usage": {
+    "inputTokens": 22176,
+    "outputTokens": 2313,
+    "cachedTokens": 160670,
+    "costUsd": 0.09463100000000002
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"summary\": \"O domínio F-1.01 (indicator.ts, entry.ts) já estava no worktree e os testes passam. A falha do G8 era um bug de tooling: o `__name` do esbuild keepNames vazava para `page.evaluate`. Reescrevi os dois helpers de `app/e2e/support.ts` para passar strings ao `page.evaluate`, sem mexer no código da feature.\",\n  \"filesChanged\": [\"app/e2e/support.ts\"],\n  \"testsRun\": [\n    \"yarn lint\",\n    \"yarn typecheck\",\n    \"yarn format:check\",\n    \"yarn test:unit (73 passed)\",\n    \"yarn test:e2e (8 passed)\"\n  ],\n  \"confidence\": \"high\",\n  \"notes\": \"A primeira chamada de Bash foi negada, então fiz a edição com a ferramenta Edit e depois rodei os gates. Não revisei os arquivos de domínio nem o `scripts/seed-data.ts` nesta tentativa. Só confirmei que os testes unitários e os gates passam. Não verifiquei se o seed-data usa os tipos do domínio.\"\n}\n```"
+}

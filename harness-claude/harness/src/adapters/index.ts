@@ -34,13 +34,15 @@ export function workerEnv(ctx: Ctx, spec: WorkerSpec): Record<string, string> {
   return spec.cli === "pi" ? { ...env, PI_CODING_AGENT_DIR: piAgentDir(ctx) } : env;
 }
 
-/** Isolated pi agent dir (does not touch ~/.pi): models.json registers LM Studio with the configured local models. */
+/** Isolated pi agent dir (does not touch ~/.pi): models.json registers LM Studio models and pinned OpenRouter ids. */
 export function piAgentDir(ctx: Ctx) {
   const dir = join(ctx.root, ".harness", "pi-agent");
   const models = Object.values(ctx.config.workers).filter((w) => w.cli === "pi" && w.model.startsWith("lmstudio/"))
     .map((w) => ({ id: w.model.slice("lmstudio/".length), ...(w.maxContextTokens ? { contextWindow: w.maxContextTokens } : {}) }));
+  const pinned = Object.values(ctx.config.workers).filter((w) => w.cli === "pi" && w.pinModel && w.model.startsWith("openrouter/"))
+    .map((w) => ({ id: w.model.slice("openrouter/".length), reasoning: true, input: w.vision ? ["text", "image"] : ["text"], contextWindow: 1_000_000, maxTokens: 65_536 }));
   mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, "models.json"), JSON.stringify({ providers: { lmstudio: { baseUrl: lmstudioUrl(ctx.env), api: "openai-completions", apiKey: "lmstudio", models } } }, null, 2));
+  writeFileSync(join(dir, "models.json"), JSON.stringify({ providers: { lmstudio: { baseUrl: lmstudioUrl(ctx.env), api: "openai-completions", apiKey: "lmstudio", models }, ...(pinned.length ? { openrouter: { models: pinned } } : {}) } }, null, 2));
   return dir;
 }
 

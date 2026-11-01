@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-01T18:58:44.569Z",
+  "workerId": "opus",
+  "role": "implement_hard",
+  "featureId": "F-1.10",
+  "stage": 1,
+  "attempt": 5,
+  "outcome": "success",
+  "costUsd": 0.276995,
+  "durationMs": 98917,
+  "usage": {
+    "inputTokens": 24172,
+    "outputTokens": 3628,
+    "cachedTokens": 418025,
+    "costUsd": 0.276995
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "echeck`, `yarn format:check` e `yarn test:unit` passam (38 testes).\n- **Functions:** `yarn test:functions` compila as functions e sobe os emuladores de auth, firestore e functions. O `healthcheck` inicializa em `southamerica-east1` e os 9 testes de `setup.test.ts` passam.\n- **E2E:** `yarn test:e2e` passa (8 testes). É a evidência de que a feature não vaza as sentinelas do seed enquanto o G8 não roda.\n- **G8:** o erro `__name is not defined` vem de `harness/src/gates/privacy-leak.ts`. Registrei o risco em `.harness/inbox/risks.jsonl` com a correção sugerida, que é remover o helper nomeado de dentro do callback.\n\n```json\n{\"summary\":\"F-1.10 already done in attempt 4: app/functions (TypeScript, Node 22, firebase-functions v2, setGlobalOptions region southamerica-east1, onRequest healthcheck), functions emulator in firebase.json (port 5001), test:functions (build + emulators:exec auth,firestore,functions + vitest), e2e:serve with the functions emulator, functions/lib ignored by eslint, prettier and git. No app changes in this attempt; G8 still fails from the harness bug, logged as a risk.\",\"filesChanged\":[\".harness/inbox/risks.jsonl\"],\"testsRun\":[\"yarn lint (ok)\",\"yarn typecheck (ok)\",\"yarn format:check (ok)\",\"yarn test:unit (38 passed)\",\"yarn test:functions (9 passed against emulators; healthcheck initialized in southamerica-east1)\",\"yarn test:e2e (8 passed)\"],\"confidence\":\"high\",\"notes\":\"G8 privacy-leak fails with 'ReferenceError: __name is not defined'. Root cause is in harness/src/gates/privacy-leak.ts, outside this worktree: tsx/esbuild keepNames injects __name into the callback that Playwright serializes. This is an infra blocker that no change in app/ can fix. Fix it in the harness and in ../harness-claude by inlining !!el.closest(...) or evaluating a string built at runtime. yarn test:e2e passing is the evidence that no sentinels leak. engines.node stays '22' because the protected test requires it; the scripts use --ignore-engines for compatibility (L-038).\"}\n```"
+}

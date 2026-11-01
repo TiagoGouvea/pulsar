@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-01T18:57:05.531Z",
+  "workerId": "deepseek-flash",
+  "role": "triage",
+  "featureId": "F-1.10",
+  "stage": 1,
+  "attempt": 4,
+  "outcome": "success",
+  "costUsd": 0.014612608,
+  "durationMs": 130860,
+  "usage": {
+    "inputTokens": 23410,
+    "outputTokens": 15312,
+    "cachedTokens": 539776,
+    "costUsd": 0.014612608
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\"causaRaiz\": \"Falha é do gate, não do app: `privacy-leak.ts` do harness define `const COLLECT = () => { const skip = (el: Element) => ... }` e o harness roda via tsx/esbuild com keepNames, o que injeta `__name(...)` dentro do corpo da arrow. Playwright serializa o callback com `fn.toString()` e o avalia no browser, onde `__name` não existe → `ReferenceError: __name is not defined`. Os demais gates de browser (G9/G10) usam callbacks sem bindings internos nomeados, por isso passam; e o e2e do app (yarn test:e2e, 8 passed) passa porque ali o transpiler é o loader do Playwright (babel), que não adiciona `__name`. Nenhuma mudança em app/src ou app/functions pode corrigir isso.\", \"categoria\": \"env\", \"padrao\": true, \"dica\": \"Não altere o app para consertar: o bug está em harness/src/gates/privacy-leak.ts (também em ../harness-claude). Correção é no harness — remover o helper nomeado de dentro do callback (inline `!!el.closest(...)`) ou avaliar uma string/`(${fn})(...)` construída em tempo de execução; enquanto isso, reporte o gate G8 como bloqueio de infra e siga com `yarn --cwd app test:e2e` como evidência de que a feature não vaza sentinelas.\"}\n```"
+}

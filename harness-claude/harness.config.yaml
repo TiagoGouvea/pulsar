@@ -51,7 +51,7 @@ workers:
   # baratos novos (OpenRouter, 2026-10): entram no implement para o roteador comparar com deepseek/kimi
   deepseek-flash: { cli: pi,   model: "openrouter/deepseek/deepseek-v4.1-flash-1017", family: deepseek, tier: low, vision: true, billing: api, concurrency: 2, timeoutMin: 30 }
   qwen-coder:   { cli: pi,     model: "openrouter/qwen/qwen3-coder-next",     family: qwen,     tier: low, vision: false, billing: api, concurrency: 2, timeoutMin: 20 }   # estourou 15 min no harness do Codex
-  minimax:      { cli: pi,     model: "openrouter/minimax/minimax-m3.1-flash", family: minimax, tier: low, vision: true, billing: api, concurrency: 2, timeoutMin: 30 }
+  minimax:      { cli: pi,     model: "openrouter/minimax/minimax-m3.1-flash", family: minimax, tier: low, vision: true, billing: api, concurrency: 2, timeoutMin: 30, pinModel: true }   # pi 1.4 trocava pelo ":free" aposentado (404)
   # GLM 5.3 via OpenRouter (o harness do Codex aposta no completo; o flash foi bem como revisor lá)
   glm-or:       { cli: pi,     model: "openrouter/z-ai/glm-5.3",       family: zhipu, tier: mid, vision: false, billing: api, concurrency: 2, timeoutMin: 30 }
   glm-flash:    { cli: pi,     model: "openrouter/z-ai/glm-5.3-flash", family: zhipu, tier: low, vision: true,  billing: api, concurrency: 3, timeoutMin: 20 }
@@ -77,7 +77,7 @@ roles:
   implement_hard:  { pool: [sonnet, opus, kimi-pro],                        note: "estatística, security rules e difficulty=hard" }
   review_code:     { pool: [gemini, glm-or, gemini-argon, codex-mid, haiku, sonnet], rule: different_family_from_implementer }
   review_ui:       { pool: [gemini, gemini-argon, haiku, sonnet],                    rule: different_family_from_implementer, requires: vision }
-  triage:          { pool: [haiku, glm-flash, deepseek-flash, deepseek, gemini-lite] }
+  triage:          { pool: [haiku, glm-flash, deepseek-flash, gemini-lite] }   # deepseek v4-pro saiu: 4-5 min e até US$ 0,64 por triagem
   approval_parser: { pool: [haiku, glm-flash, gemini-lite],  note: "converte APROVACAO.md/DUVIDAS.md em JSON" }
   retro:           { pool: [sonnet] }
   postmortem:      { pool: [sonnet] }

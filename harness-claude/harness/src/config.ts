@@ -15,7 +15,8 @@ const Worker = z.object({
   env: z.record(z.string(), z.string()).optional(),
   maxContextTokens: z.number().optional(),
   requiresFreeRamGb: z.number().optional(),
-  remote: z.string().optional(),   // local workers: id of the same model served remotely (fallback + benchmark)
+  remote: z.string().optional(),
+  pinModel: z.boolean().optional(),   // pi: register the exact OpenRouter id (pi 1.4 resolves some ids to a retired ":free" variant)   // local workers: id of the same model served remotely (fallback + benchmark)
   concurrency: z.number().int().min(1),
   timeoutMin: z.number().positive(),
   enabled: z.boolean().default(true),

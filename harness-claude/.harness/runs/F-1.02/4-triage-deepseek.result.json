@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-01T18:36:20.080Z",
+  "workerId": "deepseek",
+  "role": "triage",
+  "featureId": "F-1.02",
+  "stage": 1,
+  "attempt": 4,
+  "outcome": "success",
+  "costUsd": 0.6418739199999999,
+  "durationMs": 322910,
+  "usage": {
+    "inputTokens": 85886,
+    "outputTokens": 22999,
+    "cachedTokens": 3191552,
+    "costUsd": 0.6418739199999999
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"causaRaiz\": \"G8 é um gate builtin do harness (harness-claude/harness/src/gates/privacy-leak.ts), não do app: a arrow COLLECT (que contém a arrow aninhada `skip`) é passada a page.evaluate; o harness roda sob tsx (esbuild com keepNames:true), que injeta o helper `__name` dentro do corpo da função. O Playwright serializa com String(fn), então o código avaliado no navegador referencia `__name`, que não existe na página → ReferenceError. O fix em app/e2e/support.ts não toca esse gate (o e2e do app roda com o Babel do Playwright, que não injeta `__name`), então G8 continua falhando.\",\n  \"categoria\": \"test\",\n  \"padrao\": true,\n  \"dica\": \"Não mexa no app para G8: é bug do harness (fora do worktree). Escale/registre como bug de harness e, em qualquer código sob tsx/esbuild, passe string para page.evaluate — nunca arrow com arrow aninhada.\"\n}\n```"
+}

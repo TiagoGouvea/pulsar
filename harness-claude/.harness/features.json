@@ -61,7 +61,8 @@
           "eventId": "evt-28",
           "ts": "2026-10-25T16:14:19.978Z"
         }
-      ]
+      ],
+      "origin": []
     },
     {
       "id": "F-0.02",
@@ -118,7 +119,8 @@
           "eventId": "evt-38",
           "ts": "2026-10-25T16:22:48.732Z"
         }
-      ]
+      ],
+      "origin": []
     },
     {
       "id": "F-0.04",
@@ -164,7 +166,8 @@
           "eventId": "evt-31",
           "ts": "2026-10-25T16:17:26.627Z"
         }
-      ]
+      ],
+      "origin": []
     },
     {
       "id": "F-0.05",
@@ -227,7 +230,8 @@
           "eventId": "evt-47",
           "ts": "2026-10-25T18:08:38.807Z"
         }
-      ]
+      ],
+      "origin": []
     },
     {
       "id": "F-0.06",
@@ -283,7 +287,8 @@
           "eventId": "evt-50",
           "ts": "2026-10-25T18:09:52.102Z"
         }
-      ]
+      ],
+      "origin": []
     },
     {
       "id": "F-0.07",
@@ -347,7 +352,8 @@
           "eventId": "evt-56",
           "ts": "2026-10-25T18:16:06.118Z"
         }
-      ]
+      ],
+      "origin": []
     },
     {
       "id": "F-0.03",
@@ -393,7 +399,8 @@
           "eventId": "evt-35",
           "ts": "2026-10-25T16:20:03.807Z"
         }
-      ]
+      ],
+      "origin": []
     },
     {
       "id": "F-1.01",
@@ -435,8 +442,9 @@
       ],
       "status": "failing",
       "attempts": 0,
-      "costUsd": 0,
-      "history": []
+      "costUsd": 1.6379025168,
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-1.02",
@@ -470,8 +478,9 @@
       ],
       "status": "failing",
       "attempts": 0,
-      "costUsd": 0,
-      "history": []
+      "costUsd": 1.778273811856,
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-1.03",
@@ -511,7 +520,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-1.04",
@@ -553,7 +563,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-1.05",
@@ -586,7 +597,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-1.06",
@@ -625,7 +637,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-1.07",
@@ -660,7 +673,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-1.08",
@@ -697,8 +711,9 @@
       ],
       "status": "failing",
       "attempts": 0,
-      "costUsd": 0,
-      "history": []
+      "costUsd": 1.3204914,
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-1.09",
@@ -739,7 +754,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-1.10",
@@ -759,7 +775,9 @@
       "tests": [
         "app/functions/src/__tests__/setup.test.ts"
       ],
-      "protectedTests": [],
+      "protectedTests": [
+        "app/functions/src/__tests__/setup.test.ts"
+      ],
       "tags": [],
       "difficulty": "normal",
       "dependsOn": [
@@ -767,8 +785,9 @@
       ],
       "status": "failing",
       "attempts": 0,
-      "costUsd": 0,
-      "history": []
+      "costUsd": 0.7210713598440001,
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-1.11",
@@ -806,7 +825,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-1.12",
@@ -844,7 +864,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-2.01",
@@ -881,7 +902,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-2.02",
@@ -921,7 +943,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-2.03",
@@ -961,7 +984,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-2.04",
@@ -1002,7 +1026,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-2.05",
@@ -1039,7 +1064,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-2.06",
@@ -1082,7 +1108,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-2.07",
@@ -1125,7 +1152,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-2.08",
@@ -1171,7 +1199,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-2.09",
@@ -1211,7 +1240,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-2.10",
@@ -1248,7 +1278,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-2.11",
@@ -1288,7 +1319,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-3.01",
@@ -1326,7 +1358,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-3.02",
@@ -1368,7 +1401,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-3.03",
@@ -1407,7 +1441,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-3.04",
@@ -1445,7 +1480,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-3.05",
@@ -1482,7 +1518,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-3.06",
@@ -1526,7 +1563,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-3.07",
@@ -1566,7 +1604,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-3.08",
@@ -1605,7 +1644,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-3.09",
@@ -1647,7 +1687,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-3.10",
@@ -1685,7 +1726,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-3.11",
@@ -1722,7 +1764,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-3.12",
@@ -1759,7 +1802,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-4.01",
@@ -1793,7 +1837,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-4.02",
@@ -1829,7 +1874,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-4.03",
@@ -1873,7 +1919,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-4.04",
@@ -1911,7 +1958,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-4.05",
@@ -1947,7 +1995,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-5.01",
@@ -1982,7 +2031,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-5.02",
@@ -2020,7 +2070,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-5.03",
@@ -2061,7 +2112,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-5.04",
@@ -2101,7 +2153,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-5.05",
@@ -2132,7 +2185,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-6.01",
@@ -2169,7 +2223,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-6.02",
@@ -2213,7 +2268,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-6.03",
@@ -2259,7 +2315,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-6.04",
@@ -2296,7 +2353,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-6.05",
@@ -2334,7 +2392,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-7.01",
@@ -2379,7 +2438,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-7.02",
@@ -2415,7 +2475,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-7.03",
@@ -2448,7 +2509,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-7.04",
@@ -2492,7 +2554,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-7.05",
@@ -2530,7 +2593,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-7.06",
@@ -2559,7 +2623,8 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0,
-      "history": []
+      "history": [],
+      "origin": []
     },
     {
       "id": "F-0.fix-1",
@@ -2609,7 +2674,8 @@
           "eventId": "evt-60",
           "ts": "2026-10-26T10:52:32.675Z"
         }
-      ]
+      ],
+      "origin": []
     }
   ]
 }

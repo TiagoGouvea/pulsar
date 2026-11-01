@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-01T18:33:47.220Z",
+  "workerId": "deepseek",
+  "role": "triage",
+  "featureId": "F-1.01",
+  "stage": 1,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.19156500000000004,
+  "durationMs": 218875,
+  "usage": {
+    "inputTokens": 25280,
+    "outputTokens": 14878,
+    "cachedTokens": 585984,
+    "costUsd": 0.19156500000000004
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "Analisando o erro, a falha é em `page.evaluate` dentro do Playwright, que usa esbuild para transformar TypeScript. O `__name` é um helper que o esbuild injeta quando `keepNames` está ativo — mas ele não existe no contexto de execução do navegador onde o callback de `page.evaluate` roda. É um bug conhecido da pipeline de transform do Playwright com esbuild.\n\nO implementador não rodou `test:e2e` (só `lint`, `typecheck`, `format:check` e `test:unit`), portanto o gate G8 nunca foi verificado. Nenhum dos arquivos alterados pela feature (`src/domain/indicator.ts`, `src/domain/entry.ts`, `scripts/seed-data.ts`) afeta o bundle do app ou os arquivos de teste E2E. É uma falha de infraestrutura pré-existente ou intermitente, não um defeito de código da feature.\n\n```json\n{\"causaRaiz\": \"Playwright 1.64.1 usa esbuild para transformar os arquivos TypeScript de teste; o transform injeta o helper __name em callbacks de page.evaluate, mas __name não está definido no contexto de execução do navegador onde o callback é serializado e avaliado\", \"categoria\": \"flaky\", \"padrao\": true, \"dica\": \"1) Antes de declarar gates passando, rode também test:e2e. 2) Se o erro persistir, troque page.evaluate(() => {...}) por page.evaluate('(() => {...})()') em support.ts (função como string evita o transform do esbuild). 3) Considere pinar a versão do Playwright em vez de usar ^1.53.0 que resolveu para 1.64.1.\"}\n```"
+}

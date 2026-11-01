@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-01T18:23:40.401Z",
+  "workerId": "opus",
+  "role": "implement_hard",
+  "featureId": "F-1.02",
+  "stage": 1,
+  "attempt": 3,
+  "outcome": "success",
+  "costUsd": 0.23659740000000007,
+  "durationMs": 48131,
+  "usage": {
+    "inputTokens": 24153,
+    "outputTokens": 3221,
+    "cachedTokens": 257162,
+    "costUsd": 0.23659740000000007
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "O F-1.02 está pronto: os 24 testes protegidos de `time.test.ts` passam, e `yarn lint`, `yarn typecheck`, `yarn format:check` e `yarn test:unit` (8 arquivos, 62 testes) também passam. Nenhum e2e se aplica, porque a feature não tem tela.\n\nA implementação da tentativa anterior já estava em `app/src/lib/time.ts` e passava nos testes. Só fiz dois ajustes pequenos:\n- **Comentário corrigido:** o comentário do `intlParts` descrevia um comportamento que a função não tem.\n- **`shiftLocalDate` simplificado:** o cálculo de dias continua em UTC, então não é afetado pelo horário de verão, e agora devolve a data por `toISOString().slice(0, 10)` em vez de passar pelo Intl.\n\nNão consegui registrar um risco em `.harness/inbox/risks.jsonl`: a permissão para rodar o comando foi negada. O risco é duplicação nos scripts do seed:\n- `scripts/seed-data.ts` tem um `addDays` que faz o mesmo que o `shiftLocalDate`.\n- `scripts/seed.ts` calcula o dia de `America/Sao_Paulo` direto com Intl, o mesmo que o `brasiliaDateKey`.\n\nSugestão: numa feature futura que mexa no seed, fazer esses scripts importarem as funções de `src/lib/time.ts`.\n\n```json\n{\"summary\":\"src/lib/time.ts implementa localDate no fuso do navegador, toUtcIso, formatDate/formatTime/formatDateTime em pt-BR com Intl, brasiliaDateKey em America/Sao_Paulo, shiftLocalDate e daysWindow (30 dias corridos), sem correção por viagem. Corrigi um comentário desatualizado e simplifiquei shiftLocalDate.\",\"filesChanged\":[\"app/src/lib/time.ts\"],\"testsRun\":[\"yarn vitest run src/lib/__tests__/time.test.ts (24/24)\",\"yarn lint\",\"yarn typecheck\",\"yarn format:check\",\"yarn test:unit (8 arquivos, 62 testes)\"],\"confidence\":\"high\",\"notes\":\"Sem tela, então sem e2e nem rota nova. Não consegui gravar em .harness/inbox/risks.jsonl (permissão negada). Risco: scripts/seed-data.ts (addDays) e scripts/seed.ts (dia de Sao_Paulo via Intl) duplicam shiftLocalDate/brasiliaDateKey; sugestão: fazer o seed importar de src/lib/time.ts numa feature futura.\"}\n```"
+}

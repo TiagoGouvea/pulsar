@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-01T18:29:20.021Z",
+  "workerId": "deepseek",
+  "role": "triage",
+  "featureId": "F-1.02",
+  "stage": 1,
+  "attempt": 3,
+  "outcome": "success",
+  "costUsd": 0.2982565,
+  "durationMs": 282870,
+  "usage": {
+    "inputTokens": 36465,
+    "outputTokens": 27284,
+    "cachedTokens": 898048,
+    "costUsd": 0.2982565
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "\n\n```json\n{\"causaRaiz\": \"O erro `ReferenceError: __name is not defined` ocorre durante `page.evaluate` porque o esbuild (usado pelo Playwright para transpilar os arquivos TypeScript de teste) injeta referências ao helper `__name` em funções serializadas enviadas ao navegador, onde `__name` não está definido. O efeito é visível com `--keep-names`: `var __name = (target, value) => __defProp(target, 'name', {value, configurable: true});` e chamadas `__name(visibleTextOutsideAllowList, ...)` no nível do módulo. Embora essas chamadas fiquem fora do corpo da função, se o pipeline de serialização do Playwright incluir trechos do escopo do módulo no código enviado ao navegador, o `__name` vaza e quebra. As alterações de F-1.02 em `time.ts` não causam o erro: são mínimas (comentário + simplificação do `shiftLocalDate`), o build de produção não contém `__name`, e os testes unitários passam. O erro está na infraestrutura de transpilação dos testes E2E, não no código da feature.\", \"categoria\": \"flaky\", \"padrao\": true, \"dica\": \"Rode `yarn test:e2e` localmente para confirmar se o erro reproduz. Se sim, reescreva `visibleTextOutsideAllowList` e `hasHorizontalOverflow` em `app/e2e/support.ts` usando `page.evaluate('string')` em vez de `page.evaluate(() => {...})` — a string não passa pelo esbuild e elimina o risco de vazamento de helpers. Verifique também se o `e2e:serve` está 100% funcional (emuladores, seed, preview). Se o erro não reproduzir localmente, é provável que o ambiente de gates esteja com cache de build stale ou versão do Playwright diferente.\"}\n```"
+}

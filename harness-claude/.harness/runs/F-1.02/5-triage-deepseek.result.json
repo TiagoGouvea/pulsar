@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-01T18:38:37.496Z",
+  "workerId": "deepseek",
+  "role": "triage",
+  "featureId": "F-1.02",
+  "stage": 1,
+  "attempt": 5,
+  "outcome": "success",
+  "costUsd": 0.004332702,
+  "durationMs": 24945,
+  "usage": {
+    "inputTokens": 1636,
+    "outputTokens": 1000,
+    "cachedTokens": 11195,
+    "costUsd": 0.004332702
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"causaRaiz\": \"O gate G8 (privacy-leak.ts) no harness passa uma função para page.evaluate. Sob tsx/esbuild, essa função é transformada e recebe uma chamada ao helper __name, que existe no runtime Node.js mas não no contexto do navegador, gerando ReferenceError. O bug está no harness (fora da worktree), não no código da feature.\",\n  \"categoria\": \"env\",\n  \"padrao\": true,\n  \"dica\": \"No harness, em privacy-leak.ts, troque page.evaluate(fn) por page.evaluate(fn.toString()) (string, não função) ou injete globalThis.__name = (f) => f via page.addInitScript antes do evaluate. Enquanto o harness não for corrigido, nenhuma feature passará no G8 se o gate usar function expression.\"\n}\n```"
+}

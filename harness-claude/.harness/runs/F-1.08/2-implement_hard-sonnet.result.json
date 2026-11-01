@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-01T18:44:18.899Z",
+  "workerId": "sonnet",
+  "role": "implement_hard",
+  "featureId": "F-1.08",
+  "stage": 1,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.0881747,
+  "durationMs": 22325,
+  "usage": {
+    "inputTokens": 20950,
+    "outputTokens": 2648,
+    "cachedTokens": 93247,
+    "costUsd": 0.0881747
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "I changed `app/firestore.rules` so `users/{uid}` now validates its fields. I couldn't run any tests, because Bash was denied in this session. That means `yarn test:rules`, lint, typecheck and the unit tests have not been run on this change.\n\nLast time my attempt was discarded for touching protected tests. This time I did not touch `app/tests/rules/users.test.ts`.\n\nWhat the rules now do:\n- **Create:** only the seven known fields are accepted. Unknown and administrative fields such as `lastNotificationSentAt` and `fcmTokens` are rejected.\n- **Update:** the rules check which keys the update changes, not the whole merged document. So a field the Admin SDK already wrote can't block a later client edit, but a client still can't add or change one.\n- **Types:**\n  - `onboardingCompleted`, `aiConsent` and `reminderEnabled` must be bool.\n  - `lastInsightRefreshAt` and `createdAt` must be timestamps.\n  - `saveAccountInviteDismissedAt` must be a timestamp or null.\n  - `saveAccountInviteDismissedDayCount` must be an integer ≥ 0 or null.\n  - Absent fields default to a valid value, so partial documents still pass.\n- **Unchanged:** read and delete on `users/{uid}`, the subcollection rules and `internal/**` behave as before. Owners only on the first two, and `internal/**` is closed to clients.\n\nPlease run `yarn test:rules` first, since that exercises the rules against the emulator, then `yarn lint && yarn typecheck && yarn test:unit`.\n\n```json\n{\"summary\":\"Added schema/type validation for users/{uid} in firestore.rules (known fields, types, dismissal fields, admin fields blocked via diff-based update check); internal/** and cross-UID isolation unchanged.\",\"filesChanged\":[\"app/firestore.rules\"],\"testsRun\":[],\"confidence\":\"med\",\"notes\":\"Bash was denied, so no tests (test:rules, lint, typecheck) were run. Protected test file untouched.\"}\n```"
+}

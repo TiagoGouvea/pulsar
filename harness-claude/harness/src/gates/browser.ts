@@ -1,6 +1,6 @@
 // Shared browser plumbing for G8/G9/G10/G12 and screenshots. Playwright is loaded from the APP's
 // node_modules (the app already depends on it for e2e), so the harness itself stays light.
-import { existsSync, mkdirSync, readFileSync, rmSync, statSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { join, sep } from "node:path";
 import { execa } from "execa";
@@ -26,11 +26,14 @@ export function loadPlaywright(appAbs: string): any {
 const portQueue = mutex();
 
 /** Holds the ports lock (in-process queue + lock dir shared with the workers' port-lock.sh); orphan servers of worktrees are killed first. */
+const alive = (pid: number) => { try { process.kill(pid, 0); return true; } catch { return false; } };
+
 export const withPortLock = <T>(ctx: Ctx, appAbs: string, fn: () => Promise<T>): Promise<T> => portQueue(async () => {
   const lock = ctx.config.browser.portLock;
   for (;;) {
-    try { mkdirSync(lock); break; } catch { /* held */ }
-    try { if (Date.now() - statSync(lock).mtimeMs > 30 * 60_000) rmSync(lock, { recursive: true, force: true }); } catch { /* released meanwhile */ }
+    try { mkdirSync(lock); writeFileSync(join(lock, "pid"), String(process.pid)); break; } catch { /* held */ }
+    // stale: owner process gone (killed run) or older than 30 min
+    try { if (!alive(Number(readFileSync(join(lock, "pid"), "utf8"))) || Date.now() - statSync(lock).mtimeMs > 30 * 60_000) rmSync(lock, { recursive: true, force: true }); } catch { /* released meanwhile or pid not written yet */ }
     await new Promise((r) => setTimeout(r, 2000));
   }
   try {

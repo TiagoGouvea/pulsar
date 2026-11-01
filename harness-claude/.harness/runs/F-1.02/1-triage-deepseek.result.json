@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-01T18:22:51.501Z",
+  "workerId": "deepseek",
+  "role": "triage",
+  "featureId": "F-1.02",
+  "stage": 1,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.042531749855999994,
+  "durationMs": 278167,
+  "usage": {
+    "inputTokens": 53108,
+    "outputTokens": 14426,
+    "cachedTokens": 329472,
+    "costUsd": 0.042531749855999994
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\"causaRaiz\": \"O gate G8 (privacy-leak) quebrou dentro de page.evaluate em e2e/support.ts (visibleTextOutsideAllowList): o transform TS do Playwright (Babel) injeta o helper __name/setFunctionName no corpo da função serializada para o navegador, mas esse helper não existe no contexto da página, lançando 'ReferenceError: __name is not defined'. Não tem relação com a feature F-1.02: app/src/lib/time.ts é utilitário puro e não é importado pelos testes e2e (confirmado via git: só time.ts + time.test.ts mudaram). Localmente o gate passou (test-results/.last-run.json = passed), apontando para divergência de ambiente/toolchain (Playwright resolvido em 1.64.1) e não para erro de lógica/type/lint da implementação.\", \"categoria\": \"env\", \"padrao\": true, \"dica\": \"Reexecute o gate sem alterar time.ts. '__name is not defined' em page.evaluate é artefato do transform Babel do Playwright, não bug da feature. Se persistir, pin a versão do @playwright/test no yarn.lock ou remova o gatilho do helper (ex.: inline o callback de page.evaluate / defina um shim global __name) e reporte; não caia na armadilha de depurar o código da feature.\"}\n```"
+}

@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-01T18:51:12.139Z",
+  "workerId": "opus",
+  "role": "implement_hard",
+  "featureId": "F-1.08",
+  "stage": 1,
+  "attempt": 5,
+  "outcome": "success",
+  "costUsd": 0.41849080000000005,
+  "durationMs": 101634,
+  "usage": {
+    "inputTokens": 33705,
+    "outputTokens": 6611,
+    "cachedTokens": 588899,
+    "costUsd": 0.41849080000000005
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "e number ≥ 0 or null, so text, negatives and decimals are rejected.\n- **Unchanged:** the owner can still read and delete their own document, and the top-level `internal/**` stays closed to all clients.\n\n**The two failing checks:**\n- **`yarn typecheck`:** crashes inside the compiler (`TypeError … reading 'kind'`, TypeScript 5.8 on Node 24.22.1). It failed the same way when I re-ran it. It's not caused by this change, since the compiler never reads `.rules` files. I didn't check whether it also crashes on the base branch.\n- **`yarn format:check`:** flags only `app/tests/rules/users.test.ts`, which is protected. The previous attempt was most likely discarded because it ran `prettier --write` on that file. I didn't reformat it.\n\nI logged both problems in `.harness/inbox/risks.jsonl`. No e2e tests apply, since there's no new screen.\n\n```json\n{\"summary\":\"firestore.rules: users/{uid} now accepts only the 7 known fields with the right types on create, and on update only those fields may change. The two banner-dismissal fields accept timestamp|null and int>=0|null. Fixed a bypass: the nested /{document=**} match also matched users/{uid} itself; it is now /{subcollection}/{document=**}. internal/** stays deny-all.\",\"filesChanged\":[\"app/firestore.rules\",\".harness/inbox/risks.jsonl\"],\"testsRun\":[\"yarn test:rules (28/28 pass)\",\"yarn lint (pass)\",\"yarn test:unit (38/38 pass)\",\"yarn typecheck (FAILS: tsc internal crash on Node 24.22.1, reproduced twice; app/firestore.rules is the only code change; base branch not checked)\",\"yarn format:check (FAILS only on protected app/tests/rules/users.test.ts; not touched)\"],\"confidence\":\"high\",\"notes\":\"Did not run prettier --write: it would modify the protected test (likely cause of attempt 4 being discarded). Update validation uses diff().affectedKeys() so server-written admin fields can coexist in the doc without blocking client updates while remaining unwritable/undeletable by clients. Owner delete of own user doc kept as in baseline.\"}\n```"
+}

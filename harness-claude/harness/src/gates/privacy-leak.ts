@@ -46,6 +46,7 @@ export async function privacyGate(ctx: Ctx, appAbs: string): Promise<{ ok: boole
     const net: Surface[] = [];
     page.on("request", (req: any) => net.push({ where: `rede ${req.method()} ${req.url().slice(0, 80)}`, text: `${req.url()} ${req.postData() ?? ""}` }));
     page.on("console", (m: any) => net.push({ where: "console", text: m.text() }));
+    await page.addInitScript("globalThis.__name ??= (f) => f");   // tsx keepNames wraps COLLECT's inner functions in __name()
     await page.reload({ waitUntil: "networkidle" });
     const collect = async (tag: string) => surfaces.push(...(await page.evaluate(COLLECT)).map((s: Surface) => ({ ...s, where: `${r.name}/${vp}${tag} ${s.where}` })));
     await collect("");
