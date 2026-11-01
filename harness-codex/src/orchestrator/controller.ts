@@ -1306,34 +1306,47 @@ export class Orchestrator {
     return snapshot;
   }
 
-  async importFeedback(runId: string, source: string, milestoneId = this.config.project.milestones[0]?.id): Promise<string> {
+  async importFeedback(runId: string, source: string, taskId: string, milestoneId = this.config.project.milestones[0]?.id): Promise<string> {
     if (!milestoneId) throw new Error("Nenhuma etapa configurada para receber feedback.");
     const content = await readFile(source, "utf8");
     if (!content.trim()) throw new Error("Feedback vazio.");
+    this.assertFeedbackTask(runId, milestoneId, taskId);
     await this.assertMilestoneBranch(runId, milestoneId);
     const directory = path.join(this.config.storage.root, "runs", runId, "milestones", milestoneId);
     await mkdir(directory, { recursive: true });
-    const destination = path.join(directory, `human-feedback-${Date.now()}.md`);
+    const destination = path.join(directory, `human-feedback-${encodeURIComponent(taskId)}-${Date.now()}.md`);
     await cp(source, destination, { errorOnExist: true });
     const revision = await currentRevision(this.config.project.workspace);
-    this.store.createApproval({ runId, milestoneId, revision, decision: "changes_requested", actor: process.env.USER ?? "human", scope: "milestone", feedbackPath: destination });
+    this.store.createApproval({ runId, milestoneId, revision, decision: "changes_requested", actor: process.env.USER ?? "human", scope: "task", feedbackPath: destination });
+    this.store.event(runId, "feedback.imported", "task", taskId, { milestoneId, feedbackPath: destination });
+    this.store.setTaskState(runId, taskId, "changes_requested");
     this.store.setMilestoneState(runId, milestoneId, "changes_requested", revision);
     this.store.setRunState(runId, "paused");
     return destination;
   }
 
-  async importFeedbackContent(runId: string, content: string, milestoneId = this.config.project.milestones[0]?.id, actor = "dashboard-human"): Promise<string> {
+  async importFeedbackContent(runId: string, content: string, taskId: string, milestoneId = this.config.project.milestones[0]?.id, actor = "dashboard-human"): Promise<string> {
     if (!milestoneId) throw new Error("Nenhuma etapa configurada para receber feedback.");
     if (!content.trim()) throw new Error("Feedback vazio.");
+    this.assertFeedbackTask(runId, milestoneId, taskId);
     await this.assertMilestoneBranch(runId, milestoneId);
     const directory = path.join(this.config.storage.root, "runs", runId, "milestones", milestoneId);
     await mkdir(directory, { recursive: true });
-    const destination = path.join(directory, `human-feedback-${Date.now()}.md`);
+    const destination = path.join(directory, `human-feedback-${encodeURIComponent(taskId)}-${Date.now()}.md`);
     await writeFile(destination, content, { mode: 0o600, flag: "wx" });
     const revision = await currentRevision(this.config.project.workspace);
-    this.store.createApproval({ runId, milestoneId, revision, decision: "changes_requested", actor, scope: "milestone", feedbackPath: destination });
+    this.store.createApproval({ runId, milestoneId, revision, decision: "changes_requested", actor, scope: "task", feedbackPath: destination });
+    this.store.event(runId, "feedback.imported", "task", taskId, { milestoneId, feedbackPath: destination });
+    this.store.setTaskState(runId, taskId, "changes_requested");
     this.store.setMilestoneState(runId, milestoneId, "changes_requested", revision);
     this.store.setRunState(runId, "paused");
     return destination;
+  }
+
+  private assertFeedbackTask(runId: string, milestoneId: string, taskId: string): void {
+    const task = this.store.listTasks(runId).find((item) => item.id === taskId);
+    if (!task) throw new Error(`Tarefa ${taskId} inexistente nesta execução.`);
+    if (task.milestone_id !== milestoneId) throw new Error(`Tarefa ${taskId} não pertence à etapa ${milestoneId}.`);
+    if (["running", "verifying"].includes(String(task.state))) throw new Error(`Tarefa ${taskId} está em execução; aguarde o gate humano para importar feedback.`);
   }
 }

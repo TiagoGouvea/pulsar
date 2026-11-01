@@ -33,7 +33,7 @@ yarn harness worklog --config harness.config.yaml --run <runId> [--milestone <id
 
 Para verificar modelos locais individualmente em sequência (incluindo carga, resposta e descarga): `yarn harness models test-local --config harness.config.yaml`. A medição distingue tempo de carga, round-trip da resposta e duração de geração reportada pelo servidor quando disponível.
 
-O feedback humano é importado explicitamente e versionado. Editar silenciosamente `human-review.md` não aprova nada.
+O feedback humano é importado explicitamente, associado a uma tarefa e versionado. Informe `--task <taskId>` no CLI ou selecione a tarefa no painel; isso reabre a tarefa e entrega o texto ao próximo executor. Editar silenciosamente `human-review.md` não aprova nada.
 
 ### URLs permanentes por versão
 

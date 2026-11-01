@@ -29,7 +29,7 @@ yarn harness pause --config harness.config.yaml --run <runId>
 yarn harness resume --config harness.config.yaml --run <runId>
 
 # Aprovação humana e relatórios
-yarn harness feedback import --config harness.config.yaml --run <runId> --file ./human-feedback.md
+yarn harness feedback import --config harness.config.yaml --run <runId> --task <taskId> --file ./human-feedback.md
 yarn harness approve --config harness.config.yaml --run <runId> --milestone <milestoneId> --revision <revision>
 yarn harness budget --config harness.config.yaml --run <runId>
 yarn harness report --config harness.config.yaml --run <runId>

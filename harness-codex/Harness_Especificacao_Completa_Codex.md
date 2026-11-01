@@ -639,7 +639,7 @@ yarn harness pause --run <runId>
 yarn harness resume --run <runId>
 yarn harness stop --run <runId>
 yarn harness review --run <runId> --milestone <milestoneId>
-yarn harness feedback import --run <runId> --file ./human-feedback.md
+yarn harness feedback import --run <runId> --task <taskId> --file ./human-feedback.md
 yarn harness approve --run <runId> --milestone <milestoneId> --revision <revision>
 yarn harness budget --run <runId>
 yarn harness report --run <runId>

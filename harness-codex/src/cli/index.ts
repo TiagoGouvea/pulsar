@@ -243,10 +243,10 @@ hosting.command("snapshot").requiredOption("--config <path>").requiredOption("--
   }));
 
 const feedback = program.command("feedback");
-feedback.command("import").requiredOption("--config <path>").requiredOption("--run <id>").requiredOption("--file <path>")
+feedback.command("import").requiredOption("--config <path>").requiredOption("--run <id>").requiredOption("--file <path>").requiredOption("--task <id>", "Tarefa que receberá os ajustes")
   .option("--milestone <id>", "Marco; por padrão usa o primeiro configurado")
-  .action(async (options: { config: string; run: string; file: string; milestone?: string }) => withOrchestrator(options.config, async (orchestrator) => {
-    console.log(await orchestrator.importFeedback(options.run, path.resolve(options.file), options.milestone));
+  .action(async (options: { config: string; run: string; file: string; task: string; milestone?: string }) => withOrchestrator(options.config, async (orchestrator) => {
+    console.log(await orchestrator.importFeedback(options.run, path.resolve(options.file), options.task, options.milestone));
   }));
 
 program.command("approve").requiredOption("--config <path>").requiredOption("--run <id>").requiredOption("--milestone <id>").requiredOption("--revision <revision>")

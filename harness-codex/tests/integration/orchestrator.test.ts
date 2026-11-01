@@ -1,4 +1,4 @@
-import { appendFile, mkdtemp } from "node:fs/promises";
+import { appendFile, mkdtemp, readFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, test, vi } from "vitest";
@@ -6,8 +6,45 @@ import { Orchestrator } from "../../src/orchestrator/controller.js";
 import { createTestConfig } from "../helpers/config.js";
 import { runProcess } from "../../src/utils/process.js";
 import { currentRevision } from "../../src/git/workspace.js";
+import { buildTaskContext } from "../../src/context/builder.js";
 
 describe("controlador", () => {
+  test("importa feedback em uma tarefa específica e inclui as correções no contexto do executor", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "harness-task-feedback-"));
+    const config = await createTestConfig(root);
+    const orchestrator = new Orchestrator(config);
+    try {
+      const runId = await orchestrator.run();
+      const row = orchestrator.store.listTasks(runId)[0];
+      if (!row) throw new Error("Tarefa de teste ausente.");
+      const taskId = String(row.id);
+      const milestoneId = String(row.milestone_id);
+      const feedback = "No wizard, role a página para o topo ao avançar.";
+      const feedbackPath = await orchestrator.importFeedbackContent(runId, feedback, taskId, milestoneId);
+
+      expect(orchestrator.store.listTasks(runId).find((task) => task.id === taskId)?.state).toBe("changes_requested");
+      expect(orchestrator.store.getRun(runId)?.state).toBe("paused");
+      expect(orchestrator.store.get("SELECT scope FROM approvals WHERE run_id=? ORDER BY created_at DESC LIMIT 1", runId)?.scope).toBe("task");
+
+      const prompt = await buildTaskContext({
+        config,
+        store: orchestrator.store,
+        runId,
+        task: {
+          id: taskId, runId, milestoneId, title: String(row.title), description: String(row.description),
+          state: "changes_requested", role: "implementer", requirementIds: [], dependencies: [],
+          acceptanceCriteria: [], plannedFiles: [], maxAttempts: Number(row.max_attempts),
+        },
+        requirements: [],
+        attemptDirectory: path.join(root, "attempt"),
+      });
+
+      expect(prompt).toContain("Feedback humano para esta tarefa");
+      expect(prompt).toContain(feedback);
+      expect(await readFile(feedbackPath, "utf8")).toBe(feedback);
+    } finally { orchestrator.close(); }
+  });
+
   test("executa fake, verifica e pausa no gate sem duplicar tarefas", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "harness-run-"));
     const config = await createTestConfig(root);
