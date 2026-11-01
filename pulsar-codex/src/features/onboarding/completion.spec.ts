@@ -59,4 +59,18 @@ describe('onboarding completion persistence', () => {
     expect(sdk.setDoc).not.toHaveBeenCalled();
     expect(completion.hasCompletedOnboardingLocally()).toBe(true);
   });
+
+  it('clears generic and UID-scoped markers without touching another account', () => {
+    localStorage.setItem('pulsar.onboarding.completed', 'true');
+    localStorage.setItem('pulsar_onboarding_completed', 'true');
+    localStorage.setItem('pulsar.onboarding.completed.uid-one', 'true');
+    localStorage.setItem('pulsar.onboarding.completed.uid-two', 'true');
+
+    completion.clearOnboardingCompletion('uid-one');
+
+    expect(localStorage.getItem('pulsar.onboarding.completed')).toBeNull();
+    expect(localStorage.getItem('pulsar_onboarding_completed')).toBeNull();
+    expect(completion.hasCompletedOnboardingLocally('uid-one')).toBe(false);
+    expect(completion.hasCompletedOnboardingLocally('uid-two')).toBe(true);
+  });
 });

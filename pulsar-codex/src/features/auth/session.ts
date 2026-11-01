@@ -18,6 +18,7 @@ import {
 } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
 import { auth, functions } from '@lib/firebase/config';
+import { clearLocalAccountData } from './localData';
 
 const pendingKey = 'pulsar.auth.emailLink';
 const signedOutKey = 'pulsar.auth.signedOut';
@@ -208,6 +209,10 @@ export async function deleteAccount(): Promise<void> {
   if (result.data.deleted !== true || result.data.uid !== uid) {
     throw new AccountError('account/deletion-unconfirmed');
   }
+  // The server has already removed the tree. Clear local caches before the
+  // logout write, so a failed sign-out cannot leave deleted data on screen.
+  clearLocalAccountData(uid);
+
   // Do not delete Auth client-side: the server removes the entire tree first.
   // If another session replaced this one during the call, never sign it out.
   if (auth.currentUser?.uid === uid) {

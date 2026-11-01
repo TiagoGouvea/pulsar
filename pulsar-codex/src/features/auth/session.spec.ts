@@ -174,6 +174,42 @@ describe('reauthentication and deletion', () => {
     expect(sdk.signOut).toHaveBeenCalledTimes(1);
   });
 
+  it('clears local caches only for the deleted UID after confirmation', async () => {
+    localStorage.setItem('pulsar.indicators.cache.original-uid', '[]');
+    localStorage.setItem('pulsar.indicators.cache.other-uid', '[]');
+    localStorage.setItem('pulsar.onboarding.completed', 'true');
+    localStorage.setItem('pulsar_onboarding_completed', 'true');
+    localStorage.setItem('pulsar.onboarding.completed.original-uid', 'true');
+    localStorage.setItem('pulsar.onboarding.completed.other-uid', 'true');
+    localStorage.setItem('pulsar.accountSaveInvite.eligible', 'true');
+    localStorage.setItem('pulsar.accountSaveInvite.dismissed', 'true');
+    localStorage.setItem('isNameRevealed', 'true');
+    sdk.remove.mockResolvedValue({ data: { uid: 'original-uid', deleted: true } });
+
+    await session.deleteAccount();
+
+    expect(localStorage.getItem('pulsar.indicators.cache.original-uid')).toBeNull();
+    expect(localStorage.getItem('pulsar.indicators.cache.other-uid')).toBe('[]');
+    expect(localStorage.getItem('pulsar.onboarding.completed')).toBeNull();
+    expect(localStorage.getItem('pulsar_onboarding_completed')).toBeNull();
+    expect(localStorage.getItem('pulsar.onboarding.completed.original-uid')).toBeNull();
+    expect(localStorage.getItem('pulsar.onboarding.completed.other-uid')).toBe('true');
+    expect(localStorage.getItem('pulsar.accountSaveInvite.eligible')).toBeNull();
+    expect(localStorage.getItem('pulsar.accountSaveInvite.dismissed')).toBeNull();
+    expect(localStorage.getItem('isNameRevealed')).toBeNull();
+  });
+
+  it('keeps local caches when the server does not confirm deletion', async () => {
+    localStorage.setItem('pulsar.indicators.cache.original-uid', '[]');
+    localStorage.setItem('pulsar.onboarding.completed.original-uid', 'true');
+    sdk.remove.mockRejectedValue({ code: 'functions/internal' });
+
+    await expect(session.deleteAccount()).rejects.toMatchObject({ code: 'functions/internal' });
+
+    expect(localStorage.getItem('pulsar.indicators.cache.original-uid')).toBe('[]');
+    expect(localStorage.getItem('pulsar.onboarding.completed.original-uid')).toBe('true');
+  });
+
   it.each(['functions/failed-precondition', 'functions/internal'])('preserves the session when deletion fails: %s', async (code) => {
     sdk.remove.mockRejectedValue({ code });
     await expect(session.deleteAccount()).rejects.toMatchObject({ code });

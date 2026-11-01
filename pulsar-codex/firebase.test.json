@@ -1,0 +1,28 @@
+{
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "accounts",
+      "runtime": "nodejs22"
+    }
+  ],
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "emulators": {
+    "functions": {
+      "port": 5101
+    },
+    "auth": {
+      "port": 9199
+    },
+    "firestore": {
+      "port": 8090
+    },
+    "ui": {
+      "enabled": false
+    },
+    "singleProjectMode": true
+  }
+}

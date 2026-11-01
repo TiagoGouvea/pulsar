@@ -1,7 +1,431 @@
 rules_version = '2';
 
+// Pulsar — Firestore Security Rules
+//
+// The rules are organised in two layers:
+//
+// 1. Base rules (top section) apply to every user-scoped resource: ownership
+//    by UID, protection of internal server state, and validation primitives
+//    for types and size limits.
+// 2. Resource rules live in the section of the resource they describe. The
+//    indicator schema is here because the indicator resource already exists.
+//    The records/entries rules are added in the same place when the daily log
+//    resource is implemented (REQ-2-002), and every other collection stays
+//    closed until its own resource defines the schema.
+//
+// Invariants enforced everywhere:
+//   - a request only reaches data under its own UID (`users/{uid}`);
+//   - internal state (quotas, billing, push delivery, idempotency, deletion
+//     markers) is never readable or writable by a client;
+//   - unknown fields are rejected, so a new internal field cannot become
+//     client-writable by accident.
 service cloud.firestore {
   match /databases/{database}/documents {
+    // ------------------------------------------------------------------
+    // Base layer: identity, ownership and validation primitives
+    // ------------------------------------------------------------------
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // The Cloud Function writes this lock before deleting the user tree and
+    // retains a minimal tombstone after completion. Otherwise an unexpired
+    // token could recreate data even after the Auth user has been removed.
+    function isDeleting(uid) {
+      return exists(/databases/$(database)/documents/accountDeletions/$(uid));
+    }
+
+    function ownsUser(uid) {
+      return isOwner(uid) && !isDeleting(uid);
+    }
+
+    function isStringAtMost(value, maxLength) {
+      return value is string && value.size() <= maxLength;
+    }
+
+    function isNonEmptyStringAtMost(value, maxLength) {
+      return value is string && value.size() > 0 && value.size() <= maxLength;
+    }
+
+    function isStringIn(value, allowed) {
+      return value is string && value in allowed;
+    }
+
+    function isIntIn(value, min, max) {
+      return value is int && value >= min && value <= max;
+    }
+
+    function isNumberIn(value, min, max) {
+      return (value is int || value is float) && value >= min && value <= max;
+    }
+
+    function isTimestamp(value) {
+      return value is timestamp;
+    }
+
+    function isServerTimestamp(value) {
+      return value == request.time;
+    }
+
+    function hasOnlyKeys(data, keys) {
+      return data.keys().hasOnly(keys);
+    }
+
+    function hasAllKeys(data, keys) {
+      return data.keys().hasAll(keys);
+    }
+
+    // Defense in depth: the field allowlists below already reject every one of
+    // these names. The explicit check keeps the intent visible and prevents a
+    // future allowlist edit from exposing server-owned state by accident.
+    function hasNoInternalFields(data) {
+      return !data.keys().hasAny([
+        'internal',
+        'internalFlags',
+        'ownerUid',
+        'quota',
+        'quotas',
+        'quotaUsed',
+        'quotaLimit',
+        'quotaResetAt',
+        'billing',
+        'billingPlan',
+        'billingTier',
+        'billingCustomerId',
+        'billingStatus',
+        'push',
+        'pushEnabled',
+        'pushToken',
+        'pushTokens',
+        'lastNotificationSentAt',
+        'lastSentAt',
+        'notificationCount',
+        'idempotency',
+        'idempotencyKey',
+        'idempotencyKeys',
+        'lastInsightRefreshAt'
+      ]);
+    }
+
+    // ------------------------------------------------------------------
+    // Base layer: user profile `users/{uid}`
+    // ------------------------------------------------------------------
+    // Client-writable fields are limited to what the app actually needs.
+    // Timestamps written by the client must be the commit time of the
+    // request. Timestamps that the request does not touch keep their stored
+    // value, so merge writes never rewrite history.
+
+    function profileKeys() {
+      return [
+        'createdAt',
+        'onboardingCompleted',
+        'onboardingCompletedAt',
+        'aiConsent',
+        'aiConsentAt',
+        'reminderEnabled',
+        'updatedAt'
+      ];
+    }
+
+    function isValidProfileFields(data) {
+      return hasOnlyKeys(data, profileKeys())
+        && hasNoInternalFields(data)
+        && (!data.keys().hasAny(['onboardingCompleted']) || data.onboardingCompleted is bool)
+        && (!data.keys().hasAny(['aiConsent']) || data.aiConsent is bool)
+        && (!data.keys().hasAny(['reminderEnabled']) || data.reminderEnabled is bool)
+        && (!data.keys().hasAny(['createdAt']) || isTimestamp(data.createdAt))
+        && (!data.keys().hasAny(['onboardingCompletedAt']) || isTimestamp(data.onboardingCompletedAt))
+        && (!data.keys().hasAny(['aiConsentAt']) || isTimestamp(data.aiConsentAt))
+        && (!data.keys().hasAny(['updatedAt']) || isTimestamp(data.updatedAt));
+    }
+
+    // On create every timestamp present must be the commit time.
+    function isValidProfileCreate(data) {
+      return isValidProfileFields(data)
+        && (!data.keys().hasAny(['createdAt']) || isServerTimestamp(data.createdAt))
+        && (!data.keys().hasAny(['onboardingCompletedAt']) || isServerTimestamp(data.onboardingCompletedAt))
+        && (!data.keys().hasAny(['aiConsentAt']) || isServerTimestamp(data.aiConsentAt))
+        && (!data.keys().hasAny(['updatedAt']) || isServerTimestamp(data.updatedAt));
+    }
+
+    // On update a timestamp is accepted when it is the commit time of the
+    // request or when it repeats the value already stored. `createdAt` is
+    // immutable: it can only be preserved, never rewritten or removed.
+    // Field reads use `get(key, default)` so a missing key never turns into
+    // an evaluation error.
+    function isValidProfileUpdate(data, existing) {
+      return isValidProfileFields(data)
+        && data.diff(existing).affectedKeys().hasOnly(profileKeys())
+        && (existing.get('createdAt', null) == null
+          ? (data.get('createdAt', null) == null || data.get('createdAt', null) == request.time)
+          : data.get('createdAt', null) == existing.get('createdAt', null))
+        && (data.get('onboardingCompletedAt', null) == null
+          || data.get('onboardingCompletedAt', null) == request.time
+          || data.get('onboardingCompletedAt', null) == existing.get('onboardingCompletedAt', null))
+        && (data.get('aiConsentAt', null) == null
+          || data.get('aiConsentAt', null) == request.time
+          || data.get('aiConsentAt', null) == existing.get('aiConsentAt', null))
+        && (data.get('updatedAt', null) == null
+          || data.get('updatedAt', null) == request.time
+          || data.get('updatedAt', null) == existing.get('updatedAt', null));
+    }
+
+    match /users/{uid} {
+      allow read: if ownsUser(uid);
+      allow create: if ownsUser(uid) && isValidProfileCreate(request.resource.data);
+      allow update: if ownsUser(uid) && isValidProfileUpdate(request.resource.data, resource.data);
+      // Only the deletion Cloud Function may remove the profile document,
+      // because deleting it alone would orphan indicators and entries.
+      allow delete: if false;
+    }
+
+    // ------------------------------------------------------------------
+    // Resource layer: indicators `users/{uid}/indicators/{indicatorId}`
+    // ------------------------------------------------------------------
+    // Structural fields are still editable here; REQ-2-001 adds the freeze
+    // after the first entry together with the entries resource. This rule
+    // already enforces the schema, types and size limits of the indicator.
+
+    function hasValidNumericConfig(data) {
+      return data.keys().hasAny(['numeric'])
+        && data.numeric is map
+        && hasOnlyKeys(data.numeric, ['unit', 'min', 'max', 'step'])
+        && hasAllKeys(data.numeric, ['unit', 'min', 'max', 'step'])
+        && isNonEmptyStringAtMost(data.numeric.unit, 24)
+        && (data.numeric.min == null || isNumberIn(data.numeric.min, -1000000, 1000000))
+        && (data.numeric.max == null || isNumberIn(data.numeric.max, -1000000, 1000000))
+        && (data.numeric.min == null || data.numeric.max == null || data.numeric.min <= data.numeric.max)
+        && isNumberIn(data.numeric.step, 0.000001, 1000000);
+    }
+
+    function hasValidScaleConfig(data) {
+      return data.keys().hasAny(['scale'])
+        && data.scale is map
+        && hasOnlyKeys(data.scale, ['min', 'max', 'step'])
+        && hasAllKeys(data.scale, ['min', 'max', 'step'])
+        && isNumberIn(data.scale.min, -1000000, 1000000)
+        && isNumberIn(data.scale.max, -1000000, 1000000)
+        && data.scale.min < data.scale.max
+        && isNumberIn(data.scale.step, 0.000001, 1000000)
+        && data.scale.max - data.scale.min <= 1000000;
+    }
+
+    function isValidOption(option) {
+      // Keep the per-option check small: every allowed position is validated.
+      let keys = option.keys();
+      let id = option.id;
+      let label = option.label;
+      let order = option.order;
+      return keys.hasOnly(['id', 'label', 'order']) && keys.size() == 3
+        && id.matches('[\\s\\S]{1,64}')
+        && label.matches('[\\s\\S]{1,120}')
+        && order is int && order >= 0 && order <= 1000;
+    }
+
+    function hasValidOptions(data) {
+      // Rules cannot iterate a list, so every allowed position is checked
+      // explicitly. Eight options keep worst-case creates and updates within
+      // the 1000-expression limit, including ownership and deletion checks.
+      let options = data.get('options', []);
+      let count = options.size();
+      return options is list
+        && count >= 2 && count <= 8
+        && isValidOption(options[0])
+        && isValidOption(options[1])
+        && (count > 2 ? isValidOption(options[2]) : true)
+        && (count > 3 ? isValidOption(options[3]) : true)
+        && (count > 4 ? isValidOption(options[4]) : true)
+        && (count > 5 ? isValidOption(options[5]) : true)
+        && (count > 6 ? isValidOption(options[6]) : true)
+        && (count > 7 ? isValidOption(options[7]) : true);
+    }
+
+    function hasValidValueShape(data) {
+      return data.valueType == 'numeric'
+        ? (!data.keys().hasAny(['scale', 'options']) && hasValidNumericConfig(data))
+        : (data.valueType == 'scale'
+          ? (!data.keys().hasAny(['numeric', 'options']) && hasValidScaleConfig(data))
+          : (data.valueType == 'ordinal'
+            ? (!data.keys().hasAny(['numeric', 'scale']) && hasValidOptions(data))
+            : !data.keys().hasAny(['numeric', 'scale', 'options'])));
+    }
+
+    function hasValidAggregation(data) {
+      return data.frequency == 'single_per_day'
+        ? data.get('dailyAggregation', null) == null
+        : data.get('dailyAggregation', null) in (data.valueType == 'boolean'
+          ? ['any']
+          : (data.valueType == 'ordinal' ? ['last'] : ['sum', 'mean', 'last']));
+    }
+
+    function hasValidIdealRange(data) {
+      return data.idealRange is map
+        && hasOnlyKeys(data.idealRange, ['min', 'max'])
+        && hasAllKeys(data.idealRange, ['min', 'max'])
+        && isNumberIn(data.idealRange.min, -1000000, 1000000)
+        && isNumberIn(data.idealRange.max, -1000000, 1000000)
+        && data.idealRange.min <= data.idealRange.max
+        && (!data.keys().hasAny(['scale'])
+          || (data.idealRange.min >= data.scale.min && data.idealRange.max <= data.scale.max))
+        && (!data.keys().hasAny(['numeric'])
+          || data.numeric.min == null
+          || data.idealRange.min >= data.numeric.min)
+        && (!data.keys().hasAny(['numeric'])
+          || data.numeric.max == null
+          || data.idealRange.max <= data.numeric.max);
+    }
+
+    function hasValidDirectionFields(data) {
+      // Factors have no desired direction and no ideal range (spec 4.3).
+      return data.group == 'factor'
+        ? !data.keys().hasAny(['desiredDirection', 'idealRange'])
+        : (!data.keys().hasAny(['desiredDirection'])
+          ? !data.keys().hasAny(['idealRange'])
+          : (isStringIn(data.desiredDirection, ['neutral', 'higher', 'lower', 'target_range'])
+            && (data.desiredDirection == 'target_range'
+              ? (data.keys().hasAny(['idealRange'])
+                && hasValidIdealRange(data))
+              : !data.keys().hasAny(['idealRange']))));
+    }
+
+    function hasValidArchivedAtShape(data) {
+      return !data.keys().hasAny(['archivedAt'])
+        || data.archivedAt == null
+        || isTimestamp(data.archivedAt);
+    }
+
+    function indicatorKeys() {
+      return [
+        'group',
+        'name',
+        'abbreviation',
+        'emoji',
+        'valueType',
+        'numeric',
+        'scale',
+        'options',
+        'desiredDirection',
+        'idealRange',
+        'frequency',
+        'dailyAggregation',
+        'sortOrder',
+        'archivedAt',
+        'createdAt',
+        'updatedAt'
+      ];
+    }
+
+    function isValidIndicatorFields(data) {
+      // Required fields are read directly below and in the create/update
+      // checks: a missing field fails closed without a duplicate key list.
+      return hasOnlyKeys(data, indicatorKeys())
+        && isStringIn(data.group, ['factor', 'result'])
+        && isNonEmptyStringAtMost(data.name, 80)
+        && isNonEmptyStringAtMost(data.abbreviation, 8)
+        && (!data.keys().hasAny(['emoji']) || isStringAtMost(data.emoji, 8))
+        && isStringIn(data.valueType, ['boolean', 'scale', 'ordinal', 'numeric'])
+        && isStringIn(data.frequency, ['single_per_day', 'multiple_per_day'])
+        && isIntIn(data.sortOrder, 0, 1000000)
+        && hasValidValueShape(data)
+        && hasValidAggregation(data)
+        && hasValidDirectionFields(data)
+        && hasValidArchivedAtShape(data);
+    }
+
+    function isValidIndicatorCreate(data) {
+      return isValidIndicatorFields(data)
+        && isServerTimestamp(data.createdAt)
+        && isServerTimestamp(data.updatedAt)
+        && (!data.keys().hasAny(['archivedAt'])
+          || data.archivedAt == null
+          || data.archivedAt == request.time);
+    }
+
+    // `createdAt` is immutable. `updatedAt` is always the commit time of the
+    // request, and `archivedAt` may only be archived or restored with the
+    // commit time of the request or keep its stored value.
+    function isValidIndicatorUpdate(data, existing) {
+      return isValidIndicatorFields(data)
+        && hasOnlyKeys(existing, indicatorKeys())
+        && data.createdAt == existing.createdAt
+        && data.updatedAt == request.time
+        && (data.get('archivedAt', null) == null
+          || data.get('archivedAt', null) == request.time
+          || data.get('archivedAt', null) == existing.get('archivedAt', null));
+    }
+
+    match /users/{uid}/indicators/{indicatorId} {
+      allow read: if ownsUser(uid);
+      allow create: if ownsUser(uid) && isValidIndicatorCreate(request.resource.data);
+      allow update: if ownsUser(uid) && isValidIndicatorUpdate(request.resource.data, resource.data);
+      // Indicators are archived, never deleted, so their entries cannot become
+      // orphans. Account deletion removes the whole tree with the Admin SDK.
+      allow delete: if false;
+    }
+
+    // ------------------------------------------------------------------
+    // Resource layer: records/entries `users/{uid}/entries/{entryId}`
+    // ------------------------------------------------------------------
+    // The daily log resource does not exist yet (REQ-2-002). Its rules are
+    // added here, next to the resource, together with the ownership and limit
+    // checks it needs: entries belong to the owner, carry one indicator, one
+    // value, one local date and one server timestamp, and can be deleted only
+    // by the owner. Until then the collection stays closed to clients.
+
+    match /users/{uid}/entries/{entryId} {
+      allow read, write: if false;
+    }
+
+    // ------------------------------------------------------------------
+    // Resource layer: insights, saved insights, feedback and summaries
+    // ------------------------------------------------------------------
+    // These resources are still closed (REQ-3-002 and REQ-4-001 own them).
+    // Each one gets its own rule with the same base guarantees when it is
+    // implemented.
+
+    match /users/{uid}/insights/{insightId} {
+      allow read, write: if false;
+    }
+
+    match /users/{uid}/savedInsights/{insightId} {
+      allow read, write: if false;
+    }
+
+    match /users/{uid}/insightFeedback/{feedbackId} {
+      allow read, write: if false;
+    }
+
+    match /users/{uid}/dailySummaries/{summaryId} {
+      allow read, write: if false;
+    }
+
+    // Push subscriptions and push delivery state are server-managed. The
+    // client registers a device token through the backend, never directly.
+    match /users/{uid}/pushSubscriptions/{subscriptionId} {
+      allow read, write: if false;
+    }
+
+    // ------------------------------------------------------------------
+    // Server-only state
+    // ------------------------------------------------------------------
+    // `accountDeletions` carries the deletion lock; `internal` holds quotas,
+    // billing, push and idempotency state per user. Neither is ever
+    // client-readable or client-writable, even for the owner. Admin SDK access
+    // bypasses rules.
+
+    match /accountDeletions/{uid} {
+      allow read, write: if false;
+    }
+
+    match /internal/{document=**} {
+      allow read, write: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

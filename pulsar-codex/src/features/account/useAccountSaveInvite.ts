@@ -19,6 +19,16 @@ function writeFlag(key: string, value: boolean): void {
   }
 }
 
+/** Clears the invitation state when the account (and its caches) is deleted. */
+export function clearAccountSaveInvite(): void {
+  try {
+    localStorage.removeItem(ELIGIBLE_KEY);
+    localStorage.removeItem(DISMISSED_KEY);
+  } catch {
+    // Preferences are best effort when storage is blocked.
+  }
+}
+
 /**
  * The save-account invitation is earned by a useful action, never shown on the
  * first paint, and can be dismissed without interrupting the task at hand.

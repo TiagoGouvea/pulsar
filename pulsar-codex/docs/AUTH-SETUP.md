@@ -50,10 +50,22 @@ yarn build:functions
 firebase deploy --only functions:deleteAccount --project <projeto>
 ```
 
-A função rejeita UID enviado pelo cliente, exige autenticação recente para contas permanentes, remove `users/{uid}` recursivamente, remove o usuário do Auth e só então limpa o marcador de exclusão. O cliente faz logout somente depois de receber `{ deleted: true, uid }` para o mesmo UID.
+A função rejeita UID enviado pelo cliente, exige autenticação recente para contas permanentes, marca a exclusão em `accountDeletions/{uid}`, remove `users/{uid}` recursivamente (inclusive subcoleções sem documento pai), remove o estado por UID em todos os namespaces `internal/{namespace}/{uid}/{document}`, e só então remove o usuário do Auth. O bloqueio mínimo de segurança é mantido para impedir recriação por tokens ainda válidos; não contém perfil, tokens ou dados funcionais. O cliente faz logout somente depois de receber `{ deleted: true, uid }` para o mesmo UID e limpa caches locais (indicadores, tutorial, convite e preferência de nomes), preservando caches com chave de outros UIDs.
+
+As Security Rules em `firestore.rules` isolam `users/{uid}` e subcoleções por UID, validam os schemas e limites, rejeitam campos internos (quota, billing, push, idempotência) e mantêm `internal/**` e `accountDeletions/**` inacessíveis ao cliente. Enquanto o marcador de exclusão existir, o cliente não pode ler nem gravar dados daquele UID. Metadados de quota, incluindo `lastInsightRefreshAt`, devem ficar no caminho interno, não no perfil legível pelo cliente.
+
+## Testes de emulador
+
+```bash
+yarn test:rules
+yarn test:deletion:emulator
+yarn test:emulators
+```
+
+Os testes exigem Java e usam `firebase.test.json` com Firestore em `8090`, Auth em `9199` e Functions em `5101`, sem alterar as portas do `firebase.json` padrão. `yarn test` executa as regras e a exclusão integral no emulador, além dos testes unitários. A suíte chama também a callable real emulada e usa o mesmo adapter Admin de produção para verificar falhas parciais. Consulte [`SECURITY.md`](SECURITY.md).
 
 ## Limites
 
 - Não habilite limpeza automática de contas anônimas sem analisar o impacto: ela apagaria dados de quem ainda não converteu.
 - A PWA pode ter armazenamento separado no iPhone; ofereça a conversão antes do convite de instalação (etapa de PWA).
-- As Security Rules de isolamento por UID são tratadas na task de regras (REQ-1-003).
+- Regras de `entries`, `insights`, `savedInsights`, `insightFeedback`, `pushSubscriptions` e `dailySummaries` ficam fechadas até as tarefas dos respectivos recursos, que devem ampliar o schema ao lado do recurso. O congelamento estrutural do indicador após o primeiro registro pertence a REQ-2-001/REQ-2-002.

@@ -44,6 +44,21 @@ export function hasCompletedOnboardingLocally(uid?: string | null): boolean {
 }
 
 /**
+ * Removes the local tutorial markers after an account deletion. The scoped
+ * marker is the authoritative one; the generic/design keys are legacy caches
+ * that must not make a brand-new account look already onboarded.
+ */
+export function clearOnboardingCompletion(uid?: string | null): void {
+  try {
+    localStorage.removeItem(ONBOARDING_LOCAL_KEY);
+    localStorage.removeItem(LEGACY_DESIGN_KEY);
+    if (uid) localStorage.removeItem(scopedKey(uid));
+  } catch {
+    // Storage may be unavailable; remote deletion remains authoritative.
+  }
+}
+
+/**
  * Persists the tutorial completion. The local marker is written first so the
  * state survives an unavailable backend; Firestore remains the canonical
  * per-UID record when the write is permitted.

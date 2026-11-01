@@ -314,6 +314,17 @@ VITE_FIREBASE_MEASUREMENT_ID=...
 
 ---
 
-**Status:** ✅ Task-001 concluída; task-002 (entrada anônima e conversão) e task-003 (onboarding e estado inicial) prontas para verificação  
+## 14. Task-004 — Isolamento e exclusão segura
+
+- Isolamento por UID, schemas e limites-base, recursos futuros fechados e estado sensível separado em `internal/{namespace}/{uid}/{document}`.
+- Exclusão recursiva dos dados funcionais e internos antes do Auth; falhas não declaram sucesso e podem ser retomadas explicitamente.
+- Diferentemente da decisão inicial da task-002, o marcador privado mínimo de exclusão é mantido após a conclusão, para impedir recriação por ID token ainda válido. Contém somente timestamps, não dados funcionais.
+- Ordinais têm limite-base de 8 opções, com criação e atualização no limite testadas dentro da capacidade de avaliação das Rules.
+- Suítes reais de regras, Auth/Firestore/Functions e callable emulada fazem parte de `yarn test`; E2E usa portas isoladas. Nenhuma aprovação ou deploy é feito pelo implementador.
+- Contrato detalhado e limites: [`SECURITY.md`](SECURITY.md). Relato das verificações: [`IMPLEMENTATION-STATUS-TASK-004.md`](IMPLEMENTATION-STATUS-TASK-004.md).
+
+---
+
+**Status anterior à task-004:** ✅ Task-001 concluída; task-002 (entrada anônima e conversão) e task-003 (onboarding e estado inicial) prontas para verificação
 **Build:** ✅ Passando (app + functions)  
 **Testes:** ✅ 61 Vitest + 9 functions; E2E 60/60 nos cinco projetos

@@ -69,8 +69,8 @@ Serve o build de produção localmente na porta 4173 para verificação antes de
 yarn test
 ```
 
-Executa os testes do app com Vitest e, em seguida, os testes da Cloud Function com `node --test`:
-- Environment: jsdom
+Executa os testes do app com Vitest, os testes da Cloud Function com `node --test` e, por fim, as regras do Firestore e a exclusão integral nos emuladores:
+- Environment: jsdom para o app; node para as regras
 - Setup files: `tests/setup.ts`
 - Coverage: V8 provider
 - Output: text + HTML
@@ -80,6 +80,24 @@ yarn test:functions
 ```
 
 Compila `functions/` e executa apenas os testes de exclusão de conta.
+
+```bash
+yarn test:rules
+```
+
+Executa `tests/rules/firestore.rules.spec.ts` no emulador Firestore configurado por `firebase.test.json` (porta `8090`). O arquivo de teste cobre ownership, campos internos, schemas/limites de indicadores e bloqueio durante a exclusão.
+
+```bash
+yarn test:deletion:emulator
+```
+
+Compila `functions/` e valida, com Auth (`9199`), Firestore (`8090`) e Functions (`5101`) emulados, a remoção de subcoleções, indicadores, registros, insights, feedback, tokens, quotas e demais estados internos, antes do usuário do Auth. Verifica também a callable real, retomada após falha parcial e bloqueio de recriação por token antigo. O marcador mínimo de segurança é intencionalmente mantido (ver `docs/SECURITY.md`).
+
+```bash
+yarn test:emulators
+```
+
+Executa as regras e a exclusão no mesmo ciclo de emuladores. É o comando incluído em `yarn test`. Requer Java; utiliza apenas o projeto sintético `demo-pulsar`. `yarn test:unit` executa somente o Vitest do app sem emuladores.
 
 ```bash
 yarn test:watch
@@ -116,6 +134,8 @@ Para executar com os emuladores Firebase de Auth, Firestore e Functions:
 ```bash
 yarn test:e2e:emulators
 ```
+
+Os testes de regras, exclusão e o comando E2E com emuladores usam `firebase.test.json` e não alteram as portas padrão do `firebase.json` de hosting/produção. O comando E2E fornece ao app as portas isoladas `9199`, `8090` e `5101` via variáveis `VITE_*_EMULATOR_PORT`.
 
 ### 7. Linting
 
