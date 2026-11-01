@@ -22,6 +22,20 @@ const outcomeAliases = new Map([
 ]);
 const MAX_RAW_RESPONSE_CHARS = 64_000;
 
+export function prepareResponseDiagnostic(
+  original: string | undefined,
+  parsedResult: ExecutionResult | undefined,
+  redactionPatterns: string[],
+): { content: string; truncated: boolean; originalChars: number } {
+  const diagnosticResponse = parsedResult ? JSON.stringify(parsedResult) : original ?? "[EMPTY RESPONSE]";
+  const safeResponse = redact(diagnosticResponse, redactionPatterns);
+  return {
+    content: safeResponse.slice(0, MAX_RAW_RESPONSE_CHARS),
+    truncated: safeResponse.length > MAX_RAW_RESPONSE_CHARS,
+    originalChars: diagnosticResponse.length,
+  };
+}
+
 export type ResultRepairDiagnostic = {
   status: "started" | "resolved" | "unresolved" | "skipped";
   reason: string;
@@ -490,17 +504,16 @@ export class PiExecutor implements Executor {
       const initialResponse = lastAssistantOutput(session.messages, session.getLastAssistantText());
       let rawResponse = initialResponse;
       const saveRawResponse = async (parsedResult?: ExecutionResult): Promise<void> => {
-        const original = rawResponse ?? "[EMPTY RESPONSE]";
-        const diagnosticResponse = parsedResult
-          ? JSON.stringify(parsedResult)
-          : `[UNPARSEABLE RESPONSE OMITTED; chars=${original.length}]`;
-        const safeResponse = redact(diagnosticResponse, this.config.security.redactPatterns);
-        const truncated = safeResponse.length > MAX_RAW_RESPONSE_CHARS;
+        const diagnostic = prepareResponseDiagnostic(rawResponse, parsedResult, this.config.security.redactPatterns);
+        const rawResponsePath = path.join(request.outputDirectory, "raw-response.txt");
         await writeFile(
-          path.join(request.outputDirectory, "raw-response.txt"),
-          `${safeResponse.slice(0, MAX_RAW_RESPONSE_CHARS)}${truncated ? "\n[TRUNCATED]\n" : "\n"}`,
+          rawResponsePath,
+          `${diagnostic.content}${diagnostic.truncated ? "\n[TRUNCATED]\n" : "\n"}`,
           { encoding: "utf8", mode: 0o600 },
         );
+        if (!parsedResult) {
+          progress.log(`Resposta inválida preservada com mascaramento em ${rawResponsePath} · ${diagnostic.originalChars} caracteres${diagnostic.truncated ? ` · truncada em ${MAX_RAW_RESPONSE_CHARS}` : ""}.`);
+        }
       };
       let result: ExecutionResult;
       let initialParseError: unknown;

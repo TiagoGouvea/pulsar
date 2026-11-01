@@ -5,6 +5,7 @@
 - O terminal mostra timestamp, etapa/tarefa, tentativa, modelo, tokens, custo e duração.
 - Cada sessão do controlador atualiza `runs/<id>/run-summary.json`; pausas entre sessões não entram no tempo ativo.
 - Cada interação grava `model-call.json` junto do `result.json`, `session-trace.jsonl` e demais evidências da tentativa.
+- Quando a resposta não puder ser interpretada, `raw-response.txt` preserva o texto inicial e a tentativa de reparo após mascarar segredos conhecidos; o arquivo é local, restrito ao usuário (0600) e limitado a 64 mil caracteres. Ele pode conter trechos de código/contexto: não o compartilhe publicamente sem revisar.
 - O painel `yarn harness dashboard --config harness.config.yaml --run <id>` exibe tarefas, eventos e totais por modelo.
 - `yarn harness models performance --config harness.config.yaml --run <id> [--milestone 1-base]` gera taxa técnica, tokens, duração média e custos, por modelo e opcionalmente por etapa.
 - `yarn harness diagnostics --config harness.config.yaml --run <id>` explica o bloqueio; `yarn harness report ...` gera o resumo e próximo passo.

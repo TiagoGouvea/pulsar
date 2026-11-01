@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import type { ModelCandidate } from "../../src/domain/types.js";
-import { extractResult, lastAssistantOutput, localApiFor, supportsPiReasoningEffort } from "../../src/executors/pi.js";
+import { extractResult, lastAssistantOutput, localApiFor, prepareResponseDiagnostic, supportsPiReasoningEffort } from "../../src/executors/pi.js";
 
 const result = {
   taskId: "task-001",
@@ -31,6 +31,22 @@ function localCandidate(input: Partial<ModelCandidate>): ModelCandidate {
 }
 
 describe("contrato estruturado do Pi", () => {
+  test("preserva resposta não parseável com segredos mascarados e tamanho limitado", () => {
+    const secret = "sk-test-secretvalue123456";
+    const raw = `[INITIAL RESPONSE] {"apiKey":"${secret}"}`;
+    const diagnostic = prepareResponseDiagnostic(raw, undefined, []);
+
+    expect(diagnostic.content).toContain("[INITIAL RESPONSE]");
+    expect(diagnostic.content).toContain("[REDACTED]");
+    expect(diagnostic.content).not.toContain(secret);
+    expect(diagnostic.truncated).toBe(false);
+
+    const large = prepareResponseDiagnostic("x".repeat(70_000), undefined, []);
+    expect(large.content).toHaveLength(64_000);
+    expect(large.truncated).toBe(true);
+    expect(large.originalChars).toBe(70_000);
+  });
+
   test("aceita o id original durante revisão e normaliza para o id canônico", () => {
     expect(extractResult(JSON.stringify(result), "task-001-review", ["task-001-review", "task-001"]).taskId)
       .toBe("task-001-review");
