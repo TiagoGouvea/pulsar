@@ -157,7 +157,6 @@ export const OnboardingStep3: React.FC = () => {
             </div>
           ))}
         </section>
-
       </div>
 
       <div className="fixed bottom-0 w-full bg-surface pt-safe pb-safe px-gutter py-4 border-t border-outline/20">
