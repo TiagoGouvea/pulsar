@@ -14,3 +14,9 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+/**
+ * Build-time flag (see `define` in vite.config.ts): true only in dev/emulator builds.
+ * The e2e test helper is loaded exclusively when it is true, so a production bundle never has it.
+ */
+declare const __PULSAR_TEST_HELPER__: boolean;
