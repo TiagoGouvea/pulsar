@@ -1,4 +1,6 @@
 [
   { "path": "/", "name": "home", "tags": ["ui"] },
+  { "path": "/onboarding", "name": "onboarding", "tags": ["ui"] },
+  { "path": "/dashboard", "name": "dashboard", "tags": ["ui"] },
   { "path": "/_design", "name": "design", "tags": ["ui"] }
 ]
