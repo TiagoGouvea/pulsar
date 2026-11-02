@@ -362,7 +362,8 @@ export class Orchestrator {
       // implementers can't fix. Tests come before the code, so missing modules/members (TDD) are expected.
       await this.tidy(wt, f.id);
       const tc = this.ctx.config.gates.G3?.cmd;
-      const typed = tc ? await execa(tc, { shell: true, cwd: this.appAbs(wt), reject: false, all: true, timeout: 300_000 }) : undefined;
+      // fresh worktree: dependencies are only installed by G1, so install them first
+      const typed = tc ? await execa(`yarn install --frozen-lockfile --prefer-offline --silent && ${tc}`, { shell: true, cwd: this.appAbs(wt), reject: false, all: true, timeout: 600_000 }) : undefined;
       const out = String(typed?.all ?? "");
       const errs = out.split("\n").filter((l) => /error TS\d+:/.test(l));
       const bad = typed?.exitCode && !errs.length ? [out.slice(-2500)] : errs.filter((l) => !TDD_TS_ERRORS.test(l));

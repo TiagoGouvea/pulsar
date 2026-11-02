@@ -181,3 +181,6 @@
 {"ts":"2026-11-02T12:20:13.236Z","workerId":"sonnet","provider":"anthropic","role":"test_writer","featureId":"F-1.01","stage":1,"tokensIn":25717,"tokensOut":7372,"costUsd":0.1508684,"billing":"api"}
 {"ts":"2026-11-02T12:20:29.618Z","workerId":"sonnet","provider":"anthropic","role":"test_writer","featureId":"F-1.08","stage":1,"tokensIn":21701,"tokensOut":6315,"costUsd":0.1353485,"billing":"api"}
 {"ts":"2026-11-02T12:20:38.955Z","workerId":"sonnet","provider":"anthropic","role":"test_writer","featureId":"F-1.10","stage":1,"tokensIn":18428,"tokensOut":2956,"costUsd":0.08748790000000001,"billing":"api"}
+{"ts":"2026-11-02T12:23:21.680Z","workerId":"sonnet","provider":"anthropic","role":"test_writer","featureId":"F-1.02","stage":1,"tokensIn":33518,"tokensOut":5663,"costUsd":0.1480462,"billing":"api"}
+{"ts":"2026-11-02T12:23:34.372Z","workerId":"sonnet","provider":"anthropic","role":"test_writer","featureId":"F-1.01","stage":1,"tokensIn":46039,"tokensOut":8321,"costUsd":0.21579199999999998,"billing":"api"}
+{"ts":"2026-11-02T12:23:52.815Z","workerId":"sonnet","provider":"anthropic","role":"test_writer","featureId":"F-1.02","stage":1,"tokensIn":19478,"tokensOut":4153,"costUsd":0.0992818,"billing":"api"}

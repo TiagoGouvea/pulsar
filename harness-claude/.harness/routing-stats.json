@@ -84,10 +84,10 @@
     "falhasPorGate": {}
   },
   "sonnet|test_writer|*": {
-    "tentativas": 9,
-    "sucessos": 9,
-    "custoMedio": 0.11944594444444447,
-    "duracaoMedia": 35845.22222222222,
+    "tentativas": 12,
+    "sucessos": 12,
+    "custoMedio": 0.12817779166666668,
+    "duracaoMedia": 36843.666666666664,
     "falhasPorGate": {}
   },
   "deepseek|triage|*": {
