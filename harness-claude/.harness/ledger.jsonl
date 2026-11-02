@@ -253,3 +253,9 @@
 {"ts":"2026-11-02T15:09:48.052Z","workerId":"opus","provider":"anthropic","role":"implement_hard","featureId":"F-1.03","stage":1,"tokensIn":54003,"tokensOut":19448,"costUsd":0.8717829999999998,"billing":"api"}
 {"ts":"2026-11-02T15:16:12.157Z","workerId":"gemini-argon","provider":"google","role":"review_ui","stage":1,"tokensIn":49731,"tokensOut":3335,"costUsd":0.1601015,"billing":"api"}
 {"ts":"2026-11-02T15:18:23.200Z","workerId":"opus","provider":"anthropic","role":"implement_hard","featureId":"F-1.fix-1","stage":1,"tokensIn":32955,"tokensOut":7130,"costUsd":0.4244487999999999,"billing":"api"}
+{"ts":"2026-11-02T15:21:06.293Z","workerId":"sonnet","provider":"anthropic","role":"test_writer","featureId":"F-1.03","stage":1,"tokensIn":29697,"tokensOut":7542,"costUsd":0.1695421,"billing":"api"}
+{"ts":"2026-11-02T15:24:06.763Z","workerId":"opus","provider":"anthropic","role":"implement_hard","featureId":"F-1.03","stage":1,"tokensIn":48125,"tokensOut":15060,"costUsd":0.8129975999999998,"billing":"api"}
+{"ts":"2026-11-02T15:26:41.044Z","workerId":"codex-mid","provider":"openai","role":"review_code","featureId":"F-1.03","stage":1,"tokensIn":44624,"tokensOut":2745,"costUsd":0.06626245,"billing":"api"}
+{"ts":"2026-11-02T15:28:23.144Z","workerId":"opus","provider":"anthropic","role":"implement_hard","featureId":"F-1.03","stage":1,"tokensIn":37084,"tokensOut":8924,"costUsd":0.43634860000000003,"billing":"api"}
+{"ts":"2026-11-02T15:33:13.541Z","workerId":"gemini-lite","provider":"google","role":"triage","featureId":"F-1.03","stage":1,"tokensIn":3794,"tokensOut":144,"costUsd":0.0011645,"billing":"api"}
+{"ts":"2026-11-02T15:37:15.181Z","workerId":"kimi-pro","provider":"openrouter","role":"implement_hard","featureId":"F-1.03","stage":1,"tokensIn":36347,"tokensOut":4679,"costUsd":0.09337934,"billing":"api"}

@@ -10,7 +10,8 @@ for (const route of appRoutes) {
     page.on('pageerror', (err) => errors.push(err.message));
 
     await page.goto(route.path);
-    await page.waitForLoadState('networkidle');
+    // Firestore realtime listeners keep a channel open: networkidle is best-effort
+    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
 
     expect(errors).toEqual([]);
     await expect(page.locator('html')).toHaveAttribute('lang', 'pt-BR');

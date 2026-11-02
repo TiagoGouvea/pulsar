@@ -582,10 +582,10 @@
       ],
       "status": "failing",
       "attempts": 0,
-      "costUsd": 3.5778871199999993,
+      "costUsd": 6.664030509999999,
+      "spendSince": "2026-11-02T15:19:46.503Z",
       "history": [],
-      "origin": [],
-      "spendSince": "2026-11-02T15:19:46.503Z"
+      "origin": []
     },
     {
       "id": "F-1.04",

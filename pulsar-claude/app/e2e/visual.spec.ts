@@ -6,7 +6,8 @@ import { appRoutes } from './support';
 for (const route of appRoutes.filter((r) => r.tags.includes('ui'))) {
   test(`visual ${route.name} @visual`, async ({ page }, testInfo) => {
     await page.goto(route.path);
-    await page.waitForLoadState('networkidle');
+    // Firestore realtime listeners keep a channel open: networkidle is best-effort
+    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
     await page.evaluate(() => document.fonts.ready);
     await page.screenshot({
       path: `test-results/visual/${route.name}-${testInfo.project.name}.png`,

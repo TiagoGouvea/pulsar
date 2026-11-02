@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T15:28:23.145Z",
+  "workerId": "opus",
+  "role": "implement_hard",
+  "featureId": "F-1.03",
+  "stage": 1,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.43634860000000003,
+  "durationMs": 101992,
+  "usage": {
+    "inputTokens": 37084,
+    "outputTokens": 8924,
+    "cachedTokens": 362353,
+    "costUsd": 0.43634860000000003
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "ovider first goes back to its empty loading state. Then it stops the profile listener for the previous user, so nothing from that user is shown while the new one loads. Any query or error still in flight from an older generation is ignored when it finishes.\n- **Stale `onboardingCompleted`:** `userRepository.ts` has a new `watchUserProfile` function that keeps a live listener on `users/{uid}`. The profile updates during the session, and the redirect from `/` uses the current value without a page reload. `ensureUserProfile` still creates the document only if it doesn't exist, so it never overwrites data from another device.\n\nThe test file `AuthProvider.test.tsx` (not protected) gained a fake for the Firestore listener and a way to make a document read hang. I added three tests: a profile change during the session, state being cleared on an auth change, and a hung query from the previous user being ignored. No existing assertion was changed.\n\nI didn't run `test:rules`. The e2e runs confirm the security rules let the owner use the new live listener.\n\n```json\n{\n  \"summary\": \"AuthProvider now resets its state on every auth change and ignores late results and errors from previous auth states. The profile is kept live through onSnapshot on users/{uid}, so the / redirect uses the current onboardingCompleted without a reload. users/{uid} is still created idempotently in a transaction.\",\n  \"filesChanged\": [\n    \"app/src/auth/AuthProvider.tsx\",\n    \"app/src/auth/userRepository.ts\",\n    \"app/src/auth/__tests__/AuthProvider.test.tsx\"\n  ],\n  \"testsRun\": [\n    \"yarn lint\",\n    \"yarn typecheck\",\n    \"yarn format:check\",\n    \"yarn test:unit (94 passed)\",\n    \"yarn test:e2e anonymous-start (12 passed, mobile + desktop)\"\n  ],\n  \"confidence\": \"high\",\n  \"notes\": \"Added three unit tests (profile changes during the session, state cleared on auth switch, ignored pending query from the previous user) and an onSnapshot fake in the unit test mock. The protected e2e spec was not touched.\"\n}\n```"
+}

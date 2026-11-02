@@ -70,10 +70,10 @@
     "falhasPorGate": {}
   },
   "codex-mid|review_code|*": {
-    "tentativas": 22,
-    "sucessos": 22,
-    "custoMedio": 0.10281414772727276,
-    "duracaoMedia": 36117.72727272727,
+    "tentativas": 23,
+    "sucessos": 23,
+    "custoMedio": 0.1012249434782609,
+    "duracaoMedia": 36723.52173913043,
     "falhasPorGate": {}
   },
   "gemini-pro|review_code|*": {
@@ -84,10 +84,10 @@
     "falhasPorGate": {}
   },
   "sonnet|test_writer|*": {
-    "tentativas": 25,
-    "sucessos": 25,
-    "custoMedio": 0.14611058400000002,
-    "duracaoMedia": 41635.16,
+    "tentativas": 26,
+    "sucessos": 26,
+    "custoMedio": 0.14701179615384616,
+    "duracaoMedia": 42078.96153846154,
     "falhasPorGate": {}
   },
   "deepseek|triage|*": {
@@ -115,14 +115,17 @@
     "falhasPorGate": {}
   },
   "opus|implement_hard|*": {
-    "tentativas": 14,
+    "tentativas": 16,
     "sucessos": 7,
-    "custoMedio": 0.5180231714285716,
-    "duracaoMedia": 136583.21428571432,
+    "custoMedio": 0.5313544125,
+    "duracaoMedia": 136467.43750000003,
     "falhasPorGate": {
       "G7": 2,
       "G3": 1,
-      "G6": 1
+      "G6": 2,
+      "G8": 1,
+      "G9": 1,
+      "G10": 1
     }
   },
   "sonnet|test_writer|ui": {
@@ -506,10 +509,10 @@
     "falhasPorGate": {}
   },
   "sonnet|test_writer|sync": {
-    "tentativas": 5,
-    "sucessos": 5,
-    "custoMedio": 0.1938457,
-    "duracaoMedia": 49232.8,
+    "tentativas": 6,
+    "sucessos": 6,
+    "custoMedio": 0.1897951,
+    "duracaoMedia": 49889.66666666667,
     "falhasPorGate": {}
   },
   "minimax|implement|*": {
@@ -560,14 +563,17 @@
     "falhasPorGate": {}
   },
   "opus|implement_hard|sync": {
-    "tentativas": 2,
+    "tentativas": 4,
     "sucessos": 0,
-    "custoMedio": 0.8472678000000002,
-    "duracaoMedia": 260204,
+    "custoMedio": 0.73597045,
+    "duracaoMedia": 197930.5,
     "falhasPorGate": {
       "G7": 2,
       "G3": 1,
-      "G6": 1
+      "G6": 2,
+      "G8": 1,
+      "G9": 1,
+      "G10": 1
     }
   },
   "sonnet|implement_hard|sync": {
@@ -581,17 +587,17 @@
     }
   },
   "gemini-lite|triage|*": {
-    "tentativas": 3,
-    "sucessos": 3,
-    "custoMedio": 0.0011561666666666667,
-    "duracaoMedia": 2289.3333333333335,
+    "tentativas": 4,
+    "sucessos": 4,
+    "custoMedio": 0.00115825,
+    "duracaoMedia": 2379.25,
     "falhasPorGate": {}
   },
   "codex-mid|review_code|sync": {
-    "tentativas": 1,
-    "sucessos": 1,
-    "custoMedio": 0.07102935,
-    "duracaoMedia": 45790,
+    "tentativas": 2,
+    "sucessos": 2,
+    "custoMedio": 0.06864590000000001,
+    "duracaoMedia": 47920.5,
     "falhasPorGate": {}
   },
   "deepseek-flash|implement|*": {
@@ -609,10 +615,10 @@
     "falhasPorGate": {}
   },
   "gemini-lite|triage|sync": {
-    "tentativas": 1,
-    "sucessos": 1,
-    "custoMedio": 0.0009975000000000001,
-    "duracaoMedia": 1656,
+    "tentativas": 2,
+    "sucessos": 2,
+    "custoMedio": 0.001081,
+    "duracaoMedia": 2152.5,
     "falhasPorGate": {}
   },
   "qwen-coder|implement|*": {
@@ -634,11 +640,16 @@
     }
   },
   "kimi-pro|implement_hard|*": {
-    "tentativas": 1,
+    "tentativas": 2,
     "sucessos": 0,
-    "custoMedio": 0.27052507000000003,
-    "duracaoMedia": 392282,
-    "falhasPorGate": {}
+    "custoMedio": 0.18195220500000003,
+    "duracaoMedia": 301069,
+    "falhasPorGate": {
+      "G7": 1,
+      "G8": 1,
+      "G9": 1,
+      "G10": 1
+    }
   },
   "kimi-pro|implement_hard|security-rules": {
     "tentativas": 1,
@@ -702,5 +713,17 @@
     "custoMedio": 0.1601015,
     "duracaoMedia": 124648,
     "falhasPorGate": {}
+  },
+  "kimi-pro|implement_hard|sync": {
+    "tentativas": 1,
+    "sucessos": 0,
+    "custoMedio": 0.09337934,
+    "duracaoMedia": 209856,
+    "falhasPorGate": {
+      "G7": 1,
+      "G8": 1,
+      "G9": 1,
+      "G10": 1
+    }
   }
 }

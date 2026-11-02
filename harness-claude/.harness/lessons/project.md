@@ -12,9 +12,9 @@
   evidence:
     - evt-24
   added: 2026-10-25
-  hits: 36
+  hits: 39
   helped: 12
-  helpedRate: 0.3333333333333333
+  helpedRate: 0.3076923076923077
   status: active
 - id: L-002
   scope:
@@ -614,4 +614,21 @@
   hits: 0
   helped: 0
   helpedRate: null
+  status: active
+- id: L-039
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - sync
+  rule: Substitua waitForLoadState('networkidle') por verificações de estado da
+    aplicação ou locator.waitFor() em elementos específicos, evitando depender
+    do estado ocioso da rede quando houver conexões de longa duração.
+  evidence:
+    - evt-200
+  added: 2026-11-02
+  hits: 1
+  helped: 0
+  helpedRate: 0
   status: active

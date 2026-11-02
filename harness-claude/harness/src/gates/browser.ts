@@ -98,7 +98,8 @@ export async function forEachPage(appAbs: string, baseUrl: string, routes: AppRo
     for (const [vp, size] of Object.entries(viewports)) {
       const page = await (await browser.newContext({ viewport: size })).newPage();
       for (const r of routes) {
-        await page.goto(new URL(r.path, baseUrl).href, { waitUntil: "networkidle" });
+        await page.goto(new URL(r.path, baseUrl).href, { waitUntil: "load" });
+        await page.waitForLoadState("networkidle", { timeout: 5000 }).catch(() => {});   // realtime listeners (onSnapshot) never go idle
         await fn(page, r, vp);
       }
       await page.context().close();

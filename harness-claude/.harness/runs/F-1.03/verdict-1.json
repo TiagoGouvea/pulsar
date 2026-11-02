@@ -2,39 +2,21 @@
   {
     "kind": "code",
     "pass": false,
-    "score": 4,
+    "score": 6,
     "issues": [
       {
-        "severidade": "blocker",
-        "arquivo": "app/functions/src/index.ts",
-        "descricao": "O diff remove a Cloud Function deleteAccount (com o check de requires-recent-login e a limpeza de internal/), apaga app/functions/src/__tests__/deleteAccount.test.ts (10 casos), retira o testTimeout do vitest.config.ts e tira o auth emulator de test:functions. Nada disso faz parte da F-1.03 (acesso anônimo e users/{uid}). É uma regressão de exclusão de conta (DECISOES.md) e remoção de testes existentes, o que enfraquece a cobertura.",
-        "sugestao": "Restaurar index.ts, o teste deleteAccount.test.ts, o testTimeout e o script test:functions do estado anterior. Manter no PR apenas o escopo de F-1.03 e tirar a remoção do HomePlaceholder se não for necessária para a feature."
+        "severidade": "major",
+        "arquivo": "app/src/auth/AuthProvider.tsx:35",
+        "descricao": "Ao mudar a autenticação entre abas, o estado anterior permanece visível durante o carregamento. Uma consulta pendente do usuário anterior também pode sobrescrever o estado do usuário atual.",
+        "sugestao": "Limpar o estado a cada mudança de autenticação e ignorar resultados de consultas e erros pertencentes a estados anteriores."
       },
       {
         "severidade": "major",
-        "arquivo": "app/src/pages/OnboardingPage.tsx",
-        "descricao": "O arquivo tem cerca de 494 linhas, com componentes de demonstração (FactorsDemo, ResultsDemo, AssociationsDemo), Hero e DemoRow, além de dados de passos repetidos. Isso contraria a regra de código mínimo e torna a tela difícil de revisar. O trecho visível também não mostra a renderização de `error` do useAuth, e o diff está truncado antes do fim do arquivo.",
-        "sugestao": "Extrair os demos e o Hero para arquivos próprios em pages/onboarding/ ou components/, reduzir a duplicação dos badges e confirmar que o estado de erro é renderizado com role=\"alert\" (critério de erro de rede)."
-      },
-      {
-        "severidade": "major",
-        "arquivo": "app/src/pages/OnboardingPage.tsx",
-        "descricao": "O AssociationsDemo mostra estatísticas fixas como se fossem dados reais do usuário (\"r = +0,68\", \"▲ +27% energia média\", \"N = 28 dias\", \"7,4/10\"). Num tutorial de um produto que diz que nada é criado automaticamente, isso pode ser lido como resultado real.",
-        "sugestao": "Deixar explícito que é um exemplo ilustrativo (rótulo \"Exemplo\") ou usar valores claramente genéricos, sem números que pareçam medição."
-      },
-      {
-        "severidade": "minor",
-        "arquivo": "app/src/pages/DashboardPage.tsx",
-        "descricao": "A página não tem guarda de onboarding (a spec só exige o redirecionamento a partir de /). O texto \"em Configurações\" cita uma tela que ainda não existe.",
-        "sugestao": "Confirmar que a spec aceita o acesso direto a /dashboard. Trocar o texto de \"em Configurações\" por algo neutro até a tela existir."
-      },
-      {
-        "severidade": "minor",
-        "arquivo": "app/src/auth/AuthProvider.tsx",
-        "descricao": "Quando signInAnonymously falha, signingIn.current permanece true e nenhuma nova tentativa é feita. O erro é mostrado, mas não há como recuperar sem recarregar a página.",
-        "sugestao": "Resetar signingIn.current no catch ou expor uma função de retry para o botão 'Tentar novamente'."
+        "arquivo": "app/src/auth/AuthProvider.tsx:41",
+        "descricao": "O perfil é lido apenas quando a autenticação muda. Se onboardingCompleted mudar durante a sessão, navegar para / pode redirecionar usando o valor antigo.",
+        "sugestao": "Manter o perfil atualizado ou consultá-lo novamente antes de redirecionar; testar a mudança sem recarregar a página."
       }
     ],
-    "workerId": "haiku"
+    "workerId": "codex-mid"
   }
 ]

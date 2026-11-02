@@ -13,16 +13,7 @@ Regras:
 - Rode os testes relevantes antes de terminar. Termine com o bloco ```json final pedido no seu papel
   (padrão: {"summary","filesChanged","testsRun","confidence":"low|med|high","notes"}).
 LIÇÕES RELEVANTES:
-- [L-018] Decisão do humano: Onde fica o histórico de registros? → A partir do indicador em Meus indicadores, exclusão com confirmação — A partir do indicador em Meus indicadores, exclusão com confirmação (padrão)
-- [L-019] Decisão do humano: Quais rotas usar? → /onboarding, /dashboard, /register, /indicators, /saved-insights, /insights/:hypothesisKey, /settings, /install — /onboarding, /dashboard, /register, /indicators, /saved-insights, /insights/:hypothesisKey, /settings, /install (padrão)
-- [L-020] Decisão do humano: Como o layout se comporta no computador? → Coluna central até 960 px; listas de cartões em grid auto-fit (mín. 300 px) — Coluna central até 960 px; listas de cartões em grid auto-fit (mín. 300 px) (padrão)
-- [L-021] Decisão do humano: Como resolver conflito de credencial na conversão? → Opções 'Cancelar' ou 'Entrar na conta existente' com aviso; nada é apagado nem mesclado — Opções 'Cancelar' ou 'Entrar na conta existente' com aviso; nada é apagado nem mesclado (padrão)
-- [L-022] Decisão do humano: De onde servir ícones e fontes? → Material Symbols, Geist e Space Grotesk via pacotes npm, sem CDN — Material Symbols, Geist e Space Grotesk via pacotes npm, sem CDN (padrão)
-- [L-023] Decisão do humano: Como identificar e autenticar o usuário do seed? → seed-user-0001 (seed@pulsar.test, sem senha), 30 dias terminando hoje, login e2e por custom token; --demo só com HARNESS_ALLOW_DEMO_SEED=1 e --project sem 'prod' — seed-user-0001 (seed@pulsar.test, sem senha), 30 dias terminando hoje, login e2e por custom token; --demo só com HARNESS_ALLOW_DEMO_SEED=1 e --project sem 'prod' (padrão)
-- [L-024] Decisão do humano: Quais portas usar nos emuladores? → Firestore 8282, Auth 9299 (fonte única app/firebase.json) — Firestore 8282, Auth 9299 (fonte única app/firebase.json) (padrão)
-- [L-015] Decisão do humano: Como representar 'sem resposta' em Sim/Não? → Tocar de novo na opção selecionada limpa a resposta e exclui o registro de hoje — Tocar de novo na opção selecionada limpa a resposta e exclui o registro de hoje (padrão)
-- [L-016] Decisão do humano: Qual controle usar para escala? → Pílulas tocáveis até 11 valores; slider nativo acima disso — Pílulas tocáveis até 11 valores; slider nativo acima disso (padrão)
-- [L-017] Decisão do humano: Como reordenar indicadores? → Botões subir/descer acessíveis — Botões subir/descer acessíveis (padrão)
+(nenhuma)
 
 
 # Papel: triagem de falha
@@ -30,12 +21,114 @@ LIÇÕES RELEVANTES:
 Resuma a causa raiz da falha dos gates da feature F-1.03 Acesso anônimo automático e documento do usuário. Não edite arquivos.
 
 ## Gates que falharam
+### G6 e2e
+────────
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.waitForLoadState: Test timeout of 30000ms exceeded.
+
+      11 |
+      12 |     await page.goto(route.path);
+    > 13 |     await page.waitForLoadState('networkidle');
+         |                ^
+      14 |
+      15 |     expect(errors).toEqual([]);
+      16 |     await expect(page.locator('html')).toHaveAttribute('lang', 'pt-BR');
+        at /Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-1.03/pulsar-claude/app/e2e/routes.spec.ts:13:16
+
+    Error Context: test-results/routes-route-dashboard-dashboard-passes-browser-gates-desktop/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/routes-route-dashboard-dashboard-passes-browser-gates-desktop/trace.zip
+    Usage:
+
+        yarn playwright show-trace test-results/routes-route-dashboard-dashboard-passes-browser-gates-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.waitForLoadState: Test timeout of 30000ms exceeded.
+
+      11 |
+      12 |     await page.goto(route.path);
+    > 13 |     await page.waitForLoadState('networkidle');
+         |                ^
+      14 |
+      15 |     expect(errors).toEqual([]);
+      16 |     await expect(page.locator('html')).toHaveAttribute('lang', 'pt-BR');
+        at /Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-1.03/pulsar-claude/app/e2e/routes.spec.ts:13:16
+
+    Error Context: test-results/routes-route-dashboard-dashboard-passes-browser-gates-desktop-retry1/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/routes-route-dashboard-dashboard-passes-browser-gates-desktop-retry1/trace.zip
+    Usage:
+
+        yarn playwright show-trace test-results/routes-route-dashboard-dashboard-passes-browser-gates-desktop-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6 failed
+    [mobile] › e2e/routes.spec.ts:8:3 › route home (/) passes browser gates ────────────────────────
+    [mobile] › e2e/routes.spec.ts:8:3 › route onboarding (/onboarding) passes browser gates ────────
+    [mobile] › e2e/routes.spec.ts:8:3 › route dashboard (/dashboard) passes browser gates ──────────
+    [desktop] › e2e/routes.spec.ts:8:3 › route home (/) passes browser gates ───────────────────────
+    [desktop] › e2e/routes.spec.ts:8:3 › route onboarding (/onboarding) passes browser gates ───────
+    [desktop] › e2e/routes.spec.ts:8:3 › route dashboard (/dashboard) passes browser gates ─────────
+  18 passed (2.3m)
+error Command failed with exit code 1.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+
+### G8 privacy-leak
+page.goto: Timeout 30000ms exceeded.
+Call log:
+[2m  - navigating to "http://localhost:4792/", waiting until "networkidle"[22m
+
+
+### G9 a11y
+page.goto: Timeout 30000ms exceeded.
+Call log:
+[2m  - navigating to "http://localhost:4792/", waiting until "networkidle"[22m
+
+
 ### G10 mobile-layout
-dashboard/w320: overflow horizontal (345px > 320px)
+page.goto: Timeout 30000ms exceeded.
+Call log:
+[2m  - navigating to "http://localhost:4792/", waiting until "networkidle"[22m
+
 
 ## Final da resposta do implementador
+I fixed both problems the reviewer raised in `AuthProvider`. Lint, typecheck, format check, the 94 unit tests and the 12 runs of the e2e spec (mobile and desktop) all pass.
+
+- **Old state showing after an auth change:** every auth change now starts a new "generation". The provider first goes back to its empty loading state. Then it stops the profile listener for the previous user, so nothing from that user is shown while the new one loads. Any query or error still in flight from an older generation is ignored when it finishes.
+- **Stale `onboardingCompleted`:** `userRepository.ts` has a new `watchUserProfile` function that keeps a live listener on `users/{uid}`. The profile updates during the session, and the redirect from `/` uses the current value without a page reload. `ensureUserProfile` still creates the document only if it doesn't exist, so it never overwrites data from another device.
+
+The test file `AuthProvider.test.tsx` (not protected) gained a fake for the Firestore listener and a way to make a document read hang. I added three tests: a profile change during the session, state being cleared on an auth change, and a hung query from the previous user being ignored. No existing assertion was changed.
+
+I didn't run `test:rules`. The e2e runs confirm the security rules let the owner use the new live listener.
+
 ```json
-{"summary":"Feature F-1.03 implementada com sucesso","filesChanged":["app/src/auth/AuthProvider.tsx","app/src/pages/DashboardPage.tsx",".harness/inbox/questions.jsonl",".harness/inbox/risks.jsonl"],"testsRun":"93","confidence":"high","notes":"Aprovado: lint, typecheck e 93 testes unitários. O AuthProvider agora limpa o estado da sessão quando firebaseUser é null, permitindo nova tentativa de login anônimo. As rotas /onboarding e /dashboard são protegidas com os estados de loading/error do AuthProvider. O EyeToggle foi adicionado na DashboardPage para controlar a revelação de nomes dos indicadores. users/{uid} é criado com defaults usando transação (garante criação única)."}
+{
+  "summary": "AuthProvider now resets its state on every auth change and ignores late results and errors from previous auth states. The profile is kept live through onSnapshot on users/{uid}, so the / redirect uses the current onboardingCompleted without a reload. users/{uid} is still created idempotently in a transaction.",
+  "filesChanged": [
+    "app/src/auth/AuthProvider.tsx",
+    "app/src/auth/userRepository.ts",
+    "app/src/auth/__tests__/AuthProvider.test.tsx"
+  ],
+  "testsRun": [
+    "yarn lint",
+    "yarn typecheck",
+    "yarn format:check",
+    "yarn test:unit (94 passed)",
+    "yarn test:e2e anonymous-start (12 passed, mobile + desktop)"
+  ],
+  "confidence": "high",
+  "notes": "Added three unit tests (profile changes during the session, state cleared on auth switch, ignored pending query from the previous user) and an onSnapshot fake in the unit test mock. The protected e2e spec was not touched."
+}
 ```
 
 Responda SOMENTE com o bloco ```json:

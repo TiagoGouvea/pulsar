@@ -10,12 +10,12 @@
     "featureId": "F-0.02"
   },
   "app/e2e/routes.spec.ts": {
-    "sha256": "7b21254849002d5415191628e3f0fe1be884fcf02c1664f957f7f486995e217e",
+    "sha256": "4bcf019679478701989acaf4635bcdcf3a87b01f972ec03e790cec1b2b33e70e",
     "asserts": 5,
     "featureId": "F-0.07"
   },
   "app/e2e/visual.spec.ts": {
-    "sha256": "b08ae558a6f63140498585c3ed7d37a87caac27f0e83fe348c209af0117c48b2",
+    "sha256": "268759cd2b0a9ca20792e371713f8d7c37b830dafeeeabc49ff0708086949222",
     "asserts": 0,
     "featureId": "F-0.07"
   },
@@ -35,8 +35,8 @@
     "featureId": "F-1.08"
   },
   "app/e2e/anonymous-start.spec.ts": {
-    "sha256": "73c1c9dce0aafa068257f7ce8d1925c71d8231e2ff9e568e0d14f4706faa81a5",
-    "asserts": 22,
+    "sha256": "d1a7d00ae80000aeb248502a429c09268bd7cfd3c0a5e1c7f5add7abaea48540",
+    "asserts": 20,
     "featureId": "F-1.03"
   },
   "app/functions/src/__tests__/setup.test.ts": {

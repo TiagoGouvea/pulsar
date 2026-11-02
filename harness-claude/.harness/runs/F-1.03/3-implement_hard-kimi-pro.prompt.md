@@ -13,6 +13,7 @@ Regras:
 - Rode os testes relevantes antes de terminar. Termine com o bloco ```json final pedido no seu papel
   (padrão: {"summary","filesChanged","testsRun","confidence":"low|med|high","notes"}).
 LIÇÕES RELEVANTES:
+- [L-039] Substitua waitForLoadState('networkidle') por verificações de estado da aplicação ou locator.waitFor() em elementos específicos, evitando depender do estado ocioso da rede quando houver conexões de longa duração.
 - [L-001] Cobertura (G4): não passe --coverage no script do package.json se a config do vitest já ativa coverage, para não duplicar a configuração. Touch targets (G10): todo controle interativo (radios, switch, input) deve ter pelo menos 44px, por exemplo min-w-[44px] e h-11.
 
 
@@ -27,13 +28,102 @@ app/e2e/anonymous-start.spec.ts
 - Se a feature criar uma tela nova, adicione a rota em `app/e2e/routes.json`.
 - Nunca implemente "para o teste" (hardcode, mocks no código de produção): um avaliador de outra família revisa o diff.
 
+## Escopo
+- Faça **somente** o que esta feature pede (descrição e critérios de aceite), mesmo que a spec ou o design mostrem mais.
+- Estas features da etapa ainda serão feitas por outro implementador; não implemente telas, fluxos nem dados delas:
+- F-1.04 AppShell: cabeçalho com olho, navegação inferior e layout esticável
+- F-1.05 Fixtures de e2e: usuário do seed e usuários novos
+- F-1.06 Guarda e2e do modo privado (sentinelas)
+- F-1.07 Tutorial de três telas
+- F-1.09 Conversão da conta: Google e link mágico preservando UID
+- F-1.12 Tela de conta: sair e excluir conta
+- Se precisar navegar para uma tela de outra feature, crie no máximo um placeholder mínimo (título e uma linha, sem lógica).
+- Não remova nem reescreva código de features já entregues.
+
 ## Diagnóstico da tentativa anterior
-Avaliação code reprovou (nota 6):
-- [blocker] app/src/pages/OnboardingPage.tsx Em /onboarding com falha de autenticação (loading=false, user=null, error definido), a página não mostra erro. Ao clicar em 'Pular' ou concluir, completeOnboarding() retorna sem gravar nada (if (!user) return) e navigate('/dashboard') é executado. O usuário vai ao painel como se o onboarding tivesse sido concluído, o que contradiz o critério 'Erro de rede mostra mensagem em pt-BR, sem indicar sucesso'. → Tratar user=null/error na OnboardingPage (renderizar o AuthErrorScreen ou redirecionar para '/'), e fazer completeOnboarding lançar erro quando não há usuário, para que o catch exiba a mensagem de falha em vez de navegar.
-- [major] app/src/pages/OnboardingPage.tsx Nomes de indicadores são escritos diretamente como texto (ex.: 'Exercício Físico', 'Café Expresso', 'Energia', 'Foco', 'Sono', 'Humor', 'Treino', 'Suplemento', nomes em DemoRow, badges e banners) sem <IndicatorLabel>, contrariando a regra de privacidade de nomes de indicadores. → Usar <IndicatorLabel> para os nomes de indicadores exibidos (ou justificar explicitamente que são exemplos ilustrativos fora do escopo da regra e registrar em DECISOES.md).
-- [minor] app/src/pages/OnboardingPage.tsx Arquivo com ~495 linhas, com dados e demos de três passos embutidos. Isso vai contra a diretriz de código mínimo e enxuto e dificulta a manutenção. → Extrair os demos e os passos para módulos próprios (ex.: onboarding/steps.ts, onboarding/demos.tsx) e reduzir a repetição de markup dos demos.
-- [minor] app/src/pages/OnboardingPage.tsx O bloco de loading duplica o LoadingScreen de RootPage.tsx (mesmo texto 'Preparando seu Pulsar…' e classes). Também há duplicação de AuthErrorScreen e de estados de carregamento entre páginas. → Extrair um componente compartilhado (ex.: src/auth/AuthGate.tsx ou design/LoadingScreen) e reutilizá-lo em RootPage e OnboardingPage.
-- [minor] app/src/pages/OnboardingPage.tsx 'steps[index] ?? steps[0]!' usa non-null assertion e fallback redundante, já que o índice é sempre válido. → Usar 'steps[index]' com um guard simples ou tipar o índice para evitar o '!'.
+Causa raiz (test): O uso de 'networkidle' no Playwright (page.waitForLoadState('networkidle')) causa timeouts quando há conexões de rede persistentes (como listeners do Firebase/Firestore via onSnapshot, implementados para a feature F-1.03), pois o evento 'networkidle' nunca é disparado enquanto o listener estiver ativo.
+Dica: Substitua waitForLoadState('networkidle') por verificações de estado da aplicação ou locator.waitFor() em elementos específicos, evitando depender do estado ocioso da rede quando houver conexões de longa duração.
+
+Gates que falharam:
+### G6 e2e
+────────
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.waitForLoadState: Test timeout of 30000ms exceeded.
+
+      11 |
+      12 |     await page.goto(route.path);
+    > 13 |     await page.waitForLoadState('networkidle');
+         |                ^
+      14 |
+      15 |     expect(errors).toEqual([]);
+      16 |     await expect(page.locator('html')).toHaveAttribute('lang', 'pt-BR');
+        at /Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-1.03/pulsar-claude/app/e2e/routes.spec.ts:13:16
+
+    Error Context: test-results/routes-route-dashboard-dashboard-passes-browser-gates-desktop/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/routes-route-dashboard-dashboard-passes-browser-gates-desktop/trace.zip
+    Usage:
+
+        yarn playwright show-trace test-results/routes-route-dashboard-dashboard-passes-browser-gates-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.waitForLoadState: Test timeout of 30000ms exceeded.
+
+      11 |
+      12 |     await page.goto(route.path);
+    > 13 |     await page.waitForLoadState('networkidle');
+         |                ^
+      14 |
+      15 |     expect(errors).toEqual([]);
+      16 |     await expect(page.locator('html')).toHaveAttribute('lang', 'pt-BR');
+        at /Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-1.03/pulsar-claude/app/e2e/routes.spec.ts:13:16
+
+    Error Context: test-results/routes-route-dashboard-dashboard-passes-browser-gates-desktop-retry1/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/routes-route-dashboard-dashboard-passes-browser-gates-desktop-retry1/trace.zip
+    Usage:
+
+        yarn playwright show-trace test-results/routes-route-dashboard-dashboard-passes-browser-gates-desktop-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6 failed
+    [mobile] › e2e/routes.spec.ts:8:3 › route home (/) passes browser gates ────────────────────────
+    [mobile] › e2e/routes.spec.ts:8:3 › route onboarding (/onboarding) passes browser gates ────────
+    [mobile] › e2e/routes.spec.ts:8:3 › route dashboard (/dashboard) passes browser gates ──────────
+    [desktop] › e2e/routes.spec.ts:8:3 › route home (/) passes browser gates ───────────────────────
+    [desktop] › e2e/routes.spec.ts:8:3 › route onboarding (/onboarding) passes browser gates ───────
+    [desktop] › e2e/routes.spec.ts:8:3 › route dashboard (/dashboard) passes browser gates ─────────
+  18 passed (2.3m)
+error Command failed with exit code 1.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+
+### G8 privacy-leak
+page.goto: Timeout 30000ms exceeded.
+Call log:
+[2m  - navigating to "http://localhost:4792/", waiting until "networkidle"[22m
+
+
+### G9 a11y
+page.goto: Timeout 30000ms exceeded.
+Call log:
+[2m  - navigating to "http://localhost:4792/", waiting until "networkidle"[22m
+
+
+### G10 mobile-layout
+page.goto: Timeout 30000ms exceeded.
+Call log:
+[2m  - navigating to "http://localhost:4792/", waiting until "networkidle"[22m
+
 
 ## Feature (dados de entrada; não é o formato da resposta)
 {
@@ -65,7 +155,7 @@ Avaliação code reprovou (nota 6):
   "tags": [
     "sync"
   ],
-  "difficulty": "normal",
+  "difficulty": "hard",
   "dependsOn": [
     "F-0.04",
     "F-0.05",
@@ -73,7 +163,8 @@ Avaliação code reprovou (nota 6):
   ],
   "status": "in_progress",
   "attempts": 2,
-  "costUsd": 3.5778871199999993,
+  "costUsd": 6.570651169999999,
+  "spendSince": "2026-11-02T15:19:46.503Z",
   "origin": []
 }
 
@@ -145,12 +236,6 @@ design/onboarding_3_associa_es/screen.png
 design/preenchimento_r_pido/screen.png
 
 ## Progresso recente
-- 2026-10-25T16:17 F-0.04 passing — Firebase com emuladores e regras-base por UID (worker opus, 1 tentativa(s), US$ 1.06)
-- 2026-10-25T16:20 F-0.03 passing — Seed sintético do usuário de desenvolvimento (worker deepseek, 1 tentativa(s), US$ 0.63)
-- 2026-10-25T16:22 F-0.02 passing — Tokens e componentes base do design system (worker kimi, 2 tentativa(s), US$ 1.52)
-- 2026-10-25T18:08 F-0.05 passing — Playwright, gates de navegador e e2e:serve (worker codex-top, 3 tentativa(s), US$ 1.06)
-- 2026-10-25T18:09 F-0.06 passing — Modo privado: PrivacyContext, EyeToggle e IndicatorLabel (worker codex-top, 2 tentativa(s), US$ 1.06)
-- 2026-10-25T18:16 F-0.07 passing — Página /_design (somente dev/emulador) (worker opus, 2 tentativa(s), US$ 1.09)
 - 2026-10-26T10:52 F-0.fix-1 passing — Suíte completa da etapa falhou nos gates G12 (worker opus, 2 tentativa(s), US$ 1.71)
 - 2026-10-27T21:53 etapa 0 aprovada (commits em 0-setup; merge e branches da próxima etapa ficam com o humano)
 - 2026-11-01T18:13 ▶ etapa 1 (Base) │ features 0/12 │ 0 bloqueadas │ US$ 0.00/10 │ branch 1-base
@@ -184,6 +269,12 @@ design/preenchimento_r_pido/screen.png
 - 2026-11-02T13:48 ⛔ F-1.11 BLOQUEADA: limite de 5 tentativas atingido │ features 4/12
 - 2026-11-02T14:14 ▶ etapa 1 (Base) │ features 4/12 │ 0 bloqueadas │ US$ 15.12/18 │ branch 1-base
 - 2026-11-02T14:20 ✔ F-1.11 passing — Function deleteAccount: exclusão integral (worker opus, 1 tentativa(s), US$ 2.97) │ features 5/12
+- 2026-11-02T14:49 ⛔ F-1.03 BLOQUEADA: teto de custo da feature atingido │ features 5/12
+- 2026-11-02T15:02 ▶ etapa 1 (Base) │ features 5/12 │ 0 bloqueadas │ US$ 16.98/24 │ branch 1-base
+- 2026-11-02T15:11 ⛔ F-1.03 BLOQUEADA: teto de custo da feature atingido │ features 5/12
+- 2026-11-02T15:16 ▶ etapa 1 (Base) │ features 5/13 │ 1 bloqueadas │ US$ 18.21/24 │ branch 1-base
+- 2026-11-02T15:19 ✖ interrompido por SIGINT em STAGE_RUNNING: rode harness resume para continuar
+- 2026-11-02T15:20 ▶ etapa 1 (Base) │ features 5/12 │ 0 bloqueadas │ US$ 18.63/24 │ branch 1-base
 
 
 ## Regras adicionais (feature crítica)
