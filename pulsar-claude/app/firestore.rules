@@ -1,17 +1,49 @@
 rules_version = '2';
 
 // Baseline: every document lives under users/{uid} and only that user may touch it.
-// Schema validation, locked indicator fields and immutable snapshots are added by later features.
+// Subcollection schemas, locked indicator fields and immutable snapshots are added by later features.
 service cloud.firestore {
   match /databases/{database}/documents {
     function isOwner(uid) {
       return request.auth != null && request.auth.uid == uid;
     }
 
-    match /users/{uid} {
-      allow read, write: if isOwner(uid);
+    // users/{uid} holds only client fields. Administrative fields (e.g. lastNotificationSentAt) live under
+    // internal/** (e.g. internal/userAdmin/users/{uid}), written by the Admin SDK and never readable by clients.
+    function hasOnlyUserFields(keys) {
+      return keys.hasOnly([
+        'onboardingCompleted', 'aiConsent', 'reminderEnabled', 'lastInsightRefreshAt', 'createdAt',
+        'saveAccountInviteDismissedAt', 'saveAccountInviteDismissedDayCount'
+      ]);
+    }
 
-      match /{document=**} {
+    function validUserFields(data) {
+      let keys = data.keys();
+      return hasOnlyUserFields(keys)
+        && (!('onboardingCompleted' in keys) || data.onboardingCompleted is bool)
+        && (!('aiConsent' in keys) || data.aiConsent is bool)
+        && (!('reminderEnabled' in keys) || data.reminderEnabled is bool)
+        && (!('lastInsightRefreshAt' in keys) || data.lastInsightRefreshAt is timestamp)
+        && (!('createdAt' in keys) || data.createdAt is timestamp)
+        && (!('saveAccountInviteDismissedAt' in keys)
+          || data.saveAccountInviteDismissedAt == null || data.saveAccountInviteDismissedAt is timestamp)
+        && (!('saveAccountInviteDismissedDayCount' in keys)
+          || data.saveAccountInviteDismissedDayCount == null
+          || (data.saveAccountInviteDismissedDayCount is int && data.saveAccountInviteDismissedDayCount >= 0));
+    }
+
+    match /users/{uid} {
+      // Fail closed: a document carrying a non-client field (misplaced admin data) is not readable by the owner.
+      allow read: if isOwner(uid) && (resource == null || hasOnlyUserFields(resource.data.keys()));
+      // The whole resulting document is validated, and a document holding misplaced admin fields is frozen for
+      // clients, so they can neither add nor strip (e.g. by overwriting with setDoc) those fields.
+      allow create: if isOwner(uid) && validUserFields(request.resource.data);
+      allow update: if isOwner(uid) && hasOnlyUserFields(resource.data.keys()) && validUserFields(request.resource.data);
+      // Account deletion runs in a Cloud Function (Admin SDK) that also cleans subcollections and Auth.
+      allow delete: if false;
+
+      // {collection} forces at least one segment: in rules v2 a bare {document=**} would also match users/{uid}.
+      match /{collection}/{document=**} {
         allow read, write: if isOwner(uid);
       }
     }
