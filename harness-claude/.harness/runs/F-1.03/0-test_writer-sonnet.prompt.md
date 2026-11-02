@@ -57,7 +57,7 @@ Escreva os testes de aceite da feature abaixo **antes** da implementação.
   "tags": [
     "sync"
   ],
-  "difficulty": "normal",
+  "difficulty": "hard",
   "dependsOn": [
     "F-0.04",
     "F-0.05",
@@ -65,7 +65,7 @@ Escreva os testes de aceite da feature abaixo **antes** da implementação.
   ],
   "status": "failing",
   "attempts": 0,
-  "costUsd": 2.980886177,
+  "costUsd": 3.5778871199999993,
   "origin": []
 }
 
@@ -137,9 +137,6 @@ design/onboarding_3_associa_es/screen.png
 design/preenchimento_r_pido/screen.png
 
 ## Progresso recente
-- 2026-10-25T16:14 F-0.01 passing — Scaffold: Vite, TypeScript, Tailwind, lint e Vitest (worker opus, 3 tentativa(s), US$ 0.79)
-- 2026-10-25T16:17 F-0.04 passing — Firebase com emuladores e regras-base por UID (worker opus, 1 tentativa(s), US$ 1.06)
-- 2026-10-25T16:20 F-0.03 passing — Seed sintético do usuário de desenvolvimento (worker deepseek, 1 tentativa(s), US$ 0.63)
 - 2026-10-25T16:22 F-0.02 passing — Tokens e componentes base do design system (worker kimi, 2 tentativa(s), US$ 1.52)
 - 2026-10-25T18:08 F-0.05 passing — Playwright, gates de navegador e e2e:serve (worker codex-top, 3 tentativa(s), US$ 1.06)
 - 2026-10-25T18:09 F-0.06 passing — Modo privado: PrivacyContext, EyeToggle e IndicatorLabel (worker codex-top, 2 tentativa(s), US$ 1.06)
@@ -176,4 +173,7 @@ design/preenchimento_r_pido/screen.png
 - 2026-11-02T13:24 ⛔ F-1.03 BLOQUEADA: teto de custo da feature atingido │ features 4/12
 - 2026-11-02T13:48 ⛔ F-1.11 BLOQUEADA: limite de 5 tentativas atingido │ features 4/12
 - 2026-11-02T14:14 ▶ etapa 1 (Base) │ features 4/12 │ 0 bloqueadas │ US$ 15.12/18 │ branch 1-base
+- 2026-11-02T14:20 ✔ F-1.11 passing — Function deleteAccount: exclusão integral (worker opus, 1 tentativa(s), US$ 2.97) │ features 5/12
+- 2026-11-02T14:49 ⛔ F-1.03 BLOQUEADA: teto de custo da feature atingido │ features 5/12
+- 2026-11-02T15:02 ▶ etapa 1 (Base) │ features 5/12 │ 0 bloqueadas │ US$ 16.98/24 │ branch 1-base
 

@@ -35,8 +35,8 @@
     "featureId": "F-1.08"
   },
   "app/e2e/anonymous-start.spec.ts": {
-    "sha256": "eb06895c4e8d1b641fde377fec23a2a960604566e9ee1ab26984a3f16c840925",
-    "asserts": 18,
+    "sha256": "73c1c9dce0aafa068257f7ce8d1925c71d8231e2ff9e568e0d14f4706faa81a5",
+    "asserts": 22,
     "featureId": "F-1.03"
   },
   "app/functions/src/__tests__/setup.test.ts": {

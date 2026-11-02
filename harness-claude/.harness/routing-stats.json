@@ -84,10 +84,10 @@
     "falhasPorGate": {}
   },
   "sonnet|test_writer|*": {
-    "tentativas": 24,
-    "sucessos": 24,
-    "custoMedio": 0.14409546666666667,
-    "duracaoMedia": 40787.87500000001,
+    "tentativas": 25,
+    "sucessos": 25,
+    "custoMedio": 0.14611058400000002,
+    "duracaoMedia": 41635.16,
     "falhasPorGate": {}
   },
   "deepseek|triage|*": {
@@ -506,10 +506,10 @@
     "falhasPorGate": {}
   },
   "sonnet|test_writer|sync": {
-    "tentativas": 4,
-    "sucessos": 4,
-    "custoMedio": 0.193688775,
-    "duracaoMedia": 46048.5,
+    "tentativas": 5,
+    "sucessos": 5,
+    "custoMedio": 0.1938457,
+    "duracaoMedia": 49232.8,
     "falhasPorGate": {}
   },
   "minimax|implement|*": {
@@ -687,6 +687,20 @@
     "sucessos": 2,
     "custoMedio": 0.0066657075,
     "duracaoMedia": 23303,
+    "falhasPorGate": {}
+  },
+  "gemini-argon|review_ui|*": {
+    "tentativas": 1,
+    "sucessos": 1,
+    "custoMedio": 0.1601015,
+    "duracaoMedia": 124648,
+    "falhasPorGate": {}
+  },
+  "gemini-argon|review_ui|ui": {
+    "tentativas": 1,
+    "sucessos": 1,
+    "custoMedio": 0.1601015,
+    "duracaoMedia": 124648,
     "falhasPorGate": {}
   }
 }

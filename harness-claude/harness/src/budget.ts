@@ -79,7 +79,11 @@ export function breach(ctx: Ctx, w: WorkerSpec, est: number, s: { stage: number;
   if (spent(ctx, { stage: s.stage }, rows) + est > stageCap(ctx, s.stage)) return "stage";
   const prov = providerOf(w);
   if (c.dailyByProvider[prov] !== undefined && spent(ctx, { provider: prov, day: today() }, rows) + est > c.dailyByProvider[prov]) return "provider";
-  if (s.featureId && spent(ctx, { featureId: s.featureId }, rows) + est > c.feature) return "feature";
+  if (s.featureId) {
+    // a feature reset by hand (failures that were the harness's) starts a fresh feature budget
+    const since = loadFeatures(ctx).features.find((f) => f.id === s.featureId)?.spendSince ?? "";
+    if (spent(ctx, { featureId: s.featureId }, rows.filter((r) => r.ts >= since)) + est > c.feature) return "feature";
+  }
   return null;
 }
 

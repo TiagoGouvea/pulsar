@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T15:09:48.054Z",
+  "workerId": "opus",
+  "role": "implement_hard",
+  "featureId": "F-1.03",
+  "stage": 1,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.8717829999999998,
+  "durationMs": 341777,
+  "usage": {
+    "inputTokens": 54003,
+    "outputTokens": 19448,
+    "cachedTokens": 1064270,
+    "costUsd": 0.8717829999999998
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "tead, which is a single fetch. Later screens that use `getDoc` or `onSnapshot` will hit the same timeout. I logged this in `.harness/inbox/risks.jsonl`.\n- **`?.` workaround for the unit-test mock.** I call `auth.authStateReady?.()` because the mocked `auth` in the unit test doesn't have that method. The real SDK (v11.10) always has it, so the optional call is only there for the mock. A reviewer may flag it.\n- **Sign-out isn't handled.** After a sign-out the provider doesn't create a new anonymous session until the page reloads. F-1.12 will need to handle that; also logged in `risks.jsonl`.\n- **File name doesn't match.** I couldn't rename `HomePlaceholder.tsx` (the `mv` command was denied), so it now exports a generic `Placeholder` under the old file name.\n\n```json\n{\"summary\":\"AuthProvider (src/auth) waits for authStateReady, signs in anonymously only when there is no persisted session, idempotently creates users/{uid} with defaults via transaction, exposes {user, loading}, and shows a pt-BR role=alert on failure. / redirects to /onboarding or /dashboard based on onboardingCompleted; /onboarding and /dashboard are minimal placeholders added to routes.json.\",\"filesChanged\":[\"app/src/auth/AuthProvider.tsx\",\"app/src/auth/userRepository.ts\",\"app/src/auth/ErrorAlert.tsx\",\"app/src/pages/RootRedirect.tsx\",\"app/src/pages/HomePlaceholder.tsx\",\"app/src/App.tsx\",\"app/e2e/routes.json\",\".harness/inbox/risks.jsonl\"],\"testsRun\":[\"yarn lint\",\"yarn typecheck\",\"yarn format:check\",\"yarn test:unit (93 passed)\",\"yarn test:e2e (24 passed, incl. anonymous-start.spec.ts and routes.spec.ts)\"],\"confidence\":\"high\",\"notes\":\"The onboarding flag is read with a transactional read because getDoc opens the Firestore watch stream and breaks the networkidle wait in routes.spec. auth.authStateReady?.() uses optional call because the unit-test auth mock lacks it. HomePlaceholder.tsx now exports a generic Placeholder (renaming the file was not permitted). Risks logged in .harness/inbox/risks.jsonl.\"}\n```"
+}

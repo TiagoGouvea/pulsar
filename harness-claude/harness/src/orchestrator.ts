@@ -319,6 +319,14 @@ export class Orchestrator {
       rmSync(PAUSE_FILE(this.ctx), { force: true });
       return this.pauseFor("PAUSED_MANUAL");
     }
+    // features waiting on a blocked one: stage gates and checkpoint would be premature, a human decides
+    const now = stageFeatures(loadFeatures(this.ctx), s), blocked = now.filter((f) => f.status === "blocked").map((f) => f.id);
+    const waiting = now.filter((f) => f.status === "failing").map((f) => f.id);
+    if (blocked.length && waiting.length) {
+      this.progress(`⏸ ${waiting.length} feature(s) esperando bloqueadas (${blocked.join(", ")}): ajuste e rode harness resume`);
+      await notify(this.ctx, "blocked", `etapa ${s} pausada: ${waiting.join(", ")} dependem de ${blocked.join(", ")}`);
+      return this.pauseFor("PAUSED_MANUAL");
+    }
     if (!this.specChanged() && stageSettled(loadFeatures(this.ctx), s)) this.set("STAGE_GATES");
   }
 

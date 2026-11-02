@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-02T15:16:12.159Z",
+  "workerId": "gemini-argon",
+  "role": "review_ui",
+  "stage": 1,
+  "attempt": 0,
+  "outcome": "success",
+  "costUsd": 0.1601015,
+  "durationMs": 124648,
+  "usage": {
+    "inputTokens": 49731,
+    "outputTokens": 3335,
+    "cachedTokens": 272895,
+    "costUsd": 0.1601015
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": " 3,\n    \"c9\": 6,\n    \"c10\": 5\n  },\n  \"issues\": [\n    {\n      \"severidade\": \"blocker\",\n      \"tela\": \"home (/) e rotas da Etapa 1\",\n      \"descricao\": \"A rota principal (/) ainda renderiza apenas o HomePlaceholder estático ('Pulsar — Registre o que você faz e descubra possíveis relações com como você se sente.'), sem App Shell (header com logo, EyeToggle, botão de conta e bottom navigation com Dashboard, Registrar, Indicadores, Conclusões) e sem nenhuma das telas funcionais da Etapa 1 (Onboarding 1–3, Dashboard inicial/estado vazio, Meus Indicadores, Modal Novo Indicador, Preenchimento Rápido e Configurações).\",\n      \"sugestao\": \"Implementar e conectar em App.tsx e e2e/routes.json o App Shell e as rotas da Etapa 1 (/onboarding, /dashboard, /register, /indicators, /settings) seguindo fielmente os mockups em design/.\"\n    },\n    {\n      \"severidade\": \"blocker\",\n      \"tela\": \"design (/_design) — Slider 0–10 em mobile e desktop\",\n      \"descricao\": \"No cartão 'ENE / Nível de Energia', as 11 pílulas da escala 0–10 estouram a largura do card e ficam cortadas: em 375px (mobile) aparecem apenas os valores 0 a 6 (ocultando inclusive o valor selecionado 7, além de 8, 9 e 10); em 1280px (desktop) aparecem apenas 0 a 8 (cortando 9 e 10).\",\n      \"sugestao\": \"Ajustar o layout das pílulas do Slider (ex.: grid-cols-11 com min-w-0 e tamanho compacto como no mockup de preenchimento_r_pido, ou flex-wrap) para que todos os valores de 0 a 10 fiquem visíveis e tocáveis em 375px sem overflow horizontal.\"\n    },\n    {\n      \"severidade\": \"major\",\n      \"tela\": \"design (/_design) — Cartões e controles\",\n      \"descricao\": \"Dentro dos componentes Card (que usam flex-col), o IndicatorLabel com variant='badge' estica por 100% da largura do cartão em vez de renderizar como uma pílula compacta ajustada ao conteúdo.\",\n      \"sugestao\": \"Adicionar self-start / w-fit ao badge do IndicatorLabel (ou ao cabeçalho do Card) para manter o formato de pílula compacto conforme os mockups.\"\n    }\n  ]\n}\n```"
+}

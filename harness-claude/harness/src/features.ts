@@ -19,6 +19,7 @@ export const FeatureSchema = z.object({
   attempts: z.number().int().default(0),
   costUsd: z.number().default(0),
   blockedReason: z.string().optional(),
+  spendSince: z.string().optional(),   // ISO ts: the feature cap only counts spend after it (set when a feature is reset)
   history: z.array(z.record(z.string(), z.any())).default([]),
   // who did what (filled when the feature lands): implementer, attempt trail, test writer, reviewers, files
   authors: z.object({
