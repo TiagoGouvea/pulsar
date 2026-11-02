@@ -5,6 +5,7 @@ node_modules/
 !.env.example
 secrets/
 dist/
+app/functions/lib/
 coverage/
 test-results/
 playwright-report/

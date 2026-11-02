@@ -17,9 +17,16 @@
       }
     ]
   },
+  "functions": {
+    "source": "functions",
+    "runtime": "nodejs22",
+    "predeploy": ["yarn --cwd functions build"],
+    "ignore": ["node_modules", "src", "tsconfig.json", "*.log"]
+  },
   "emulators": {
     "auth": { "port": 9299 },
     "firestore": { "port": 8282 },
+    "functions": { "port": 5001 },
     "hosting": { "port": 5002 },
     "ui": { "enabled": false },
     "singleProjectMode": true
