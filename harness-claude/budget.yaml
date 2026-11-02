@@ -12,7 +12,7 @@ caps:
     "5": 6 # PWA e push
     "6": 4 # IA generativa
     "7": 6 # Polimento
-  feature: 3 # por feature (todas as tentativas + reviews)
+  feature: 4 # por feature (todas as tentativas + reviews)
   dailyByProvider:
     anthropic: 20
     openai: 15
