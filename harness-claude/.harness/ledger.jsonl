@@ -175,3 +175,9 @@
 {"ts":"2026-11-01T19:03:11.033Z","workerId":"sonnet","provider":"anthropic","role":"test_writer","featureId":"F-1.fix-1","stage":1,"tokensIn":17916,"tokensOut":1602,"costUsd":0.07212099999999999,"billing":"api"}
 {"ts":"2026-11-01T19:03:17.805Z","workerId":"sonnet","provider":"anthropic","role":"test_writer","featureId":"F-1.fix-1","stage":1,"tokensIn":8931,"tokensOut":608,"costUsd":0.0297096,"billing":"api"}
 {"ts":"2026-11-01T19:03:30.010Z","workerId":"sonnet","provider":"anthropic","role":"test_writer","featureId":"F-1.fix-1","stage":1,"tokensIn":461,"tokensOut":1012,"costUsd":0.0156445,"billing":"api"}
+{"ts":"2026-11-02T12:19:14.935Z","workerId":"sonnet","provider":"anthropic","role":"test_writer","featureId":"F-1.02","stage":1,"tokensIn":21113,"tokensOut":4673,"costUsd":0.11135930000000001,"billing":"api"}
+{"ts":"2026-11-02T12:19:20.737Z","workerId":"sonnet","provider":"anthropic","role":"test_writer","featureId":"F-1.01","stage":1,"tokensIn":29146,"tokensOut":6703,"costUsd":0.14995970000000003,"billing":"api"}
+{"ts":"2026-11-02T12:19:47.889Z","workerId":"sonnet","provider":"anthropic","role":"test_writer","featureId":"F-1.02","stage":1,"tokensIn":20766,"tokensOut":4688,"costUsd":0.10761630000000001,"billing":"api"}
+{"ts":"2026-11-02T12:20:13.236Z","workerId":"sonnet","provider":"anthropic","role":"test_writer","featureId":"F-1.01","stage":1,"tokensIn":25717,"tokensOut":7372,"costUsd":0.1508684,"billing":"api"}
+{"ts":"2026-11-02T12:20:29.618Z","workerId":"sonnet","provider":"anthropic","role":"test_writer","featureId":"F-1.08","stage":1,"tokensIn":21701,"tokensOut":6315,"costUsd":0.1353485,"billing":"api"}
+{"ts":"2026-11-02T12:20:38.955Z","workerId":"sonnet","provider":"anthropic","role":"test_writer","featureId":"F-1.10","stage":1,"tokensIn":18428,"tokensOut":2956,"costUsd":0.08748790000000001,"billing":"api"}

@@ -1,20 +1,20 @@
 {
-  "ts": "2026-11-01T18:40:31.520Z",
+  "ts": "2026-11-02T12:20:29.620Z",
   "workerId": "sonnet",
   "role": "test_writer",
   "featureId": "F-1.08",
   "stage": 1,
   "attempt": 0,
   "outcome": "success",
-  "costUsd": 0.1560503,
-  "durationMs": 49635,
+  "costUsd": 0.1353485,
+  "durationMs": 40929,
   "usage": {
-    "inputTokens": 23312,
-    "outputTokens": 7954,
-    "cachedTokens": 182383,
-    "costUsd": 0.1560503
+    "inputTokens": 21701,
+    "outputTokens": 6315,
+    "cachedTokens": 179540,
+    "costUsd": 0.1353485
   },
   "exitCode": 0,
   "timedOut": false,
-  "finalTail": "o confirmei que os testes de campos falham hoje.\n\nTambém não consegui listar `tests/rules/`. Escrevi o setup do zero com `initializeTestEnvironment` em vez de seguir um teste de regras existente. Ele lê `firestore.rules` e usa o host de `FIRESTORE_EMULATOR_HOST` (padrão 127.0.0.1:8282).\n\nO que o arquivo cobre:\n- **Isolamento:** o UID A, anônimo ou permanente, não consegue ler, gravar, atualizar nem apagar `users/B` e suas subcoleções. Chamadas sem autenticação também falham. O dono continua conseguindo ler e gravar o próprio documento.\n- **Schema:** é aceito o documento completo ou parcial. São rejeitados campos desconhecidos, campos administrativos como `lastNotificationSentAt` e `fcmTokens`, e tipo errado em cada campo conhecido, tanto no create quanto no update.\n- **Dispensa do convite:** `saveAccountInviteDismissedAt` aceita timestamp ou null e rejeita string, número e booleano. `saveAccountInviteDismissedDayCount` aceita 0, 3, 120 ou null e rejeita string, -1, 2.5 e booleano. Outro UID não consegue gravar esses campos em `users/B`.\n- **`internal/**`:** leitura e escrita de clientes são negadas, inclusive em subcaminhos e sem autenticação.\n\nHoje as regras só checam o dono, então os testes de campos desconhecidos, tipo errado e dispensa do convite devem falhar. Os de isolamento e de `internal/**` já deveriam passar com as regras atuais.\n\nPara rodar: `yarn test:rules`.\n\n```json\n{\"summary\":\"Wrote rules tests for users/{uid} isolation (anonymous+permanent), schema/type validation, save-account invite dismissal fields, and internal/** lockout. Not executed: Bash was denied.\",\"filesChanged\":[\"app/tests/rules/users.test.ts\"],\"testsRun\":[],\"confidence\":\"low\",\"notes\":\"Could not run tests, typecheck or lint (Bash denied), and could not list tests/rules to match existing conventions. Schema/type tests are expected to fail against current baseline rules; isolation and internal tests likely already pass. Rejected admin fields assumed: lastNotificationSentAt, fcmTokens.\"}\n```"
+  "finalTail": "n:** UID A can't read, write or delete `users/B` or its subcollections. This runs for both anonymous and permanent contexts, with the permanent one using a `google.com` sign-in provider. Unauthenticated access is rejected too.\n- **Schema validation:**\n  - Unknown fields are rejected on create and update.\n  - Administrative fields (`lastNotificationSentAt`, `pushTokens`) are rejected.\n  - Wrong types are rejected for `onboardingCompleted`, `aiConsent`, `reminderEnabled`, `lastInsightRefreshAt` and `createdAt`.\n  - A valid full document and a partial one are accepted.\n- **Invite dismissal:**\n  - `saveAccountInviteDismissedAt` accepts a timestamp or null.\n  - `saveAccountInviteDismissedDayCount` accepts 0, 3, 120 or null.\n  - A string, a negative number, a decimal and a boolean are rejected for the day count.\n  - A string, a number and a boolean are rejected for the timestamp.\n  - Another user can't write either field.\n- **`internal/**`:** reads, list, writes and deletes are all denied for anonymous, permanent and unauthenticated clients.\n\n**Why it should fail today:** the current `firestore.rules` lets the owner write anything under `users/{uid}`. The unknown-field, wrong-type, administrative-field and dismissal-validation tests should therefore fail until the rules add schema checks. The isolation and `internal` tests should already pass.\n\nI didn't assert anything about the owner writing to subcollections, because later features will tighten those rules.\n\n```json\n{\"summary\":\"Wrote rules tests for users/{uid} isolation (anonymous and permanent), schema validation, invite-dismissal fields and internal/** denial. Not run: Bash was denied.\",\"filesChanged\":[\"app/tests/rules/users.test.ts\"],\"testsRun\":[],\"confidence\":\"med\",\"notes\":\"Could not run yarn test:rules because Bash was denied. Could not view existing rules tests, so conventions may differ. The test reads firestore.rules from process.cwd() (app/) and uses FIRESTORE_EMULATOR_HOST, defaulting to 127.0.0.1:8282.\"}\n```"
 }

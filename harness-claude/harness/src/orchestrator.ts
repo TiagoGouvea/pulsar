@@ -58,6 +58,9 @@ async function question(q: string) {
   try { return await rl.question(q); } finally { rl.close(); }
 }
 
+/** tsc errors expected in acceptance tests written before the code: missing module, export or member. */
+const TDD_TS_ERRORS = /error TS(2307|2305|2724|2614|2339|2551):/;
+
 export class Orchestrator {
   rt: Runtime;
   state!: State;
@@ -355,13 +358,18 @@ export class Orchestrator {
       this.harvestInbox(wt, f.id);
       const base = await g.head(wt);
       if (r.outcome !== "success" || !(await g.commitAll(wt, `test(${f.id}): testes de aceite`))) { await g.resetHard(wt, base); continue; }
-      // protected tests are hashed as they will stay: formatted now (a later autofix broke G7) and type-correct (implementers can't fix them)
+      // protected tests are hashed as they will stay: formatted now (a later autofix broke G7) and free of type errors
+      // implementers can't fix. Tests come before the code, so missing modules/members (TDD) are expected.
       await this.tidy(wt, f.id);
       const tc = this.ctx.config.gates.G3?.cmd;
       const typed = tc ? await execa(tc, { shell: true, cwd: this.appAbs(wt), reject: false, all: true, timeout: 300_000 }) : undefined;
-      if (typed?.exitCode) {
-        log(`↻ ${f.id} test_writer ${r.worker.id}: testes não passam no typecheck, nova tentativa`);
-        retry = `\n\n## Tentativa anterior rejeitada\nSeus testes não passaram em \`${tc}\` e foram descartados. Corrija os tipos (dados inválidos de propósito: use cast explícito, ex. \`as never\`). Um crash interno do tsc ("reading 'kind'") costuma vir de uniões de tipos passadas a APIs do Firestore.\n\`\`\`\n${String(typed.all ?? "").slice(-2500)}\n\`\`\``;
+      const out = String(typed?.all ?? "");
+      const errs = out.split("\n").filter((l) => /error TS\d+:/.test(l));
+      const bad = typed?.exitCode && !errs.length ? [out.slice(-2500)] : errs.filter((l) => !TDD_TS_ERRORS.test(l));
+      if (bad.length) {
+        log(`↻ ${f.id} test_writer ${r.worker.id}: testes com erro de tipo que o implementador não pode corrigir, nova tentativa`);
+        writeFileSync(hp(this.ctx, "runs", f.id, `test-typecheck-${i}.log`), out);
+        retry = `\n\n## Tentativa anterior rejeitada\nSeus testes têm erros em \`${tc}\` que não vêm de código ainda não implementado, e foram descartados. Corrija os tipos (dados inválidos de propósito: use cast explícito, ex. \`as never\`). Um crash interno do tsc ("reading 'kind'") costuma vir de uniões de tipos passadas a APIs do Firestore.\n\`\`\`\n${bad.join("\n").slice(-2500)}\n\`\`\``;
         await g.resetHard(wt, base);
         continue;
       }

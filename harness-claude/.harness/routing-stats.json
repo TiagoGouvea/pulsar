@@ -84,10 +84,10 @@
     "falhasPorGate": {}
   },
   "sonnet|test_writer|*": {
-    "tentativas": 3,
-    "sucessos": 3,
-    "custoMedio": 0.11079113333333336,
-    "duracaoMedia": 31815,
+    "tentativas": 9,
+    "sucessos": 9,
+    "custoMedio": 0.11944594444444447,
+    "duracaoMedia": 35845.22222222222,
     "falhasPorGate": {}
   },
   "deepseek|triage|*": {
@@ -468,6 +468,13 @@
     "sucessos": 1,
     "custoMedio": 0.010176000000000001,
     "duracaoMedia": 31566,
+    "falhasPorGate": {}
+  },
+  "sonnet|test_writer|security-rules": {
+    "tentativas": 1,
+    "sucessos": 1,
+    "custoMedio": 0.1353485,
+    "duracaoMedia": 40929,
     "falhasPorGate": {}
   }
 }
