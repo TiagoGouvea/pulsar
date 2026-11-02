@@ -1,4 +1,11 @@
-import { doc, onSnapshot, runTransaction, serverTimestamp, type Unsubscribe } from 'firebase/firestore';
+import {
+  doc,
+  onSnapshot,
+  runTransaction,
+  serverTimestamp,
+  setDoc,
+  type Unsubscribe,
+} from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
 export interface UserProfile {
@@ -22,6 +29,11 @@ export function ensureUserProfile(uid: string): Promise<UserProfile> {
     });
     return { onboardingCompleted: false };
   });
+}
+
+// Merge-set is idempotent and never recreates the document if it was already deleted.
+export function completeOnboarding(uid: string): Promise<void> {
+  return setDoc(doc(db, 'users', uid), { onboardingCompleted: true }, { merge: true });
 }
 
 // Live view of users/{uid}, so changes made during the session (e.g. onboarding completed) are never stale.

@@ -5,8 +5,8 @@ import { AuthProvider, useAuth } from './auth/AuthProvider';
 import { Button } from './design';
 import { emulatorsEnabled } from './lib/env';
 import { HomePlaceholder } from './pages/HomePlaceholder';
+import { OnboardingPage } from './pages/OnboardingPage';
 import { PlaceholderPage } from './pages/PlaceholderPage';
-import { WelcomePage } from './pages/WelcomePage';
 import { PrivacyProvider } from './privacy/PrivacyContext';
 
 const DesignPage = lazy(() => import('./pages/DesignPage'));
@@ -51,7 +51,7 @@ const routes: RouteObject[] = [
     ),
     children: [
       { path: '/', element: <RootRedirect /> },
-      { path: '/onboarding', element: <WelcomePage /> },
+      { path: '/onboarding', element: <OnboardingPage /> },
       {
         path: '/dashboard',
         element: (

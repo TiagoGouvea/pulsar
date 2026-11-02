@@ -15,6 +15,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: 'md' | 'lg';
   icon?: IconName;
+  iconPosition?: 'left' | 'right';
   fullWidth?: boolean;
 }
 
@@ -22,6 +23,7 @@ export function Button({
   variant = 'primary',
   size = 'md',
   icon,
+  iconPosition = 'left',
   fullWidth,
   className = '',
   type = 'button',
@@ -34,8 +36,9 @@ export function Button({
       className={`inline-flex items-center justify-center gap-2 rounded-full px-5 font-label-lg text-label-lg transition-transform active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 ${size === 'lg' ? 'h-14' : 'h-12'} ${fullWidth ? 'w-full' : ''} ${variants[variant]} ${className}`}
       {...rest}
     >
-      {icon && <Icon name={icon} className="text-[20px]" />}
+      {icon && iconPosition === 'left' && <Icon name={icon} className="text-[20px]" />}
       {children}
+      {icon && iconPosition === 'right' && <Icon name={icon} className="text-[20px]" />}
     </button>
   );
 }
