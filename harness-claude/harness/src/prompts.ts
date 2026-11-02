@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Ctx } from "./config.js";
-import type { Feature } from "./features.js";
+import { type Feature, loadFeatures, stageFeatures } from "./features.js";
 import { selectLessons } from "./learning.js";
 import { hp, walk } from "./state.js";
 
@@ -75,6 +75,8 @@ export function featureVars(ctx: Ctx, f: Feature, extra: Record<string, string> 
     designRefs: [d.tokens, ...d.screens].join("\n"),
     progress: tail(hp(ctx, "progress.md"), 40),
     protectedFiles: f.protectedTests.join("\n") || "(nenhum)",
+    // scope guard: what other implementers will build in this stage
+    otherFeatures: stageFeatures(loadFeatures(ctx), f.stage).filter((x) => x.id !== f.id && x.status !== "passing").map((x) => `- ${x.id} ${x.title}`).join("\n") || "(nenhuma)",
     tags: f.tags.join(", "),
     ...extra,
   };

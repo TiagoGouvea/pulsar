@@ -9,6 +9,13 @@ Implemente a feature abaixo até que os testes passem e o código respeite o des
 - Se a feature criar uma tela nova, adicione a rota em `app/e2e/routes.json`.
 - Nunca implemente "para o teste" (hardcode, mocks no código de produção): um avaliador de outra família revisa o diff.
 
+## Escopo
+- Faça **somente** o que esta feature pede (descrição e critérios de aceite), mesmo que a spec ou o design mostrem mais.
+- Estas features da etapa ainda serão feitas por outro implementador; não implemente telas, fluxos nem dados delas:
+{{otherFeatures}}
+- Se precisar navegar para uma tela de outra feature, crie no máximo um placeholder mínimo (título e uma linha, sem lógica).
+- Não remova nem reescreva código de features já entregues.
+
 ## Diagnóstico da tentativa anterior
 {{diagnostic}}
 
