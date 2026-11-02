@@ -580,10 +580,32 @@
         "F-0.05",
         "F-1.08"
       ],
-      "status": "failing",
-      "attempts": 0,
-      "costUsd": 2.362345717,
-      "history": [],
+      "status": "blocked",
+      "attempts": 2,
+      "costUsd": 2.980886177,
+      "blockedReason": "teto de custo da feature atingido",
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement",
+          "workerId": "deepseek-flash",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "eventId": "evt-165",
+          "ts": "2026-11-02T13:16:17.504Z"
+        },
+        {
+          "attempt": 2,
+          "role": "implement",
+          "workerId": "qwen-coder",
+          "outcome": "failure",
+          "failedGates": [
+            "G10"
+          ],
+          "eventId": "evt-172",
+          "ts": "2026-11-02T13:24:06.277Z"
+        }
+      ],
       "origin": []
     },
     {
@@ -881,10 +903,67 @@
       "dependsOn": [
         "F-0.04"
       ],
-      "status": "failing",
-      "attempts": 0,
-      "costUsd": 1.0304436348440003,
-      "history": [],
+      "status": "passing",
+      "attempts": 3,
+      "costUsd": 1.6064455198440002,
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement",
+          "workerId": "haiku",
+          "outcome": "failure",
+          "failedGates": [
+            "G6",
+            "G8",
+            "G9",
+            "G10"
+          ],
+          "eventId": "evt-163",
+          "ts": "2026-11-02T13:11:45.769Z"
+        },
+        {
+          "attempt": 2,
+          "role": "implement",
+          "workerId": "deepseek-flash",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "eventId": "evt-167",
+          "ts": "2026-11-02T13:17:38.578Z"
+        },
+        {
+          "attempt": 3,
+          "role": "implement_hard",
+          "workerId": "opus",
+          "outcome": "success",
+          "failedGates": [],
+          "eventId": "evt-169",
+          "ts": "2026-11-02T13:21:33.202Z"
+        }
+      ],
+      "authors": {
+        "implementer": "opus",
+        "attempts": [
+          "haiku ✖ G6,G8,G9,G10",
+          "deepseek-flash ✖ review_rejected",
+          "opus ✔"
+        ],
+        "testWriter": "codex-mid",
+        "reviewers": [
+          "code codex-mid 8"
+        ],
+        "files": [
+          ".gitignore",
+          "app/CLAUDE.md",
+          "app/firebase.json",
+          "app/functions/package.json",
+          "app/functions/src/__tests__/setup.test.ts",
+          "app/functions/src/index.ts",
+          "app/functions/tsconfig.json",
+          "app/functions/vitest.config.ts",
+          "app/functions/yarn.lock",
+          "app/package.json"
+        ]
+      },
       "origin": []
     },
     {
@@ -920,11 +999,58 @@
       "dependsOn": [
         "F-1.10"
       ],
-      "status": "failing",
-      "attempts": 0,
-      "costUsd": 0,
-      "history": [],
-      "origin": []
+      "status": "blocked",
+      "attempts": 5,
+      "costUsd": 2.3812518700000007,
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement_hard",
+          "workerId": "opus",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "eventId": "evt-174",
+          "ts": "2026-11-02T13:26:53.935Z"
+        },
+        {
+          "attempt": 2,
+          "role": "implement_hard",
+          "workerId": "opus",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "eventId": "evt-176",
+          "ts": "2026-11-02T13:31:28.606Z"
+        },
+        {
+          "attempt": 3,
+          "role": "implement_hard",
+          "workerId": "kimi-pro",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "eventId": "evt-178",
+          "ts": "2026-11-02T13:40:48.382Z"
+        },
+        {
+          "attempt": 4,
+          "role": "implement_hard",
+          "workerId": "opus",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "eventId": "evt-180",
+          "ts": "2026-11-02T13:46:01.708Z"
+        },
+        {
+          "attempt": 5,
+          "role": "implement_hard",
+          "workerId": "sonnet",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "eventId": "evt-182",
+          "ts": "2026-11-02T13:48:46.011Z"
+        }
+      ],
+      "origin": [],
+      "blockedReason": "limite de 5 tentativas atingido"
     },
     {
       "id": "F-1.12",

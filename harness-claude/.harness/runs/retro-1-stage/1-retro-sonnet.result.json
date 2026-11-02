@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-02T13:54:10.715Z",
+  "workerId": "sonnet",
+  "role": "retro",
+  "stage": 1,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.0800922,
+  "durationMs": 17581,
+  "usage": {
+    "inputTokens": 22441,
+    "outputTokens": 2284,
+    "cachedTokens": 11507,
+    "costUsd": 0.0800922
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "eada; F-1.03 também bloqueou por G7.\\n- Modelos baratos (minimax, haiku, glm-flash) quase sempre falham em implementação; o custo real está nas escaladas para opus.\\n- Lições L-025 a L-029 são decisões de produto já incorporadas à spec e foram aposentadas por nunca terem ajudado; L-031 duplica L-030 e L-032 não tem relação com o evento citado.\\n- Os smoke tests de workers passaram quase todos (kimi-pro falhou uma vez).\",\n  \"comoTestar\": \"**O que dá para testar nesta etapa:** só a base técnica. Existem o modelo de domínio de indicadores/registros, os utilitários de tempo, as regras de segurança do Firestore para o documento do usuário e o workspace de Cloud Functions com emulador. Tudo isso é verificado por testes automatizados, não por telas.\\n\\n**O que ainda não existe:** acesso anônimo automático (F-1.03, bloqueada), AppShell com olho e navegação (F-1.04), fixtures de e2e, guarda do modo privado, tutorial, conversão de conta Google/link mágico, função deleteAccount (F-1.11, bloqueada) e tela de conta. Dashboard, registro e indicadores chegam em etapas futuras. Não espere telas funcionais no celular.\\n\\n**Roteiro (10–15 min):**\\n1. Em `app/`, rode `yarn install`.\\n2. Rode `yarn test:unit` e confirme que passam os testes de domínio (F-1.01) e de tempo (F-1.02).\\n3. Rode `yarn --cwd app test:functions` e confirme que os testes das functions rodam contra os emuladores, com região southamerica-east1 (F-1.10).\\n4. Rode os testes de regras do Firestore e confirme que o UID A não acessa users/B e que campos desconhecidos são rejeitados (F-1.08).\\n5. Rode `yarn e2e:serve` e abra http://localhost:4792 (no celular, http://IP-DA-MAQUINA:4792 na mesma rede). Deve aparecer no máximo a casca inicial do app, sem fluxos completos.\\n6. No computador, confira apenas que a página não quebra ao redimensionar.\\n\\n**No preview de produção** não aparecem rotas só de dev/emulador nem o seed.\\n\\n**O que observar:** testes verdes, ausência de erros no console e nenhuma tela de login.\"\n}\n```"
+}

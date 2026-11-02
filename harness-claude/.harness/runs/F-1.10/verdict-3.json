@@ -1,0 +1,16 @@
+[
+  {
+    "kind": "code",
+    "pass": true,
+    "score": 8,
+    "issues": [
+      {
+        "severidade": "major",
+        "arquivo": "app/package.json",
+        "descricao": "O app declara suporte a Node 20, mas o postinstall instala Functions, que exige Node 22. A instalação falha em versões de Node 20 aceitas pelo app.",
+        "sugestao": "Alinhar a versão mínima de Node do app com a exigida por Functions."
+      }
+    ],
+    "workerId": "codex-mid"
+  }
+]

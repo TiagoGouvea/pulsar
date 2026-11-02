@@ -1,20 +1,20 @@
 {
-  "ts": "2026-11-02T12:57:33.666Z",
+  "ts": "2026-11-02T13:09:09.783Z",
   "workerId": "sonnet",
   "role": "test_writer",
   "featureId": "F-1.03",
   "stage": 1,
   "attempt": 0,
   "outcome": "success",
-  "costUsd": 0.1841618,
-  "durationMs": 57545,
+  "costUsd": 0.1936072,
+  "durationMs": 62889,
   "usage": {
-    "inputTokens": 31653,
-    "outputTokens": 8419,
-    "cachedTokens": 208473,
-    "costUsd": 0.1841618
+    "inputTokens": 32119,
+    "outputTokens": 9249,
+    "cachedTokens": 208277,
+    "costUsd": 0.1936072
   },
   "exitCode": 0,
   "timedOut": false,
-  "finalTail": "ro de rede:** as requisições ao Auth emulator são abortadas. Deve aparecer um `role=alert` em pt-BR, sem ir para `/onboarding` nem `/dashboard`, sem texto de sucesso e sem UID gravado.\n\n**`app/src/auth/__tests__/AuthProvider.test.tsx`** usa fakes em memória de `firebase/auth` e `firebase/firestore`. Os asserts olham o conteúdo do store e as chamadas, não detalhes de implementação:\n- estado de carregamento inicial;\n- login anônimo e criação de `users/{uid}` com os defaults;\n- sessão existente sem novo login e sem sobrescrever o documento;\n- documento criado uma só vez ao montar duas vezes;\n- erro de rede em pt-BR, sem usuário e sem documento criado.\n\nOs testes assumem uma API que a spec não define, e o implementador precisa segui-la:\n- `AuthProvider` e `useAuth()` exportados de `src/auth/AuthProvider`, com `useAuth()` retornando `{ user, loading, error }`, onde `error` é uma string em pt-BR.\n- O módulo importa `auth` e `db` de `../lib/firebase`.\n- Os testes usam `doc`, `getDoc`, `setDoc`, `onSnapshot`, `runTransaction` e `serverTimestamp`. Se a implementação usar outra função do SDK, o mock precisa ser ampliado.\n\nNão registrei nada em `questions.jsonl` nem em `risks.jsonl`.\n\n```json\n{\n  \"summary\": \"Wrote acceptance tests for F-1.03: Playwright e2e (anonymous start, UID persistence, users/{uid} defaults created once, / redirect, pt-BR network error) and Vitest AuthProvider unit tests with in-memory Firebase fakes. Not executed (Bash denied mid-task).\",\n  \"filesChanged\": [\n    \"app/e2e/anonymous-start.spec.ts\",\n    \"app/src/auth/__tests__/AuthProvider.test.tsx\"\n  ],\n  \"testsRun\": [],\n  \"confidence\": \"low\",\n  \"notes\": \"Tests unrun: Bash was denied, so typecheck/lint/format and the expected-failure state are unverified. The unit test assumes a useAuth() -> {user, loading, error} API and mocks doc/getDoc/setDoc/onSnapshot/runTransaction/serverTimestamp; the e2e reads state through the Firestore emulator REST API with 'Bearer owner' and the Auth SDK IndexedDB store.\"\n}\n```"
+  "finalTail": "ch `conex|rede|internet|tente novamente`). The URL stays off `/onboarding` and `/dashboard`, and no success text shows.\n\n**`app/src/auth/__tests__/AuthProvider.test.tsx`** (Vitest, with in-memory fakes for the Firebase auth and Firestore SDKs)\n- It checks the loading state, anonymous sign-in on a first visit, and that an existing session isn't signed in again.\n- It checks that `users/{uid}` gets the defaults, isn't overwritten if it already exists, and is written once across remounts.\n- On a network error it expects a pt-BR `error`, no user and no document.\n\nThe tests assume an API the implementer must provide. `src/auth/AuthProvider.tsx` exports `AuthProvider` and `useAuth()`, and `useAuth()` returns `{ user, loading, error }`, where `error` is a pt-BR string. The component and tests read the Firebase instances from `src/lib/firebase.ts` (`auth`, `db`). The unit test fakes only these SDK calls from `firebase/auth` and `firebase/firestore`: `onAuthStateChanged`, `signInAnonymously`, `doc`, `getDoc`, `setDoc`, `runTransaction` and `serverTimestamp`. An implementation that uses other SDK calls, such as `updateDoc` or `onSnapshot`, will need the fakes extended.\n\nI wrote nothing to `.harness/inbox`.\n\n```json\n{\n  \"summary\": \"Wrote the Playwright e2e and Vitest unit acceptance tests for F-1.03. They cover the four acceptance criteria plus the / → /onboarding or /dashboard redirect.\",\n  \"filesChanged\": [\n    \"app/e2e/anonymous-start.spec.ts\",\n    \"app/src/auth/__tests__/AuthProvider.test.tsx\"\n  ],\n  \"testsRun\": [],\n  \"confidence\": \"med\",\n  \"notes\": \"Bash was denied, so nothing was run, including lint, typecheck and format. The unit test assumes AuthProvider/useAuth in src/auth/AuthProvider.tsx, a useAuth() shape of { user, loading, error }, and that firebase.ts exports auth and db. The fakes cover only the SDK calls listed above. The e2e test reads the UID from IndexedDB (firebaseLocalStorageDb) and uses Firestore emulator REST with 'Bearer owner' on 127.0.0.1:8282.\"\n}\n```"
 }

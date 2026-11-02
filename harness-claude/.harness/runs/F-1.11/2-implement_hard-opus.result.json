@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T13:29:09.150Z",
+  "workerId": "opus",
+  "role": "implement_hard",
+  "featureId": "F-1.11",
+  "stage": 1,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.5617926000000001,
+  "durationMs": 135170,
+  "usage": {
+    "inputTokens": 39347,
+    "outputTokens": 11372,
+    "cachedTokens": 688268,
+    "costUsd": 0.5617926000000001
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": " I put the marker in a top-level `deletedAccounts` collection, not under `internal/`. A marker under `internal/` would break the requirement that nothing stays in `internal/` for the deleted user. It contains no personal data, only two timestamps. I logged this in `.harness/inbox/questions.jsonl`.\n\n**Needed before deploy:** the markers only disappear after 24h if a Firestore TTL policy on `expireAt` is set up in the real project. The emulator doesn't apply TTL, so the tests don't cover this. I logged it in `.harness/inbox/risks.jsonl` with the `gcloud` command.\n\n```json\n{\n  \"summary\": \"deleteAccount now deletes users/{uid}, internal/{uid} and internal/userAdmin/users/{uid} recursively. It first writes a server-only marker deletedAccounts/{uid} that firestore.rules check to refuse any write under users/{uid}, then removes the Auth user only after the cleanup succeeds. New tests: admin data deleted while another user's data stays, Auth user kept when cleanup fails, and rules blocking writes from a still-valid token once deletion started.\",\n  \"filesChanged\": [\n    \"app/functions/src/deleteAccount.ts\",\n    \"app/firestore.rules\",\n    \"app/functions/src/__tests__/purgeAccount.test.ts\",\n    \"app/tests/rules/accountDeletion.test.ts\",\n    \".harness/inbox/risks.jsonl\",\n    \".harness/inbox/questions.jsonl\"\n  ],\n  \"testsRun\": [\n    \"yarn test:functions (3 files, 14 tests passed)\",\n    \"yarn test:rules (4 files, 30 tests passed)\",\n    \"yarn test:unit (86 passed)\",\n    \"yarn lint\",\n    \"yarn typecheck\",\n    \"yarn format:check\",\n    \"tsc --noEmit in functions/\"\n  ],\n  \"confidence\": \"high\",\n  \"notes\": \"The marker is outside internal/ so the 'nothing left in internal/ for the UID' requirement still holds; it contains no personal data. The TTL policy on expireAt (collection deletedAccounts) must be set up at deploy time, since the emulator does not apply TTL. Each client write under users/{uid} now does one extra exists() check. No UI changes, so no e2e or routes.json changes.\"\n}\n```"
+}

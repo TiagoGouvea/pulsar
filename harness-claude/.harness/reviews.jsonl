@@ -18,3 +18,12 @@
 {"ts":"2026-11-02T12:37:38.077Z","stage":1,"featureId":"F-1.08","kind":"code","workerId":"codex-mid","pass":true,"score":10}
 {"ts":"2026-11-02T12:44:45.598Z","stage":1,"featureId":"F-1.01","kind":"code","workerId":"haiku","pass":false,"score":3}
 {"ts":"2026-11-02T12:48:44.233Z","stage":1,"featureId":"F-1.01","kind":"code","workerId":"glm-flash","pass":true,"score":10}
+{"ts":"2026-11-02T13:16:17.486Z","stage":1,"featureId":"F-1.03","kind":"code","workerId":"codex-mid","pass":false,"score":4}
+{"ts":"2026-11-02T13:17:38.557Z","stage":1,"featureId":"F-1.10","kind":"code","workerId":"codex-mid","pass":false,"score":6}
+{"ts":"2026-11-02T13:21:33.185Z","stage":1,"featureId":"F-1.10","kind":"code","workerId":"codex-mid","pass":true,"score":8}
+{"ts":"2026-11-02T13:26:53.915Z","stage":1,"featureId":"F-1.11","kind":"code","workerId":"codex-mid","pass":false,"score":4}
+{"ts":"2026-11-02T13:31:28.587Z","stage":1,"featureId":"F-1.11","kind":"code","workerId":"codex-mid","pass":false,"score":4}
+{"ts":"2026-11-02T13:40:48.363Z","stage":1,"featureId":"F-1.11","kind":"code","workerId":"codex-mid","pass":false,"score":4}
+{"ts":"2026-11-02T13:46:01.692Z","stage":1,"featureId":"F-1.11","kind":"code","workerId":"codex-mid","pass":false,"score":4}
+{"ts":"2026-11-02T13:48:45.996Z","stage":1,"featureId":"F-1.11","kind":"code","workerId":"codex-mid","pass":false,"score":5}
+{"ts":"2026-11-02T13:53:53.120Z","stage":1,"featureId":"stage-1","kind":"ui","workerId":"gemini","pass":true,"score":9.1}

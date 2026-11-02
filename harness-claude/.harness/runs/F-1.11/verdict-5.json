@@ -1,0 +1,22 @@
+[
+  {
+    "kind": "code",
+    "pass": false,
+    "score": 5,
+    "issues": [
+      {
+        "severidade": "blocker",
+        "arquivo": "app/functions/src/deleteAccount.ts:15",
+        "descricao": "O caminho legado internal/userAdmin/users/{uid} conflita com a nova estrutura internal/{uid}/**. Ao excluir alice, a função pode apagar dados pertencentes ao UID userAdmin; ao excluir userAdmin, pode deixar dados próprios nessa subcoleção.",
+        "sugestao": "Use caminhos sem sobreposição e migre os dados legados com identificação inequívoca do proprietário."
+      },
+      {
+        "severidade": "major",
+        "arquivo": "app/functions/src/deleteAccount.ts:54",
+        "descricao": "Uma conta autenticada por provedor customizado pode não ter providerData, email ou telefone. Ela é tratada como anônima e pode ser excluída com auth_time antigo.",
+        "sugestao": "Exija autenticação recente para qualquer sessão que não seja comprovadamente anônima e teste esse caso."
+      }
+    ],
+    "workerId": "codex-mid"
+  }
+]

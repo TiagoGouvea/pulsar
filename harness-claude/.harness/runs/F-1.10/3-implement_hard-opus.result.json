@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T13:18:54.133Z",
+  "workerId": "opus",
+  "role": "implement_hard",
+  "featureId": "F-1.10",
+  "stage": 1,
+  "attempt": 3,
+  "outcome": "success",
+  "costUsd": 0.265468,
+  "durationMs": 75503,
+  "usage": {
+    "inputTokens": 25302,
+    "outputTokens": 3926,
+    "cachedTokens": 302300,
+    "costUsd": 0.265468
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "s now pass against the emulator, and lint, typecheck, format check, unit tests and e2e also pass.\n\n- **Healthcheck no longer public after deploy:** `app/functions/src/index.ts` now sets `onRequest({ invoker: 'private' }, …)`. When deployed, only authorized accounts can call it. The function is still deployed; it just isn't open to the public. The emulator doesn't enforce access permissions, so this can only be confirmed after a real deploy.\n- **Clean install now covers functions:** `app/package.json` has a `postinstall` script that runs `yarn --cwd functions install --frozen-lockfile`. A plain install in `app` now also installs the functions dependencies, so `test:functions`, `emulators` and `e2e:serve` can build. I ran the install and the `postinstall` step ran.\n- **Docs:** I added `test:functions` to the scripts table in `app/CLAUDE.md` and noted that `emulators` now includes Functions.\n\nI couldn't log the deploy-check risk in `.harness/inbox/risks.jsonl`: the shell command was blocked by permissions. It's in `notes` below instead.\n\n```json\n{\"summary\":\"Restricted the healthcheck to private invokers with invoker 'private', so it is not public after deploy. Added a postinstall script in app/package.json that installs app/functions dependencies, so a clean app install can run test:functions, emulators and e2e:serve. Documented test:functions in app/CLAUDE.md.\",\"filesChanged\":[\"app/functions/src/index.ts\",\"app/package.json\",\"app/CLAUDE.md\"],\"testsRun\":[\"yarn --cwd app install --frozen-lockfile (postinstall ran)\",\"yarn test:functions (4/4 passed)\",\"yarn lint\",\"yarn typecheck\",\"yarn format:check\",\"yarn test:unit (86/86 passed)\",\"yarn test:e2e (8/8 passed)\"],\"confidence\":\"high\",\"notes\":\"The Functions emulator does not enforce IAM, so the private invoker can only be confirmed after a real deploy: calling healthcheck without credentials should return 403. The risk could not be written to .harness/inbox/risks.jsonl because the shell command was blocked by permissions.\"}\n```"
+}

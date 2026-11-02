@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T13:38:33.461Z",
+  "workerId": "kimi-pro",
+  "role": "implement_hard",
+  "featureId": "F-1.11",
+  "stage": 1,
+  "attempt": 3,
+  "outcome": "success",
+  "costUsd": 0.27052507000000003,
+  "durationMs": 392282,
+  "usage": {
+    "inputTokens": 76157,
+    "outputTokens": 10662,
+    "cachedTokens": 1231104,
+    "costUsd": 0.27052507000000003
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"summary\": \"Exclusão integral corrigida: limpeza recursiva de internal/userQuotas, reautenticação baseada no estado atual do Auth para impedir bypass com token anônimo antigo, e provisionamento obrigatório da política TTL dos tombstones no predeploy. Testes ampliados para quotas, preservação de outros usuários e contas convertidas.\",\n  \"filesChanged\": [\n    \"app/functions/src/deleteAccount.ts\",\n    \"app/functions/src/__tests__/purgeAccount.test.ts\",\n    \"app/functions/src/__tests__/deleteAccountSecurity.test.ts\",\n    \"app/scripts/provision-firestore-ttl.sh\",\n    \"app/firebase.json\",\n    \"app/package.json\",\n    \"app/DEPLOYMENT.md\"\n  ],\n  \"testsRun\": [\n    \"yarn --cwd app test:functions — 15 testes aprovados\",\n    \"yarn --cwd app test:unit — 86 testes aprovados\",\n    \"yarn --cwd app lint\",\n    \"yarn --cwd app typecheck\",\n    \"yarn --cwd app format:check\"\n  ],\n  \"confidence\": \"high\",\n  \"notes\": \"Teste protegido deleteAccount.test.ts preservado. Sem e2e de interface aplicável; a feature é exclusivamente backend. O provisionamento do TTL exige gcloud autenticado e interrompe o deploy se não for configurado.\"\n}\n```"
+}

@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-02T13:16:17.482Z",
+  "workerId": "codex-mid",
+  "role": "review_code",
+  "featureId": "F-1.03",
+  "stage": 1,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.07102935,
+  "durationMs": 45790,
+  "usage": {
+    "inputTokens": 54651,
+    "outputTokens": 2505,
+    "cachedTokens": 77067
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "ronta ou mensagem de erro.\",\n      \"sugestao\": \"Proteja ambas as rotas com os estados de carregamento e erro do AuthProvider.\"\n    },\n    {\n      \"severidade\": \"blocker\",\n      \"arquivo\": \"app/src/auth/userRepository.ts:31\",\n      \"descricao\": \"Pular o onboarding antes de terminar a criação do documento pode criar users/{uid} apenas com onboardingCompleted. A transação posterior encontra o documento e não adiciona os defaults exigidos.\",\n      \"sugestao\": \"Aguarde a inicialização antes de permitir a conclusão e impeça que essa atualização crie um documento incompleto.\"\n    },\n    {\n      \"severidade\": \"major\",\n      \"arquivo\": \"app/src/auth/AuthProvider.tsx:48\",\n      \"descricao\": \"Quando a sessão passa a null após uma autenticação, o usuário anterior permanece no estado e a promise de login já resolvida impede novo acesso anônimo.\",\n      \"sugestao\": \"Limpe o estado da sessão e permita uma nova tentativa quando a autenticação for perdida.\"\n    },\n    {\n      \"severidade\": \"major\",\n      \"arquivo\": \"app/src/pages/OnboardingPage.tsx:272\",\n      \"descricao\": \"O tutorial apresenta números fictícios como associação observada nos próprios registros da pessoa, sem identificá-los como exemplo.\",\n      \"sugestao\": \"Identifique claramente os dados como ilustrativos e evite atribuir a associação ao usuário.\"\n    },\n    {\n      \"severidade\": \"major\",\n      \"arquivo\": \"app/src/pages/DashboardPage.tsx:21\",\n      \"descricao\": \"As novas telas não oferecem o controle global do olho: os nomes começam ocultos e não podem ser revelados, apesar da promessa no onboarding.\",\n      \"sugestao\": \"Disponibilize o EyeToggle nas telas que exibem indicadores.\"\n    },\n    {\n      \"severidade\": \"minor\",\n      \"arquivo\": \"app/src/pages/OnboardingPage.tsx:279\",\n      \"descricao\": \"Rótulos e texto do exemplo expõem exercício e energia fora de IndicatorLabel, mesmo com o modo de siglas ativo.\",\n      \"sugestao\": \"Renderize as referências aos indicadores pelo mecanismo de privacidade.\"\n    }\n  ]\n}\n```"
+}

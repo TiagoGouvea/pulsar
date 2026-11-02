@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-02T13:48:45.990Z",
+  "workerId": "codex-mid",
+  "role": "review_code",
+  "featureId": "F-1.11",
+  "stage": 1,
+  "attempt": 5,
+  "outcome": "success",
+  "costUsd": 0.061719949999999996,
+  "durationMs": 49952,
+  "usage": {
+    "inputTokens": 42412,
+    "outputTokens": 2865,
+    "cachedTokens": 99659
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"pass\": false,\n  \"score\": 5,\n  \"issues\": [\n    {\n      \"severidade\": \"blocker\",\n      \"arquivo\": \"app/functions/src/deleteAccount.ts:15\",\n      \"descricao\": \"O caminho legado internal/userAdmin/users/{uid} conflita com a nova estrutura internal/{uid}/**. Ao excluir alice, a função pode apagar dados pertencentes ao UID userAdmin; ao excluir userAdmin, pode deixar dados próprios nessa subcoleção.\",\n      \"sugestao\": \"Use caminhos sem sobreposição e migre os dados legados com identificação inequívoca do proprietário.\"\n    },\n    {\n      \"severidade\": \"major\",\n      \"arquivo\": \"app/functions/src/deleteAccount.ts:54\",\n      \"descricao\": \"Uma conta autenticada por provedor customizado pode não ter providerData, email ou telefone. Ela é tratada como anônima e pode ser excluída com auth_time antigo.\",\n      \"sugestao\": \"Exija autenticação recente para qualquer sessão que não seja comprovadamente anônima e teste esse caso.\"\n    }\n  ]\n}\n```"
+}

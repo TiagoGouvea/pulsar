@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T13:22:52.480Z",
+  "workerId": "qwen-coder",
+  "role": "implement",
+  "featureId": "F-1.03",
+  "stage": 1,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.31331067999999995,
+  "durationMs": 394818,
+  "usage": {
+    "inputTokens": 90829,
+    "outputTokens": 12446,
+    "cachedTokens": 4177920,
+    "costUsd": 0.31331067999999995
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\"summary\":\"Feature F-1.03 implementada com sucesso\",\"filesChanged\":[\"app/src/auth/AuthProvider.tsx\",\"app/src/pages/DashboardPage.tsx\",\".harness/inbox/questions.jsonl\",\".harness/inbox/risks.jsonl\"],\"testsRun\":\"93\",\"confidence\":\"high\",\"notes\":\"Aprovado: lint, typecheck e 93 testes unitários. O AuthProvider agora limpa o estado da sessão quando firebaseUser é null, permitindo nova tentativa de login anônimo. As rotas /onboarding e /dashboard são protegidas com os estados de loading/error do AuthProvider. O EyeToggle foi adicionado na DashboardPage para controlar a revelação de nomes dos indicadores. users/{uid} é criado com defaults usando transação (garante criação única).\"}\n```"
+}

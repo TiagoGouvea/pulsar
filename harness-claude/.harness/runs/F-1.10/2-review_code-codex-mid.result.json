@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-02T13:17:38.552Z",
+  "workerId": "codex-mid",
+  "role": "review_code",
+  "featureId": "F-1.10",
+  "stage": 1,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.08157165,
+  "durationMs": 38572,
+  "usage": {
+    "inputTokens": 63537,
+    "outputTokens": 2046,
+    "cachedTokens": 156093
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"pass\": false,\n  \"score\": 6,\n  \"issues\": [\n    {\n      \"severidade\": \"major\",\n      \"arquivo\": \"app/functions/src/index.ts:7\",\n      \"descricao\": \"O healthcheck é público por padrão após o deploy, embora a feature o defina como interno.\",\n      \"sugestao\": \"Restrinja o invocador com IAM ou mantenha o healthcheck apenas no emulador.\"\n    },\n    {\n      \"severidade\": \"major\",\n      \"arquivo\": \"app/package.json:22\",\n      \"descricao\": \"Uma instalação limpa de app não instala as dependências de functions; test:functions, emulators e e2e:serve falham ao compilar.\",\n      \"sugestao\": \"Integre functions à instalação do projeto ou documente e automatize sua instalação separada.\"\n    }\n  ]\n}\n```"
+}

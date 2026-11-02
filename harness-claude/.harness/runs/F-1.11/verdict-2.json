@@ -1,0 +1,28 @@
+[
+  {
+    "kind": "code",
+    "pass": false,
+    "score": 4,
+    "issues": [
+      {
+        "severidade": "blocker",
+        "arquivo": "app/functions/src/deleteAccount.ts:11",
+        "descricao": "A limpeza cobre apenas três caminhos fixos e deixa dados do UID em outros caminhos de internal/, incluindo a coleção de quotas prevista na arquitetura. O usuário do Auth é removido mesmo assim.",
+        "sugestao": "Limpe todos os caminhos internos por usuário previstos e teste também os documentos de quotas, preservando os demais usuários."
+      },
+      {
+        "severidade": "blocker",
+        "arquivo": "app/functions/src/deleteAccount.ts:38",
+        "descricao": "sign_in_provider identifica o login do token, não necessariamente o estado atual da conta. Um token anônimo ainda válido após a vinculação de Google ou e-mail pode dispensar a autenticação recente exigida para a conta convertida.",
+        "sugestao": "Verifique o estado atual da conta no Auth e exija login recente quando ela tiver credenciais vinculadas; teste a conversão com token anônimo anterior."
+      },
+      {
+        "severidade": "major",
+        "arquivo": "app/functions/src/deleteAccount.ts:23",
+        "descricao": "O código pressupõe uma política TTL, mas ela não está configurada no projeto. Sem configuração externa, o tombstone com o UID permanece indefinidamente e bloqueia a reutilização do UID.",
+        "sugestao": "Configure a política TTL no provisionamento ou documente e valide explicitamente esse pré-requisito."
+      }
+    ],
+    "workerId": "codex-mid"
+  }
+]

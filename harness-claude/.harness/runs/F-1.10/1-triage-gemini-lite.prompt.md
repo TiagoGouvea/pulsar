@@ -13,16 +13,16 @@ Regras:
 - Rode os testes relevantes antes de terminar. Termine com o bloco ```json final pedido no seu papel
   (padrão: {"summary","filesChanged","testsRun","confidence":"low|med|high","notes"}).
 LIÇÕES RELEVANTES:
-- [L-025] Decisão do humano: Registros podem ser atualizados? → ID determinístico por dia com update permitido só hoje — ID determinístico por dia com update permitido só hoje
-- [L-026] Decisão do humano: Quem grava o cache de textos da IA? → Só a Function generateInsightTexts após validação; cliente só lê e valida de novo — Só a Function generateInsightTexts após validação; cliente só lê e valida de novo (padrão)
-- [L-027] Decisão do humano: Usar App Check na V1? → Fora da V1 inicial; reavaliar na etapa 7 — Fora da V1 inicial; reavaliar na etapa 7 (padrão)
-- [L-028] Decisão do humano: Onde guardar o estado de dispensa do convite de salvar conta? → users/{uid}.saveAccountInviteDismissedAt (timestamp|null) e saveAccountInviteDismissedDayCount (int >= 0|null), validados em F-1.08 — users/{uid}.saveAccountInviteDismissedAt (timestamp|null) e saveAccountInviteDismissedDayCount (int >= 0|null), validados em F-1.08 (padrão)
-- [L-029] Decisão do humano: Como resumir indicadores ordinais? → Contagem por opção na ordem configurada (inclui zeros), denominador = dias com resposta, moda com desempate pela ordem; só descritivo — Contagem por opção na ordem configurada (inclui zeros), denominador = dias com resposta, moda com desempate pela ordem; só descritivo (padrão)
-- [L-006] Decisão do humano: O que conta como 'alguns usos' para o convite de instalar a PWA? → N aberturas do app — 2 aberturas, repetir nos dias seguintes ao usar
-- [L-007] Decisão do humano: O que é 'evidência nova material' para uma hipótese com dislike reaparecer? → >= 7 dias pareados a mais que a versão descartada ou inversão do sinal do efeito — >= 7 dias pareados a mais que a versão descartada ou inversão do sinal do efeito (padrão)
-- [L-008] Decisão do humano: Com quais dias a comparação a partir do 2º dia é feita? → Média dos dias anteriores — Média dos dias anteriores; talvez 7 ou 10 dias
-- [L-009] Decisão do humano: Como definir as duas janelas consecutivas de 7 dias das tendências? → hoje..hoje-6 vs. hoje-7..hoje-13 em dias corridos do localDate — hoje..hoje-6 vs. hoje-7..hoje-13 em dias corridos do localDate (padrão)
 - [L-010] Decisão do humano: Tendências podem ser geradas para Fatores? → Não; só Resultados numéricos/escala (spec 6.2 'Tendência de um resultado') — Não; só Resultados numéricos/escala (spec 6.2 'Tendência de um resultado') (padrão)
+- [L-011] Decisão do humano: Como ordenar os cartões elegíveis? → Razão efeito/limiar desc, depois dias pareados desc, depois hypothesisKey asc — Razão efeito/limiar desc, depois dias pareados desc, depois hypothesisKey asc (padrão)
+- [L-012] Decisão do humano: Quais níveis de evidência rotular? → Só 'Descrição' e 'Possível associação'; sem 'sinal consistente' — Só 'Descrição' e 'Possível associação'; sem 'sinal consistente' (padrão)
+- [L-013] Decisão do humano: O que o snapshot de like copia? → Tokens do texto, métricas, amostra, período e nome/sigla/emoji dos indicadores no momento; removível, nunca editável — Tokens do texto, métricas, amostra, período e nome/sigla/emoji dos indicadores no momento; removível, nunca editável (padrão)
+- [L-014] Decisão do humano: Limites de tamanho de campos? → Sigla até 4 (exibida como digitada), nome 60, unidade 20, observação 500, opções ordinais 2-7 — Sigla até 4 (exibida como digitada), nome 60, unidade 20, observação 500, opções ordinais 2-7 (padrão)
+- [L-015] Decisão do humano: Como representar 'sem resposta' em Sim/Não? → Tocar de novo na opção selecionada limpa a resposta e exclui o registro de hoje — Tocar de novo na opção selecionada limpa a resposta e exclui o registro de hoje (padrão)
+- [L-016] Decisão do humano: Qual controle usar para escala? → Pílulas tocáveis até 11 valores; slider nativo acima disso — Pílulas tocáveis até 11 valores; slider nativo acima disso (padrão)
+- [L-017] Decisão do humano: Como reordenar indicadores? → Botões subir/descer acessíveis — Botões subir/descer acessíveis (padrão)
+- [L-018] Decisão do humano: Onde fica o histórico de registros? → A partir do indicador em Meus indicadores, exclusão com confirmação — A partir do indicador em Meus indicadores, exclusão com confirmação (padrão)
+- [L-019] Decisão do humano: Quais rotas usar? → /onboarding, /dashboard, /register, /indicators, /saved-insights, /insights/:hypothesisKey, /settings, /install — /onboarding, /dashboard, /register, /indicators, /saved-insights, /insights/:hypothesisKey, /settings, /install (padrão)
 
 
 # Papel: triagem de falha
@@ -33,7 +33,7 @@ Resuma a causa raiz da falha dos gates da feature F-1.10 Workspace de Cloud Func
 ### G6 e2e
 yarn run v1.23.0-20220130.1630
 $ sh scripts/port-lock.sh playwright test --grep-invert @visual
-[WebServer] [WebServer] error pulsar-functions@: The engine "node" is incompatible with this module. Expected version "22". Got "24.22.0"
+[WebServer] [WebServer] error pulsar-functions@: The engine "node" is incompatible with this module. Expected version "^22". Got "24.22.0"
 [WebServer] [WebServer] error Commands cannot run with an incompatible environment.
 [WebServer] [WebServer] error Command failed with exit code 1.
 Error: Process from config.webServer was not able to start. Exit code: 1
@@ -51,41 +51,46 @@ servidor não respondeu em http://localhost:4792 (yarn e2e:serve)
 servidor não respondeu em http://localhost:4792 (yarn e2e:serve)
 
 ## Final da resposta do implementador
-A implementação do workspace de functions está escrita, mas não rodei nenhum teste: o Bash foi negado nesta sessão, então não consegui instalar dependências, compilar, rodar lint, typecheck ou os testes de aceite.
+Implementei a feature F-1.10, mas não consegui rodar nenhum teste nem lint: o Bash foi negado em todas as chamadas, então não houve `yarn install`, `yarn lint`, `typecheck`, `test:unit` nem o e2e. As verificações abaixo são só por leitura.
 
-**O que mudou (em `app/`):**
-- `functions/package.json`: `main` em `lib/index.js`, `engines.node` "22", região-alvo no código, dependência `firebase-functions` ^6.3.0 e script `build` com `tsc`.
-- `functions/tsconfig.json`: saída em `lib/`, módulo CommonJS, exclui `__tests__`.
-- `functions/src/index.ts`: exporta a constante `REGION = 'southamerica-east1'` e o `healthcheck` como `onRequest` que responde 200.
-- `vitest.functions.config.ts`: ambiente node, inclui `functions/src/**/*.test.ts`. Não entrou no `vite.config.ts`, porque o include dele é `src/**` e não pega o teste de functions.
-- `firebase.json`: bloco `functions` com `source: "functions"` e porta do emulador 5001.
-- `package.json`: novo script `test:functions` (compila functions e roda vitest contra o emulador de functions, com `port-lock`). O `e2e:serve` passou a compilar functions e a subir o emulador de functions.
+**Escolhas que fiz**
+- `functions/` é um pacote próprio em CommonJS, Node `^22`, com `firebase-functions` v6 e um único `healthcheck` em `southamerica-east1` (via `setGlobalOptions`).
+- Porta do emulador de functions: **5001**, a mesma que o teste protegido usa como padrão.
+- `test:functions` compila as functions e roda `vitest run --root functions` dentro do emulador, com a trava de portas como os outros scripts.
+- `emulators` e `e2e:serve` agora incluem `functions` e buildam antes.
+- `app/functions/lib/` foi para o `.gitignore` da raiz. Lint e Prettier já ignoravam `functions/lib`, então não mexi neles.
+- Não há tela nova, então não mexi em `routes.json` nem em `design/`.
 
-O `functions/lib` já estava ignorado pelo ESLint e pelo Prettier, então nada mudou nessa parte.
+**Arquivos alterados**
+- `app/firebase.json`: bloco `functions` (source, predeploy, ignore) e `emulators.functions.port = 5001`.
+- `app/package.json`: novo `test:functions`; `emulators` e `e2e:serve` com `functions`.
+- `app/functions/package.json`, `app/functions/tsconfig.json`, `app/functions/src/index.ts`: novos.
+- `.gitignore`: `app/functions/lib/`.
 
-**Pontos não verificados:**
-- A versão `^6.3.0` do `firebase-functions` é uma suposição minha, não confirmada.
-- Não há `functions/yarn.lock` nem `node_modules`; sem a instalação, o emulador não sobe.
-- O `port-lock.sh` não foi lido, só usado como nos outros scripts.
+**Verificação por leitura**
+- O teste protegido `setup.test.ts` não foi tocado.
+- A porta, a URL `/demo-pulsar/southamerica-east1/healthcheck` e o 404 em `us-central1` batem com a config.
+- `functions/lib` já estava ignorado em `eslint.config.js` e `.prettierignore`.
+- O `vitest` do app só inclui `src/` e `scripts/`, então os testes de functions não entram no `test:unit`.
 
-Registrei um risco (instalação de dependências do functions) e uma pergunta (estratégia do `test:functions`) em `.harness/inbox/`.
+**Pendências**
+- Antes de `test:functions`, é preciso rodar `yarn --cwd functions install` (L-030). Isso não foi feito.
+- Os gates ainda precisam ser rodados, com o Bash liberado: `yarn lint`, `yarn typecheck`, `yarn format:check`, `yarn test:unit` e `yarn test:functions`.
 
 ```json
 {
-  "summary": "Workspace de functions (app/functions) com healthcheck em southamerica-east1, emulador de functions no firebase.json, script test:functions e functions no e2e:serve. Implementado por leitura; nenhum comando executado.",
+  "summary": "Workspace app/functions (Node ^22, firebase-functions v6, healthcheck em southamerica-east1), porta 5001 do emulador de functions no firebase.json, script test:functions com port-lock, emulators/e2e:serve incluindo functions, app/functions/lib no .gitignore. Nada rodado: Bash negado em todas as chamadas.",
   "filesChanged": [
+    "app/firebase.json",
+    "app/package.json",
     "app/functions/package.json",
     "app/functions/tsconfig.json",
     "app/functions/src/index.ts",
-    "app/vitest.functions.config.ts",
-    "app/firebase.json",
-    "app/package.json",
-    ".harness/inbox/risks.jsonl",
-    ".harness/inbox/questions.jsonl"
+    ".gitignore"
   ],
   "testsRun": [],
   "confidence": "low",
-  "notes": "Bash negado pelo modo de permissão: não rodei yarn lint/typecheck/test:unit nem test:functions. Falta instalar functions/ (yarn.lock e node_modules) antes de qualquer teste. Versão do firebase-functions não verificada. Teste protegido app/functions/src/__tests__/setup.test.ts não foi alterado."
+  "notes": "Bash negado (don't-ask mode) em todas as chamadas: não rodei yarn install, lint, format:check, typecheck, test:unit nem test:functions. Verificação só por leitura. Pré-requisito para test:functions: yarn --cwd functions install. Porta 5001 escolhida para o emulador de functions (mesmo default do teste protegido). Sem tela nova: routes.json e design/ não alterados."
 }
 ```
 

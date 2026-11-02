@@ -1,0 +1,22 @@
+[
+  {
+    "kind": "code",
+    "pass": false,
+    "score": 4,
+    "issues": [
+      {
+        "severidade": "blocker",
+        "arquivo": "app/functions/src/deleteAccount.ts",
+        "descricao": "Se o UID for userAdmin ou userQuotas, a exclusão recursiva de internal/{uid} também apaga dados administrativos de outros usuários.",
+        "sugestao": "Isole dados por UID em caminhos sem colisão com namespaces compartilhados e teste esses UIDs."
+      },
+      {
+        "severidade": "major",
+        "arquivo": "app/functions/src/deleteAccount.ts",
+        "descricao": "A lista fixa de caminhos não remove dados do UID em outros namespaces de internal/, contrariando o critério de exclusão integral.",
+        "sugestao": "Centralize os dados internos por UID ou mantenha um registro completo dos caminhos e teste a limpeza."
+      }
+    ],
+    "workerId": "codex-mid"
+  }
+]

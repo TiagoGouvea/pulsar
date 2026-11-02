@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-02T13:53:53.118Z",
+  "workerId": "gemini",
+  "role": "review_ui",
+  "stage": 1,
+  "attempt": 0,
+  "outcome": "success",
+  "costUsd": 0.135968925,
+  "durationMs": 155225,
+  "usage": {
+    "inputTokens": 100687,
+    "outputTokens": 6004,
+    "cachedTokens": 505849,
+    "costUsd": 0.135968925
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"pass\": true,\n  \"score\": 9.1,\n  \"porCriterio\": {\n    \"c1\": 9.0,\n    \"c2\": 9.5,\n    \"c3\": 9.0,\n    \"c4\": 9.0,\n    \"c5\": 9.5,\n    \"c6\": 8.0,\n    \"c7\": 9.0,\n    \"c8\": 9.0,\n    \"c9\": 9.5,\n    \"c10\": 9.0\n  },\n  \"issues\": [\n    {\n      \"severidade\": \"minor\",\n      \"tela\": \"Design system / Cartões e controles\",\n      \"descricao\": \"Na escala subjetiva de 0 a 10 no viewport mobile de 375px, apenas os botões de 0 a 6 ficam visíveis sem rolagem.\",\n      \"sugestao\": \"Garantir indicador visual sutil de overflow horizontal (fade ou scroll snap) para deixar evidente que a escala continua até 10 ao deslizar.\"\n    },\n    {\n      \"severidade\": \"minor\",\n      \"tela\": \"Design system / Tokens e estados\",\n      \"descricao\": \"A página de vitrine do design system não inclui amostras de estados de loading/skeleton ou alertas de erro em formulário.\",\n      \"sugestao\": \"Incluir na vitrine do design system exemplos de skeleton de carregamento e estado de erro de validação para guiar as próximas etapas.\"\n    }\n  ]\n}\n```"
+}

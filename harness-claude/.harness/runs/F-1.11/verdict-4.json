@@ -1,0 +1,22 @@
+[
+  {
+    "kind": "code",
+    "pass": false,
+    "score": 4,
+    "issues": [
+      {
+        "severidade": "blocker",
+        "arquivo": "app/functions/src/deleteAccount.ts:13",
+        "descricao": "A limpeza ignora o caminho existente internal/userAdmin/users/{uid}, deixando dados do usuário. Além disso, excluir o UID userAdmin apagaria recursivamente os dados de outros usuários nesse caminho.",
+        "sugestao": "Trate os caminhos existentes por UID e evite colisões entre UIDs e documentos compartilhados. Teste exclusão e isolamento com o esquema anterior."
+      },
+      {
+        "severidade": "blocker",
+        "arquivo": "app/functions/src/deleteAccount.ts:51",
+        "descricao": "Após a conversão para Google ou e-mail, um token anônimo emitido há menos de cinco minutos ainda permite excluir a conta sem reautenticação com a credencial vinculada.",
+        "sugestao": "Exija autenticação recente com uma credencial vinculada para contas convertidas e teste um token anônimo recente anterior à conversão."
+      }
+    ],
+    "workerId": "codex-mid"
+  }
+]

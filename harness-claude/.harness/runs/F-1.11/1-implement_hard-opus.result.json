@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T13:24:52.363Z",
+  "workerId": "opus",
+  "role": "implement_hard",
+  "featureId": "F-1.11",
+  "stage": 1,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.3622467999999999,
+  "durationMs": 126559,
+  "usage": {
+    "inputTokens": 30168,
+    "outputTokens": 6025,
+    "cachedTokens": 454674,
+    "costUsd": 0.3622467999999999
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "te:** contas Google ou e-mail com login há mais de 5 minutos recebem `failed-precondition` com a mensagem `auth/requires-recent-login`. Contas anônimas não têm essa exigência.\n- **Ordem da limpeza:** `recursiveDelete` em `users/{uid}` (todas as subcoleções) e em `internal/{uid}`. Por último, `deleteUser` no Auth, que só roda se a limpeza deu certo.\n- **Idempotente:** chamar de novo depois da exclusão retorna 200, porque `recursiveDelete` não falha em caminho vazio e `auth/user-not-found` é ignorado.\n\n**Outras alterações:**\n- Mudei o script `test:functions` em `app/package.json` para subir também os emuladores de Auth e Firestore (`--only auth,firestore,functions`). Antes ele subia só o de Functions, e o teste fala direto com os outros dois.\n- Registrei um risco em `.harness/inbox/risks.jsonl`: a função só apaga `users/{uid}` e `internal/{uid}`. Se no futuro algum dado do usuário for gravado em outro caminho, ele fica órfão.\n- O Bash recusou o append nesse arquivo; como ele existia e estava vazio, usei Write. Nenhuma linha anterior foi perdida.\n\n```json\n{\n  \"summary\": \"Callable v2 deleteAccount (southamerica-east1): requires auth, requires auth_time <= 5 min for non-anonymous accounts (failed-precondition 'auth/requires-recent-login'), recursively deletes users/{uid} and internal/{uid} using only the token UID, then deletes the Auth user last; idempotent (ignores auth/user-not-found). test:functions now also starts the Auth and Firestore emulators the test needs.\",\n  \"filesChanged\": [\n    \"app/functions/src/deleteAccount.ts\",\n    \"app/functions/src/index.ts\",\n    \"app/package.json\",\n    \".harness/inbox/risks.jsonl\"\n  ],\n  \"testsRun\": [\n    \"yarn test:functions (8/8 deleteAccount tests passed, 12/12 total)\",\n    \"yarn lint\",\n    \"yarn typecheck\",\n    \"yarn format:check\",\n    \"yarn test:unit\"\n  ],\n  \"confidence\": \"high\",\n  \"notes\": \"No UI, so no e2e/routes changes. Recorded risk: user data stored by UID outside users/{uid} or internal/{uid} would not be deleted.\"\n}\n```"
+}

@@ -1,20 +1,20 @@
 {
-  "ts": "2026-11-02T13:02:04.244Z",
+  "ts": "2026-11-02T13:11:45.733Z",
   "workerId": "gemini-lite",
   "role": "triage",
   "featureId": "F-1.10",
   "stage": 1,
   "attempt": 1,
   "outcome": "success",
-  "costUsd": 0.00120725,
-  "durationMs": 2709,
+  "costUsd": 0.0012637500000000001,
+  "durationMs": 2503,
   "usage": {
-    "inputTokens": 3935,
-    "outputTokens": 149,
+    "inputTokens": 4059,
+    "outputTokens": 166,
     "cachedTokens": 0,
-    "costUsd": 0.00120725
+    "costUsd": 0.0012637500000000001
   },
   "exitCode": 0,
   "timedOut": false,
-  "finalTail": "```json\n{\"causaRaiz\": \"Incompatibilidade da versão do Node.js (Ambiente local roda v24.22.0, mas o package.json das functions restringe estritamente para v22) e dependências não instaladas em 'functions/node_modules', impedindo a inicialização do emulador e servidores de teste.\", \"categoria\": \"env\", \"padrao\": true, \"dica\": \"Ajustar 'engines.node' para '^22' no functions/package.json para maior flexibilidade e garantir a instalação das dependências (yarn install) dentro do diretório 'functions/' antes de iniciar qualquer script de teste ou emulador.\"}\n```"
+  "finalTail": "{\"causaRaiz\": \"A falha dos gates G6, G8, G9 e G10 é consequência direta de uma incompatibilidade entre a versão do Node.js definida no ambiente de execução (v24.22.0) e a versão exigida pela nova pasta `functions/` (^22) configurada no `package.json`, somada à falta de execução dos scripts de instalação (yarn install) necessários para preparar o novo pacote.\", \"categoria\": \"env\", \"padrao\": true, \"dica\": \"Garanta a compatibilidade da versão do Node no ambiente e execute `yarn install` em todos os diretórios com `package.json` (raiz e `functions/`) antes de tentar iniciar o servidor de testes ou rodar os gates.\"}"
 }

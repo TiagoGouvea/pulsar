@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-02T13:21:33.180Z",
+  "workerId": "codex-mid",
+  "role": "review_code",
+  "featureId": "F-1.10",
+  "stage": 1,
+  "attempt": 3,
+  "outcome": "success",
+  "costUsd": 0.11607165,
+  "durationMs": 69062,
+  "usage": {
+    "inputTokens": 64936,
+    "outputTokens": 4460,
+    "cachedTokens": 576713
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"pass\": true,\n  \"score\": 8,\n  \"issues\": [\n    {\n      \"severidade\": \"major\",\n      \"arquivo\": \"app/package.json\",\n      \"descricao\": \"O app declara suporte a Node 20, mas o postinstall instala Functions, que exige Node 22. A instalação falha em versões de Node 20 aceitas pelo app.\",\n      \"sugestao\": \"Alinhar a versão mínima de Node do app com a exigida por Functions.\"\n    }\n  ]\n}\n```"
+}

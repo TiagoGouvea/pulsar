@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-02T13:40:48.358Z",
+  "workerId": "codex-mid",
+  "role": "review_code",
+  "featureId": "F-1.11",
+  "stage": 1,
+  "attempt": 3,
+  "outcome": "success",
+  "costUsd": 0.060055449999999996,
+  "durationMs": 47589,
+  "usage": {
+    "inputTokens": 40977,
+    "outputTokens": 2598,
+    "cachedTokens": 121769
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"pass\": false,\n  \"score\": 4,\n  \"issues\": [\n    {\n      \"severidade\": \"blocker\",\n      \"arquivo\": \"app/functions/src/deleteAccount.ts\",\n      \"descricao\": \"Se o UID for userAdmin ou userQuotas, a exclusão recursiva de internal/{uid} também apaga dados administrativos de outros usuários.\",\n      \"sugestao\": \"Isole dados por UID em caminhos sem colisão com namespaces compartilhados e teste esses UIDs.\"\n    },\n    {\n      \"severidade\": \"major\",\n      \"arquivo\": \"app/functions/src/deleteAccount.ts\",\n      \"descricao\": \"A lista fixa de caminhos não remove dados do UID em outros namespaces de internal/, contrariando o critério de exclusão integral.\",\n      \"sugestao\": \"Centralize os dados internos por UID ou mantenha um registro completo dos caminhos e teste a limpeza.\"\n    }\n  ]\n}\n```"
+}

@@ -12,9 +12,9 @@
   evidence:
     - evt-24
   added: 2026-10-25
-  hits: 23
-  helped: 10
-  helpedRate: 0.43478260869565216
+  hits: 33
+  helped: 11
+  helpedRate: 0.3333333333333333
   status: active
 - id: L-002
   scope:
@@ -32,7 +32,7 @@
   hits: 5
   helped: 3
   helpedRate: 0.6
-  status: active
+  status: promoted
 - id: L-003
   scope:
     roles:
@@ -142,10 +142,10 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-5
   added: 2026-10-27
-  hits: 6
+  hits: 9
   helped: 2
-  helpedRate: 0.3333333333333333
-  status: active
+  helpedRate: 0.2222222222222222
+  status: retired
 - id: L-011
   scope:
     roles: []
@@ -157,10 +157,10 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-6
   added: 2026-10-27
-  hits: 6
+  hits: 8
   helped: 2
-  helpedRate: 0.3333333333333333
-  status: active
+  helpedRate: 0.25
+  status: retired
 - id: L-012
   scope:
     roles: []
@@ -171,10 +171,10 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-7
   added: 2026-10-27
-  hits: 6
+  hits: 8
   helped: 2
-  helpedRate: 0.3333333333333333
-  status: active
+  helpedRate: 0.25
+  status: retired
 - id: L-013
   scope:
     roles: []
@@ -187,10 +187,10 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-8
   added: 2026-10-27
-  hits: 6
+  hits: 8
   helped: 2
-  helpedRate: 0.3333333333333333
-  status: active
+  helpedRate: 0.25
+  status: retired
 - id: L-014
   scope:
     roles: []
@@ -202,10 +202,10 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-9
   added: 2026-10-27
-  hits: 6
+  hits: 8
   helped: 2
-  helpedRate: 0.3333333333333333
-  status: active
+  helpedRate: 0.25
+  status: retired
 - id: L-015
   scope:
     roles: []
@@ -217,10 +217,10 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-10
   added: 2026-10-27
-  hits: 3
-  helped: 1
-  helpedRate: 0.3333333333333333
-  status: active
+  hits: 8
+  helped: 2
+  helpedRate: 0.25
+  status: retired
 - id: L-016
   scope:
     roles: []
@@ -231,10 +231,10 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-11
   added: 2026-10-27
-  hits: 3
-  helped: 1
-  helpedRate: 0.3333333333333333
-  status: active
+  hits: 8
+  helped: 2
+  helpedRate: 0.25
+  status: retired
 - id: L-017
   scope:
     roles: []
@@ -244,10 +244,10 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-12
   added: 2026-10-27
-  hits: 3
+  hits: 8
   helped: 1
-  helpedRate: 0.3333333333333333
-  status: active
+  helpedRate: 0.125
+  status: retired
 - id: L-018
   scope:
     roles: []
@@ -258,10 +258,10 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-13
   added: 2026-10-27
-  hits: 3
-  helped: 1
-  helpedRate: 0.3333333333333333
-  status: active
+  hits: 8
+  helped: 2
+  helpedRate: 0.25
+  status: retired
 - id: L-019
   scope:
     roles: []
@@ -273,10 +273,10 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-14
   added: 2026-10-27
-  hits: 3
-  helped: 1
-  helpedRate: 0.3333333333333333
-  status: active
+  hits: 8
+  helped: 2
+  helpedRate: 0.25
+  status: retired
 - id: L-020
   scope:
     roles: []
@@ -288,10 +288,10 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-15
   added: 2026-10-27
-  hits: 3
-  helped: 1
-  helpedRate: 0.3333333333333333
-  status: active
+  hits: 8
+  helped: 2
+  helpedRate: 0.25
+  status: retired
 - id: L-021
   scope:
     roles: []
@@ -303,10 +303,10 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-16
   added: 2026-10-27
-  hits: 3
-  helped: 1
-  helpedRate: 0.3333333333333333
-  status: active
+  hits: 8
+  helped: 2
+  helpedRate: 0.25
+  status: retired
 - id: L-022
   scope:
     roles: []
@@ -317,10 +317,10 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-17
   added: 2026-10-27
-  hits: 3
-  helped: 1
-  helpedRate: 0.3333333333333333
-  status: active
+  hits: 8
+  helped: 2
+  helpedRate: 0.25
+  status: retired
 - id: L-023
   scope:
     roles: []
@@ -334,10 +334,10 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-18
   added: 2026-10-27
-  hits: 3
-  helped: 1
-  helpedRate: 0.3333333333333333
-  status: active
+  hits: 8
+  helped: 2
+  helpedRate: 0.25
+  status: retired
 - id: L-024
   scope:
     roles: []
@@ -348,10 +348,10 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-19
   added: 2026-10-27
-  hits: 3
-  helped: 1
-  helpedRate: 0.3333333333333333
-  status: active
+  hits: 8
+  helped: 2
+  helpedRate: 0.25
+  status: retired
 - id: L-025
   scope:
     roles: []
@@ -362,10 +362,10 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-20
   added: 2026-10-27
-  hits: 2
+  hits: 5
   helped: 0
   helpedRate: 0
-  status: active
+  status: retired
 - id: L-026
   scope:
     roles: []
@@ -377,10 +377,10 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-21
   added: 2026-10-27
-  hits: 2
+  hits: 5
   helped: 0
   helpedRate: 0
-  status: active
+  status: retired
 - id: L-027
   scope:
     roles: []
@@ -390,10 +390,10 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-22
   added: 2026-10-27
-  hits: 2
+  hits: 5
   helped: 0
   helpedRate: 0
-  status: active
+  status: retired
 - id: L-028
   scope:
     roles: []
@@ -407,10 +407,10 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-23
   added: 2026-10-27
-  hits: 2
+  hits: 5
   helped: 0
   helpedRate: 0
-  status: active
+  status: retired
 - id: L-029
   scope:
     roles: []
@@ -423,22 +423,149 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-24
   added: 2026-10-27
-  hits: 2
+  hits: 5
   helped: 0
   helpedRate: 0
-  status: active
+  status: retired
 - id: L-030
   scope:
     roles:
       - implement
       - implement_hard
     tags: []
-  rule: Ajustar 'engines.node' para '^22' no functions/package.json para maior
-    flexibilidade e garantir a instalação das dependências (yarn install) dentro
-    do diretório 'functions/' antes de iniciar qualquer script de teste ou
-    emulador.
+  rule: "Em functions/package.json use 'engines.node' compatível com o Node do
+    ambiente (ex.: '^22') e rode yarn install dentro de functions/ antes de
+    qualquer teste ou emulador."
   evidence:
     - evt-157
+  added: 2026-11-02
+  hits: 5
+  helped: 0
+  helpedRate: 0
+  status: active
+- id: L-031
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags: []
+  rule: Garanta a compatibilidade da versão do Node no ambiente e execute `yarn
+    install` em todos os diretórios com `package.json` (raiz e `functions/`)
+    antes de tentar iniciar o servidor de testes ou rodar os gates.
+  evidence:
+    - evt-162
+  added: 2026-11-02
+  hits: 5
+  helped: 0
+  helpedRate: 0
+  status: retired
+- id: L-032
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - sync
+  rule: Sempre adicione 'max-w-full overflow-hidden' no wrapper principal e
+    utilize 'break-words' ou 'truncate' em textos longos para garantir que o
+    layout se contenha dentro de containers estreitos.
+  evidence:
+    - evt-171
+  added: 2026-11-02
+  hits: 0
+  helped: 0
+  helpedRate: null
+  status: retired
+- id: L-033
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - protected
+  rule: Nunca edite arquivos listados em .harness/protected.json (testes escritos
+    pelo test_writer, configs protegidas). Violações G7/protected_violation
+    repetidas em F-1.08, F-1.03 e F-1.10 (evt-109, evt-112, evt-113, evt-114,
+    evt-115, evt-116, evt-146, evt-149, evt-153, evt-154, evt-159) consumiram
+    todas as tentativas, inclusive com opus. Antes de editar qualquer arquivo,
+    confira se ele está na lista de protegidos; se o teste parecer errado,
+    ajuste o código de produção ou registre em .harness/inbox/questions.jsonl em
+    vez de alterar o teste.
+  evidence:
+    - evt-109
+    - evt-112
+    - evt-114
+    - evt-153
+    - evt-159
+  added: 2026-11-02
+  hits: 0
+  helped: 0
+  helpedRate: null
+  status: active
+- id: L-034
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - gates
+  rule: "G8 falhou em sequência para F-1.01, F-1.02 e F-1.10 mesmo com modelos
+    fortes (evt-91, evt-96, evt-98, evt-100, evt-120). Leia o relatório do gate
+    G8 (gate-report) antes de alterar código, rode localmente o mesmo comando do
+    gate e só entregue quando ele passar. Não repita a mesma abordagem entre
+    tentativas: compare com o erro da tentativa anterior."
+  evidence:
+    - evt-91
+    - evt-96
+    - evt-98
+    - evt-100
+    - evt-120
+  added: 2026-11-02
+  hits: 0
+  helped: 0
+  helpedRate: null
+  status: active
+- id: L-035
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - review
+  rule: F-1.11 foi rejeitada em revisão 5 vezes seguidas (evt-174, evt-176,
+    evt-178, evt-180, evt-182) com opus, kimi-pro e sonnet. Antes de
+    implementar, leia o último parecer de revisão (verdict-N.json) e trate cada
+    ponto apontado explicitamente; confirme cada critério de aceite (ordem de
+    limpeza, requires-recent-login, isolamento entre UIDs) com um teste ou
+    trecho de código.
+  evidence:
+    - evt-174
+    - evt-176
+    - evt-178
+    - evt-180
+    - evt-182
+  added: 2026-11-02
+  hits: 0
+  helped: 0
+  helpedRate: null
+  status: active
+- id: L-036
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - functions
+  rule: "Modelos baratos (minimax, haiku) falharam repetidamente em features de
+    infraestrutura de functions/emulador (F-1.10: evt-108, evt-111, evt-158,
+    evt-163, G6/G8/G9/G10). Para features de infra com emulador, rode yarn
+    install em app/ e app/functions antes dos gates e use roteamento para
+    implement_hard desde a primeira tentativa."
+  evidence:
+    - evt-108
+    - evt-111
+    - evt-158
+    - evt-163
   added: 2026-11-02
   hits: 0
   helped: 0

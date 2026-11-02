@@ -33,5 +33,20 @@
     "sha256": "19ce294ff8d40aaf09e76a98cf95c197f40e53188cf7c4aa3901d002857bc39e",
     "asserts": 0,
     "featureId": "F-1.08"
+  },
+  "app/e2e/anonymous-start.spec.ts": {
+    "sha256": "5a95974a6745b7443a0554839ca43d2d1bbfc7908142b9cf197e56c020b9485b",
+    "asserts": 26,
+    "featureId": "F-1.03"
+  },
+  "app/functions/src/__tests__/setup.test.ts": {
+    "sha256": "49e4d9dd0e401616cbd2f9aa40cfc9d1ee5b61827a35920ec7198fa0d5a756da",
+    "asserts": 6,
+    "featureId": "F-1.10"
+  },
+  "app/functions/src/__tests__/deleteAccount.test.ts": {
+    "sha256": "7acc2c5ed7d5740ec72774e345f707fdd04f5774a430787724eefcf4b5d573b6",
+    "asserts": 24,
+    "featureId": "F-1.11"
   }
 }
