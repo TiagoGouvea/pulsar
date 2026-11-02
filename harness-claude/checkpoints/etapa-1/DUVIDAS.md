@@ -128,3 +128,11 @@ B) ajustar a spec/critérios
 C) simplificar a feature
 D) aceitar sem ela nesta etapa
 Resposta: 
+
+### Q-40
+**Pergunta:** Which callable error represents requires-recent-login? HttpsError codes are a fixed set.
+**Impacto:** Client must map the message, not the code, to trigger reauthentication
+A) HttpsError('failed-precondition', 'requires-recent-login'); the test asserts status >= 400 and error.message === 'requires-recent-login' (padrão)
+B) unauthenticated with the same message
+C) permission-denied with the same message
+Resposta: 

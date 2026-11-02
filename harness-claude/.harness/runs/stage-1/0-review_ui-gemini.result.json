@@ -1,19 +1,19 @@
 {
-  "ts": "2026-11-02T13:53:53.118Z",
+  "ts": "2026-11-02T14:55:01.356Z",
   "workerId": "gemini",
   "role": "review_ui",
   "stage": 1,
   "attempt": 0,
   "outcome": "success",
-  "costUsd": 0.135968925,
-  "durationMs": 155225,
+  "costUsd": 0.16036185000000003,
+  "durationMs": 175408,
   "usage": {
-    "inputTokens": 100687,
-    "outputTokens": 6004,
-    "cachedTokens": 505849,
-    "costUsd": 0.135968925
+    "inputTokens": 120843,
+    "outputTokens": 8005,
+    "cachedTokens": 529478,
+    "costUsd": 0.16036185000000003
   },
   "exitCode": 0,
   "timedOut": false,
-  "finalTail": "```json\n{\n  \"pass\": true,\n  \"score\": 9.1,\n  \"porCriterio\": {\n    \"c1\": 9.0,\n    \"c2\": 9.5,\n    \"c3\": 9.0,\n    \"c4\": 9.0,\n    \"c5\": 9.5,\n    \"c6\": 8.0,\n    \"c7\": 9.0,\n    \"c8\": 9.0,\n    \"c9\": 9.5,\n    \"c10\": 9.0\n  },\n  \"issues\": [\n    {\n      \"severidade\": \"minor\",\n      \"tela\": \"Design system / Cartões e controles\",\n      \"descricao\": \"Na escala subjetiva de 0 a 10 no viewport mobile de 375px, apenas os botões de 0 a 6 ficam visíveis sem rolagem.\",\n      \"sugestao\": \"Garantir indicador visual sutil de overflow horizontal (fade ou scroll snap) para deixar evidente que a escala continua até 10 ao deslizar.\"\n    },\n    {\n      \"severidade\": \"minor\",\n      \"tela\": \"Design system / Tokens e estados\",\n      \"descricao\": \"A página de vitrine do design system não inclui amostras de estados de loading/skeleton ou alertas de erro em formulário.\",\n      \"sugestao\": \"Incluir na vitrine do design system exemplos de skeleton de carregamento e estado de erro de validação para guiar as próximas etapas.\"\n    }\n  ]\n}\n```"
+  "finalTail": "```json\n{\n  \"pass\": true,\n  \"score\": 9.0,\n  \"porCriterio\": {\n    \"c1\": 9.0,\n    \"c2\": 10.0,\n    \"c3\": 8.0,\n    \"c4\": 9.0,\n    \"c5\": 9.0,\n    \"c6\": 7.5,\n    \"c7\": 9.0,\n    \"c8\": 9.0,\n    \"c9\": 9.5,\n    \"c10\": 9.5\n  },\n  \"issues\": [\n    {\n      \"severidade\": \"minor\",\n      \"tela\": \"/_design (Slider / Escala 0–10)\",\n      \"descricao\": \"No componente Slider com escala de 0 a 10, o tamanho de cada pílula (min-w-[44px]) totaliza mais de 480px, gerando overflow horizontal dentro do cartão em 375px. Como resultado, os valores de 7 a 10 ficam ocultos fora da tela visível (incluindo o valor atualmente selecionado 7), divergindo do mockup de referência (preenchimento_r_pido) onde toda a régua de 0 a 10 fica visível simultaneamente.\",\n      \"sugestao\": \"Calibrar o tamanho ou densidade das pílulas da escala 0–10 para que caibam os 11 pontos na largura útil em mobile 375px (ex.: diâmetro de ~28–32px com área de toque compensada ou quebra/adaptação que evite scroll horizontal obrigatório).\"\n    },\n    {\n      \"severidade\": \"minor\",\n      \"tela\": \"/ (HomePlaceholder)\",\n      \"descricao\": \"A página inicial renderiza apenas um texto provisório centralizado em fundo neutro, pois a etapa 1 contempla a infraestrutura base e design tokens, deixando a casca de navegação e telas de produto para as etapas seguintes.\",\n      \"sugestao\": \"Integrar o AppShell com cabeçalho (olho/modo privado), navegação inferior e as rotas de onboarding/dashboard conforme as próximas etapas do plano.\"\n    }\n  ]\n}\n```"
 }

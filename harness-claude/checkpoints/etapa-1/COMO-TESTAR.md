@@ -2,18 +2,17 @@
 
 Preview: (local) yarn dev
 
-**O que dá para testar nesta etapa:** só a base técnica. Existem o modelo de domínio de indicadores/registros, os utilitários de tempo, as regras de segurança do Firestore para o documento do usuário e o workspace de Cloud Functions com emulador. Tudo isso é verificado por testes automatizados, não por telas.
+**O que dá para testar nesta etapa:** só a base técnica: modelo de domínio de indicadores, utilitários de tempo, regras do Firestore para `users/{uid}`, workspace de Cloud Functions com emulador e a function `deleteAccount`. Quase tudo isso é verificado por testes automatizados. Quase nada aparece na interface.
 
-**O que ainda não existe:** acesso anônimo automático (F-1.03, bloqueada), AppShell com olho e navegação (F-1.04), fixtures de e2e, guarda do modo privado, tutorial, conversão de conta Google/link mágico, função deleteAccount (F-1.11, bloqueada) e tela de conta. Dashboard, registro e indicadores chegam em etapas futuras. Não espere telas funcionais no celular.
+**O que ainda não existe:** acesso anônimo automático (F-1.03, bloqueada), AppShell com olho e navegação inferior (F-1.04), fixtures de e2e (F-1.05), guarda do modo privado (F-1.06), tutorial de três telas (F-1.07), conversão de conta com Google ou link mágico (F-1.09) e tela de conta com sair e excluir (F-1.12). Não espere ver essas telas no celular.
 
-**Roteiro (10–15 min):**
-1. Em `app/`, rode `yarn install`.
-2. Rode `yarn test:unit` e confirme que passam os testes de domínio (F-1.01) e de tempo (F-1.02).
-3. Rode `yarn --cwd app test:functions` e confirme que os testes das functions rodam contra os emuladores, com região southamerica-east1 (F-1.10).
-4. Rode os testes de regras do Firestore e confirme que o UID A não acessa users/B e que campos desconhecidos são rejeitados (F-1.08).
-5. Rode `yarn e2e:serve` e abra http://localhost:4792 (no celular, http://IP-DA-MAQUINA:4792 na mesma rede). Deve aparecer no máximo a casca inicial do app, sem fluxos completos.
-6. No computador, confira apenas que a página não quebra ao redimensionar.
+**Roteiro de 10–15 min:**
+1. Em `app/`, rode `yarn install`. Rode também `yarn install` em `app/functions`.
+2. Rode `yarn test:unit` e confira que os testes de domínio (F-1.01) e de tempo (F-1.02) passam.
+3. Rode `yarn test:functions` e confira que as regras (F-1.08), o workspace (F-1.10) e `deleteAccount` (F-1.11) passam contra os emuladores. Em `deleteAccount`, confira a ordem da limpeza, o erro `requires-recent-login` e o isolamento entre UIDs.
+4. Rode `yarn e2e:serve` (emuladores + seed) e abra http://localhost:4792. No celular, use http://IP-DA-MAQUINA:4792 na mesma rede. Espere uma tela básica ou vazia, sem tutorial, sem navegação inferior e sem login anônimo garantido, porque F-1.03 está bloqueada.
+5. No computador, confira só que a página estica e não quebra.
 
-**No preview de produção** não aparecem rotas só de dev/emulador nem o seed.
+**Preview de produção:** rotas e helpers só de dev/emulador, como o login por custom token do seed, não aparecem.
 
-**O que observar:** testes verdes, ausência de erros no console e nenhuma tela de login.
+**O que observar:** nenhum erro vermelho no console no carregamento. Os testes de functions devem rodar na região southamerica-east1 e o build em `functions/lib` deve ficar fora do lint e do format.

@@ -1,5 +1,5 @@
 {
-  "phase": "STAGE_RUNNING",
+  "phase": "AWAITING_APPROVAL",
   "stage": 1,
   "featuresSinceRetro": 0,
   "stageFixRounds": 0,
@@ -12,9 +12,9 @@
   "stageTimes": {
     "1": {
       "startedAt": "2026-11-01T18:53:23.876Z",
-      "activeMs": 8503399,
-      "finishedAt": "2026-11-02T13:54:12.124Z"
+      "finishedAt": "2026-11-02T14:55:22.323Z",
+      "activeMs": 10930966
     }
   },
-  "updatedAt": "2026-11-02T13:54:12.124Z"
+  "updatedAt": "2026-11-02T14:55:22.323Z"
 }

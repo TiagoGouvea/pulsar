@@ -13,11 +13,7 @@ Regras:
 - Rode os testes relevantes antes de terminar. Termine com o bloco ```json final pedido no seu papel
   (padrão: {"summary","filesChanged","testsRun","confidence":"low|med|high","notes"}).
 LIÇÕES RELEVANTES:
-- [L-025] Decisão do humano: Registros podem ser atualizados? → ID determinístico por dia com update permitido só hoje — ID determinístico por dia com update permitido só hoje
-- [L-026] Decisão do humano: Quem grava o cache de textos da IA? → Só a Function generateInsightTexts após validação; cliente só lê e valida de novo — Só a Function generateInsightTexts após validação; cliente só lê e valida de novo (padrão)
-- [L-027] Decisão do humano: Usar App Check na V1? → Fora da V1 inicial; reavaliar na etapa 7 — Fora da V1 inicial; reavaliar na etapa 7 (padrão)
-- [L-028] Decisão do humano: Onde guardar o estado de dispensa do convite de salvar conta? → users/{uid}.saveAccountInviteDismissedAt (timestamp|null) e saveAccountInviteDismissedDayCount (int >= 0|null), validados em F-1.08 — users/{uid}.saveAccountInviteDismissedAt (timestamp|null) e saveAccountInviteDismissedDayCount (int >= 0|null), validados em F-1.08 (padrão)
-- [L-029] Decisão do humano: Como resumir indicadores ordinais? → Contagem por opção na ordem configurada (inclui zeros), denominador = dias com resposta, moda com desempate pela ordem; só descritivo — Contagem por opção na ordem configurada (inclui zeros), denominador = dias com resposta, moda com desempate pela ordem; só descritivo (padrão)
+(nenhuma)
 
 
 # Papel: retrospectiva (stage, etapa 1)
@@ -31,16 +27,6 @@ Regras para lições:
 - `file: "harness"` só para lições que valem para qualquer projeto.
 
 ## Eventos recentes (id feature papel worker tentativa resultado)
-evt-34 F-0.03 review_code codex-mid t1 success $0.61
-evt-35 F-0.03 implement deepseek t1 success $0.03
-evt-36 F-0.02 review_code codex-mid t2 success $1.09
-evt-37 F-0.02 review_ui sonnet t2 success $0.07
-evt-38 F-0.02 implement kimi t2 success $0.18
-evt-39 F-0.05 review_code codex-mid t1 success $0.37
-evt-40 F-0.05 implement deepseek t1 review_rejected $0.04
-evt-41 F-0.06 review_code codex-mid t1 success $0.41
-evt-42 F-0.06 implement_hard opus t1 review_rejected $0.36
-evt-43 F-0.05 review_code gemini-pro t2 failure $0.00
 evt-44 F-0.05 review_code haiku t2 success $0.01
 evt-45 F-0.05 implement deepseek t2 review_rejected $0.06
 evt-46 F-0.05 review_code sonnet t3 success $0.03
@@ -181,6 +167,16 @@ evt-180 F-1.11 implement_hard opus t4 review_rejected $0.63
 evt-181 F-1.11 review_code codex-mid t5 success $0.06
 evt-182 F-1.11 implement_hard sonnet t5 review_rejected $0.11
 evt-183 stage-1 review_ui gemini t0 success $0.14
+evt-184 retro-1-stage retro sonnet t1 success $0.08
+evt-185 F-1.03 test_writer sonnet t0 success $0.18
+evt-186 F-1.11 test_writer sonnet t0 success $0.20
+evt-187 F-1.11 review_code gemini t1 success $0.08
+evt-188 F-1.11 implement_hard opus t1 success $0.31
+evt-189 F-1.03 review_code haiku t1 success $0.01
+evt-190 F-1.03 implement deepseek-flash t1 review_rejected $0.11
+evt-191 F-1.03 review_code haiku t2 success $0.01
+evt-192 F-1.03 implement qwen-coder t2 review_rejected $0.29
+evt-193 stage-1 review_ui gemini t0 success $0.16
 
 ## Lições atuais
 # Lições do projeto (geradas pelo harness). Formato YAML.
@@ -197,8 +193,8 @@ evt-183 stage-1 review_ui gemini t0 success $0.14
   evidence:
     - evt-24
   added: 2026-10-25
-  hits: 33
-  helped: 11
+  hits: 36
+  helped: 12
   helpedRate: 0.3333333333333333
   status: active
 - id: L-002
@@ -217,7 +213,7 @@ evt-183 stage-1 review_ui gemini t0 success $0.14
   hits: 5
   helped: 3
   helpedRate: 0.6
-  status: active
+  status: promoted
 - id: L-003
   scope:
     roles:
@@ -550,7 +546,7 @@ evt-183 stage-1 review_ui gemini t0 success $0.14
   hits: 5
   helped: 0
   helpedRate: 0
-  status: active
+  status: retired
 - id: L-026
   scope:
     roles: []
@@ -565,7 +561,7 @@ evt-183 stage-1 review_ui gemini t0 success $0.14
   hits: 5
   helped: 0
   helpedRate: 0
-  status: active
+  status: retired
 - id: L-027
   scope:
     roles: []
@@ -578,7 +574,7 @@ evt-183 stage-1 review_ui gemini t0 success $0.14
   hits: 5
   helped: 0
   helpedRate: 0
-  status: active
+  status: retired
 - id: L-028
   scope:
     roles: []
@@ -595,7 +591,7 @@ evt-183 stage-1 review_ui gemini t0 success $0.14
   hits: 5
   helped: 0
   helpedRate: 0
-  status: active
+  status: retired
 - id: L-029
   scope:
     roles: []
@@ -611,24 +607,23 @@ evt-183 stage-1 review_ui gemini t0 success $0.14
   hits: 5
   helped: 0
   helpedRate: 0
-  status: active
+  status: retired
 - id: L-030
   scope:
     roles:
       - implement
       - implement_hard
     tags: []
-  rule: Ajustar 'engines.node' para '^22' no functions/package.json para maior
-    flexibilidade e garantir a instalação das dependências (yarn install) dentro
-    do diretório 'functions/' antes de iniciar qualquer script de teste ou
-    emulador.
+  rule: "Em functions/package.json use 'engines.node' compatível com o Node do
+    ambiente (ex.: '^22') e rode yarn install dentro de functions/ antes de
+    qualquer teste ou emulador."
   evidence:
     - evt-157
   added: 2026-11-02
-  hits: 5
-  helped: 0
-  helpedRate: 0
-  status: active
+  hits: 8
+  helped: 1
+  helpedRate: 0.125
+  status: retired
 - id: L-031
   scope:
     roles:
@@ -644,7 +639,7 @@ evt-183 stage-1 review_ui gemini t0 success $0.14
   hits: 5
   helped: 0
   helpedRate: 0
-  status: active
+  status: retired
 - id: L-032
   scope:
     roles:
@@ -657,6 +652,101 @@ evt-183 stage-1 review_ui gemini t0 success $0.14
     layout se contenha dentro de containers estreitos.
   evidence:
     - evt-171
+  added: 2026-11-02
+  hits: 0
+  helped: 0
+  helpedRate: null
+  status: retired
+- id: L-033
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - protected
+  rule: Nunca edite arquivos listados em .harness/protected.json (testes escritos
+    pelo test_writer, configs protegidas). Violações G7/protected_violation
+    repetidas em F-1.08, F-1.03 e F-1.10 (evt-109, evt-112, evt-113, evt-114,
+    evt-115, evt-116, evt-146, evt-149, evt-153, evt-154, evt-159) consumiram
+    todas as tentativas, inclusive com opus. Antes de editar qualquer arquivo,
+    confira se ele está na lista de protegidos; se o teste parecer errado,
+    ajuste o código de produção ou registre em .harness/inbox/questions.jsonl em
+    vez de alterar o teste.
+  evidence:
+    - evt-109
+    - evt-112
+    - evt-114
+    - evt-153
+    - evt-159
+  added: 2026-11-02
+  hits: 0
+  helped: 0
+  helpedRate: null
+  status: active
+- id: L-034
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - gates
+  rule: "G8 falhou em sequência para F-1.01, F-1.02 e F-1.10 mesmo com modelos
+    fortes (evt-91, evt-96, evt-98, evt-100, evt-120). Leia o relatório do gate
+    G8 (gate-report) antes de alterar código, rode localmente o mesmo comando do
+    gate e só entregue quando ele passar. Não repita a mesma abordagem entre
+    tentativas: compare com o erro da tentativa anterior."
+  evidence:
+    - evt-91
+    - evt-96
+    - evt-98
+    - evt-100
+    - evt-120
+  added: 2026-11-02
+  hits: 0
+  helped: 0
+  helpedRate: null
+  status: active
+- id: L-035
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - review
+  rule: F-1.11 foi rejeitada em revisão 5 vezes seguidas (evt-174, evt-176,
+    evt-178, evt-180, evt-182) com opus, kimi-pro e sonnet. Antes de
+    implementar, leia o último parecer de revisão (verdict-N.json) e trate cada
+    ponto apontado explicitamente; confirme cada critério de aceite (ordem de
+    limpeza, requires-recent-login, isolamento entre UIDs) com um teste ou
+    trecho de código.
+  evidence:
+    - evt-174
+    - evt-176
+    - evt-178
+    - evt-180
+    - evt-182
+  added: 2026-11-02
+  hits: 0
+  helped: 0
+  helpedRate: null
+  status: active
+- id: L-036
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - functions
+  rule: "Modelos baratos (minimax, haiku) falharam repetidamente em features de
+    infraestrutura de functions/emulador (F-1.10: evt-108, evt-111, evt-158,
+    evt-163, G6/G8/G9/G10). Para features de infra com emulador, rode yarn
+    install em app/ e app/functions antes dos gates e use roteamento para
+    implement_hard desde a primeira tentativa."
+  evidence:
+    - evt-108
+    - evt-111
+    - evt-158
+    - evt-163
   added: 2026-11-02
   hits: 0
   helped: 0
@@ -695,7 +785,7 @@ F-1.07 [failing] Tutorial de três telas: Três telas com Próximo/Voltar/Pular 
 F-1.08 [passing] Regras: documento do usuário e campos protegidos: UID A não lê nem escreve nada sob users/B (anônimo e permanente) | Campos desconhecidos ou de tipo errado em users/{uid} são rejeitados | Dono pode gravar saveAccountInviteDismissedAt (timestamp ou null) e saveAccountInviteDismissedDayCount (inteiro >= 0 ou null); string, negativo ou decimal são rejeitados | internal/** inacessível a clientes
 F-1.09 [failing] Conversão da conta: Google e link mágico preservando UID: Após vincular Google ou link mágico o UID é o mesmo e os registros continuam acessíveis | credential-already-in-use / email-already-in-use abre resolução explícita; nada é mesclado ou apagado | Nenhum campo de senha ou telefone em toda a UI | Conta anônima mostra aviso de que perder o navegador pode significar perder os dados
 F-1.10 [passing] Workspace de Cloud Functions com emulador: yarn --cwd app test:functions roda testes de functions contra emuladores | Região padrão southamerica-east1 | Build das functions em functions/lib ignorado pelo lint/format
-F-1.11 [blocked] Function deleteAccount: exclusão integral: Após a chamada não resta documento sob users/{uid} nem em internal/ para o UID | Usuário removido do Auth somente depois da limpeza | Conta Google/e-mail sem login recente recebe erro requires-recent-login | Um UID não consegue excluir outro
+F-1.11 [passing] Function deleteAccount: exclusão integral: Após a chamada não resta documento sob users/{uid} nem em internal/ para o UID | Usuário removido do Auth somente depois da limpeza | Conta Google/e-mail sem login recente recebe erro requires-recent-login | Um UID não consegue excluir outro
 F-1.12 [failing] Tela de conta: sair e excluir conta: Botão excluir só habilita após digitar EXCLUIR | Conta não anônima pede reautenticação antes | Após excluir, o app volta ao início sem dados do usuário anterior | Sair de conta anônima exige confirmação explícita
 
 Responda SOMENTE com o bloco ```json:

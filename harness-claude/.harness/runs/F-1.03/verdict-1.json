@@ -6,41 +6,35 @@
     "issues": [
       {
         "severidade": "blocker",
-        "arquivo": "app/src/App.tsx:55",
-        "descricao": "As rotas /onboarding e /dashboard ignoram o carregamento e os erros de autenticação. Ao recarregá-las sem rede, a interface aparece sem sessão pronta ou mensagem de erro.",
-        "sugestao": "Proteja ambas as rotas com os estados de carregamento e erro do AuthProvider."
-      },
-      {
-        "severidade": "blocker",
-        "arquivo": "app/src/auth/userRepository.ts:31",
-        "descricao": "Pular o onboarding antes de terminar a criação do documento pode criar users/{uid} apenas com onboardingCompleted. A transação posterior encontra o documento e não adiciona os defaults exigidos.",
-        "sugestao": "Aguarde a inicialização antes de permitir a conclusão e impeça que essa atualização crie um documento incompleto."
+        "arquivo": "app/functions/src/index.ts",
+        "descricao": "O diff remove a Cloud Function deleteAccount (com o check de requires-recent-login e a limpeza de internal/), apaga app/functions/src/__tests__/deleteAccount.test.ts (10 casos), retira o testTimeout do vitest.config.ts e tira o auth emulator de test:functions. Nada disso faz parte da F-1.03 (acesso anônimo e users/{uid}). É uma regressão de exclusão de conta (DECISOES.md) e remoção de testes existentes, o que enfraquece a cobertura.",
+        "sugestao": "Restaurar index.ts, o teste deleteAccount.test.ts, o testTimeout e o script test:functions do estado anterior. Manter no PR apenas o escopo de F-1.03 e tirar a remoção do HomePlaceholder se não for necessária para a feature."
       },
       {
         "severidade": "major",
-        "arquivo": "app/src/auth/AuthProvider.tsx:48",
-        "descricao": "Quando a sessão passa a null após uma autenticação, o usuário anterior permanece no estado e a promise de login já resolvida impede novo acesso anônimo.",
-        "sugestao": "Limpe o estado da sessão e permita uma nova tentativa quando a autenticação for perdida."
+        "arquivo": "app/src/pages/OnboardingPage.tsx",
+        "descricao": "O arquivo tem cerca de 494 linhas, com componentes de demonstração (FactorsDemo, ResultsDemo, AssociationsDemo), Hero e DemoRow, além de dados de passos repetidos. Isso contraria a regra de código mínimo e torna a tela difícil de revisar. O trecho visível também não mostra a renderização de `error` do useAuth, e o diff está truncado antes do fim do arquivo.",
+        "sugestao": "Extrair os demos e o Hero para arquivos próprios em pages/onboarding/ ou components/, reduzir a duplicação dos badges e confirmar que o estado de erro é renderizado com role=\"alert\" (critério de erro de rede)."
       },
       {
         "severidade": "major",
-        "arquivo": "app/src/pages/OnboardingPage.tsx:272",
-        "descricao": "O tutorial apresenta números fictícios como associação observada nos próprios registros da pessoa, sem identificá-los como exemplo.",
-        "sugestao": "Identifique claramente os dados como ilustrativos e evite atribuir a associação ao usuário."
-      },
-      {
-        "severidade": "major",
-        "arquivo": "app/src/pages/DashboardPage.tsx:21",
-        "descricao": "As novas telas não oferecem o controle global do olho: os nomes começam ocultos e não podem ser revelados, apesar da promessa no onboarding.",
-        "sugestao": "Disponibilize o EyeToggle nas telas que exibem indicadores."
+        "arquivo": "app/src/pages/OnboardingPage.tsx",
+        "descricao": "O AssociationsDemo mostra estatísticas fixas como se fossem dados reais do usuário (\"r = +0,68\", \"▲ +27% energia média\", \"N = 28 dias\", \"7,4/10\"). Num tutorial de um produto que diz que nada é criado automaticamente, isso pode ser lido como resultado real.",
+        "sugestao": "Deixar explícito que é um exemplo ilustrativo (rótulo \"Exemplo\") ou usar valores claramente genéricos, sem números que pareçam medição."
       },
       {
         "severidade": "minor",
-        "arquivo": "app/src/pages/OnboardingPage.tsx:279",
-        "descricao": "Rótulos e texto do exemplo expõem exercício e energia fora de IndicatorLabel, mesmo com o modo de siglas ativo.",
-        "sugestao": "Renderize as referências aos indicadores pelo mecanismo de privacidade."
+        "arquivo": "app/src/pages/DashboardPage.tsx",
+        "descricao": "A página não tem guarda de onboarding (a spec só exige o redirecionamento a partir de /). O texto \"em Configurações\" cita uma tela que ainda não existe.",
+        "sugestao": "Confirmar que a spec aceita o acesso direto a /dashboard. Trocar o texto de \"em Configurações\" por algo neutro até a tela existir."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/auth/AuthProvider.tsx",
+        "descricao": "Quando signInAnonymously falha, signingIn.current permanece true e nenhuma nova tentativa é feita. O erro é mostrado, mas não há como recuperar sem recarregar a página.",
+        "sugestao": "Resetar signingIn.current no catch ou expor uma função de retry para o botão 'Tentar novamente'."
       }
     ],
-    "workerId": "codex-mid"
+    "workerId": "haiku"
   }
 ]

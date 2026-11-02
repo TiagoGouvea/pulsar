@@ -35,8 +35,8 @@
     "featureId": "F-1.08"
   },
   "app/e2e/anonymous-start.spec.ts": {
-    "sha256": "5a95974a6745b7443a0554839ca43d2d1bbfc7908142b9cf197e56c020b9485b",
-    "asserts": 26,
+    "sha256": "eb06895c4e8d1b641fde377fec23a2a960604566e9ee1ab26984a3f16c840925",
+    "asserts": 18,
     "featureId": "F-1.03"
   },
   "app/functions/src/__tests__/setup.test.ts": {
@@ -45,8 +45,8 @@
     "featureId": "F-1.10"
   },
   "app/functions/src/__tests__/deleteAccount.test.ts": {
-    "sha256": "7acc2c5ed7d5740ec72774e345f707fdd04f5774a430787724eefcf4b5d573b6",
-    "asserts": 24,
+    "sha256": "864e5515d84bd887e361709c1ac127a2d966322690432be18a0230adee2c7e2b",
+    "asserts": 29,
     "featureId": "F-1.11"
   }
 }

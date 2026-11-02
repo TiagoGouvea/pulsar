@@ -1,28 +1,9 @@
 [
   {
     "kind": "code",
-    "pass": false,
-    "score": 4,
-    "issues": [
-      {
-        "severidade": "blocker",
-        "arquivo": "app/functions/src/deleteAccount.ts:23",
-        "descricao": "A limpeza de internal/${uid} deixa intacto internal/userAdmin/users/${uid}, caminho de dados administrativos já previsto nas regras e nos testes.",
-        "sugestao": "Remova recursivamente todos os caminhos internos por usuário e teste os caminhos reais, incluindo dados de outro usuário."
-      },
-      {
-        "severidade": "blocker",
-        "arquivo": "app/functions/src/deleteAccount.ts:22",
-        "descricao": "As regras permitem que o usuário recrie o documento e subcoleções durante ou após a limpeza. Um token ainda válido pode deixar dados órfãos mesmo depois da exclusão do Auth.",
-        "sugestao": "Bloqueie escritas durante e após a exclusão com um estado de exclusão validado pelas regras e pelas operações de servidor; teste escritas concorrentes e com token anterior."
-      },
-      {
-        "severidade": "minor",
-        "arquivo": "app/functions/src/__tests__/deleteAccount.test.ts:118",
-        "descricao": "O teste verifica apenas o estado final e não comprova que o Auth permanece intacto quando a limpeza falha.",
-        "sugestao": "Teste uma falha de limpeza e confirme que o usuário do Auth não é removido."
-      }
-    ],
-    "workerId": "codex-mid"
+    "pass": true,
+    "score": 10,
+    "issues": [],
+    "workerId": "gemini"
   }
 ]

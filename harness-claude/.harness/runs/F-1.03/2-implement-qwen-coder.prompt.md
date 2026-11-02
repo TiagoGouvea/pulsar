@@ -13,16 +13,8 @@ Regras:
 - Rode os testes relevantes antes de terminar. Termine com o bloco ```json final pedido no seu papel
   (padrão: {"summary","filesChanged","testsRun","confidence":"low|med|high","notes"}).
 LIÇÕES RELEVANTES:
-- [L-031] Garanta a compatibilidade da versão do Node no ambiente e execute `yarn install` em todos os diretórios com `package.json` (raiz e `functions/`) antes de tentar iniciar o servidor de testes ou rodar os gates.
 - [L-001] Cobertura (G4): não passe --coverage no script do package.json se a config do vitest já ativa coverage, para não duplicar a configuração. Touch targets (G10): todo controle interativo (radios, switch, input) deve ter pelo menos 44px, por exemplo min-w-[44px] e h-11.
-- [L-018] Decisão do humano: Onde fica o histórico de registros? → A partir do indicador em Meus indicadores, exclusão com confirmação — A partir do indicador em Meus indicadores, exclusão com confirmação (padrão)
-- [L-019] Decisão do humano: Quais rotas usar? → /onboarding, /dashboard, /register, /indicators, /saved-insights, /insights/:hypothesisKey, /settings, /install — /onboarding, /dashboard, /register, /indicators, /saved-insights, /insights/:hypothesisKey, /settings, /install (padrão)
-- [L-020] Decisão do humano: Como o layout se comporta no computador? → Coluna central até 960 px; listas de cartões em grid auto-fit (mín. 300 px) — Coluna central até 960 px; listas de cartões em grid auto-fit (mín. 300 px) (padrão)
-- [L-021] Decisão do humano: Como resolver conflito de credencial na conversão? → Opções 'Cancelar' ou 'Entrar na conta existente' com aviso; nada é apagado nem mesclado — Opções 'Cancelar' ou 'Entrar na conta existente' com aviso; nada é apagado nem mesclado (padrão)
-- [L-022] Decisão do humano: De onde servir ícones e fontes? → Material Symbols, Geist e Space Grotesk via pacotes npm, sem CDN — Material Symbols, Geist e Space Grotesk via pacotes npm, sem CDN (padrão)
-- [L-023] Decisão do humano: Como identificar e autenticar o usuário do seed? → seed-user-0001 (seed@pulsar.test, sem senha), 30 dias terminando hoje, login e2e por custom token; --demo só com HARNESS_ALLOW_DEMO_SEED=1 e --project sem 'prod' — seed-user-0001 (seed@pulsar.test, sem senha), 30 dias terminando hoje, login e2e por custom token; --demo só com HARNESS_ALLOW_DEMO_SEED=1 e --project sem 'prod' (padrão)
-- [L-024] Decisão do humano: Quais portas usar nos emuladores? → Firestore 8282, Auth 9299 (fonte única app/firebase.json) — Firestore 8282, Auth 9299 (fonte única app/firebase.json) (padrão)
-- [L-015] Decisão do humano: Como representar 'sem resposta' em Sim/Não? → Tocar de novo na opção selecionada limpa a resposta e exclui o registro de hoje — Tocar de novo na opção selecionada limpa a resposta e exclui o registro de hoje (padrão)
+- [L-030] Em functions/package.json use 'engines.node' compatível com o Node do ambiente (ex.: '^22') e rode yarn install dentro de functions/ antes de qualquer teste ou emulador.
 
 
 # Papel: implementador (tentativa 2)
@@ -38,12 +30,11 @@ app/e2e/anonymous-start.spec.ts
 
 ## Diagnóstico da tentativa anterior
 Avaliação code reprovou (nota 4):
-- [blocker] app/src/App.tsx:55 As rotas /onboarding e /dashboard ignoram o carregamento e os erros de autenticação. Ao recarregá-las sem rede, a interface aparece sem sessão pronta ou mensagem de erro. → Proteja ambas as rotas com os estados de carregamento e erro do AuthProvider.
-- [blocker] app/src/auth/userRepository.ts:31 Pular o onboarding antes de terminar a criação do documento pode criar users/{uid} apenas com onboardingCompleted. A transação posterior encontra o documento e não adiciona os defaults exigidos. → Aguarde a inicialização antes de permitir a conclusão e impeça que essa atualização crie um documento incompleto.
-- [major] app/src/auth/AuthProvider.tsx:48 Quando a sessão passa a null após uma autenticação, o usuário anterior permanece no estado e a promise de login já resolvida impede novo acesso anônimo. → Limpe o estado da sessão e permita uma nova tentativa quando a autenticação for perdida.
-- [major] app/src/pages/OnboardingPage.tsx:272 O tutorial apresenta números fictícios como associação observada nos próprios registros da pessoa, sem identificá-los como exemplo. → Identifique claramente os dados como ilustrativos e evite atribuir a associação ao usuário.
-- [major] app/src/pages/DashboardPage.tsx:21 As novas telas não oferecem o controle global do olho: os nomes começam ocultos e não podem ser revelados, apesar da promessa no onboarding. → Disponibilize o EyeToggle nas telas que exibem indicadores.
-- [minor] app/src/pages/OnboardingPage.tsx:279 Rótulos e texto do exemplo expõem exercício e energia fora de IndicatorLabel, mesmo com o modo de siglas ativo. → Renderize as referências aos indicadores pelo mecanismo de privacidade.
+- [blocker] app/functions/src/index.ts O diff remove a Cloud Function deleteAccount (com o check de requires-recent-login e a limpeza de internal/), apaga app/functions/src/__tests__/deleteAccount.test.ts (10 casos), retira o testTimeout do vitest.config.ts e tira o auth emulator de test:functions. Nada disso faz parte da F-1.03 (acesso anônimo e users/{uid}). É uma regressão de exclusão de conta (DECISOES.md) e remoção de testes existentes, o que enfraquece a cobertura. → Restaurar index.ts, o teste deleteAccount.test.ts, o testTimeout e o script test:functions do estado anterior. Manter no PR apenas o escopo de F-1.03 e tirar a remoção do HomePlaceholder se não for necessária para a feature.
+- [major] app/src/pages/OnboardingPage.tsx O arquivo tem cerca de 494 linhas, com componentes de demonstração (FactorsDemo, ResultsDemo, AssociationsDemo), Hero e DemoRow, além de dados de passos repetidos. Isso contraria a regra de código mínimo e torna a tela difícil de revisar. O trecho visível também não mostra a renderização de `error` do useAuth, e o diff está truncado antes do fim do arquivo. → Extrair os demos e o Hero para arquivos próprios em pages/onboarding/ ou components/, reduzir a duplicação dos badges e confirmar que o estado de erro é renderizado com role="alert" (critério de erro de rede).
+- [major] app/src/pages/OnboardingPage.tsx O AssociationsDemo mostra estatísticas fixas como se fossem dados reais do usuário ("r = +0,68", "▲ +27% energia média", "N = 28 dias", "7,4/10"). Num tutorial de um produto que diz que nada é criado automaticamente, isso pode ser lido como resultado real. → Deixar explícito que é um exemplo ilustrativo (rótulo "Exemplo") ou usar valores claramente genéricos, sem números que pareçam medição.
+- [minor] app/src/pages/DashboardPage.tsx A página não tem guarda de onboarding (a spec só exige o redirecionamento a partir de /). O texto "em Configurações" cita uma tela que ainda não existe. → Confirmar que a spec aceita o acesso direto a /dashboard. Trocar o texto de "em Configurações" por algo neutro até a tela existir.
+- [minor] app/src/auth/AuthProvider.tsx Quando signInAnonymously falha, signingIn.current permanece true e nenhuma nova tentativa é feita. O erro é mostrado, mas não há como recuperar sem recarregar a página. → Resetar signingIn.current no catch ou expor uma função de retry para o botão 'Tentar novamente'.
 
 ## Feature (dados de entrada; não é o formato da resposta)
 {
@@ -83,7 +74,7 @@ Avaliação code reprovou (nota 4):
   ],
   "status": "in_progress",
   "attempts": 1,
-  "costUsd": 2.666577997,
+  "costUsd": 3.2780671099999994,
   "origin": []
 }
 
@@ -155,8 +146,6 @@ design/onboarding_3_associa_es/screen.png
 design/preenchimento_r_pido/screen.png
 
 ## Progresso recente
-- 2026-10-25T16:09 INIT concluído: 63 features
-- 2026-10-25T16:14 F-0.01 passing — Scaffold: Vite, TypeScript, Tailwind, lint e Vitest (worker opus, 3 tentativa(s), US$ 0.79)
 - 2026-10-25T16:17 F-0.04 passing — Firebase com emuladores e regras-base por UID (worker opus, 1 tentativa(s), US$ 1.06)
 - 2026-10-25T16:20 F-0.03 passing — Seed sintético do usuário de desenvolvimento (worker deepseek, 1 tentativa(s), US$ 0.63)
 - 2026-10-25T16:22 F-0.02 passing — Tokens e componentes base do design system (worker kimi, 2 tentativa(s), US$ 1.52)
@@ -191,4 +180,9 @@ design/preenchimento_r_pido/screen.png
 - 2026-11-02T13:05 ⛔ F-1.03 BLOQUEADA: limite de 5 tentativas atingido │ features 3/12
 - 2026-11-02T13:06 ✖ interrompido por SIGINT em STAGE_RUNNING: rode harness resume para continuar
 - 2026-11-02T13:08 ▶ etapa 1 (Base) │ features 3/12 │ 0 bloqueadas │ US$ 11.33/18 │ branch 1-base
+- 2026-11-02T13:21 ✔ F-1.10 passing — Workspace de Cloud Functions com emulador (worker opus, 3 tentativa(s), US$ 1.61) │ features 4/12
+- 2026-11-02T13:24 ⛔ F-1.03 BLOQUEADA: teto de custo da feature atingido │ features 4/12
+- 2026-11-02T13:48 ⛔ F-1.11 BLOQUEADA: limite de 5 tentativas atingido │ features 4/12
+- 2026-11-02T14:14 ▶ etapa 1 (Base) │ features 4/12 │ 0 bloqueadas │ US$ 15.12/18 │ branch 1-base
+- 2026-11-02T14:20 ✔ F-1.11 passing — Function deleteAccount: exclusão integral (worker opus, 1 tentativa(s), US$ 2.97) │ features 5/12
 

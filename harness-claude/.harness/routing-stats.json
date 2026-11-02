@@ -84,10 +84,10 @@
     "falhasPorGate": {}
   },
   "sonnet|test_writer|*": {
-    "tentativas": 22,
-    "sucessos": 22,
-    "custoMedio": 0.14011972272727274,
-    "duracaoMedia": 38854.59090909091,
+    "tentativas": 24,
+    "sucessos": 24,
+    "custoMedio": 0.14409546666666667,
+    "duracaoMedia": 40787.87500000001,
     "falhasPorGate": {}
   },
   "deepseek|triage|*": {
@@ -115,10 +115,10 @@
     "falhasPorGate": {}
   },
   "opus|implement_hard|*": {
-    "tentativas": 13,
-    "sucessos": 6,
-    "custoMedio": 0.5341139692307694,
-    "duracaoMedia": 141739.15384615387,
+    "tentativas": 14,
+    "sucessos": 7,
+    "custoMedio": 0.5180231714285716,
+    "duracaoMedia": 136583.21428571432,
     "falhasPorGate": {
       "G7": 2,
       "G3": 1,
@@ -140,10 +140,10 @@
     "falhasPorGate": {}
   },
   "opus|implement_hard|security-rules": {
-    "tentativas": 6,
-    "sucessos": 2,
-    "custoMedio": 0.4350583,
-    "duracaoMedia": 115151.66666666667,
+    "tentativas": 7,
+    "sucessos": 3,
+    "custoMedio": 0.4170275142857143,
+    "duracaoMedia": 108638,
     "falhasPorGate": {}
   },
   "deepseek|triage|ui": {
@@ -221,10 +221,10 @@
     "falhasPorGate": {}
   },
   "haiku|review_code|*": {
-    "tentativas": 2,
-    "sucessos": 2,
-    "custoMedio": 0.0050266375,
-    "duracaoMedia": 20385.5,
+    "tentativas": 4,
+    "sucessos": 4,
+    "custoMedio": 0.0058461725,
+    "duracaoMedia": 21844.25,
     "falhasPorGate": {}
   },
   "sonnet|review_code|*": {
@@ -373,10 +373,10 @@
     "falhasPorGate": {}
   },
   "sonnet|retro|*": {
-    "tentativas": 2,
-    "sucessos": 2,
-    "custoMedio": 0.0629335,
-    "duracaoMedia": 18507,
+    "tentativas": 3,
+    "sucessos": 3,
+    "custoMedio": 0.06815306666666666,
+    "duracaoMedia": 18857.666666666668,
     "falhasPorGate": {}
   },
   "haiku|approval_parser|*": {
@@ -478,10 +478,10 @@
     "falhasPorGate": {}
   },
   "sonnet|test_writer|security-rules": {
-    "tentativas": 3,
-    "sucessos": 3,
-    "custoMedio": 0.13534266666666667,
-    "duracaoMedia": 42821.333333333336,
+    "tentativas": 4,
+    "sucessos": 4,
+    "custoMedio": 0.150595275,
+    "duracaoMedia": 48869.25,
     "falhasPorGate": {}
   },
   "glm-flash|implement_easy|*": {
@@ -506,10 +506,10 @@
     "falhasPorGate": {}
   },
   "sonnet|test_writer|sync": {
-    "tentativas": 3,
-    "sucessos": 3,
-    "custoMedio": 0.19848363333333335,
-    "duracaoMedia": 42366.333333333336,
+    "tentativas": 4,
+    "sucessos": 4,
+    "custoMedio": 0.193688775,
+    "duracaoMedia": 46048.5,
     "falhasPorGate": {}
   },
   "minimax|implement|*": {
@@ -595,17 +595,17 @@
     "falhasPorGate": {}
   },
   "deepseek-flash|implement|*": {
-    "tentativas": 2,
+    "tentativas": 3,
     "sucessos": 0,
-    "custoMedio": 0.024549245000000004,
-    "duracaoMedia": 231297,
+    "custoMedio": 0.05336285933333333,
+    "duracaoMedia": 408785,
     "falhasPorGate": {}
   },
   "deepseek-flash|implement|sync": {
-    "tentativas": 1,
+    "tentativas": 2,
     "sucessos": 0,
-    "custoMedio": 0.03959573000000001,
-    "duracaoMedia": 289803,
+    "custoMedio": 0.075292909,
+    "duracaoMedia": 526782,
     "falhasPorGate": {}
   },
   "gemini-lite|triage|sync": {
@@ -616,19 +616,19 @@
     "falhasPorGate": {}
   },
   "qwen-coder|implement|*": {
-    "tentativas": 1,
+    "tentativas": 2,
     "sucessos": 0,
-    "custoMedio": 0.31331067999999995,
-    "duracaoMedia": 394818,
+    "custoMedio": 0.30334296,
+    "duracaoMedia": 440762.5,
     "falhasPorGate": {
       "G10": 1
     }
   },
   "qwen-coder|implement|sync": {
-    "tentativas": 1,
+    "tentativas": 2,
     "sucessos": 0,
-    "custoMedio": 0.31331067999999995,
-    "duracaoMedia": 394818,
+    "custoMedio": 0.30334296,
+    "duracaoMedia": 440762.5,
     "falhasPorGate": {
       "G10": 1
     }
@@ -655,17 +655,38 @@
     "falhasPorGate": {}
   },
   "gemini|review_ui|*": {
-    "tentativas": 1,
-    "sucessos": 1,
-    "custoMedio": 0.135968925,
-    "duracaoMedia": 155225,
+    "tentativas": 2,
+    "sucessos": 2,
+    "custoMedio": 0.14816538750000002,
+    "duracaoMedia": 165316.5,
     "falhasPorGate": {}
   },
   "gemini|review_ui|ui": {
+    "tentativas": 2,
+    "sucessos": 2,
+    "custoMedio": 0.14816538750000002,
+    "duracaoMedia": 165316.5,
+    "falhasPorGate": {}
+  },
+  "gemini|review_code|*": {
     "tentativas": 1,
     "sucessos": 1,
-    "custoMedio": 0.135968925,
-    "duracaoMedia": 155225,
+    "custoMedio": 0.080676,
+    "duracaoMedia": 121688,
+    "falhasPorGate": {}
+  },
+  "gemini|review_code|security-rules": {
+    "tentativas": 1,
+    "sucessos": 1,
+    "custoMedio": 0.080676,
+    "duracaoMedia": 121688,
+    "falhasPorGate": {}
+  },
+  "haiku|review_code|sync": {
+    "tentativas": 2,
+    "sucessos": 2,
+    "custoMedio": 0.0066657075,
+    "duracaoMedia": 23303,
     "falhasPorGate": {}
   }
 }

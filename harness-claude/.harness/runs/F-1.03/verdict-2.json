@@ -1,0 +1,40 @@
+[
+  {
+    "kind": "code",
+    "pass": false,
+    "score": 6,
+    "issues": [
+      {
+        "severidade": "blocker",
+        "arquivo": "app/src/pages/OnboardingPage.tsx",
+        "descricao": "Em /onboarding com falha de autenticação (loading=false, user=null, error definido), a página não mostra erro. Ao clicar em 'Pular' ou concluir, completeOnboarding() retorna sem gravar nada (if (!user) return) e navigate('/dashboard') é executado. O usuário vai ao painel como se o onboarding tivesse sido concluído, o que contradiz o critério 'Erro de rede mostra mensagem em pt-BR, sem indicar sucesso'.",
+        "sugestao": "Tratar user=null/error na OnboardingPage (renderizar o AuthErrorScreen ou redirecionar para '/'), e fazer completeOnboarding lançar erro quando não há usuário, para que o catch exiba a mensagem de falha em vez de navegar."
+      },
+      {
+        "severidade": "major",
+        "arquivo": "app/src/pages/OnboardingPage.tsx",
+        "descricao": "Nomes de indicadores são escritos diretamente como texto (ex.: 'Exercício Físico', 'Café Expresso', 'Energia', 'Foco', 'Sono', 'Humor', 'Treino', 'Suplemento', nomes em DemoRow, badges e banners) sem <IndicatorLabel>, contrariando a regra de privacidade de nomes de indicadores.",
+        "sugestao": "Usar <IndicatorLabel> para os nomes de indicadores exibidos (ou justificar explicitamente que são exemplos ilustrativos fora do escopo da regra e registrar em DECISOES.md)."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/pages/OnboardingPage.tsx",
+        "descricao": "Arquivo com ~495 linhas, com dados e demos de três passos embutidos. Isso vai contra a diretriz de código mínimo e enxuto e dificulta a manutenção.",
+        "sugestao": "Extrair os demos e os passos para módulos próprios (ex.: onboarding/steps.ts, onboarding/demos.tsx) e reduzir a repetição de markup dos demos."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/pages/OnboardingPage.tsx",
+        "descricao": "O bloco de loading duplica o LoadingScreen de RootPage.tsx (mesmo texto 'Preparando seu Pulsar…' e classes). Também há duplicação de AuthErrorScreen e de estados de carregamento entre páginas.",
+        "sugestao": "Extrair um componente compartilhado (ex.: src/auth/AuthGate.tsx ou design/LoadingScreen) e reutilizá-lo em RootPage e OnboardingPage."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/pages/OnboardingPage.tsx",
+        "descricao": "'steps[index] ?? steps[0]!' usa non-null assertion e fallback redundante, já que o índice é sempre válido.",
+        "sugestao": "Usar 'steps[index]' com um guard simples ou tipar o índice para evitar o '!'."
+      }
+    ],
+    "workerId": "haiku"
+  }
+]

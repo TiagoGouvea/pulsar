@@ -12,8 +12,8 @@
   evidence:
     - evt-24
   added: 2026-10-25
-  hits: 33
-  helped: 11
+  hits: 36
+  helped: 12
   helpedRate: 0.3333333333333333
   status: active
 - id: L-002
@@ -439,10 +439,10 @@
   evidence:
     - evt-157
   added: 2026-11-02
-  hits: 5
-  helped: 0
-  helpedRate: 0
-  status: active
+  hits: 8
+  helped: 1
+  helpedRate: 0.125
+  status: retired
 - id: L-031
   scope:
     roles:
@@ -501,7 +501,7 @@
   hits: 0
   helped: 0
   helpedRate: null
-  status: active
+  status: promoted
 - id: L-034
   scope:
     roles:
@@ -524,7 +524,7 @@
   hits: 0
   helped: 0
   helpedRate: null
-  status: active
+  status: promoted
 - id: L-035
   scope:
     roles:
@@ -532,12 +532,12 @@
       - implement_hard
     tags:
       - review
-  rule: F-1.11 foi rejeitada em revisão 5 vezes seguidas (evt-174, evt-176,
-    evt-178, evt-180, evt-182) com opus, kimi-pro e sonnet. Antes de
-    implementar, leia o último parecer de revisão (verdict-N.json) e trate cada
-    ponto apontado explicitamente; confirme cada critério de aceite (ordem de
-    limpeza, requires-recent-login, isolamento entre UIDs) com um teste ou
-    trecho de código.
+  rule: "F-1.11 foi rejeitada na revisão 5 vezes seguidas (evt-174, evt-176,
+    evt-178, evt-180, evt-182) e passou depois (evt-188) com o mesmo opus,
+    depois de uma revisão feita pelo gemini (evt-187). Antes de implementar,
+    leia o último parecer de revisão (verdict-N.json) e trate cada ponto
+    apontado. Confirme cada critério de aceite com um teste ou trecho de código:
+    ordem de limpeza, requires-recent-login e isolamento entre UIDs."
   evidence:
     - evt-174
     - evt-176
@@ -566,6 +566,50 @@
     - evt-111
     - evt-158
     - evt-163
+  added: 2026-11-02
+  hits: 0
+  helped: 0
+  helpedRate: null
+  status: active
+- id: L-037
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - protected
+  rule: Se o gate G7 (protected_violation) falhar, não tente a mesma edição de
+    novo. Rode `git status` e `git diff --stat` e reverta qualquer alteração em
+    arquivos listados em .harness/protected.json antes de entregar. Corrija o
+    código de produção para satisfazer o teste existente. Se o teste parecer
+    errado, registre a dúvida em .harness/inbox/questions.jsonl.
+  evidence:
+    - evt-146
+    - evt-149
+    - evt-153
+    - evt-154
+    - evt-159
+  added: 2026-11-02
+  hits: 0
+  helped: 0
+  helpedRate: null
+  status: active
+- id: L-038
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - review
+  rule: F-1.03 foi rejeitada na revisão com deepseek-flash e qwen-coder (evt-165,
+    evt-190, evt-192), mesmo depois de a F-1.11 passar na revisão (evt-188) com
+    um revisor diferente (gemini). Antes de entregar, leia o último
+    verdict-N.json e responda a cada ponto apontado no código. Confira também se
+    o fluxo de erro de rede mostra mensagem em pt-BR e não indica sucesso.
+  evidence:
+    - evt-165
+    - evt-190
+    - evt-192
   added: 2026-11-02
   hits: 0
   helped: 0

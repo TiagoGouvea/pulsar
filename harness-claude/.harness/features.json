@@ -580,11 +580,31 @@
         "F-0.05",
         "F-1.08"
       ],
-      "status": "failing",
-      "attempts": 0,
-      "costUsd": 2.980886177,
-      "history": [],
-      "origin": []
+      "status": "blocked",
+      "attempts": 2,
+      "costUsd": 3.5778871199999993,
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement",
+          "workerId": "deepseek-flash",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "eventId": "evt-190",
+          "ts": "2026-11-02T14:31:29.258Z"
+        },
+        {
+          "attempt": 2,
+          "role": "implement",
+          "workerId": "qwen-coder",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "eventId": "evt-192",
+          "ts": "2026-11-02T14:41:38.028Z"
+        }
+      ],
+      "origin": [],
+      "blockedReason": "teto de custo da feature atingido"
     },
     {
       "id": "F-1.04",
@@ -977,10 +997,36 @@
       "dependsOn": [
         "F-1.10"
       ],
-      "status": "failing",
-      "attempts": 0,
-      "costUsd": 2.3812518700000007,
-      "history": [],
+      "status": "passing",
+      "attempts": 1,
+      "costUsd": 2.9671237700000006,
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement_hard",
+          "workerId": "opus",
+          "outcome": "success",
+          "failedGates": [],
+          "eventId": "evt-188",
+          "ts": "2026-11-02T14:20:50.049Z"
+        }
+      ],
+      "authors": {
+        "implementer": "opus",
+        "attempts": [
+          "opus ✔"
+        ],
+        "testWriter": "sonnet",
+        "reviewers": [
+          "code gemini 10"
+        ],
+        "files": [
+          "app/functions/src/__tests__/deleteAccount.test.ts",
+          "app/functions/src/index.ts",
+          "app/functions/vitest.config.ts",
+          "app/package.json"
+        ]
+      },
       "origin": []
     },
     {

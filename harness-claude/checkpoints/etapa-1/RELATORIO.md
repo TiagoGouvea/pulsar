@@ -2,7 +2,7 @@
 
 **Preview:** deploy do preview falhou: /bin/sh: firebase: command not found
 
-## Features entregues (4/12)
+## Features entregues (5/12)
 
 - **F-1.01** Modelo de domínio de indicadores e registros (puro) — 2 tentativa(s), US$ 3.00 — critérios: AC-05, AC-06, AC-08
   - Feito por **haiku** · tentativas: kimi ✖ review_rejected → haiku ✔ · testes: sonnet · revisão: code glm-flash 10
@@ -32,11 +32,17 @@
   - [x] yarn --cwd app test:functions roda testes de functions contra emuladores
   - [x] Região padrão southamerica-east1
   - [x] Build das functions em functions/lib ignorado pelo lint/format
+- **F-1.11** Function deleteAccount: exclusão integral — 1 tentativa(s), US$ 2.97 — critérios: AC-04
+  - Feito por **opus** · tentativas: opus ✔ · testes: sonnet · revisão: code gemini 10
+  - Arquivos: `app/functions/src/__tests__/deleteAccount.test.ts`, `app/functions/src/index.ts`, `app/functions/vitest.config.ts`, `app/package.json`
+  - [x] Após a chamada não resta documento sob users/{uid} nem em internal/ para o UID
+  - [x] Usuário removido do Auth somente depois da limpeza
+  - [x] Conta Google/e-mail sem login recente recebe erro requires-recent-login
+  - [x] Um UID não consegue excluir outro
 
-## Bloqueadas (2)
+## Bloqueadas (1)
 
 - **F-1.03** Acesso anônimo automático e documento do usuário: teto de custo da feature atingido
-- **F-1.11** Function deleteAccount: exclusão integral: limite de 5 tentativas atingido
 
 ## Pendentes (6)
 
@@ -49,9 +55,9 @@
 
 ## Custo e tempo
 
-- Custo da etapa: US$ 15.12 (teto US$ 18)
-- Custo acumulado: US$ 31.51 (teto US$ 68)
-- Tempo decorrido: 19.7 h · chamadas registradas: 99
+- Custo da etapa: US$ 16.98 (teto US$ 18)
+- Custo acumulado: US$ 33.37 (teto US$ 68)
+- Tempo decorrido: 20.7 h · chamadas registradas: 109
 
 ## Workers (implementação)
 
@@ -59,13 +65,13 @@
 |---|---|---|
 | glm-flash | 2 | 50% |
 | minimax | 4 | 0% |
-| opus | 16 | 13% |
+| opus | 17 | 18% |
 | kimi | 2 | 0% |
 | sonnet | 5 | 0% |
 | kimi-pro | 4 | 0% |
 | haiku | 5 | 20% |
-| deepseek-flash | 2 | 0% |
-| qwen-coder | 1 | 0% |
+| deepseek-flash | 3 | 0% |
+| qwen-coder | 2 | 0% |
 
 ## Suíte completa
 
@@ -73,14 +79,13 @@ Todos os gates obrigatórios passaram em 1-base.
 
 ## Avaliação visual completa
 
-Nota 9.1 — aprovado
+Nota 9 — aprovado
 
 
 ## Aprendizados
 
-- **Violações de arquivos protegidos (G7)** foram o maior ralo de tentativas na etapa 1 (F-1.08, F-1.03, F-1.10): até opus e sonnet editaram testes protegidos.
-- **G8** falhou repetidamente em F-1.01, F-1.02 e F-1.10; as tentativas repetiram a abordagem sem ler o relatório do gate.
-- **F-1.11** foi rejeitada em revisão 5 vezes seguidas e ficou bloqueada; F-1.03 também bloqueou por G7.
-- Modelos baratos (minimax, haiku, glm-flash) quase sempre falham em implementação; o custo real está nas escaladas para opus.
-- Lições L-025 a L-029 são decisões de produto já incorporadas à spec e foram aposentadas por nunca terem ajudado; L-031 duplica L-030 e L-032 não tem relação com o evento citado.
-- Os smoke tests de workers passaram quase todos (kimi-pro falhou uma vez).
+- **Violações de arquivos protegidos (G7)** consumiram todas as tentativas de F-1.03, F-1.08 e F-1.10, inclusive com opus. F-1.08 e F-1.10 só fecharam depois de novos testes do test_writer.
+- **G8** falhou em F-1.01, F-1.02 e F-1.10 em várias tentativas com modelos fortes. A causa provável foi o ambiente (Node e `yarn install` em `functions/`), não o código.
+- **Revisão:** os rejeitos repetidos em F-1.11 pararam quando o revisor mudou para gemini (evt-187/188). F-1.03 continua bloqueada, com rejeições de deepseek-flash e qwen-coder (evt-165, evt-190, evt-192).
+- **Modelos baratos** (minimax, haiku) falharam em infraestrutura de functions. Para essas features, vale ir direto a implement_hard.
+- **Lições de decisão do humano (L-006 a L-029)** têm helpedRate baixo e já estão refletidas nas specs, por isso foram aposentadas.

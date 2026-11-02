@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T14:20:50.026Z",
+  "workerId": "gemini",
+  "role": "review_code",
+  "featureId": "F-1.11",
+  "stage": 1,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.080676,
+  "durationMs": 121688,
+  "usage": {
+    "inputTokens": 48552,
+    "outputTokens": 6180,
+    "cachedTokens": 281160,
+    "costUsd": 0.080676
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"pass\": true,\n  \"score\": 10,\n  \"issues\": []\n}\n```"
+}

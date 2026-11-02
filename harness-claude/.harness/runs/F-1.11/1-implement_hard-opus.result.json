@@ -1,20 +1,20 @@
 {
-  "ts": "2026-11-02T13:24:52.363Z",
+  "ts": "2026-11-02T14:17:22.890Z",
   "workerId": "opus",
   "role": "implement_hard",
   "featureId": "F-1.11",
   "stage": 1,
   "attempt": 1,
   "outcome": "success",
-  "costUsd": 0.3622467999999999,
-  "durationMs": 126559,
+  "costUsd": 0.3088427999999999,
+  "durationMs": 69556,
   "usage": {
-    "inputTokens": 30168,
-    "outputTokens": 6025,
-    "cachedTokens": 454674,
-    "costUsd": 0.3622467999999999
+    "inputTokens": 27818,
+    "outputTokens": 4694,
+    "cachedTokens": 379494,
+    "costUsd": 0.3088427999999999
   },
   "exitCode": 0,
   "timedOut": false,
-  "finalTail": "te:** contas Google ou e-mail com login há mais de 5 minutos recebem `failed-precondition` com a mensagem `auth/requires-recent-login`. Contas anônimas não têm essa exigência.\n- **Ordem da limpeza:** `recursiveDelete` em `users/{uid}` (todas as subcoleções) e em `internal/{uid}`. Por último, `deleteUser` no Auth, que só roda se a limpeza deu certo.\n- **Idempotente:** chamar de novo depois da exclusão retorna 200, porque `recursiveDelete` não falha em caminho vazio e `auth/user-not-found` é ignorado.\n\n**Outras alterações:**\n- Mudei o script `test:functions` em `app/package.json` para subir também os emuladores de Auth e Firestore (`--only auth,firestore,functions`). Antes ele subia só o de Functions, e o teste fala direto com os outros dois.\n- Registrei um risco em `.harness/inbox/risks.jsonl`: a função só apaga `users/{uid}` e `internal/{uid}`. Se no futuro algum dado do usuário for gravado em outro caminho, ele fica órfão.\n- O Bash recusou o append nesse arquivo; como ele existia e estava vazio, usei Write. Nenhuma linha anterior foi perdida.\n\n```json\n{\n  \"summary\": \"Callable v2 deleteAccount (southamerica-east1): requires auth, requires auth_time <= 5 min for non-anonymous accounts (failed-precondition 'auth/requires-recent-login'), recursively deletes users/{uid} and internal/{uid} using only the token UID, then deletes the Auth user last; idempotent (ignores auth/user-not-found). test:functions now also starts the Auth and Firestore emulators the test needs.\",\n  \"filesChanged\": [\n    \"app/functions/src/deleteAccount.ts\",\n    \"app/functions/src/index.ts\",\n    \"app/package.json\",\n    \".harness/inbox/risks.jsonl\"\n  ],\n  \"testsRun\": [\n    \"yarn test:functions (8/8 deleteAccount tests passed, 12/12 total)\",\n    \"yarn lint\",\n    \"yarn typecheck\",\n    \"yarn format:check\",\n    \"yarn test:unit\"\n  ],\n  \"confidence\": \"high\",\n  \"notes\": \"No UI, so no e2e/routes changes. Recorded risk: user data stored by UID outside users/{uid} or internal/{uid} would not be deleted.\"\n}\n```"
+  "finalTail": "P 401).\n- **Which account gets deleted:** only the caller's, taken from the verified login token. Any `uid` or `userId` sent in the request is ignored.\n- **Recent login:** Google and e-mail accounts must have logged in within the last 5 minutes. Otherwise the call fails with the message `requires-recent-login` and nothing is deleted. Anonymous accounts skip this check.\n- **Order of deletion:** first everything under `users/{uid}`, then the user's server-only documents under `internal/`, and only then the user in Auth. One test checks this ordering continuously while 400+ documents are being deleted.\n- **Calling twice:** if the Auth user is already gone, the call still succeeds.\n\nOne design choice to check: there is no list of the user's documents under `internal/`. The function looks through every area under `internal/` and deletes both `internal/{area}/users/{uid}` (the layout the tests use) and `internal/{area}/{uid}` (the `userQuotas` layout in the architecture doc). If a future area stores per-user data some other way, it would be left behind, so I logged that in `.harness/inbox/risks.jsonl`.\n\n```json\n{\n  \"summary\": \"Implemented Cloud Function v2 callable deleteAccount (southamerica-east1): requires auth; non-anonymous accounts need auth_time <= 5 min, else HttpsError failed-precondition 'requires-recent-login'; UID only from verified token; recursiveDelete of users/{uid}, then per-UID docs/collections under every internal/{area}, then Auth user last (user-not-found tolerated for idempotency).\",\n  \"filesChanged\": [\"app/functions/src/index.ts\", \".harness/inbox/risks.jsonl\"],\n  \"testsRun\": [\"yarn test:functions (12/12 passed, incl. 8 deleteAccount tests)\", \"yarn lint\", \"yarn typecheck\", \"yarn format:check\", \"yarn test:unit (86/86 passed)\"],\n  \"confidence\": \"high\",\n  \"notes\": \"internal/ cleanup covers internal/{area}/users/{uid} and internal/{area}/{uid} (the architecture doc's internal/userQuotas/{uid}); risk logged for future layouts. No UI/routes changed.\"\n}\n```"
 }
