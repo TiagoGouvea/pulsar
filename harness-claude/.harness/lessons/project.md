@@ -12,9 +12,9 @@
   evidence:
     - evt-24
   added: 2026-10-25
-  hits: 15
-  helped: 8
-  helpedRate: 0.5333333333333333
+  hits: 23
+  helped: 10
+  helpedRate: 0.43478260869565216
   status: active
 - id: L-002
   scope:
@@ -84,10 +84,10 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-1
   added: 2026-10-27
-  hits: 0
-  helped: 0
-  helpedRate: null
-  status: active
+  hits: 8
+  helped: 2
+  helpedRate: 0.25
+  status: retired
 - id: L-007
   scope:
     roles: []
@@ -99,10 +99,10 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-2
   added: 2026-10-27
-  hits: 0
-  helped: 0
-  helpedRate: null
-  status: active
+  hits: 8
+  helped: 2
+  helpedRate: 0.25
+  status: retired
 - id: L-008
   scope:
     roles: []
@@ -113,10 +113,10 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-3
   added: 2026-10-27
-  hits: 0
-  helped: 0
-  helpedRate: null
-  status: active
+  hits: 8
+  helped: 2
+  helpedRate: 0.25
+  status: retired
 - id: L-009
   scope:
     roles: []
@@ -128,10 +128,10 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-4
   added: 2026-10-27
-  hits: 0
-  helped: 0
-  helpedRate: null
-  status: active
+  hits: 8
+  helped: 2
+  helpedRate: 0.25
+  status: retired
 - id: L-010
   scope:
     roles: []
@@ -142,9 +142,9 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-5
   added: 2026-10-27
-  hits: 0
-  helped: 0
-  helpedRate: null
+  hits: 6
+  helped: 2
+  helpedRate: 0.3333333333333333
   status: active
 - id: L-011
   scope:
@@ -157,9 +157,9 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-6
   added: 2026-10-27
-  hits: 0
-  helped: 0
-  helpedRate: null
+  hits: 6
+  helped: 2
+  helpedRate: 0.3333333333333333
   status: active
 - id: L-012
   scope:
@@ -171,9 +171,9 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-7
   added: 2026-10-27
-  hits: 0
-  helped: 0
-  helpedRate: null
+  hits: 6
+  helped: 2
+  helpedRate: 0.3333333333333333
   status: active
 - id: L-013
   scope:
@@ -187,9 +187,9 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-8
   added: 2026-10-27
-  hits: 0
-  helped: 0
-  helpedRate: null
+  hits: 6
+  helped: 2
+  helpedRate: 0.3333333333333333
   status: active
 - id: L-014
   scope:
@@ -202,9 +202,9 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-9
   added: 2026-10-27
-  hits: 0
-  helped: 0
-  helpedRate: null
+  hits: 6
+  helped: 2
+  helpedRate: 0.3333333333333333
   status: active
 - id: L-015
   scope:
@@ -217,9 +217,9 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-10
   added: 2026-10-27
-  hits: 0
-  helped: 0
-  helpedRate: null
+  hits: 3
+  helped: 1
+  helpedRate: 0.3333333333333333
   status: active
 - id: L-016
   scope:
@@ -231,9 +231,9 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-11
   added: 2026-10-27
-  hits: 0
-  helped: 0
-  helpedRate: null
+  hits: 3
+  helped: 1
+  helpedRate: 0.3333333333333333
   status: active
 - id: L-017
   scope:
@@ -244,9 +244,9 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-12
   added: 2026-10-27
-  hits: 0
-  helped: 0
-  helpedRate: null
+  hits: 3
+  helped: 1
+  helpedRate: 0.3333333333333333
   status: active
 - id: L-018
   scope:
@@ -258,9 +258,9 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-13
   added: 2026-10-27
-  hits: 0
-  helped: 0
-  helpedRate: null
+  hits: 3
+  helped: 1
+  helpedRate: 0.3333333333333333
   status: active
 - id: L-019
   scope:
@@ -273,9 +273,9 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-14
   added: 2026-10-27
-  hits: 0
-  helped: 0
-  helpedRate: null
+  hits: 3
+  helped: 1
+  helpedRate: 0.3333333333333333
   status: active
 - id: L-020
   scope:
@@ -288,9 +288,9 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-15
   added: 2026-10-27
-  hits: 0
-  helped: 0
-  helpedRate: null
+  hits: 3
+  helped: 1
+  helpedRate: 0.3333333333333333
   status: active
 - id: L-021
   scope:
@@ -303,9 +303,9 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-16
   added: 2026-10-27
-  hits: 0
-  helped: 0
-  helpedRate: null
+  hits: 3
+  helped: 1
+  helpedRate: 0.3333333333333333
   status: active
 - id: L-022
   scope:
@@ -317,9 +317,9 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-17
   added: 2026-10-27
-  hits: 0
-  helped: 0
-  helpedRate: null
+  hits: 3
+  helped: 1
+  helpedRate: 0.3333333333333333
   status: active
 - id: L-023
   scope:
@@ -334,9 +334,9 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-18
   added: 2026-10-27
-  hits: 0
-  helped: 0
-  helpedRate: null
+  hits: 3
+  helped: 1
+  helpedRate: 0.3333333333333333
   status: active
 - id: L-024
   scope:
@@ -348,9 +348,9 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-19
   added: 2026-10-27
-  hits: 0
-  helped: 0
-  helpedRate: null
+  hits: 3
+  helped: 1
+  helpedRate: 0.3333333333333333
   status: active
 - id: L-025
   scope:
@@ -362,9 +362,9 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-20
   added: 2026-10-27
-  hits: 0
+  hits: 2
   helped: 0
-  helpedRate: null
+  helpedRate: 0
   status: active
 - id: L-026
   scope:
@@ -377,9 +377,9 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-21
   added: 2026-10-27
-  hits: 0
+  hits: 2
   helped: 0
-  helpedRate: null
+  helpedRate: 0
   status: active
 - id: L-027
   scope:
@@ -390,9 +390,9 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-22
   added: 2026-10-27
-  hits: 0
+  hits: 2
   helped: 0
-  helpedRate: null
+  helpedRate: 0
   status: active
 - id: L-028
   scope:
@@ -407,9 +407,9 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-23
   added: 2026-10-27
-  hits: 0
+  hits: 2
   helped: 0
-  helpedRate: null
+  helpedRate: 0
   status: active
 - id: L-029
   scope:
@@ -423,6 +423,23 @@
   evidence:
     - checkpoints/etapa-0/DUVIDAS.md#Q-24
   added: 2026-10-27
+  hits: 2
+  helped: 0
+  helpedRate: 0
+  status: active
+- id: L-030
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags: []
+  rule: Ajustar 'engines.node' para '^22' no functions/package.json para maior
+    flexibilidade e garantir a instalação das dependências (yarn install) dentro
+    do diretório 'functions/' antes de iniciar qualquer script de teste ou
+    emulador.
+  evidence:
+    - evt-157
+  added: 2026-11-02
   hits: 0
   helped: 0
   helpedRate: null

@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T12:53:17.034Z",
+  "workerId": "deepseek-flash",
+  "role": "implement",
+  "featureId": "F-1.10",
+  "stage": 1,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.01143581,
+  "durationMs": 218778,
+  "usage": {
+    "inputTokens": 70565,
+    "outputTokens": 12093,
+    "cachedTokens": 541568,
+    "costUsd": 0.01143581
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "Implementado o workspace de Cloud Functions com emulador.\n\n- `app/functions` criado como workspace TypeScript/Node 22, com `firebase-functions` v2 e `firebase-admin`.\n- `healthcheck` interno exportado com região padrão `southamerica-east1`.\n- `firebase.json` registra `functions` e o emulador na porta `5001`.\n- `test:functions` compila as functions e roda Vitest contra os emuladores de Functions + Firestore.\n- `e2e:serve` agora sobe também o emulador de Functions.\n- `functions/lib` ignorado por lint, format e git.\n\n```json\n{\n  \"summary\": \"Workspace de Cloud Functions em TypeScript/Node 22 com firebase-functions v2, healthcheck interno em southamerica-east1, emulador de functions no firebase.json, script test:functions e e2e:serve atualizado.\",\n  \"filesChanged\": [\n    \"app/functions/package.json\",\n    \"app/functions/tsconfig.json\",\n    \"app/functions/.gitignore\",\n    \"app/functions/src/config.ts\",\n    \"app/functions/src/index.ts\",\n    \"app/vitest.functions.config.ts\",\n    \"app/firebase.json\",\n    \"app/package.json\",\n    \"app/yarn.lock\"\n  ],\n  \"testsRun\": [\n    \"yarn build:functions\",\n    \"yarn test:functions\",\n    \"yarn lint\",\n    \"yarn typecheck\",\n    \"yarn format:check\",\n    \"yarn test:unit\",\n    \"yarn test:e2e\"\n  ],\n  \"confidence\": \"high\",\n  \"notes\": \"Nenhum teste protegido alterado. Feature sem UI, então nenhuma rota de tela foi adicionada. Todos os testes executados passaram.\"\n}\n```"
+}

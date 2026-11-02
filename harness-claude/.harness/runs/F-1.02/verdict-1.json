@@ -1,0 +1,16 @@
+[
+  {
+    "kind": "code",
+    "pass": true,
+    "score": 9,
+    "issues": [
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/lib/time.ts:42",
+        "descricao": "formatDate aceita localDate como string, mas a interpreta como meia-noite UTC. Em São Paulo, formatDate('2026-10-25') retorna 24/10/2026.",
+        "sugestao": "Fornecer formatação própria para chaves de dia ou rejeitá-las explicitamente em formatDate; testar o caso em fusos negativos."
+      }
+    ],
+    "workerId": "codex-mid"
+  }
+]

@@ -159,15 +159,7 @@ design/preenchimento_r_pido/screen.png
 - 2026-11-02T12:20 ⛔ F-1.01 BLOQUEADA: test_writer não produziu testes de aceite │ features 0/12
 - 2026-11-02T12:20 ✖ interrompido por SIGINT em STAGE_RUNNING: rode harness resume para continuar
 - 2026-11-02T12:22 ▶ etapa 1 (Base) │ features 0/12 │ 0 bloqueadas │ US$ 6.32/10 │ branch 1-base
+- 2026-11-02T12:23 ⛔ F-1.02 BLOQUEADA: test_writer não produziu testes de aceite │ features 0/12
+- 2026-11-02T12:23 ✖ interrompido por SIGINT em STAGE_RUNNING: rode harness resume para continuar
+- 2026-11-02T12:25 ▶ etapa 1 (Base) │ features 0/12 │ 0 bloqueadas │ US$ 6.78/10 │ branch 1-base
 
-
-
-## Tentativa anterior rejeitada
-Seus testes têm erros em `yarn typecheck` que não vêm de código ainda não implementado, e foram descartados. Corrija os tipos (dados inválidos de propósito: use cast explícito, ex. `as never`). Um crash interno do tsc ("reading 'kind'") costuma vir de uniões de tipos passadas a APIs do Firestore.
-```
-yarn run v1.23.0-20220130.1630
-$ tsc --noEmit -p tsconfig.json
-/bin/sh: tsc: command not found
-error Command failed with exit code 127.
-info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
-```

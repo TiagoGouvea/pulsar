@@ -13,3 +13,8 @@
 {"ts":"2026-10-25T18:16:06.116Z","stage":0,"featureId":"F-0.07","kind":"ui","workerId":"gemini-flash-or","pass":true,"score":9.5}
 {"ts":"2026-10-26T10:45:21.579Z","stage":0,"featureId":"F-0.fix-1","kind":"code","workerId":"codex-mid","pass":false,"score":0}
 {"ts":"2026-10-26T10:52:32.667Z","stage":0,"featureId":"F-0.fix-1","kind":"code","workerId":"codex-mid","pass":true,"score":10}
+{"ts":"2026-11-02T12:29:14.424Z","stage":1,"featureId":"F-1.02","kind":"code","workerId":"codex-mid","pass":true,"score":9}
+{"ts":"2026-11-02T12:35:15.166Z","stage":1,"featureId":"F-1.08","kind":"code","workerId":"codex-mid","pass":false,"score":5}
+{"ts":"2026-11-02T12:37:38.077Z","stage":1,"featureId":"F-1.08","kind":"code","workerId":"codex-mid","pass":true,"score":10}
+{"ts":"2026-11-02T12:44:45.598Z","stage":1,"featureId":"F-1.01","kind":"code","workerId":"haiku","pass":false,"score":3}
+{"ts":"2026-11-02T12:48:44.233Z","stage":1,"featureId":"F-1.01","kind":"code","workerId":"glm-flash","pass":true,"score":10}

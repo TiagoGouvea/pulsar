@@ -13,16 +13,16 @@ Regras:
 - Rode os testes relevantes antes de terminar. Termine com o bloco ```json final pedido no seu papel
   (padrão: {"summary","filesChanged","testsRun","confidence":"low|med|high","notes"}).
 LIÇÕES RELEVANTES:
-- [L-035] No harness, em privacy-leak.ts, troque page.evaluate(fn) por page.evaluate(fn.toString()) (string, não função) ou injete globalThis.__name = (f) => f via page.addInitScript antes do evaluate. Enquanto o harness não for corrigido, nenhuma feature passará no G8 se o gate usar function expression.
-- [L-036] Nunca passe closures/funções para `page.evaluate` — sempre use strings (ex.: `page.evaluate('window.__myHelper(arg)')`) para evitar que o esbuild keepNames injete `__name` no contexto do browser. Se precisar passar argumentos, use o segundo parâmetro de `page.evaluate(stringExpr, arg)`.
-- [L-001] Cobertura (G4): não passe --coverage no script do package.json se a config do vitest já ativa coverage, para não duplicar a configuração. Touch targets (G10): todo controle interativo (radios, switch, input) deve ter pelo menos 44px, por exemplo min-w-[44px] e h-11.
-- [L-030] Reexecute o gate sem alterar time.ts. '__name is not defined' em page.evaluate é artefato do transform Babel do Playwright, não bug da feature. Se persistir, pin a versão do @playwright/test no yarn.lock ou remova o gatilho do helper (ex.: inline o callback de page.evaluate / defina um shim global __name) e reporte; não caia na armadilha de depurar o código da feature.
-- [L-031] Rode `yarn test:e2e` localmente para confirmar se o erro reproduz. Se sim, reescreva `visibleTextOutsideAllowList` e `hasHorizontalOverflow` em `app/e2e/support.ts` usando `page.evaluate('string')` em vez de `page.evaluate(() => {...})` — a string não passa pelo esbuild e elimina o risco de vazamento de helpers. Verifique também se o `e2e:serve` está 100% funcional (emuladores, seed, preview). Se o erro não reproduzir localmente, é provável que o ambiente de gates esteja com cache de build stale ou versão do Playwright diferente.
-- [L-032] 1) Antes de declarar gates passando, rode também test:e2e. 2) Se o erro persistir, troque page.evaluate(() => {...}) por page.evaluate('(() => {...})()') em support.ts (função como string evita o transform do esbuild). 3) Considere pinar a versão do Playwright em vez de usar ^1.53.0 que resolveu para 1.64.1.
-- [L-033] Não mexa no app para G8: é bug do harness (fora do worktree). Escale/registre como bug de harness e, em qualquer código sob tsx/esbuild, passe string para page.evaluate — nunca arrow com arrow aninhada.
-- [L-034] Evite passar funções para page.evaluate quando o bundle usa esbuild keepNames: use page.evaluate com string (ex.: reescrever e2e/support.ts para 'document.body…' em string) ou defina globalThis.__name antes. Rode yarn test:e2e antes de entregar.
+- [L-006] Decisão do humano: O que conta como 'alguns usos' para o convite de instalar a PWA? → N aberturas do app — 2 aberturas, repetir nos dias seguintes ao usar
+- [L-007] Decisão do humano: O que é 'evidência nova material' para uma hipótese com dislike reaparecer? → >= 7 dias pareados a mais que a versão descartada ou inversão do sinal do efeito — >= 7 dias pareados a mais que a versão descartada ou inversão do sinal do efeito (padrão)
 - [L-008] Decisão do humano: Com quais dias a comparação a partir do 2º dia é feita? → Média dos dias anteriores — Média dos dias anteriores; talvez 7 ou 10 dias
 - [L-009] Decisão do humano: Como definir as duas janelas consecutivas de 7 dias das tendências? → hoje..hoje-6 vs. hoje-7..hoje-13 em dias corridos do localDate — hoje..hoje-6 vs. hoje-7..hoje-13 em dias corridos do localDate (padrão)
+- [L-010] Decisão do humano: Tendências podem ser geradas para Fatores? → Não; só Resultados numéricos/escala (spec 6.2 'Tendência de um resultado') — Não; só Resultados numéricos/escala (spec 6.2 'Tendência de um resultado') (padrão)
+- [L-011] Decisão do humano: Como ordenar os cartões elegíveis? → Razão efeito/limiar desc, depois dias pareados desc, depois hypothesisKey asc — Razão efeito/limiar desc, depois dias pareados desc, depois hypothesisKey asc (padrão)
+- [L-012] Decisão do humano: Quais níveis de evidência rotular? → Só 'Descrição' e 'Possível associação'; sem 'sinal consistente' — Só 'Descrição' e 'Possível associação'; sem 'sinal consistente' (padrão)
+- [L-013] Decisão do humano: O que o snapshot de like copia? → Tokens do texto, métricas, amostra, período e nome/sigla/emoji dos indicadores no momento; removível, nunca editável — Tokens do texto, métricas, amostra, período e nome/sigla/emoji dos indicadores no momento; removível, nunca editável (padrão)
+- [L-014] Decisão do humano: Limites de tamanho de campos? → Sigla até 4 (exibida como digitada), nome 60, unidade 20, observação 500, opções ordinais 2-7 — Sigla até 4 (exibida como digitada), nome 60, unidade 20, observação 500, opções ordinais 2-7 (padrão)
+- [L-001] Cobertura (G4): não passe --coverage no script do package.json se a config do vitest já ativa coverage, para não duplicar a configuração. Touch targets (G10): todo controle interativo (radios, switch, input) deve ter pelo menos 44px, por exemplo min-w-[44px] e h-11.
 
 
 # Papel: implementador (tentativa 1)
@@ -75,7 +75,7 @@ app/tests/rules/users.test.ts
   ],
   "status": "in_progress",
   "attempts": 0,
-  "costUsd": 0,
+  "costUsd": 1.3204914,
   "origin": []
 }
 
@@ -159,6 +159,23 @@ design/preenchimento_r_pido/screen.png
 - 2026-10-27T21:53 etapa 0 aprovada (commits em 0-setup; merge e branches da próxima etapa ficam com o humano)
 - 2026-11-01T18:13 ▶ etapa 1 (Base) │ features 0/12 │ 0 bloqueadas │ US$ 0.00/10 │ branch 1-base
 - 2026-11-01T18:38 ⛔ F-1.02 BLOQUEADA: limite de 5 tentativas atingido │ features 0/12
+- 2026-11-01T18:42 ⛔ F-1.01 BLOQUEADA: limite de 5 tentativas atingido │ features 0/12
+- 2026-11-01T18:52 ⛔ F-1.08 BLOQUEADA: limite de 5 tentativas atingido │ features 0/12
+- 2026-11-01T19:01 ⛔ F-1.10 BLOQUEADA: limite de 5 tentativas atingido │ features 0/12
+- 2026-11-01T19:02 ▶ etapa 1 (Base) │ features 0/13 │ 4 bloqueadas │ US$ 5.46/10 │ branch 1-base
+- 2026-11-01T19:03 ⛔ F-1.fix-1 BLOQUEADA: test_writer não produziu testes de aceite │ features 0/13
+- 2026-11-01T19:04 ✖ interrompido por SIGINT em STAGE_GATES: rode harness resume para continuar
+- 2026-11-02T12:18 ▶ etapa 1 (Base) │ features 0/12 │ 0 bloqueadas │ US$ 5.58/10 │ branch 1-base
+- 2026-11-02T12:19 ⛔ F-1.02 BLOQUEADA: test_writer não produziu testes de aceite │ features 0/12
+- 2026-11-02T12:20 ⛔ F-1.01 BLOQUEADA: test_writer não produziu testes de aceite │ features 0/12
+- 2026-11-02T12:20 ✖ interrompido por SIGINT em STAGE_RUNNING: rode harness resume para continuar
+- 2026-11-02T12:22 ▶ etapa 1 (Base) │ features 0/12 │ 0 bloqueadas │ US$ 6.32/10 │ branch 1-base
+- 2026-11-02T12:23 ⛔ F-1.02 BLOQUEADA: test_writer não produziu testes de aceite │ features 0/12
+- 2026-11-02T12:23 ✖ interrompido por SIGINT em STAGE_RUNNING: rode harness resume para continuar
+- 2026-11-02T12:25 ▶ etapa 1 (Base) │ features 0/12 │ 0 bloqueadas │ US$ 6.78/10 │ branch 1-base
+- 2026-11-02T12:29 ✔ F-1.02 passing — Utilitários de tempo (UTC, localDate do navegador, dia de Brasília) (worker glm-flash, 1 tentativa(s), US$ 2.40) │ features 1/12
+- 2026-11-02T12:29 ✖ interrompido por SIGINT em STAGE_RUNNING: rode harness resume para continuar
+- 2026-11-02T12:29 ▶ etapa 1 (Base) │ features 1/12 │ 0 bloqueadas │ US$ 7.25/10 │ branch 1-base
 
 
 ## Regras adicionais (feature crítica)

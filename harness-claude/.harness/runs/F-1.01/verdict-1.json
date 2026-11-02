@@ -1,0 +1,46 @@
+[
+  {
+    "kind": "code",
+    "pass": false,
+    "score": 3,
+    "issues": [
+      {
+        "severidade": "blocker",
+        "arquivo": "app/firestore.rules",
+        "descricao": "O diff troca as regras de users/{uid} por `allow read, write: if isOwner(uid)`. Isso remove a validação de schema (campos permitidos e tipos), o bloqueio de leitura de campos administrativos, o `allow delete: if false` e a proteção de documentos com campos administrativos mal posicionados. Nada disso faz parte de F-1.01, que é um domínio puro sem Firebase.",
+        "sugestao": "Reverter app/firestore.rules para a versão anterior ao diff. Se a mudança for necessária, abrir feature própria com revisão de segurança, sem misturá-la ao domínio de indicadores."
+      },
+      {
+        "severidade": "blocker",
+        "arquivo": "app/tests/rules/users.test.ts e app/tests/rules/usersAdminFields.test.ts",
+        "descricao": "Os dois testes protegidos de regras de segurança foram excluídos inteiros. Isso enfraquece a cobertura de isolamento, validação de schema, campos administrativos e internal/**. O G7 (protected-tests) está marcado como ok, mas a exclusão viola a regra de não enfraquecer asserts.",
+        "sugestao": "Restaurar os dois arquivos a partir do commit anterior e manter as regras originais, de modo que os testes voltem a passar sem alteração."
+      },
+      {
+        "severidade": "major",
+        "arquivo": "app/src/domain/entry.ts",
+        "descricao": "ValidationError e ValidationResult são redeclarados aqui, com a mesma forma que já existe em indicator.ts. Isso é duplicação, contra a regra de centralização do projeto.",
+        "sugestao": "Importar ValidationError e ValidationResult de './indicator' (ou mover ambos para um módulo compartilhado, por exemplo src/domain/validation.ts) e remover a cópia de entry.ts."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/domain/entry.ts",
+        "descricao": "Os ramos de `numeric` e `scale` em validateEntryValue repetem a checagem de número finito. As mensagens de erro e os limites também são construídos de forma repetida, o que deixa a função mais longa do que precisa.",
+        "sugestao": "Extrair uma checagem comum de número finito e tratar numeric/scale no mesmo bloco, com a verificação de faixa específica de cada tipo."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/scripts/seed-data.ts",
+        "descricao": "Os novos `import type` foram colocados depois de declarações (`SEED_TZ_OFFSET`), o que quebra a convenção de imports no topo do arquivo.",
+        "sugestao": "Mover os imports para o topo do arquivo, antes de qualquer declaração."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/.prettierignore",
+        "descricao": "O novo arquivo app/src/domain/__tests__/indicator.test.ts foi adicionado ao .prettierignore. Como é um arquivo novo e não um teste protegido, essa exclusão não tem justificativa e tira o teste da formatação automática.",
+        "sugestao": "Remover a linha do .prettierignore e formatar o arquivo normalmente."
+      }
+    ],
+    "workerId": "haiku"
+  }
+]

@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T12:45:47.395Z",
+  "workerId": "haiku",
+  "role": "implement",
+  "featureId": "F-1.01",
+  "stage": 1,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.01927049,
+  "durationMs": 61714,
+  "usage": {
+    "inputTokens": 49866,
+    "outputTokens": 12177,
+    "cachedTokens": 694944,
+    "costUsd": 0.01927049
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": " de finito feita uma vez. A faixa continua específica de cada tipo, e as mensagens e a semântica são as mesmas.\n- **Imports (minor):** os `import type` de `scripts/seed-data.ts` foram movidos para antes de `SEED_TZ_OFFSET`.\n- **`.prettierignore` (minor), não aplicado como pedido:** removi a linha e o `format:check` passou a reprovar `indicator.test.ts`. Formatar o arquivo significaria editar um teste protegido, o que invalidaria a tentativa. Restaurei a linha. O arquivo já é tratado como exceção no `.prettierignore` (mesmo caso do `design-system.f002`). Registrei o conflito em `.harness/inbox/risks.jsonl`. Quem decide é você: formatar o teste numa tentativa autorizada ou aceitar a exceção.\n- **Blockers (`firestore.rules` e `tests/rules/*`):** não se aplicam a esta tentativa. O diff atual não toca nenhum dos dois arquivos.\n\n**Estado dos gates**\n- `yarn lint`: passou, zero warnings.\n- `yarn typecheck`: passou.\n- `yarn format:check`: passou.\n- `yarn test:unit`: 86/86 passaram, incluindo os 13 de `indicator.test.ts` (protegido, não alterado) e os 9 de `entry.test.ts`.\n\n```json\n{\n  \"summary\": \"Dedupe ValidationError/ValidationResult em src/domain/validation.ts; unifica numeric/scale em validateEntryValue; imports do seed-data movidos ao topo. .prettierignore mantém indicator.test.ts (protegido) por conflito com format:check; registrado em risks.jsonl.\",\n  \"filesChanged\": [\n    \"app/src/domain/validation.ts\",\n    \"app/src/domain/indicator.ts\",\n    \"app/src/domain/entry.ts\",\n    \"app/scripts/seed-data.ts\",\n    \".harness/inbox/risks.jsonl\"\n  ],\n  \"testsRun\": [\n    \"yarn lint (ok)\",\n    \"yarn typecheck (ok)\",\n    \"yarn format:check (ok)\",\n    \"yarn test:unit (86/86 ok)\"\n  ],\n  \"confidence\": \"high\",\n  \"notes\": \"Não rodei e2e (sem tela nesta feature). indicator.test.ts (protegido) permanece sem formatação Prettier; exclusão mantida no .prettierignore como exceção de teste protegido, a decidir pelo orquestrador/humano. Nenhuma alteração em firestore.rules ou tests/rules.\"\n}\n```"
+}

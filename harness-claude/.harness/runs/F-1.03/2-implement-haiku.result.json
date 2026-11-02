@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T12:45:01.627Z",
+  "workerId": "haiku",
+  "role": "implement",
+  "featureId": "F-1.03",
+  "stage": 1,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.07726293999999999,
+  "durationMs": 158231,
+  "usage": {
+    "inputTokens": 93450,
+    "outputTokens": 28568,
+    "cachedTokens": 1659098,
+    "costUsd": 0.07726293999999999
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "at:check`: falha em `e2e/anonymous-start.spec.ts` (protegido) e `src/auth/__tests__/AuthProvider.test.tsx`. Ambos já tinham problema de formatação no `HEAD`. Ao rodar o Prettier por engano no teste de auth, reverti a mudança de formatação; o arquivo está idêntico ao `HEAD`, e o protegido também.\n\n**Decisões em aberto** (registradas no inbox)\n- `/dashboard` ainda não existe. Quem já concluiu o onboarding cai em 404 até a feature do dashboard. Nenhum teste cobre esse caminho.\n- Nada grava `onboardingCompleted = true`. Essa escrita fica com a feature do tutorial. Sem ela, `/` nunca leva ao dashboard.\n- O botão \"Tentar novamente\" recarrega a página.\n\n**Risco:** o teste de erro de rede intercepta `**/identitytoolkit.googleapis.com/**`. Ele só passa porque o Auth Emulator serve a API sob esse prefixo de caminho. Se o caminho do emulador mudar, o teste quebra sem deixar a causa clara.\n\nNão fiz commit nem push.\n\n```json\n{\"summary\":\"F-1.03 implementada: AuthProvider com signInAnonymously e users/{uid} criado uma única vez com defaults (transação), SessionGate com estado de carregamento e erro pt-BR (role=alert), / redireciona para /onboarding ou /dashboard, rota /onboarding em routes.json.\",\"filesChanged\":[\"app/src/auth/AuthProvider.tsx\",\"app/src/auth/SessionGate.tsx\",\"app/src/auth/userRepository.ts\",\"app/src/App.tsx\",\"app/e2e/routes.json\",\"app/src/pages/HomePlaceholder.tsx\",\".harness/inbox/questions.jsonl\",\".harness/inbox/risks.jsonl\"],\"testsRun\":[\"yarn lint: ok\",\"yarn typecheck: ok\",\"yarn test:unit: 69/69 ok\",\"yarn test:e2e --project=mobile anonymous-start routes.spec: 8/8 ok\",\"yarn format:check: falha só em e2e/anonymous-start.spec.ts (protegido) e src/auth/__tests__/AuthProvider.test.tsx, ambos pré-existentes no HEAD\"],\"confidence\":\"high\",\"notes\":\"Teste protegido intacto (idêntico ao HEAD). Destino /dashboard ainda não existe (404 até a feature do dashboard). Escrita de onboardingCompleted=true fica para a feature do tutorial. Projeto desktop do e2e não foi rodado.\"}\n```"
+}

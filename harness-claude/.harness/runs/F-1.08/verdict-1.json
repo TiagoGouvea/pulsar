@@ -1,0 +1,16 @@
+[
+  {
+    "kind": "code",
+    "pass": false,
+    "score": 5,
+    "issues": [
+      {
+        "severidade": "blocker",
+        "arquivo": "app/firestore.rules:30",
+        "descricao": "O dono pode ler campos administrativos no documento e excluí-lo por completo, removendo esses campos. Isso viola a restrição de acesso exclusivo pelo Admin SDK.",
+        "sugestao": "Mova os campos administrativos para um documento inacessível ao cliente, negue a exclusão direta do documento do usuário e teste leitura e exclusão com campos administrativos presentes."
+      }
+    ],
+    "workerId": "codex-mid"
+  }
+]

@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T12:57:33.666Z",
+  "workerId": "sonnet",
+  "role": "test_writer",
+  "featureId": "F-1.03",
+  "stage": 1,
+  "attempt": 0,
+  "outcome": "success",
+  "costUsd": 0.1841618,
+  "durationMs": 57545,
+  "usage": {
+    "inputTokens": 31653,
+    "outputTokens": 8419,
+    "cachedTokens": 208473,
+    "costUsd": 0.1841618
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "ro de rede:** as requisições ao Auth emulator são abortadas. Deve aparecer um `role=alert` em pt-BR, sem ir para `/onboarding` nem `/dashboard`, sem texto de sucesso e sem UID gravado.\n\n**`app/src/auth/__tests__/AuthProvider.test.tsx`** usa fakes em memória de `firebase/auth` e `firebase/firestore`. Os asserts olham o conteúdo do store e as chamadas, não detalhes de implementação:\n- estado de carregamento inicial;\n- login anônimo e criação de `users/{uid}` com os defaults;\n- sessão existente sem novo login e sem sobrescrever o documento;\n- documento criado uma só vez ao montar duas vezes;\n- erro de rede em pt-BR, sem usuário e sem documento criado.\n\nOs testes assumem uma API que a spec não define, e o implementador precisa segui-la:\n- `AuthProvider` e `useAuth()` exportados de `src/auth/AuthProvider`, com `useAuth()` retornando `{ user, loading, error }`, onde `error` é uma string em pt-BR.\n- O módulo importa `auth` e `db` de `../lib/firebase`.\n- Os testes usam `doc`, `getDoc`, `setDoc`, `onSnapshot`, `runTransaction` e `serverTimestamp`. Se a implementação usar outra função do SDK, o mock precisa ser ampliado.\n\nNão registrei nada em `questions.jsonl` nem em `risks.jsonl`.\n\n```json\n{\n  \"summary\": \"Wrote acceptance tests for F-1.03: Playwright e2e (anonymous start, UID persistence, users/{uid} defaults created once, / redirect, pt-BR network error) and Vitest AuthProvider unit tests with in-memory Firebase fakes. Not executed (Bash denied mid-task).\",\n  \"filesChanged\": [\n    \"app/e2e/anonymous-start.spec.ts\",\n    \"app/src/auth/__tests__/AuthProvider.test.tsx\"\n  ],\n  \"testsRun\": [],\n  \"confidence\": \"low\",\n  \"notes\": \"Tests unrun: Bash was denied, so typecheck/lint/format and the expected-failure state are unverified. The unit test assumes a useAuth() -> {user, loading, error} API and mocks doc/getDoc/setDoc/onSnapshot/runTransaction/serverTimestamp; the e2e reads state through the Firestore emulator REST API with 'Bearer owner' and the Auth SDK IndexedDB store.\"\n}\n```"
+}

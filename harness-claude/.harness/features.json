@@ -440,10 +440,49 @@
       "dependsOn": [
         "F-0.01"
       ],
-      "status": "failing",
-      "attempts": 0,
-      "costUsd": 1.6379025168,
-      "history": [],
+      "status": "passing",
+      "attempts": 2,
+      "costUsd": 3.0000690511999997,
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement",
+          "workerId": "kimi",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "eventId": "evt-148",
+          "ts": "2026-11-02T12:44:45.613Z"
+        },
+        {
+          "attempt": 2,
+          "role": "implement",
+          "workerId": "haiku",
+          "outcome": "success",
+          "failedGates": [],
+          "eventId": "evt-151",
+          "ts": "2026-11-02T12:48:44.243Z"
+        }
+      ],
+      "authors": {
+        "implementer": "haiku",
+        "attempts": [
+          "kimi ✖ review_rejected",
+          "haiku ✔"
+        ],
+        "testWriter": "sonnet",
+        "reviewers": [
+          "code glm-flash 10"
+        ],
+        "files": [
+          "app/.prettierignore",
+          "app/scripts/seed-data.ts",
+          "app/src/domain/__tests__/entry.test.ts",
+          "app/src/domain/__tests__/indicator.test.ts",
+          "app/src/domain/entry.ts",
+          "app/src/domain/indicator.ts",
+          "app/src/domain/validation.ts"
+        ]
+      },
       "origin": []
     },
     {
@@ -476,10 +515,34 @@
       "dependsOn": [
         "F-0.01"
       ],
-      "status": "failing",
-      "attempts": 0,
-      "costUsd": 1.778273811856,
-      "history": [],
+      "status": "passing",
+      "attempts": 1,
+      "costUsd": 2.3996720118560004,
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement_easy",
+          "workerId": "glm-flash",
+          "outcome": "success",
+          "failedGates": [],
+          "eventId": "evt-137",
+          "ts": "2026-11-02T12:29:14.444Z"
+        }
+      ],
+      "authors": {
+        "implementer": "glm-flash",
+        "attempts": [
+          "glm-flash ✔"
+        ],
+        "testWriter": "sonnet",
+        "reviewers": [
+          "code codex-mid 9"
+        ],
+        "files": [
+          "app/src/lib/__tests__/time.test.ts",
+          "app/src/lib/time.ts"
+        ]
+      },
       "origin": []
     },
     {
@@ -519,7 +582,7 @@
       ],
       "status": "failing",
       "attempts": 0,
-      "costUsd": 0,
+      "costUsd": 2.362345717,
       "history": [],
       "origin": []
     },
@@ -709,10 +772,45 @@
       "dependsOn": [
         "F-0.04"
       ],
-      "status": "failing",
-      "attempts": 0,
-      "costUsd": 1.3204914,
-      "history": [],
+      "status": "passing",
+      "attempts": 2,
+      "costUsd": 2.4167058000000003,
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement_hard",
+          "workerId": "opus",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "eventId": "evt-142",
+          "ts": "2026-11-02T12:35:15.182Z"
+        },
+        {
+          "attempt": 2,
+          "role": "implement_hard",
+          "workerId": "opus",
+          "outcome": "success",
+          "failedGates": [],
+          "eventId": "evt-144",
+          "ts": "2026-11-02T12:37:38.090Z"
+        }
+      ],
+      "authors": {
+        "implementer": "opus",
+        "attempts": [
+          "opus ✖ review_rejected",
+          "opus ✔"
+        ],
+        "testWriter": "sonnet",
+        "reviewers": [
+          "code codex-mid 10"
+        ],
+        "files": [
+          "app/firestore.rules",
+          "app/tests/rules/users.test.ts",
+          "app/tests/rules/usersAdminFields.test.ts"
+        ]
+      },
       "origin": []
     },
     {
@@ -785,7 +883,7 @@
       ],
       "status": "failing",
       "attempts": 0,
-      "costUsd": 0.7210713598440001,
+      "costUsd": 1.0304436348440003,
       "history": [],
       "origin": []
     },

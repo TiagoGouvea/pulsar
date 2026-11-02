@@ -1,0 +1,114 @@
+{
+  "ok": true,
+  "mode": "feature",
+  "stage": 1,
+  "failed": [],
+  "results": [
+    {
+      "id": "G1",
+      "name": "install-build",
+      "required": true,
+      "durationMs": 1473,
+      "ok": true,
+      "output": "yarn install v1.23.0-20220130.1630\n[1/5] Validating package.json...\n[2/5] Resolving packages...\n(node:50262) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.\n(Use `node --trace-deprecation ...` to show where the warning was created)\nsuccess Already up-to-date.\nDone in 0.07s.\nyarn run v1.23.0-20220130.1630\n$ vite build\n\u001b[36mvite v7.3.7 \u001b[32mbuilding client environment for production...\u001b[36m\u001b[39m\ntransforming...\n\u001b[32m✓\u001b[39m 58 modules transformed.\nrendering chunks...\ncomputing gzip size...\n\u001b[2mdist/\u001b[22m\u001b[32mindex.html                                                  \u001b[39m\u001b[1m\u001b[2m  0.46 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m │ gzip:   0.29 kB\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mspace-grotesk-vietnamese-wght-normal-D0rl6rjA.woff2  \u001b[39m\u001b[1m\u001b[2m  6.71 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mgeist-cyrillic-ext-wght-normal-DjL33-gN.woff2        \u001b[39m\u001b[1m\u001b[2m  7.42 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mgeist-vietnamese-wght-normal-6IgcOCM7.woff2          \u001b[39m\u001b[1m\u001b[2m  8.00 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mgeist-cyrillic-wght-normal-BEAKL7Jp.woff2            \u001b[39m\u001b[1m\u001b[2m 15.08 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mgeist-latin-ext-wght-normal-DC-KSUi6.woff2           \u001b[39m\u001b[1m\u001b[2m 16.51 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mspace-grotesk-latin-ext-wght-normal-D9tNdqV9.woff2   \u001b[39m\u001b[1m\u001b[2m 18.94 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mspace-grotesk-latin-wght-normal-BhU9QXUp.woff2       \u001b[39m\u001b[1m\u001b[2m 22.29 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[32mgeist-latin-wght-normal-BgDaEnEv.woff2               \u001b[39m\u001b[1m\u001b[2m 29.40 kB\u001b[22m\u001b[1m\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[35mindex-DphbNoNC.css                                   \u001b[39m\u001b[1m\u001b[2m 26.08 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m │ gzip:   5.70 kB\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[36mDesignPage-bjh8HbVj.js                               \u001b[39m\u001b[1m\u001b[2m 21.04 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m │ gzip:   6.42 kB\u001b[22m\n\u001b[2mdist/\u001b[22m\u001b[2massets/\u001b[22m\u001b[36mindex-NegVuvqw.js                                    \u001b[39m\u001b[1m\u001b[2m316.69 kB\u001b[22m\u001b[1m\u001b[22m\u001b[2m │ gzip: 101.22 kB\u001b[22m\n\u001b[32m✓ built in 757ms\u001b[39m\nDone in 1.12s."
+    },
+    {
+      "id": "G2",
+      "name": "lint-format",
+      "required": true,
+      "durationMs": 1659,
+      "ok": true,
+      "output": "yarn run v1.23.0-20220130.1630\n$ eslint . --max-warnings=0\nDone in 0.75s.\nyarn run v1.23.0-20220130.1630\n$ prettier --check .\nChecking formatting...\nAll matched files use Prettier code style!\nDone in 0.63s."
+    },
+    {
+      "id": "G3",
+      "name": "typecheck",
+      "required": true,
+      "durationMs": 1307,
+      "ok": true,
+      "output": "yarn run v1.23.0-20220130.1630\n$ tsc --noEmit -p tsconfig.json\nDone in 1.16s."
+    },
+    {
+      "id": "G4",
+      "name": "unit",
+      "required": true,
+      "durationMs": 2185,
+      "ok": true,
+      "output": "yarn run v1.23.0-20220130.1630\n$ vitest run --coverage\n\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv3.2.7 \u001b[39m\u001b[90m/Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-1.01/pulsar-claude/app\u001b[39m\n      \u001b[2mCoverage enabled with \u001b[22m\u001b[33mv8\u001b[39m\n\n \u001b[32m✓\u001b[39m src/domain/__tests__/entry.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 9\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m scripts/__tests__/seed-data.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 13\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/privacy/__tests__/label.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 7\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/domain/__tests__/indicator.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 16\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/lib/__tests__/time.test.ts \u001b[2m(\u001b[22m\u001b[2m26 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 132\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/design/__tests__/IndicatorLabel.test.tsx \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 66\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/lib/__tests__/firebase.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 194\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/design/__tests__/design-system.f002.test.tsx \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 111\u001b[2mms\u001b[22m\u001b[39m\n\u001b[90mstderr\u001b[2m | src/__tests__/designRoute.test.tsx\u001b[2m > \u001b[22m\u001b[2m/_design route gating\u001b[2m > \u001b[22m\u001b[2mdoes not exist in production builds\n\u001b[22m\u001b[39mError handled by React Router default ErrorBoundary: ErrorResponseImpl {\n  status: \u001b[33m404\u001b[39m,\n  statusText: \u001b[32m'Not Found'\u001b[39m,\n  internal: \u001b[33mtrue\u001b[39m,\n  data: \u001b[32m'Error: No route matches URL \"/_design\"'\u001b[39m,\n  error: Error: No route matches URL \"/_design\"\n      at getInternalRouterError \u001b[90m(/Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-1.01/pulsar-claude/app/\u001b[39mnode_modules/\u001b[4mreact-router\u001b[24m/dist/development/chunk-GR4NQCSD.js:5582:5\u001b[90m)\u001b[39m\n      at createRouter \u001b[90m(/Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-1.01/pulsar-claude/app/\u001b[39mnode_modules/\u001b[4mreact-router\u001b[24m/dist/development/chunk-GR4NQCSD.js:1555:17\u001b[90m)\u001b[39m\n      at createBrowserRouter \u001b[90m(/Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-1.01/pulsar-claude/app/\u001b[39mnode_modules/\u001b[4mreact-router\u001b[24m/dist/development/chunk-HQO5H5CC.js:197:40\u001b[90m)\u001b[39m\n      at \u001b[90m/Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-1.01/pulsar-claude/app/\u001b[39msrc/App.tsx:25:16\n  \u001b[90m    at processTicksAndRejections (node:internal/process/task_queues:104:5)\u001b[39m\n      at VitestExecutor.runModule \u001b[90m(file:///Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-1.01/pulsar-claude/app/\u001b[39mnode_modules/\u001b[4mvite-node\u001b[24m/dist/client.mjs:397:4\u001b[90m)\u001b[39m\n      at VitestExecutor.directRequest \u001b[90m(file:///Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-1.01/pulsar-claude/app/\u001b[39mnode_modules/\u001b[4mvite-node\u001b[24m/dist/client.mjs:375:3\u001b[90m)\u001b[39m\n      at VitestExecutor.cachedRequest \u001b[90m(file:///Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-1.01/pulsar-claude/app/\u001b[39mnode_modules/\u001b[4mvite-node\u001b[24m/dist/client.mjs:189:11\u001b[90m)\u001b[39m\n      at VitestExecutor.dependencyRequest \u001b[90m(file:///Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-1.01/pulsar-claude/app/\u001b[39mnode_modules/\u001b[4mvite-node\u001b[24m/dist/client.mjs:239:10\u001b[90m)\u001b[39m\n      at renderAppAt \u001b[90m(/Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-1.01/pulsar-claude/app/\u001b[39msrc/__tests__/designRoute.test.tsx:8:19\u001b[90m)\u001b[39m\n}\n\n \u001b[32m✓\u001b[39m src/__tests__/designRoute.test.tsx \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 466\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m /_design route gating\u001b[2m > \u001b[22mrenders the design catalog in emulator/dev builds \u001b[33m 455\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m src/__tests__/scaffold.test.ts \u001b[2m(\u001b[22m\u001b[2m14 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 257\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m10 passed\u001b[39m\u001b[22m\u001b[90m (10)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m86 passed\u001b[39m\u001b[22m\u001b[90m (86)\u001b[39m\n\u001b[2m   Start at \u001b[22m 09:46:10\n\u001b[2m   Duration \u001b[22m 1.62s\u001b[2m (transform 493ms, setup 1.76s, collect 891ms, tests 1.27s, environment 3.24s, prepare 676ms)\u001b[22m\n\n\u001b[34m % \u001b[39m\u001b[2mCoverage report from \u001b[22m\u001b[33mv8\u001b[39m\n\n=============================== Coverage summary ===============================\nStatements   : 95.66% ( 1036/1083 )\nBranches     : 92.96% ( 238/256 )\nFunctions    : 70.76% ( 46/65 )\nLines        : 95.66% ( 1036/1083 )\n================================================================================\nDone in 2.04s."
+    },
+    {
+      "id": "G5",
+      "name": "security-rules",
+      "required": true,
+      "durationMs": 5235,
+      "ok": true,
+      "output": "N_DENIED: \nfalse for 'create' @ L40, false for 'update' @ L41\n\n\u001b[90mstderr\u001b[2m | tests/rules/users.test.ts\u001b[2m > \u001b[22m\u001b[2msave-account invite dismissal state\u001b[2m > \u001b[22m\u001b[2mrejects negative for saveAccountInviteDismissedDayCount\n\u001b[22m\u001b[39m[2026-11-02T12:46:15.328Z]  @firebase/firestore: Firestore (11.10.0): GrpcConnection RPC 'Write' stream 0x14845b12 error. Code: 7 Message: 7 PERMISSION_DENIED: \nfalse for 'create' @ L40, false for 'update' @ L41\n\n\u001b[90mstderr\u001b[2m | tests/rules/users.test.ts\u001b[2m > \u001b[22m\u001b[2msave-account invite dismissal state\u001b[2m > \u001b[22m\u001b[2mrejects decimal for saveAccountInviteDismissedDayCount\n\u001b[22m\u001b[39m[2026-11-02T12:46:15.340Z]  @firebase/firestore: Firestore (11.10.0): GrpcConnection RPC 'Write' stream 0x14845b13 error. Code: 7 Message: 7 PERMISSION_DENIED: \nfalse for 'create' @ L40, false for 'update' @ L41\n\n\u001b[90mstderr\u001b[2m | tests/rules/users.test.ts\u001b[2m > \u001b[22m\u001b[2msave-account invite dismissal state\u001b[2m > \u001b[22m\u001b[2mrejects boolean for saveAccountInviteDismissedDayCount\n\u001b[22m\u001b[39m[2026-11-02T12:46:15.351Z]  @firebase/firestore: Firestore (11.10.0): GrpcConnection RPC 'Write' stream 0x14845b14 error. Code: 7 Message: 7 PERMISSION_DENIED: \nfalse for 'create' @ L40, false for 'update' @ L41\n\n\u001b[90mstderr\u001b[2m | tests/rules/users.test.ts\u001b[2m > \u001b[22m\u001b[2msave-account invite dismissal state\u001b[2m > \u001b[22m\u001b[2mrejects string for saveAccountInviteDismissedAt\n\u001b[22m\u001b[39m[2026-11-02T12:46:15.361Z]  @firebase/firestore: Firestore (11.10.0): GrpcConnection RPC 'Write' stream 0x14845b15 error. Code: 7 Message: 7 PERMISSION_DENIED: \nfalse for 'create' @ L40, false for 'update' @ L41\n\n\u001b[90mstderr\u001b[2m | tests/rules/users.test.ts\u001b[2m > \u001b[22m\u001b[2msave-account invite dismissal state\u001b[2m > \u001b[22m\u001b[2mrejects number for saveAccountInviteDismissedAt\n\u001b[22m\u001b[39m[2026-11-02T12:46:15.372Z]  @firebase/firestore: Firestore (11.10.0): GrpcConnection RPC 'Write' stream 0x14845b16 error. Code: 7 Message: 7 PERMISSION_DENIED: \nfalse for 'create' @ L40, false for 'update' @ L41\n\n\u001b[90mstderr\u001b[2m | tests/rules/users.test.ts\u001b[2m > \u001b[22m\u001b[2minternal/**\u001b[2m > \u001b[22m\u001b[2mis inaccessible to clients\n\u001b[22m\u001b[39m[2026-11-02T12:46:15.396Z]  @firebase/firestore: Firestore (11.10.0): GrpcConnection RPC 'Write' stream 0x14845b19 error. Code: 7 Message: 7 PERMISSION_DENIED: \nfalse for 'create' @ L53, false for 'update' @ L53\n\n\u001b[90mstderr\u001b[2m | tests/rules/users.test.ts\u001b[2m > \u001b[22m\u001b[2minternal/**\u001b[2m > \u001b[22m\u001b[2mis inaccessible to clients\n\u001b[22m\u001b[39m[2026-11-02T12:46:15.403Z]  @firebase/firestore: Firestore (11.10.0): GrpcConnection RPC 'Write' stream 0x14845b1a error. Code: 7 Message: 7 PERMISSION_DENIED: \nfalse for 'create' @ L53, false for 'update' @ L53\n\n \u001b[32m✓\u001b[39m tests/rules/users.test.ts \u001b[2m(\u001b[22m\u001b[2m20 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1078\u001b[2mms\u001b[22m\u001b[39m\n\u001b[90mstderr\u001b[2m | tests/rules/usersAdminFields.test.ts\u001b[2m > \u001b[22m\u001b[2madministrative fields stay out of client reach\u001b[2m > \u001b[22m\u001b[2mdoes not expose or let the owner rewrite misplaced admin fields\n\u001b[22m\u001b[39m[2026-11-02T12:46:15.827Z]  @firebase/firestore: Firestore (11.10.0): GrpcConnection RPC 'Write' stream 0x2365eb81 error. Code: 7 Message: 7 PERMISSION_DENIED: \nevaluation error at L41:24 for 'update' @ L41, false for 'update' @ L41\n\n\u001b[90mstderr\u001b[2m | tests/rules/usersAdminFields.test.ts\u001b[2m > \u001b[22m\u001b[2madministrative fields stay out of client reach\u001b[2m > \u001b[22m\u001b[2mdoes not expose or let the owner rewrite misplaced admin fields\n\u001b[22m\u001b[39m[2026-11-02T12:46:15.836Z]  @firebase/firestore: Firestore (11.10.0): GrpcConnection RPC 'Write' stream 0x2365eb82 error. Code: 7 Message: 7 PERMISSION_DENIED: \nevaluation error at L41:24 for 'update' @ L41, false for 'update' @ L41\n\n\u001b[90mstderr\u001b[2m | tests/rules/usersAdminFields.test.ts\u001b[2m > \u001b[22m\u001b[2madministrative fields stay out of client reach\u001b[2m > \u001b[22m\u001b[2mdoes not expose or let the owner rewrite misplaced admin fields\n\u001b[22m\u001b[39m[2026-11-02T12:46:15.845Z]  @firebase/firestore: Firestore (11.10.0): GrpcConnection RPC 'Write' stream 0x2365eb83 error. Code: 7 Message: 7 PERMISSION_DENIED: \nfalse for 'create' @ L40, evaluation error at L41:24 for 'update' @ L41, false for 'update' @ L41\n\n\u001b[90mstderr\u001b[2m | tests/rules/usersAdminFields.test.ts\u001b[2m > \u001b[22m\u001b[2madministrative fields stay out of client reach\u001b[2m > \u001b[22m\u001b[2mdenies direct deletion of the profile, with or without admin fields\n\u001b[22m\u001b[39m[2026-11-02T12:46:15.861Z]  @firebase/firestore: Firestore (11.10.0): GrpcConnection RPC 'Write' stream 0x2365eb85 error. Code: 7 Message: 7 PERMISSION_DENIED: \nfalse for 'delete' @ L43\n\n\u001b[90mstderr\u001b[2m | tests/rules/usersAdminFields.test.ts\u001b[2m > \u001b[22m\u001b[2madministrative fields stay out of client reach\u001b[2m > \u001b[22m\u001b[2mdenies direct deletion of the profile, with or without admin fields\n\u001b[22m\u001b[39m[2026-11-02T12:46:15.875Z]  @firebase/firestore: Firestore (11.10.0): GrpcConnection RPC 'Write' stream 0x2365eb87 error. Code: 7 Message: 7 PERMISSION_DENIED: \nfalse for 'delete' @ L43\n\n\u001b[90mstderr\u001b[2m | tests/rules/usersAdminFields.test.ts\u001b[2m > \u001b[22m\u001b[2madministrative fields stay out of client reach\u001b[2m > \u001b[22m\u001b[2mkeeps the per-user admin document under internal/ unreadable\n\u001b[22m\u001b[39m[2026-11-02T12:46:15.895Z]  @firebase/firestore: Firestore (11.10.0): GrpcConnection RPC 'Write' stream 0x2365eb8a error. Code: 7 Message: 7 PERMISSION_DENIED: \nfalse for 'delete' @ L53\n\n \u001b[32m✓\u001b[39m tests/rules/usersAdminFields.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 269\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/rules/baseline.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 135\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m27 passed\u001b[39m\u001b[22m\u001b[90m (27)\u001b[39m\n\u001b[2m   Start at \u001b[22m 09:46:14\n\u001b[2m   Duration \u001b[22m 1.98s\u001b[2m (transform 18ms, setup 0ms, collect 156ms, tests 1.48s, environment 0ms, prepare 62ms)\u001b[22m\n\n✔  Script exited successfully (code 0)\ni  emulators: Shutting down emulators.\ni  firestore: Stopping Firestore Emulator\ni  hub: Stopping emulator hub\ni  logging: Stopping Logging Emulator\nDone in 5.08s."
+    },
+    {
+      "id": "G6",
+      "name": "e2e",
+      "required": true,
+      "durationMs": 10799,
+      "ok": true,
+      "output": "yarn run v1.23.0-20220130.1630\n$ sh scripts/port-lock.sh playwright test --grep-invert @visual\n\nRunning 8 tests using 5 workers\n\n  ✓  4 [mobile] › e2e/design.spec.ts:32:1 › /_design has no horizontal overflow with the eye open (800ms)\n  ✓  2 [mobile] › e2e/design.spec.ts:5:1 › /_design shows abbreviations by default and names after opening the eye (834ms)\n  ✓  1 [desktop] › e2e/design.spec.ts:5:1 › /_design shows abbreviations by default and names after opening the eye (834ms)\n  ✓  3 [mobile] › e2e/routes.spec.ts:8:3 › route home (/) passes browser gates (1.2s)\n  ✓  5 [mobile] › e2e/routes.spec.ts:8:3 › route design (/_design) passes browser gates (1.6s)\n  ✓  8 [desktop] › e2e/routes.spec.ts:8:3 › route home (/) passes browser gates (842ms)\n  ✓  7 [desktop] › e2e/design.spec.ts:32:1 › /_design has no horizontal overflow with the eye open (927ms)\n  ✓  6 [desktop] › e2e/routes.spec.ts:8:3 › route design (/_design) passes browser gates (1.3s)\n\n  8 passed (10.2s)\nDone in 10.65s."
+    },
+    {
+      "id": "G7",
+      "name": "protected-tests",
+      "required": true,
+      "durationMs": 4,
+      "ok": true,
+      "output": "testes protegidos íntegros"
+    },
+    {
+      "id": "G8",
+      "name": "privacy-leak",
+      "required": true,
+      "durationMs": 12826,
+      "ok": true,
+      "output": "sem vazamento (130 superfícies)"
+    },
+    {
+      "id": "G9",
+      "name": "a11y",
+      "required": true,
+      "durationMs": 11153,
+      "ok": true,
+      "output": "zero violações serious/critical"
+    },
+    {
+      "id": "G10",
+      "name": "mobile-layout",
+      "required": true,
+      "durationMs": 10535,
+      "ok": true,
+      "output": "sem overflow e alvos ≥ 44px em 320/375/414"
+    },
+    {
+      "id": "G11",
+      "name": "visual-regression",
+      "ok": true,
+      "required": true,
+      "skipped": "a partir da etapa 2",
+      "durationMs": 0,
+      "output": ""
+    },
+    {
+      "id": "G12",
+      "name": "lighthouse",
+      "ok": true,
+      "required": true,
+      "skipped": "só no fim de etapa",
+      "durationMs": 0,
+      "output": ""
+    },
+    {
+      "id": "G13",
+      "name": "secrets",
+      "required": true,
+      "durationMs": 25,
+      "ok": true,
+      "output": "nenhum segredo no diff"
+    }
+  ]
+}

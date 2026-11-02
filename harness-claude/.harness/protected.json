@@ -18,5 +18,20 @@
     "sha256": "b08ae558a6f63140498585c3ed7d37a87caac27f0e83fe348c209af0117c48b2",
     "asserts": 0,
     "featureId": "F-0.07"
+  },
+  "app/src/lib/__tests__/time.test.ts": {
+    "sha256": "47a4cece7b7ef5def3a7f1a9b76d1c196de98346927aad4639742a613b31c517",
+    "asserts": 37,
+    "featureId": "F-1.02"
+  },
+  "app/src/domain/__tests__/indicator.test.ts": {
+    "sha256": "590b1bd9c2ea28772fc7d535775489fb24f671240adfcc3bc9f1554b6ce3d933",
+    "asserts": 50,
+    "featureId": "F-1.01"
+  },
+  "app/tests/rules/users.test.ts": {
+    "sha256": "19ce294ff8d40aaf09e76a98cf95c197f40e53188cf7c4aa3901d002857bc39e",
+    "asserts": 0,
+    "featureId": "F-1.08"
   }
 }

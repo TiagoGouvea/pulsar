@@ -1,7 +1,7 @@
 {
   "phase": "STAGE_RUNNING",
   "stage": 1,
-  "featuresSinceRetro": 0,
+  "featuresSinceRetro": 3,
   "stageFixRounds": 0,
   "budgetAlerts": [
     0.5
@@ -11,8 +11,8 @@
   "stageTimes": {
     "1": {
       "startedAt": "2026-11-01T18:53:23.876Z",
-      "activeMs": 3258395
+      "activeMs": 5734911
     }
   },
-  "updatedAt": "2026-11-02T12:23:58.714Z"
+  "updatedAt": "2026-11-02T13:06:21.547Z"
 }

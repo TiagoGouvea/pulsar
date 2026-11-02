@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T13:00:07.674Z",
+  "workerId": "haiku",
+  "role": "implement",
+  "featureId": "F-1.10",
+  "stage": 1,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.013455365,
+  "durationMs": 59258,
+  "usage": {
+    "inputTokens": 36867,
+    "outputTokens": 11370,
+    "cachedTokens": 316244,
+    "costUsd": 0.013455365
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "s__`.\n- `functions/src/index.ts`: exporta a constante `REGION = 'southamerica-east1'` e o `healthcheck` como `onRequest` que responde 200.\n- `vitest.functions.config.ts`: ambiente node, inclui `functions/src/**/*.test.ts`. Não entrou no `vite.config.ts`, porque o include dele é `src/**` e não pega o teste de functions.\n- `firebase.json`: bloco `functions` com `source: \"functions\"` e porta do emulador 5001.\n- `package.json`: novo script `test:functions` (compila functions e roda vitest contra o emulador de functions, com `port-lock`). O `e2e:serve` passou a compilar functions e a subir o emulador de functions.\n\nO `functions/lib` já estava ignorado pelo ESLint e pelo Prettier, então nada mudou nessa parte.\n\n**Pontos não verificados:**\n- A versão `^6.3.0` do `firebase-functions` é uma suposição minha, não confirmada.\n- Não há `functions/yarn.lock` nem `node_modules`; sem a instalação, o emulador não sobe.\n- O `port-lock.sh` não foi lido, só usado como nos outros scripts.\n\nRegistrei um risco (instalação de dependências do functions) e uma pergunta (estratégia do `test:functions`) em `.harness/inbox/`.\n\n```json\n{\n  \"summary\": \"Workspace de functions (app/functions) com healthcheck em southamerica-east1, emulador de functions no firebase.json, script test:functions e functions no e2e:serve. Implementado por leitura; nenhum comando executado.\",\n  \"filesChanged\": [\n    \"app/functions/package.json\",\n    \"app/functions/tsconfig.json\",\n    \"app/functions/src/index.ts\",\n    \"app/vitest.functions.config.ts\",\n    \"app/firebase.json\",\n    \"app/package.json\",\n    \".harness/inbox/risks.jsonl\",\n    \".harness/inbox/questions.jsonl\"\n  ],\n  \"testsRun\": [],\n  \"confidence\": \"low\",\n  \"notes\": \"Bash negado pelo modo de permissão: não rodei yarn lint/typecheck/test:unit nem test:functions. Falta instalar functions/ (yarn.lock e node_modules) antes de qualquer teste. Versão do firebase-functions não verificada. Teste protegido app/functions/src/__tests__/setup.test.ts não foi alterado.\"\n}\n```"
+}

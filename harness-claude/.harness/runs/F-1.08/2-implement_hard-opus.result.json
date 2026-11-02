@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T12:36:19.781Z",
+  "workerId": "opus",
+  "role": "implement_hard",
+  "featureId": "F-1.08",
+  "stage": 1,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.3333816,
+  "durationMs": 64540,
+  "usage": {
+    "inputTokens": 28197,
+    "outputTokens": 6746,
+    "cachedTokens": 287483,
+    "costUsd": 0.3333816
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "moving such a field by overwriting the document with `setDoc`.\n- **Read:** the owner can read a missing document or one with only client fields. If the document holds any other field, the read is denied (fails closed).\n- **Delete:** always denied for clients. Per spec §9, account deletion is meant to run in a Cloud Function.\n- **Where admin fields go:** a comment in the rules says they belong under `internal/**`, for example `internal/userAdmin/users/{uid}`. All of `internal/**` was already blocked for clients.\n\n**New test file:** `app/tests/rules/usersAdminFields.test.ts`. With an admin field present, it checks that the owner's read, update, overwrite and delete all fail. It also checks that deleting a clean document fails and that `internal/userAdmin/users/{uid}` is blocked. Checking the protected tests by hand against the new rules, they all look like they should still pass.\n\n**Risk logged** in `.harness/inbox/risks.jsonl`: if a Cloud Function writes an admin field into `users/{uid}`, the owner can no longer read or update that document. Functions need to write those fields under `internal/` instead.\n\n```json\n{\"summary\":\"Fixed the attempt-1 blocker in users/{uid} rules: full-document schema validation on create/update, updates blocked when the stored document has non-client fields (no stripping admin fields via setDoc), fail-closed owner reads, direct delete denied (account deletion via Cloud Function), admin fields documented under internal/userAdmin/users/{uid}. Added rules tests for read/update/delete with admin fields present.\",\"filesChanged\":[\"app/firestore.rules\",\"app/tests/rules/usersAdminFields.test.ts\",\".harness/inbox/risks.jsonl\"],\"testsRun\":[],\"confidence\":\"med\",\"notes\":\"Bash was blocked in this session (don't-ask mode), so yarn lint/typecheck/format:check/test:unit/test:rules were NOT run. The orchestrator must run yarn test:rules (protected users.test.ts plus the new usersAdminFields.test.ts and baseline.test.ts). Protected test file unchanged.\"}\n```"
+}

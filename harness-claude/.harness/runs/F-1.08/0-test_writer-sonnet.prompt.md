@@ -168,4 +168,18 @@ design/preenchimento_r_pido/screen.png
 - 2026-11-02T12:20 ✖ interrompido por SIGINT em STAGE_RUNNING: rode harness resume para continuar
 - 2026-11-02T12:22 ▶ etapa 1 (Base) │ features 0/12 │ 0 bloqueadas │ US$ 6.32/10 │ branch 1-base
 - 2026-11-02T12:23 ⛔ F-1.02 BLOQUEADA: test_writer não produziu testes de aceite │ features 0/12
+- 2026-11-02T12:23 ✖ interrompido por SIGINT em STAGE_RUNNING: rode harness resume para continuar
+- 2026-11-02T12:25 ▶ etapa 1 (Base) │ features 0/12 │ 0 bloqueadas │ US$ 6.78/10 │ branch 1-base
+- 2026-11-02T12:29 ✔ F-1.02 passing — Utilitários de tempo (UTC, localDate do navegador, dia de Brasília) (worker glm-flash, 1 tentativa(s), US$ 2.40) │ features 1/12
+- 2026-11-02T12:29 ✖ interrompido por SIGINT em STAGE_RUNNING: rode harness resume para continuar
+- 2026-11-02T12:29 ▶ etapa 1 (Base) │ features 1/12 │ 0 bloqueadas │ US$ 7.25/10 │ branch 1-base
 
+
+
+## Tentativa anterior rejeitada
+Seus testes têm erros em `yarn typecheck` que não vêm de código ainda não implementado, e foram descartados. Corrija os tipos (dados inválidos de propósito: use cast explícito, ex. `as never`). Um crash interno do tsc ("reading 'kind'") costuma vir de uniões de tipos passadas a APIs do Firestore.
+```
+tests/rules/users.acceptance.test.ts(141,52): error TS2322: Type 'string' is not assignable to type 'FirebaseSignInProvider'.
+tests/rules/users.acceptance.test.ts(144,50): error TS2322: Type 'string' is not assignable to type 'FirebaseSignInProvider'.
+tests/rules/users.acceptance.test.ts(201,60): error TS2322: Type 'string' is not assignable to type 'FirebaseSignInProvider'.
+```

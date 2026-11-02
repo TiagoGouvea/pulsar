@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-02T12:37:38.074Z",
+  "workerId": "codex-mid",
+  "role": "review_code",
+  "featureId": "F-1.08",
+  "stage": 1,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.03377035,
+  "durationMs": 21601,
+  "usage": {
+    "inputTokens": 28934,
+    "outputTokens": 766,
+    "cachedTokens": 20127
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\"pass\":true,\"score\":10,\"issues\":[]}\n```"
+}

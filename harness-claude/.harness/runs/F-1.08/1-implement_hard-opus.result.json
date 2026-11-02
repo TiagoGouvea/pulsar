@@ -1,20 +1,20 @@
 {
-  "ts": "2026-11-01T18:43:04.283Z",
+  "ts": "2026-11-02T12:33:43.923Z",
   "workerId": "opus",
   "role": "implement_hard",
   "featureId": "F-1.08",
   "stage": 1,
   "attempt": 1,
   "outcome": "success",
-  "costUsd": 0.3494262,
-  "durationMs": 152627,
+  "costUsd": 0.31301720000000005,
+  "durationMs": 68388,
   "usage": {
-    "inputTokens": 28506,
-    "outputTokens": 6349,
-    "cachedTokens": 399711,
-    "costUsd": 0.3494262
+    "inputTokens": 29608,
+    "outputTokens": 4762,
+    "cachedTokens": 348806,
+    "costUsd": 0.31301720000000005
   },
   "exitCode": 0,
   "timedOut": false,
-  "finalTail": "Function.\n- **Isolation:** other users' documents are blocked, for anonymous and permanent accounts alike. Subcollections stay owner-only.\n- **`internal/**`:** blocked for every client, both at the top level and under `users/{uid}/internal/**`.\n\n**The two failing checks:**\n- **`format:check`:** Prettier flags the protected test `app/tests/rules/users.test.ts`, which I'm not allowed to edit.\n- **`typecheck`:** the TypeScript compiler itself crashes (a `TypeError` inside `tsc`), before it reports any type errors.\n\nI logged both in `.harness/inbox/risks.jsonl` for the orchestrator. I also logged one decision in `.harness/inbox/questions.jsonl`: I chose the stricter option of blocking deletes from the app and blocking per-user `internal/`, even for the document's owner. The worktree had no installed packages, so I ran `yarn install --frozen-lockfile` before testing. There were no e2e tests to run because this feature has no UI.\n\n```json\n{\"summary\":\"firestore.rules: users/{uid} accepts only the 7 known client fields with type checks on create and update (dismissal timestamp or null; day count whole number >= 0 or null). Updates may change only those fields, so server-only fields can't be written by the app. The app can't delete the user doc. Owner-only access applies to anonymous and permanent accounts. internal/** and users/{uid}/internal/** are server-only.\",\"filesChanged\":[\"app/firestore.rules\",\".harness/inbox/risks.jsonl\",\".harness/inbox/questions.jsonl\"],\"testsRun\":[\"yarn test:rules (28/28 pass)\",\"yarn lint (pass)\",\"yarn test:unit (38/38 pass)\",\"yarn format:check (FAIL: only the protected test app/tests/rules/users.test.ts)\",\"yarn typecheck (FAIL: TypeScript compiler crash, not caused by this change)\"],\"confidence\":\"high\",\"notes\":\"The format and typecheck failures come from outside this change (protected test formatting; tsc internal TypeError). Both are logged in risks.jsonl. Ran yarn install --frozen-lockfile because node_modules was missing in the worktree.\"}\n```"
+  "finalTail": " por `match /users/{uid}/{collection}/{document=**}`, que só vale para subcoleções. Antes da correção, 13 testes falhavam por esse motivo.\n\n**O que mudou em `app/firestore.rules`:**\n- **Campos aceitos:** uma função `validUserFields` aceita só os 7 campos conhecidos, com os tipos pedidos. `saveAccountInviteDismissedAt` aceita timestamp ou null. `saveAccountInviteDismissedDayCount` aceita inteiro >= 0 ou null; string, negativo, decimal e booleano são rejeitados.\n- **Criação:** valida todos os campos do documento.\n- **Atualização:** valida só os campos que o cliente alterou. Assim, campos administrativos já gravados pelo Admin SDK não travam outras atualizações. O cliente continua sem poder criar, alterar ou remover esses campos.\n- **Leitura e exclusão:** só o dono.\n- **Isolamento:** um UID não lê nem escreve nada sob o UID de outro, tanto anônimo quanto permanente, e quem não está logado é bloqueado. `internal/**` continua fechado para clientes.\n\n**Pendência para registrar:** o seed grava `lastInsightRefreshAt: null`, mas a regra nova só aceita timestamp vindo do cliente. Escolhi o mais conservador. Não consegui gravar essa dúvida em `.harness/inbox/questions.jsonl` porque o comando de escrita foi negado. Se o app precisar limpar esse campo pelo cliente, a regra terá que aceitar null.\n\n```json\n{\"summary\":\"users/{uid} now validates fields and types on create and on the fields changed by an update; the nested wildcard is limited to subcollections so it no longer bypasses validation on the user doc; internal/** stays closed.\",\"filesChanged\":[\"app/firestore.rules\"],\"testsRun\":[\"yarn test:rules (23/23)\",\"yarn lint\",\"yarn typecheck\",\"yarn format:check\",\"yarn test:unit (64/64)\"],\"confidence\":\"high\",\"notes\":\"Not logged in .harness/inbox/questions.jsonl because the write was denied: the seed writes lastInsightRefreshAt: null, but the client may only write a timestamp (conservative choice). An existing null does not block updates because only changed fields are validated.\"}\n```"
 }
