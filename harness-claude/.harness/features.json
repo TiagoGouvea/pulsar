@@ -584,7 +584,22 @@
       "attempts": 0,
       "costUsd": 6.664030509999999,
       "spendSince": "2026-11-02T15:19:46.503Z",
-      "history": [],
+      "history": [
+        {
+          "attempt": 2,
+          "role": "implement_hard",
+          "workerId": "opus",
+          "outcome": "failure",
+          "failedGates": [
+            "G6",
+            "G8",
+            "G9",
+            "G10"
+          ],
+          "ts": "2026-11-02T15:48:09.442Z",
+          "note": "gates falharam por networkidle (corrigido no harness); código recuperado na worktree"
+        }
+      ],
       "origin": []
     },
     {

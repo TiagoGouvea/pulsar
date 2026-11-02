@@ -199,7 +199,9 @@ export class Orchestrator {
   /** Crash recovery: in_progress -> failing, orphan worktrees removed (attempts are only counted when finished). */
   private async recover() {
     const reset = resetInProgress(this.ctx);
-    const removed = await g.pruneOrphans(this.ctx.repo, (n) => n === "init" || n.startsWith("stage-"));   // init keeps its partial scaffold for the next round
+    // init keeps its partial scaffold; unfinished features keep their code and continue from it
+    const pending = new Set(loadFeatures(this.ctx).features.filter((f) => f.status === "failing").map((f) => f.id));
+    const removed = await g.pruneOrphans(this.ctx.repo, (n) => n === "init" || n.startsWith("stage-") || pending.has(n));
     if (reset.length || removed.length) log(`retomada: features reiniciadas [${reset}] worktrees removidas [${removed}]`);
   }
 
@@ -399,13 +401,15 @@ export class Orchestrator {
     const cfg = ctx.config.routing;
     let f = await this.ensureAcceptanceTests(f0, wt);
     const testsBase = await g.head(wt);
-    let diag = "";
+    const last = f0.history.at(-1);
+    let diag = last ? `Retomada após interrupção: continue a partir do código já presente. Tentativa anterior: ${last.outcome}${last.failedGates?.length ? ` (gates ${last.failedGates.join(",")})` : ""}.` : "";
     for (;;) {
       f = loadFeatures(ctx).features.find((x) => x.id === f0.id)!;
       if (f.attempts >= cfg.maxAttemptsPerFeature) return this.block(f, `limite de ${cfg.maxAttemptsPerFeature} tentativas atingido`, wt);
       const attempt = f.attempts + 1;
       const role = this.roleFor(f);
       const integ = await g.integrate(wt, this.branch);
+      const attemptBase = await g.head(wt);
       if (!integ.ok) diag = `Há conflitos de merge com a branch ${this.branch} nos arquivos:\n${integ.conflict}\nResolva os marcadores <<<<<<< mantendo as duas funcionalidades.\n\n${diag}`;
       const lessonIds = selectLessons(ctx, role, f.tags).map((l) => l.id);
       const prompt = render(ctx, role, featureVars(ctx, f, { diagnostic: diag || "(primeira tentativa)", attempt: String(attempt) }), f.tags);
@@ -430,7 +434,7 @@ export class Orchestrator {
         writeJson(hp(ctx, "runs", f.id, `gate-report-${attempt}.json`), gates);
         if (gates.failed.includes("G7")) {
           outcome = "protected_violation";
-          await g.resetHard(wt, testsBase);
+          await g.resetHard(wt, attemptBase);   // only this attempt: earlier attempts' code stays
           diag = `TENTATIVA DESCARTADA: você alterou/enfraqueceu testes protegidos. Não edite: ${f.protectedTests.join(", ")}\n${gates.results.find((r) => r.id === "G7")?.output}`;
         } else if (!gates.ok) {
           outcome = "failure";
