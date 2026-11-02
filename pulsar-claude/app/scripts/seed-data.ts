@@ -18,11 +18,20 @@ export const SENTINELS = {
   note: 'ZQX_OBS_NOTA_5T1',
 } as const;
 
+import type {
+  DailyAggregation,
+  DesiredDirection,
+  Frequency,
+  IdealRange,
+  NumericConfig,
+  OrdinalOption,
+  ScaleConfig,
+  ValueType,
+} from '../src/domain/indicator';
+import type { EntryValue } from '../src/domain/entry';
+
 // Brasília has no DST since 2019; seed timestamps are generated at a fixed -03:00 offset and stored in UTC.
 const SEED_TZ_OFFSET = '-03:00';
-
-type ValueType = 'boolean' | 'scale' | 'ordinal' | 'numeric';
-type EntryValue = { boolean: boolean } | { number: number } | { optionId: string };
 
 export interface SeedIndicator {
   id: string;
@@ -31,13 +40,13 @@ export interface SeedIndicator {
   abbreviation: string | null;
   emoji: string | null;
   valueType: ValueType;
-  numeric: { unit: string; min: number | null; max: number | null; step: number } | null;
-  scale: { min: number; max: number; step: number } | null;
-  options: { id: string; label: string }[] | null;
-  desiredDirection: 'neutral' | 'higher' | 'lower' | 'target_range' | null;
-  idealRange: { min: number; max: number } | null;
-  frequency: 'single_per_day' | 'multiple_per_day';
-  dailyAggregation: 'sum' | 'mean' | 'last' | 'any' | null;
+  numeric: NumericConfig | null;
+  scale: ScaleConfig | null;
+  options: OrdinalOption[] | null;
+  desiredDirection: DesiredDirection | null;
+  idealRange: IdealRange | null;
+  frequency: Frequency;
+  dailyAggregation: DailyAggregation | null;
   sortOrder: number;
   archived: boolean;
 }
