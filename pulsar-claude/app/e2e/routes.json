@@ -2,5 +2,10 @@
   { "path": "/", "name": "home", "tags": ["ui"] },
   { "path": "/onboarding", "name": "onboarding", "tags": ["ui"] },
   { "path": "/dashboard", "name": "dashboard", "tags": ["ui"] },
+  { "path": "/register", "name": "register", "tags": ["ui"] },
+  { "path": "/indicators", "name": "indicators", "tags": ["ui"] },
+  { "path": "/indicators/new", "name": "indicators-new", "tags": ["ui"] },
+  { "path": "/saved-insights", "name": "saved-insights", "tags": ["ui"] },
+  { "path": "/settings", "name": "settings", "tags": ["ui"] },
   { "path": "/_design", "name": "design", "tags": ["ui"] }
 ]

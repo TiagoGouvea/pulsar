@@ -18,7 +18,7 @@ const samples = {
   exercise: { name: 'Exercício Físico', abbreviation: 'EXE', emoji: '🏃' },
   coffee: { name: 'Café', abbreviation: 'CAF', emoji: '☕' },
   energy: { name: 'Nível de Energia', abbreviation: 'ENE', emoji: '⚡' },
-  focus: { name: 'Concentração', abbreviation: null, emoji: null },
+  focus: { name: 'Concentração', abbreviation: 'CON', emoji: null },
 };
 
 const colorTokens = [
@@ -195,6 +195,34 @@ export default function DesignPage() {
               checked={reminder}
               onChange={setReminder}
             />
+            <Toggle label="Privacidade visual" checked onChange={() => undefined} />
+          </Card>
+        </div>
+      </Section>
+
+      <Section title="Estados">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-space-lg">
+          <Card>
+            <div role="status" aria-label="Carregando" className="flex animate-pulse flex-col gap-2">
+              <span className="h-5 w-2/3 rounded-full bg-surface-container-high" />
+              <span className="h-12 w-full rounded-lg bg-surface-container-high" />
+              <span className="h-4 w-1/2 rounded-full bg-surface-container-high" />
+            </div>
+          </Card>
+          <Card>
+            <p role="alert" className="flex items-center gap-2 font-body-md text-body-md text-error">
+              <Icon name="close" className="text-[20px]" />
+              Não foi possível salvar. Tente novamente.
+            </p>
+          </Card>
+          <Card>
+            <p
+              role="status"
+              className="flex items-center gap-2 font-body-md text-body-md text-on-surface-variant"
+            >
+              <Icon name="check_circle" className="text-[20px] text-tertiary" />
+              Salvo
+            </p>
           </Card>
         </div>
       </Section>
