@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T17:39:45.986Z",
+  "workerId": "haiku",
+  "role": "review_code",
+  "featureId": "F-1.07",
+  "stage": 1,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.008216105,
+  "durationMs": 26708,
+  "usage": {
+    "inputTokens": 40745,
+    "outputTokens": 5052,
+    "cachedTokens": 59708,
+    "costUsd": 0.008216105
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": ", \"score\": 7, \"issues\": [{\"severidade\": \"major\", \"arquivo\": \"app/src/pages/OnboardingPage.tsx\", \"descricao\": \"O passo 3 mostra estatísticas fixas (r = +0.68, N = 28 dias, médias 7.4 vs 5.8) como se fossem resultados do usuário, sem rótulo de exemplo. Só o passo 1 é identificado como demonstrativo.\", \"sugestao\": \"Marcar o bloco de associação e o cartão de correlação como exemplo ilustrativo (ex.: 'Exemplo ilustrativo'), para o usuário não confundir os números com dados reais.\"}, {\"severidade\": \"major\", \"arquivo\": \"app/src/pages/OnboardingPage.tsx\", \"descricao\": \"Cores hexadecimais fixas nos gradientes e círculos SVG (#0051d5, #316bf3, #630ed4, #7c3aed) em vez de tokens do design system, o que contraria a regra de usar app/src/design/.\", \"sugestao\": \"Trocar por classes/tokens do tema (ex.: fill-primary, stop-color via classes ou variáveis CSS) ou centralizar as cores do gráfico em constantes do design system.\"}, {\"severidade\": \"minor\", \"arquivo\": \"app/src/pages/OnboardingPage.tsx\", \"descricao\": \"Arquivo de 780 linhas com sete subcomponentes e muito SVG decorativo num único módulo, contrariando a preferência do projeto por código mínimo.\", \"sugestao\": \"Extrair cada passo para um arquivo em pages/onboarding/ (ou components/) e reduzir o SVG repetido, sem alterar o visual.\"}, {\"severidade\": \"minor\", \"arquivo\": \"app/src/pages/OnboardingPage.tsx\", \"descricao\": \"Animações (animate-bounce, animate-ping, animate-pulse) não respeitam prefers-reduced-motion.\", \"sugestao\": \"Adicionar a variante motion-reduce:animate-none nos elementos animados.\"}, {\"severidade\": \"minor\", \"arquivo\": \"app/src/pages/OnboardingPage.tsx\", \"descricao\": \"ProgressTracker usa React.ReactNode, mas o arquivo já importa ReactNode; a referência ao namespace global é inconsistente e o uso de !important (!rounded-full, !px-1.5) no FactorNode é um sinal de override de estilo.\", \"sugestao\": \"Usar o ReactNode já importado e ajustar o IndicatorLabel via variante de tamanho em vez de classes com !important.\"}]}\n```"
+}

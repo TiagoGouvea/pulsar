@@ -48,5 +48,25 @@
     "sha256": "864e5515d84bd887e361709c1ac127a2d966322690432be18a0230adee2c7e2b",
     "asserts": 29,
     "featureId": "F-1.11"
+  },
+  "app/e2e/app-shell.spec.ts": {
+    "sha256": "b5e2d553294acc47df31894521827b4533552bfd03037ea5ffb61f8d4c20b1de",
+    "asserts": 21,
+    "featureId": "F-1.04"
+  },
+  "app/e2e/fixtures.spec.ts": {
+    "sha256": "f43059bde9b2fe96cf30bc0797aec4913432a7251049d5916ca5e42f4118bb34",
+    "asserts": 5,
+    "featureId": "F-1.05"
+  },
+  "app/e2e/onboarding.spec.ts": {
+    "sha256": "83c0f314c85e332112c41cd0d3b0df9e416d1734d2a298fcfbd899c4d6ef8e96",
+    "asserts": 24,
+    "featureId": "F-1.07"
+  },
+  "app/e2e/account-link.spec.ts": {
+    "sha256": "52fe4df7e59bedaa67e113d3c51cdb091cdd1d9971c9b724be93046c68e6615e",
+    "asserts": 35,
+    "featureId": "F-1.09"
   }
 }

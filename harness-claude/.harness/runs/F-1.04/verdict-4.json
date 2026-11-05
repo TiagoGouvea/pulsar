@@ -1,0 +1,35 @@
+[
+  {
+    "kind": "code",
+    "pass": true,
+    "score": 9,
+    "issues": [
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/app/AppShell.tsx",
+        "descricao": "O estado ativo dos itens de navegação usa `pathname === item.path`, o que não marca 'Indicadores' como ativo em sub-rotas como `/indicators/new`.",
+        "sugestao": "Se sub-rotas deveriam manter a aba pai ativa na barra inferior, usar `pathname === item.path || pathname.startsWith(`${item.path}/`)`."
+      }
+    ],
+    "workerId": "gemini-argon"
+  },
+  {
+    "kind": "ui",
+    "pass": true,
+    "score": 9.5,
+    "issues": [],
+    "porCriterio": {
+      "c1": 9.5,
+      "c2": 9.5,
+      "c3": 9.5,
+      "c4": 9.5,
+      "c5": 9.5,
+      "c6": 9,
+      "c7": 9.5,
+      "c8": 9.5,
+      "c9": 10,
+      "c10": 9.5
+    },
+    "workerId": "gemini"
+  }
+]

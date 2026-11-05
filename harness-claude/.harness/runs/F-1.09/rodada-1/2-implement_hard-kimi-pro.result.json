@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T20:01:29.078Z",
+  "workerId": "kimi-pro",
+  "role": "implement_hard",
+  "featureId": "F-1.09",
+  "stage": 1,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.32267224999999994,
+  "durationMs": 608751,
+  "usage": {
+    "inputTokens": 93895,
+    "outputTokens": 8970,
+    "cachedTokens": 1540352,
+    "costUsd": 0.32267224999999994
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"summary\": \"Corrigi as fixtures E2E: contas permanentes criadas diretamente no Auth Emulator agora recebem o documento de usuário esperado, e cliques precoces no widget do Google são reproduzidos após sua inicialização. O teste protegido e o código de produção não foram alterados.\",\n  \"filesChanged\": [\n    \"app/e2e/fixtures.ts\"\n  ],\n  \"testsRun\": [\n    \"yarn lint\",\n    \"yarn format:check\",\n    \"yarn typecheck\",\n    \"yarn test:unit (117 testes)\",\n    \"yarn test:e2e (94 testes)\",\n    \"Google keeps the UID and the records --repeat-each=8 --retries=0 (8 execuções)\"\n  ],\n  \"confidence\": \"high\",\n  \"notes\": \"Todos os gates passaram. app/e2e/account-link.spec.ts permaneceu intacto.\"\n}\n```"
+}

@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-02T18:11:16.851Z",
+  "workerId": "codex-mid",
+  "role": "review_code",
+  "featureId": "F-1.06",
+  "stage": 1,
+  "attempt": 5,
+  "outcome": "success",
+  "costUsd": 0.0690305,
+  "durationMs": 50010,
+  "usage": {
+    "inputTokens": 48997,
+    "outputTokens": 2728,
+    "cachedTokens": 127870
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"pass\": false,\n  \"score\": 3,\n  \"issues\": [\n    {\n      \"severidade\": \"blocker\",\n      \"arquivo\": \"app/src/App.tsx\",\n      \"descricao\": \"As novas páginas removem os atalhos existentes “Registrar agora” e “Novo Indicador”.\",\n      \"sugestao\": \"Preservar as ações já entregues.\"\n    },\n    {\n      \"severidade\": \"blocker\",\n      \"arquivo\": \"app/src/auth/AuthProvider.tsx\",\n      \"descricao\": \"O perfil deixa de ser observado após o onboarding, quebrando a atualização de alterações feitas durante a sessão.\",\n      \"sugestao\": \"Manter a observação do perfil durante a sessão.\"\n    },\n    {\n      \"severidade\": \"major\",\n      \"arquivo\": \"app/src/pages/DashboardPage.tsx\",\n      \"descricao\": \"A feature de testes adiciona telas, consultas e fluxos de dashboard e indicadores fora do escopo.\",\n      \"sugestao\": \"Limitar a mudança à guarda e2e e preservar as telas existentes.\"\n    },\n    {\n      \"severidade\": \"major\",\n      \"arquivo\": \"app/e2e/privacy-mode.spec.ts\",\n      \"descricao\": \"A guarda pode verificar as páginas antes do carregamento dos dados; após reload, também não confirma que as siglas apareceram.\",\n      \"sugestao\": \"Aguardar sinais verificáveis de carregamento e afirmar a presença das siglas antes de verificar as sentinelas.\"\n    },\n    {\n      \"severidade\": \"major\",\n      \"arquivo\": \"app/e2e/privacy-mode.spec.ts\",\n      \"descricao\": \"O teste de observação passa se a nota já estiver visível em data-privacy-allow antes de qualquer abertura explícita.\",\n      \"sugestao\": \"Exigir que a nota esteja ausente antes do clique e visível apenas na área permitida depois dele.\"\n    },\n    {\n      \"severidade\": \"major\",\n      \"arquivo\": \"app/e2e/privacy-mode.spec.ts\",\n      \"descricao\": \"Não há verificação de que os gráficos permanecem sem máscara ao alternar o olho.\",\n      \"sugestao\": \"Verificar um gráfico com dados nos dois estados.\"\n    }\n  ]\n}\n```"
+}

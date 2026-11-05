@@ -1,19 +1,19 @@
 {
-  "ts": "2026-11-02T15:26:41.050Z",
+  "ts": "2026-11-02T15:54:30.848Z",
   "workerId": "codex-mid",
   "role": "review_code",
   "featureId": "F-1.03",
   "stage": 1,
   "attempt": 1,
   "outcome": "success",
-  "costUsd": 0.06626245,
-  "durationMs": 50051,
+  "costUsd": 0.06804985000000001,
+  "durationMs": 60354,
   "usage": {
-    "inputTokens": 44624,
-    "outputTokens": 2745,
-    "cachedTokens": 158269
+    "inputTokens": 45683,
+    "outputTokens": 3119,
+    "cachedTokens": 135437
   },
   "exitCode": 0,
   "timedOut": false,
-  "finalTail": "```json\n{\n  \"pass\": false,\n  \"score\": 6,\n  \"issues\": [\n    {\n      \"severidade\": \"major\",\n      \"arquivo\": \"app/src/auth/AuthProvider.tsx:35\",\n      \"descricao\": \"Ao mudar a autenticação entre abas, o estado anterior permanece visível durante o carregamento. Uma consulta pendente do usuário anterior também pode sobrescrever o estado do usuário atual.\",\n      \"sugestao\": \"Limpar o estado a cada mudança de autenticação e ignorar resultados de consultas e erros pertencentes a estados anteriores.\"\n    },\n    {\n      \"severidade\": \"major\",\n      \"arquivo\": \"app/src/auth/AuthProvider.tsx:41\",\n      \"descricao\": \"O perfil é lido apenas quando a autenticação muda. Se onboardingCompleted mudar durante a sessão, navegar para / pode redirecionar usando o valor antigo.\",\n      \"sugestao\": \"Manter o perfil atualizado ou consultá-lo novamente antes de redirecionar; testar a mudança sem recarregar a página.\"\n    }\n  ]\n}\n```"
+  "finalTail": "```json\n{\n  \"pass\": false,\n  \"score\": 6,\n  \"issues\": [\n    {\n      \"severidade\": \"major\",\n      \"arquivo\": \"app/src/auth/userRepository.ts\",\n      \"descricao\": \"O listener do Firestore pode retornar dados em cache durante falha de rede sem chamar onError. O código os aceita como sucesso e pode direcionar ao onboarding mesmo sem confirmar o perfil.\",\n      \"sugestao\": \"Detectar falha de conexão e exigir confirmação do perfil pelo servidor antes de liberar a navegação; testar a interrupção após a autenticação.\"\n    }\n  ]\n}\n```"
 }

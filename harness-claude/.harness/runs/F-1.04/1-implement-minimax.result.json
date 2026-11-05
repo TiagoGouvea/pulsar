@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-02T16:04:51.171Z",
+  "workerId": "minimax",
+  "role": "implement",
+  "featureId": "F-1.04",
+  "stage": 1,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.012505975999999999,
+  "durationMs": 104451,
+  "usage": {
+    "inputTokens": 76028,
+    "outputTokens": 4891,
+    "cachedTokens": 762368
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"summary\": \"Implementado o AppShell mobile com cabeçalho Pulsar, EyeToggle global, atalho de perfil, navegação inferior ativa e rotas placeholder solicitadas.\",\n  \"filesChanged\": [\n    \"app/src/app/AppShell.tsx\",\n    \"app/src/App.tsx\",\n    \"app/scripts/icons.ts\",\n    \"app/src/design/icons.ts\"\n  ],\n  \"testsRun\": [\n    \"yarn lint\",\n    \"yarn typecheck\",\n    \"yarn format:check\",\n    \"yarn test:unit\",\n    \"yarn build\",\n    \"yarn playwright test e2e/app-shell.spec.ts\",\n    \"yarn playwright test e2e/routes.spec.ts\"\n  ],\n  \"confidence\": \"high\",\n  \"notes\": \"As rotas /dashboard, /register, /indicators, /saved-insights e /settings já estavam registradas em app/e2e/routes.json, portanto o arquivo não exigiu alteração. Todos os 24 testes do AppShell e os 16 gates de rotas passaram em mobile e desktop.\"\n}\n```"
+}

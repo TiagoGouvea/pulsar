@@ -1,0 +1,40 @@
+[
+  {
+    "kind": "code",
+    "pass": false,
+    "score": 5,
+    "issues": [
+      {
+        "severidade": "blocker",
+        "arquivo": "app/src/auth/AuthProvider.tsx",
+        "descricao": "O listener persistente do perfil (watchUserProfile) foi removido para todos os usuários, não só para a conta anônima. Isso quebra o comportamento já entregue de atualização do perfil em tempo real durante a sessão. O teste existente 'keeps the profile up to date when onboardingCompleted changes during the session' foi reescrito para usar a ação explícita, o que enfraquece a cobertura da feature anterior.",
+        "sugestao": "Restaurar o listener para usuários não anônimos (como antes) e manter o teste original. Se a intenção é só evitar listener na conta anônima, condicionar apenas o caso isAnonymous. Não reescrever testes de features entregues para acomodar a mudança."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/auth/userRepository.ts",
+        "descricao": "Com a remoção de watchUserProfile do AuthProvider, a função pode ter ficado sem uso (código morto), e o diff não a remove nem a justifica.",
+        "sugestao": "Verificar usos de watchUserProfile; se não houver, remover ou reutilizar a função conforme a decisão do item anterior."
+      },
+      {
+        "severidade": "major",
+        "arquivo": "app/src/auth/linkAccount.ts",
+        "descricao": "completeEmailLinkOnce chama fetchSignInMethodsForEmail antes de vincular. Isso consulta a existência do e-mail no Auth antes da vinculação e falha silenciosamente (.catch(() => [])). O comentário afirma que não é sonda de enumeração, mas a chamada revela a existência de contas a quem tem apenas o link de ação, e o fallback de erro deixa o fluxo sem a checagem.",
+        "sugestao": "Confiar no erro auth/email-already-in-use de linkWithCredential como fonte única de conflito (já tratado em conflictFromError), ou documentar explicitamente a decisão de privacidade e o impacto da consulta."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/design/Sheet.tsx",
+        "descricao": "A alteração de z-50 para z-[60] no componente compartilhado Sheet afeta todas as telas que usam o componente, mas não é exigida pela feature de forma documentada.",
+        "sugestao": "Confirmar que a mudança é necessária (sobreposição com outra camada) e que não altera outras telas já entregues, ou isolar o ajuste na SettingsPage."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/e2e/fixtures.ts",
+        "descricao": "Os workarounds de teste (monkeypatch global de fetch e replay de cliques no widget do emulador) são invasivos. Estão restritos ao spec de account-link, mas o monkeypatch global em globalThis.fetch é frágil se houver requisições concorrentes.",
+        "sugestao": "Limitar o patch de fetch ao escopo do helper de criação de contas (passando uma função de criação em vez de substituir o fetch global)."
+      }
+    ],
+    "workerId": "haiku"
+  }
+]

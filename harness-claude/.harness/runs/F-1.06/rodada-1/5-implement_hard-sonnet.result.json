@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T18:01:58.996Z",
+  "workerId": "sonnet",
+  "role": "implement_hard",
+  "featureId": "F-1.06",
+  "stage": 1,
+  "attempt": 5,
+  "outcome": "success",
+  "costUsd": 0.1959671,
+  "durationMs": 29993,
+  "usage": {
+    "inputTokens": 54412,
+    "outputTokens": 3707,
+    "cachedTokens": 228751,
+    "costUsd": 0.1959671
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": ".\n\nO que mudei:\n- **`src/App.tsx`:** `/dashboard` agora renderiza `<DashboardPage />` e `/indicators` renderiza `<IndicatorsPage />`, no lugar do `PlaceholderPage`. Isso devolve o botão \"Ver observação\" com `data-privacy-allow` e a leitura de `users/{uid}/indicators` por `IndicatorLabel`. As outras rotas continuam com `PlaceholderPage`.\n- **`src/auth/AuthProvider.tsx`:** o listener de `users/{uid}` só abre enquanto `onboardingCompleted` for falso. Ele se encerra quando o perfil chega com `onboardingCompleted` verdadeiro. A ideia é o `networkidle` fechar sem cair no fallback de 5s, para o smoke de 9 rotas caber em 30s.\n\n`OnboardingPage` já tem o `EyeToggle` no header (`src/pages/OnboardingPage.tsx:499`), então não precisei mexer nele. Não encontrei nenhum `WelcomePage` e não pesquisei o repositório por ele (sem Bash/Grep). Se esse componente existir com o toggle removido, falta recolocá-lo.\n\nComo o Bash foi negado, o estado do `HEAD` e o que o diff completo contém também não foram checados. `loadIndicators` e `loadEntryNotes` existem e batem com o que as páginas importam.\n\nPreciso do Bash liberado para rodar os gates. Se preferir, rode você `yarn lint && yarn typecheck && yarn test:unit && yarn test:e2e`.\n\n```json\n{\"summary\":\"Rewired /dashboard and /indicators to the real pages (DashboardPage, IndicatorsPage) and restricted the users/{uid} listener to the pending-onboarding phase, so the app stays network-idle after onboarding. No gates run: Bash was denied.\",\"filesChanged\":[\"app/src/App.tsx\",\"app/src/auth/AuthProvider.tsx\"],\"testsRun\":[],\"confidence\":\"low\",\"notes\":\"Bash denied in don't-ask mode, so lint/typecheck/unit/e2e were not run and nothing is verified. OnboardingPage already has EyeToggle. No WelcomePage file was found or searched for; if it exists without the toggle, it still needs fixing. stopProfile() is called inside the snapshot callback; if a snapshot fires synchronously before assignment it could be a no-op, which should be checked in unit tests.\"}\n```"
+}

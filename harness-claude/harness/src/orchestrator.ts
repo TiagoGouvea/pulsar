@@ -199,8 +199,8 @@ export class Orchestrator {
   /** Crash recovery: in_progress -> failing, orphan worktrees removed (attempts are only counted when finished). */
   private async recover() {
     const reset = resetInProgress(this.ctx);
-    // init keeps its partial scaffold; unfinished features keep their code and continue from it
-    const pending = new Set(loadFeatures(this.ctx).features.filter((f) => f.status === "failing").map((f) => f.id));
+    // init keeps its partial scaffold; unfinished and blocked features keep their code and continue from it
+    const pending = new Set(loadFeatures(this.ctx).features.filter((f) => f.status === "failing" || f.status === "blocked").map((f) => f.id));
     const removed = await g.pruneOrphans(this.ctx.repo, (n) => n === "init" || n.startsWith("stage-") || pending.has(n));
     if (reset.length || removed.length) log(`retomada: features reiniciadas [${reset}] worktrees removidas [${removed}]`);
   }
@@ -338,11 +338,11 @@ export class Orchestrator {
     return hard ? "implement_hard" : f.difficulty === "easy" && this.ctx.config.roles.implement_easy ? "implement_easy" : "implement";
   }
 
-  private async block(f: Feature, reason: string, wt?: string) {
+  /** The worktree stays: once unblocked (status back to failing) the feature continues from its last attempt. */
+  private async block(f: Feature, reason: string) {
     updateFeature(this.ctx, f.id, (x) => { x.status = "blocked"; x.blockedReason = reason; });
     addQuestion(this.ctx, { featureId: f.id, pergunta: `A feature ${f.id} (${f.title}) foi bloqueada: ${reason}. Como devemos seguir?`, escolhido: "seguir com as demais features", alternativas: ["ajustar a spec/critérios", "simplificar a feature", "aceitar sem ela nesta etapa"], impacto: "a feature não está no preview" });
     addRisk(this.ctx, { featureId: f.id, risco: `feature bloqueada: ${reason}`, probabilidade: "alta", impacto: "médio", sugestao: "responder em DUVIDAS.md ou pedir ajuste" });
-    if (wt) await g.removeWorktree(this.ctx.repo, f.id);   // attempts stay in .harness/runs/<id>
     this.progress(`⛔ ${f.id} BLOQUEADA: ${reason} │ ${this.stageCount(f.stage)}`);
     await notify(this.ctx, "blocked", `${f.id} bloqueada: ${reason}`);
   }
@@ -353,8 +353,8 @@ export class Orchestrator {
     try {
       await this.featureLoop(f0, wt);
     } catch (e) {
-      if (e instanceof BudgetError && e.cap === "feature") return this.block(f0, "teto de custo da feature atingido", wt);
-      if (e instanceof NoWorkerError) return this.block(f0, e.message, wt);
+      if (e instanceof BudgetError && e.cap === "feature") return this.block(f0, "teto de custo da feature atingido");
+      if (e instanceof NoWorkerError) return this.block(f0, e.message);
       throw e;
     }
   }
@@ -402,10 +402,10 @@ export class Orchestrator {
     let f = await this.ensureAcceptanceTests(f0, wt);
     const testsBase = await g.head(wt);
     const last = f0.history.at(-1);
-    let diag = last ? `Retomada após interrupção: continue a partir do código já presente. Tentativa anterior: ${last.outcome}${last.failedGates?.length ? ` (gates ${last.failedGates.join(",")})` : ""}.` : "";
+    let diag = last ? `Retomada após interrupção: continue a partir do código já presente. Tentativa anterior: ${last.outcome}${last.failedGates?.length ? ` (gates ${last.failedGates.join(",")})` : ""}.${last.note ? `\n${last.note}` : ""}` : "";
     for (;;) {
       f = loadFeatures(ctx).features.find((x) => x.id === f0.id)!;
-      if (f.attempts >= cfg.maxAttemptsPerFeature) return this.block(f, `limite de ${cfg.maxAttemptsPerFeature} tentativas atingido`, wt);
+      if (f.attempts >= cfg.maxAttemptsPerFeature) return this.block(f, `limite de ${cfg.maxAttemptsPerFeature} tentativas atingido`);
       const attempt = f.attempts + 1;
       const role = this.roleFor(f);
       const integ = await g.integrate(wt, this.branch);

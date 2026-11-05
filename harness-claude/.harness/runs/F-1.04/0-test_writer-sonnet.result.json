@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T16:02:19.259Z",
+  "workerId": "sonnet",
+  "role": "test_writer",
+  "featureId": "F-1.04",
+  "stage": 1,
+  "attempt": 0,
+  "outcome": "success",
+  "costUsd": 0.1250909,
+  "durationMs": 35912,
+  "usage": {
+    "inputTokens": 26125,
+    "outputTokens": 4034,
+    "cachedTokens": 194464,
+    "costUsd": 0.1250909
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "Não rodei os testes: o emulador e o Playwright precisam do trinco de portas, e eu não quis subir servidores. Os testes devem falhar hoje, porque as rotas e o AppShell ainda não existem.\n\n```json\n{\"summary\":\"Escrevi app/e2e/app-shell.spec.ts, que cobre os 4 critérios de aceite da F-1.04. Atualizei e2e/routes.json com /register, /indicators, /saved-insights e /settings.\",\"filesChanged\":[\"app/e2e/app-shell.spec.ts\",\"app/e2e/routes.json\"],\"testsRun\":[],\"confidence\":\"med\",\"notes\":\"O spec cobre: olho presente em /dashboard, /register, /indicators, /saved-insights e /settings; cabeçalho com 'Pulsar' e link do perfil para /settings; navegação inferior com 4 links, cada um com um svg; aria-current=page só no item ativo; clique nos itens navega; estado do olho (aria-pressed) persiste entre abas; alvos de toque >= 44px; sem overflow horizontal e <main> com no máximo 960px (container-app) tanto no projeto mobile quanto no desktop; barra inferior dentro do viewport. A implementação precisa usar header (role banner), nav, main, e o olho precisa expor aria-pressed. O link do perfil precisa ser <a href=\\\"/settings\\\"> dentro do header. A ausência de breakpoints de desktop não tem teste direto; só é verificada indiretamente pelos checks de overflow e largura nos dois projetos.\"}\n```"
+}

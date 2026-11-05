@@ -71,10 +71,10 @@ workers:
 roles:
   # Etapa 1: só remotos (locais desligados); a ordem só desempata, quem escolhe é o roteador (histórico e preço).
   initializer:     { pool: [opus],                              note: "decompõe spec, scaffold, design system" }
-  test_writer:     { pool: [codex-mid, sonnet],                 note: "escreve testes de aceite ANTES da implementação (fim da etapa 1: codex-mid primeiro, ~35% mais barato)" }
-  implement:       { pool: [haiku, minimax, glm-or, glm],       note: "features comuns (fim da etapa 1: sem qwen-coder/kimi/deepseek-flash, 0 sucessos, lentos)" }
-  implement_easy:  { pool: [haiku, glm-flash, deepseek-flash, minimax], note: "features difficulty=easy" }
-  implement_hard:  { pool: [sonnet, kimi-pro],                  note: "estatística, security rules e difficulty=hard (fim da etapa 1: sem opus, US$ 0,55/tentativa)" }
+  test_writer:     { pool: [codex-mid, glm-or],                 note: "escreve testes de aceite ANTES da implementação (sem sonnet: US$ 5 só de testes na etapa 1)" }
+  implement:       { pool: [minimax, haiku, glm-or, codex-mid], note: "features comuns (sem qwen-coder/kimi/deepseek-flash: 0 sucessos, lentos)" }
+  implement_easy:  { pool: [minimax, glm-flash, haiku],         note: "features difficulty=easy" }
+  implement_hard:  { pool: [codex-mid, glm-or, kimi-pro],       note: "estatística, security rules e difficulty=hard (sem opus/sonnet: US$ 10,65 com 8/37 sucessos na etapa 1; como o harness do Codex)" }
   review_code:     { pool: [gemini, glm-or, gemini-argon, codex-mid, haiku, sonnet], rule: different_family_from_implementer }
   review_ui:       { pool: [gemini, gemini-argon, haiku, sonnet],                    rule: different_family_from_implementer, requires: vision }
   triage:          { pool: [haiku, glm-flash, deepseek-flash, gemini-lite] }   # deepseek v4-pro saiu: 4-5 min e até US$ 0,64 por triagem

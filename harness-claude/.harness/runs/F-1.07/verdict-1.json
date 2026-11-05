@@ -1,0 +1,108 @@
+[
+  {
+    "kind": "code",
+    "pass": true,
+    "score": 7,
+    "issues": [
+      {
+        "severidade": "major",
+        "arquivo": "app/src/pages/OnboardingPage.tsx",
+        "descricao": "Nomes de indicadores são renderizados como texto puro (ex.: 'Nível de Energia', 'Concentração / Foco', 'Dor de Cabeça', 'Direção Desejável Personalizada') em vez de passar por <IndicatorLabel>. Com o Modo Siglas ativo, esses nomes continuariam visíveis, violando a regra de privacidade.",
+        "sugestao": "Trocar os nomes de indicadores dos cards da etapa 2 (e demais ocorrências de indicadores) por <IndicatorLabel>, mantendo os textos explicativos como estão."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/pages/OnboardingPage.tsx",
+        "descricao": "Cores hexadecimais fixas nos gradientes e stops do SVG (#0051d5, #316bf3, #630ed4, #7c3aed) contornam os tokens do design system em app/src/design/.",
+        "sugestao": "Usar classes/tokens de cor (fill-*, stroke-*, text-*) ou variáveis CSS do tema, como nos demais elementos do SVG."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/pages/OnboardingPage.tsx",
+        "descricao": "Arquivo com 717 linhas e vários componentes internos (FactorsHero, FactorsSandbox, ResultsHero, ConvergenceDiagram, Guarantee etc.) com SVGs longos e dados de demonstração inline. Isso vai contra a diretriz de código mínimo do CLAUDE.md e dificulta a manutenção.",
+        "sugestao": "Extrair as ilustrações (hero e diagrama) e os dados de demonstração para módulos próprios em app/src/pages/onboarding/ e simplificar os blocos repetidos (ex.: linhas de sliders e garantias) com um mapa de dados."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/pages/OnboardingPage.tsx",
+        "descricao": "Valores de demonstração como 'r = +0.68', 'N = 28 dias', '7.4 / 5.8' e '+27%' são exibidos como se fossem resultados reais do usuário, sem indicação de que são exemplos ilustrativos.",
+        "sugestao": "Deixar explícito na interface que são exemplos ilustrativos (ex.: 'Exemplo ilustrativo'), sem depender somente do comentário do código."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/pages/OnboardingPage.tsx",
+        "descricao": "A função finish() descarta o erro no catch sem registrá-lo. Além disso, ProgressTracker usa React.ReactNode sem importar React, enquanto o restante do arquivo importa ReactNode diretamente.",
+        "sugestao": "Registrar o erro (ex.: console.error ou um logger) e usar o tipo ReactNode importado, de forma consistente com CodeLabel."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/pages/OnboardingPage.tsx",
+        "descricao": "Na etapa 1 há dois botões 'Pular introdução' (um no cabeçalho e outro no rodapé), o que duplica a ação e pode confundir a navegação por leitor de tela.",
+        "sugestao": "Manter um único controle de 'Pular' por etapa, ou diferenciar os rótulos/aria-labels."
+      }
+    ],
+    "workerId": "haiku"
+  },
+  {
+    "kind": "ui",
+    "pass": false,
+    "score": 6.8,
+    "issues": [
+      {
+        "severidade": "major",
+        "tela": "onboarding-mobile-privado / onboarding-mobile-nomes",
+        "descricao": "Evidência incompleta: há capturas apenas do passo 1 de 3 (Fatores), em mobile e desktop. Os passos 2 (Resultados) e 3 (Ciência pessoal) não foram capturados, então o tutorial de três telas não pode ser avaliado por inteiro. Os scores acima refletem só o passo 1.",
+        "sugestao": "Gerar capturas dos passos 2 e 3 em mobile (375px) e desktop, nos modos privado e nomes, e reavaliar."
+      },
+      {
+        "severidade": "major",
+        "tela": "onboarding-mobile-privado / onboarding-mobile-nomes",
+        "descricao": "Na diagrama do hero, o pill 'Q10 Suplemento' sobrepõe o pill 'SLP Leitura' em 375px (a borda direita de um encosta na esquerda do outro, cortando o rótulo 'Suplemento'). Ocorre nos dois modos.",
+        "sugestao": "Reduzir o raio da órbita ou o tamanho dos pills no mobile, ou encurtar o rótulo, para que os quatro nós não se sobreponham em 375px."
+      },
+      {
+        "severidade": "major",
+        "tela": "onboarding-mobile-privado / onboarding-mobile-nomes",
+        "descricao": "No card 'Exemplos práticos de registro', o nome 'Café Expresso' aparece truncado como 'Café Expre…' por falta de largura, perdendo informação no celular. O mockup mostra o nome completo.",
+        "sugestao": "Permitir quebra de linha no título do item (ou reduzir o stepper/alinhar as colunas) para que 'Café Expresso' caiba em 375px sem reticências."
+      },
+      {
+        "severidade": "minor",
+        "tela": "onboarding-mobile-nomes",
+        "descricao": "O tutorial mostra siglas (CAF, EXE, Q10, SLP) mesmo no modo 'nomes'. A tela não tem o toggle de privacidade, então não está claro se deve reagir ao modo privado. Não há especificação visível sobre isso.",
+        "sugestao": "Confirmar na spec (docs/) se o tutorial segue o modo de privacidade; se sim, aplicar o rótulo completo no modo 'nomes'; se não, documentar a exceção."
+      },
+      {
+        "severidade": "minor",
+        "tela": "onboarding-mobile-privado",
+        "descricao": "Divergência do mockup onboarding_1: o cabeçalho usa wordmark 'PULSAR' e um pill 'Pular introdução' em vez do rótulo 'PULSAR // BIO-EXP' com seta de voltar e avatar; a seta do botão 'Próximo: Resultados' fica à esquerda, enquanto o mockup a coloca à direita.",
+        "sugestao": "Alinhar a seta do CTA ao mockup (à direita) e revisar o cabeçalho com a spec; se o desvio for intencional, registrar a decisão."
+      },
+      {
+        "severidade": "minor",
+        "tela": "onboarding-mobile-privado",
+        "descricao": "A tag 'PASSO 1 DE 3 • FATORES', o rótulo 'FATORES' do progresso e a barra de progresso usam violeta, cor de resultados, enquanto os tokens reservam o indigo para fatores. Os chips de fator (EXE/CAF/Q10) já usam azul corretamente.",
+        "sugestao": "Usar o indigo (secondary) para a identidade 'Fatores' no passo 1 e o violeta só no passo de resultados, para manter a distinção por cor."
+      },
+      {
+        "severidade": "minor",
+        "tela": "onboarding-mobile-privado",
+        "descricao": "O título 'Observe sua rotina sem burocracia' quebra deixando 'burocracia' sozinho na segunda linha.",
+        "sugestao": "Ajustar o texto ou o max-width do título para um quebra de linha mais equilibrado, ou usar text-wrap: balance."
+      }
+    ],
+    "porCriterio": {
+      "c1": 7,
+      "c2": 7,
+      "c3": 6,
+      "c4": 8,
+      "c5": 7,
+      "c6": 5,
+      "c7": 8,
+      "c8": 6,
+      "c9": 6,
+      "c10": 8
+    },
+    "workerId": "haiku"
+  }
+]

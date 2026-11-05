@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T17:31:24.583Z",
+  "workerId": "gemini-lite",
+  "role": "triage",
+  "featureId": "F-1.06",
+  "stage": 1,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.0012422499999999999,
+  "durationMs": 2199,
+  "usage": {
+    "inputTokens": 3979,
+    "outputTokens": 165,
+    "cachedTokens": 0,
+    "costUsd": 0.0012422499999999999
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "{\"causaRaiz\": \"A falha generalizada nos testes e2e de `privacy-mode.spec.ts` decorre da ausência de implementação das páginas `/dashboard` e `/indicators`, cujos elementos esperados (indicadores, observações) não estão sendo renderizados na interface. O app tenta acessar rotas inexistentes ou incompletas, levando ao erro de visibilidade (`toBeVisible`) no `body` ou falhas de asserção por falta de conteúdo na DOM.\", \"categoria\": \"logic\", \"padrao\": false, \"dica\": \"Aguarde a implementação das funcionalidades de indicadores e dashboard antes de validar a lógica de privacidade nestas rotas, ou mocke o conteúdo necessário no app para que os testes não encontrem a DOM vazia.\"}"
+}

@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T16:20:54.059Z",
+  "workerId": "haiku",
+  "role": "review_code",
+  "featureId": "F-1.05",
+  "stage": 1,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.003777895,
+  "durationMs": 18684,
+  "usage": {
+    "inputTokens": 15607,
+    "outputTokens": 3424,
+    "cachedTokens": 11507,
+    "costUsd": 0.003777895
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "[{\"severidade\": \"major\", \"arquivo\": \"app/vite.config.ts\", \"descricao\": \"A flag __PULSAR_TEST_HELPER__ é true para qualquer mode diferente de 'production' (ex.: `vite build --mode staging`), não só para builds de emulador. Assim, um build não-produção publicado com Firebase real também expõe window.__pulsarTest, contrariando a feature (\\\"em builds de emulador\\\") e a regra de que o helper nunca vai para produção.\", \"sugestao\": \"Ativar a flag só para o modo de emulador explícito, por exemplo `mode === 'emulator'` ou `VITE_USE_EMULATORS === 'true'` lido de `loadEnv(mode, ...)`, e não para todo mode que não seja 'production'.\"}, {\"severidade\": \"minor\", \"arquivo\": \"app/vite.config.ts\", \"descricao\": \"`process.env.VITE_USE_EMULATORS` não reflete o `.env`, que o Vite carrega em import.meta.env/loadEnv e não em process.env. Com o flag definido só no .env, o app liga aos emuladores mas o helper não é incluído.\", \"sugestao\": \"Usar `loadEnv(mode, process.cwd(), '')` dentro do defineConfig callback para ler VITE_USE_EMULATORS da mesma fonte que o app usa.\"}, {\"severidade\": \"minor\", \"arquivo\": \"app/e2e/fixtures.ts\", \"descricao\": \"contextOptions copia campo a campo oito opções de testInfo.project.use. Isso é verboso para o estilo de código mínimo do projeto e fácil de desatualizar.\", \"sugestao\": \"Usar `const { baseURL, locale, timezoneId, viewport, deviceScaleFactor, isMobile, hasTouch } = testInfo.project.use;` e passar o objeto direto ao newContext, já que undefined é ignorado pelo Playwright.\"}, {\"severidade\": \"minor\", \"arquivo\": \"app/e2e/fixtures.spec.ts\", \"descricao\": \"O critério de aceite diz \\\"verificado por busca no dist/\\\", mas o teste compila para um diretório temporário com `--outDir`. Isso não confere o dist/ real e depende de como o script `build` repassa os argumentos extras.\", \"sugestao\": \"Manter o diretório temporário (isola o teste) e documentar a divergência, ou verificar dist/ após o build normal. Confirmar que `yarn build --outDir` chega ao `vite build`.\"}]}\n```"
+}

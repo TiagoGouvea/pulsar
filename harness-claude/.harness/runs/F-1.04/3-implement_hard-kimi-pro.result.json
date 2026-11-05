@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T16:34:47.536Z",
+  "workerId": "kimi-pro",
+  "role": "implement_hard",
+  "featureId": "F-1.04",
+  "stage": 1,
+  "attempt": 3,
+  "outcome": "success",
+  "costUsd": 0.095838,
+  "durationMs": 159537,
+  "usage": {
+    "inputTokens": 39645,
+    "outputTokens": 3375,
+    "cachedTokens": 390400,
+    "costUsd": 0.095838
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "Correções aplicadas conforme o diagnóstico:\n- Infraestrutura de e2e e helper de testes preservados.\n- `Toggle` e `EyeToggle` restaurados ao comportamento anterior.\n- `/onboarding` voltou a usar `HomePlaceholder`, sem `AppShell`.\n- Comentário de `BrandMark` corrigido.\n- Tokens `pt-safe`, `pb-safe`, `--container-app` e `px-margin` confirmados em `tokens.css`.\n- Teste protegido `app/e2e/app-shell.spec.ts` não alterado.\n\n```json\n{\n  \"summary\": \"AppShell validado e problemas apontados na revisão corrigidos sem alterar testes protegidos ou infraestrutura existente.\",\n  \"filesChanged\": [\n    \"app/src/App.tsx\",\n    \"app/src/design/BrandMark.tsx\",\n    \"app/src/design/EyeToggle.tsx\",\n    \"app/src/design/Toggle.tsx\"\n  ],\n  \"testsRun\": [\n    \"yarn lint\",\n    \"yarn typecheck\",\n    \"yarn test:unit (13 arquivos, 102 testes)\",\n    \"yarn test:e2e e2e/app-shell.spec.ts (24 testes)\",\n    \"yarn format:check\"\n  ],\n  \"confidence\": \"high\",\n  \"notes\": \"Todos os comandos passaram. O teste protegido permaneceu inalterado.\"\n}\n```"
+}

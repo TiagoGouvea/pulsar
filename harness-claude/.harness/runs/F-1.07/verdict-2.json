@@ -1,0 +1,84 @@
+[
+  {
+    "kind": "code",
+    "pass": true,
+    "score": 7,
+    "issues": [
+      {
+        "severidade": "major",
+        "arquivo": "app/src/pages/OnboardingPage.tsx",
+        "descricao": "O passo 3 mostra estatísticas fixas (r = +0.68, N = 28 dias, médias 7.4 vs 5.8) como se fossem resultados do usuário, sem rótulo de exemplo. Só o passo 1 é identificado como demonstrativo.",
+        "sugestao": "Marcar o bloco de associação e o cartão de correlação como exemplo ilustrativo (ex.: 'Exemplo ilustrativo'), para o usuário não confundir os números com dados reais."
+      },
+      {
+        "severidade": "major",
+        "arquivo": "app/src/pages/OnboardingPage.tsx",
+        "descricao": "Cores hexadecimais fixas nos gradientes e círculos SVG (#0051d5, #316bf3, #630ed4, #7c3aed) em vez de tokens do design system, o que contraria a regra de usar app/src/design/.",
+        "sugestao": "Trocar por classes/tokens do tema (ex.: fill-primary, stop-color via classes ou variáveis CSS) ou centralizar as cores do gráfico em constantes do design system."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/pages/OnboardingPage.tsx",
+        "descricao": "Arquivo de 780 linhas com sete subcomponentes e muito SVG decorativo num único módulo, contrariando a preferência do projeto por código mínimo.",
+        "sugestao": "Extrair cada passo para um arquivo em pages/onboarding/ (ou components/) e reduzir o SVG repetido, sem alterar o visual."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/pages/OnboardingPage.tsx",
+        "descricao": "Animações (animate-bounce, animate-ping, animate-pulse) não respeitam prefers-reduced-motion.",
+        "sugestao": "Adicionar a variante motion-reduce:animate-none nos elementos animados."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/pages/OnboardingPage.tsx",
+        "descricao": "ProgressTracker usa React.ReactNode, mas o arquivo já importa ReactNode; a referência ao namespace global é inconsistente e o uso de !important (!rounded-full, !px-1.5) no FactorNode é um sinal de override de estilo.",
+        "sugestao": "Usar o ReactNode já importado e ajustar o IndicatorLabel via variante de tamanho em vez de classes com !important."
+      }
+    ],
+    "workerId": "haiku"
+  },
+  {
+    "kind": "ui",
+    "pass": true,
+    "score": 7.5,
+    "issues": [
+      {
+        "severidade": "major",
+        "tela": "onboarding (passos 2 e 3 do tutorial)",
+        "descricao": "Só o Passo 01 de 3 (Fatores) foi capturado, nos dois modos e em mobile e desktop. Os passos 2 (Resultados) e 3 (Associações) não aparecem nos screenshots, então a distinção Fatores × Resultados e a consistência dos três passos não puderam ser avaliadas.",
+        "sugestao": "Capturar os passos 2 e 3 do tutorial em mobile (375px) e desktop, com e sem modo privado, e reavaliar."
+      },
+      {
+        "severidade": "major",
+        "tela": "onboarding (comparação com mockups)",
+        "descricao": "A comparação foi feita com os mockups de dashboard e conclusões, não com design/onboarding_1_fatores, onboarding_2_resultados e onboarding_3_associa_es. A fidelidade do tutorial ao mockup de referência não foi verificada.",
+        "sugestao": "Comparar cada passo do tutorial com o screen.png e o code.html da pasta de onboarding correspondente e registrar desvios de estrutura, classes e textos."
+      },
+      {
+        "severidade": "minor",
+        "tela": "onboarding-desktop-privado / onboarding-desktop-nomes",
+        "descricao": "No desktop, o diagrama central fica pequeno (rótulos em torno de 11px) e centralizado com muito espaço vazio. A legibilidade dos chips de fator fica abaixo do ideal.",
+        "sugestao": "Aumentar levemente o tamanho do diagrama ou dos chips no desktop, mantendo a largura máxima de leitura."
+      },
+      {
+        "severidade": "minor",
+        "tela": "onboarding-mobile-nomes",
+        "descricao": "Com os nomes completos (ex.: 'Coenzima Q10', 'Exercício Físico'), os chips do diagrama ficam próximos da borda do cartão. Não há corte, mas a folga é pequena para nomes mais longos.",
+        "sugestao": "Testar com nomes de até cerca de 24 caracteres em 360px e, se necessário, permitir quebra de linha ou truncamento com reticências nos chips do diagrama."
+      }
+    ],
+    "porCriterio": {
+      "c1": 7,
+      "c2": 7,
+      "c3": 8,
+      "c4": 8,
+      "c5": 8,
+      "c6": 6,
+      "c7": 8,
+      "c8": 7,
+      "c9": 8,
+      "c10": 8
+    },
+    "workerId": "haiku"
+  }
+]

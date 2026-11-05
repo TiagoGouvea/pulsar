@@ -1,0 +1,58 @@
+[
+  {
+    "kind": "code",
+    "pass": false,
+    "score": 5,
+    "issues": [
+      {
+        "severidade": "major",
+        "arquivo": "app/src/App.tsx",
+        "descricao": "Escopo: o diff implementa as telas reais de /dashboard (DashboardPage) e /indicators (IndicatorsPage), com repositórios próprios, substituindo os placeholders. A F-1.06 é uma guarda e2e do modo privado e não pede essas telas, que pertencem a outras features.",
+        "sugestao": "Manter na F-1.06 apenas os testes e os ajustes mínimos para expor os atributos de privacidade. Mover as telas e os repositórios para as features de indicadores e registros, ou separá-los em outra feature."
+      },
+      {
+        "severidade": "major",
+        "arquivo": "app/src/auth/AuthProvider.tsx",
+        "descricao": "Mudança em código de auth/onboarding já entregue, sem relação com a F-1.06. Após onboardingCompleted, o perfil deixa de ser observado em tempo real. Se qualquer campo do perfil mudar depois (outra aba, outro dispositivo, tela de configurações), o estado fica desatualizado até recarregar. A justificativa do comentário ('no subscribed field remains') não é verificada por nenhum teste.",
+        "sugestao": "Reverter esta alteração nesta feature. Se a otimização for desejada, fazê-la em feature própria, com teste de regressão que cubra atualização de perfil."
+      },
+      {
+        "severidade": "major",
+        "arquivo": "app/src/features/records/entryRepository.ts",
+        "descricao": "loadEntryNotes lê toda a coleção users/{uid}/entries (sem where, limit ou orderBy) a cada montagem do dashboard. Isso traz valores de todos os registros para a memória, apesar do docstring dizer que os valores ficam fora da visão. O custo cresce com o histórico. O cabeçalho 'Observação do dia' também não bate com o conteúdo, pois exibe notas de todas as datas.",
+        "sugestao": "Filtrar no Firestore pelas entradas que têm nota (ou limitar a uma consulta paginada), projetar apenas os campos necessários e ajustar o título ao escopo real dos dados."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/e2e/support.ts",
+        "descricao": "SENTINELS é construído com Object.assign sobre um array, misturando acesso por índice e por chave nomeada. É um artifício pouco legível e contraria a instrução de código mínimo e objetivo.",
+        "sugestao": "Usar um objeto simples (por exemplo SENTINELS.energy, SENTINELS.sleep) e derivar a lista com Object.values quando precisar iterar."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/e2e/privacy-mode.spec.ts",
+        "descricao": "O teste de observações usa um if condicional (allowed.count() === 0) para decidir se clica no botão. O fluxo não é determinístico e o teste pode passar por caminhos diferentes. Além disso, o teste 'closed eye: seeded indicators' verifica apenas toContainText('SON'), uma asserção fraca por substring.",
+        "sugestao": "Fazer o clique em 'Ver observação' de forma explícita e obrigatória, sem condicional. Usar asserções exatas, por exemplo pelo texto da sigla em um locator de badge."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/pages/DashboardPage.tsx",
+        "descricao": "Duplicação: o padrão de useEffect com flag 'active' e busca por user se repete em DashboardPage e IndicatorsPage. O catch do DashboardPage também engole o erro (setNotes([])) sem estado de erro visível, ao contrário do IndicatorsPage.",
+        "sugestao": "Extrair um hook compartilhado de carregamento (por exemplo useUserData(loader)) e tratar o erro da mesma forma nas duas telas."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/pages/IndicatorsPage.tsx",
+        "descricao": "Se user for null, o estado loading permanece true e a tela mostra 'Carregando indicadores…' indefinidamente.",
+        "sugestao": "Tratar explicitamente o caso sem usuário (por exemplo, não renderizar o conteúdo ou definir loading=false) ou garantir que a rota só monte com usuário autenticado."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/pages/WelcomePage.tsx",
+        "descricao": "O EyeToggle foi adicionado à tela de boas-vindas, que não está descrita na spec da F-1.06. Só se justifica se a varredura de rotas exigir o olho em todas as rotas de routes.json.",
+        "sugestao": "Confirmar que a rota de boas-vindas está em e2e/routes.json e que a inclusão é necessária. Caso contrário, remover."
+      }
+    ],
+    "workerId": "haiku"
+  }
+]

@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T17:22:42.053Z",
+  "workerId": "haiku",
+  "role": "review_ui",
+  "featureId": "F-1.07",
+  "stage": 1,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.015574585,
+  "durationMs": 58818,
+  "usage": {
+    "inputTokens": 66035,
+    "outputTokens": 12870,
+    "cachedTokens": 88536,
+    "costUsd": 0.015574585
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "', o nome 'Café Expresso' aparece truncado como 'Café Expre…' por falta de largura, perdendo informação no celular. O mockup mostra o nome completo.\", \"sugestao\": \"Permitir quebra de linha no título do item (ou reduzir o stepper/alinhar as colunas) para que 'Café Expresso' caiba em 375px sem reticências.\"}, {\"severidade\": \"minor\", \"tela\": \"onboarding-mobile-nomes\", \"descricao\": \"O tutorial mostra siglas (CAF, EXE, Q10, SLP) mesmo no modo 'nomes'. A tela não tem o toggle de privacidade, então não está claro se deve reagir ao modo privado. Não há especificação visível sobre isso.\", \"sugestao\": \"Confirmar na spec (docs/) se o tutorial segue o modo de privacidade; se sim, aplicar o rótulo completo no modo 'nomes'; se não, documentar a exceção.\"}, {\"severidade\": \"minor\", \"tela\": \"onboarding-mobile-privado\", \"descricao\": \"Divergência do mockup onboarding_1: o cabeçalho usa wordmark 'PULSAR' e um pill 'Pular introdução' em vez do rótulo 'PULSAR // BIO-EXP' com seta de voltar e avatar; a seta do botão 'Próximo: Resultados' fica à esquerda, enquanto o mockup a coloca à direita.\", \"sugestao\": \"Alinhar a seta do CTA ao mockup (à direita) e revisar o cabeçalho com a spec; se o desvio for intencional, registrar a decisão.\"}, {\"severidade\": \"minor\", \"tela\": \"onboarding-mobile-privado\", \"descricao\": \"A tag 'PASSO 1 DE 3 • FATORES', o rótulo 'FATORES' do progresso e a barra de progresso usam violeta, cor de resultados, enquanto os tokens reservam o indigo para fatores. Os chips de fator (EXE/CAF/Q10) já usam azul corretamente.\", \"sugestao\": \"Usar o indigo (secondary) para a identidade 'Fatores' no passo 1 e o violeta só no passo de resultados, para manter a distinção por cor.\"}, {\"severidade\": \"minor\", \"tela\": \"onboarding-mobile-privado\", \"descricao\": \"O título 'Observe sua rotina sem burocracia' quebra deixando 'burocracia' sozinho na segunda linha.\", \"sugestao\": \"Ajustar o texto ou o max-width do título para um quebra de linha mais equilibrado, ou usar text-wrap: balance.\"}]}\n```"
+}

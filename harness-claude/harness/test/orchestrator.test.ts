@@ -58,6 +58,7 @@ describe("orquestrador (adapter fake)", () => {
     const f = feature(root, "F-0.01");
     expect(f.status).toBe("blocked");
     expect(f.attempts).toBe(5);
+    expect(existsSync(join(ctx.repo, ".worktrees", "F-0.01"))).toBe(true);   // kept: unblocking continues from it
     expect(feature(root, "F-0.02").status).toBe("passing");
     expect(readFileSync(join(root, "checkpoints/etapa-0/DUVIDAS.md"), "utf8")).toContain("F-0.01");
     expect(readFileSync(join(root, "checkpoints/etapa-0/RISCOS.md"), "utf8")).toContain("F-0.01");

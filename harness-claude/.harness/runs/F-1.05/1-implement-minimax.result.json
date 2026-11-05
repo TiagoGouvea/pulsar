@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T16:16:42.556Z",
+  "workerId": "minimax",
+  "role": "implement",
+  "featureId": "F-1.05",
+  "stage": 1,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.08214684,
+  "durationMs": 833596,
+  "usage": {
+    "inputTokens": 146617,
+    "outputTokens": 52905,
+    "cachedTokens": 4120704,
+    "costUsd": 0.08214684
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "r test). Each fixture uses its own context (with the project's viewport/locale/timezone) so seed and fresh sessions never share storage.\n\n**Verification**\n- `yarn lint`, `yarn typecheck`, `yarn format:check`, `yarn test:unit` (98 passed) ✔\n- `playwright test e2e/fixtures.spec.ts` → 10 passed (mobile + desktop) ✔; full e2e suite → 34 passed ✔\n- Manual check: `__pulsarTest` present in the emulator build chunk, absent from a production build ✔\n\n```json\n{\n  \"summary\": \"F-1.05: added an emulator-only test bridge (window.__pulsarTest with signInWithCustomToken/currentUid) loaded only in dev/emulator builds through a build-time flag that removes it from production bundles, plus Playwright fixtures seedPage (signs in as seed-user-0001 via an Auth Emulator custom token) and freshUserPage (new anonymous UID per test) with the currentUid helper; documented the fixtures in app/AGENTS.md and recorded risks in .harness/inbox/risks.jsonl.\",\n  \"filesChanged\": [\n    \"app/src/lib/testHelper.ts\",\n    \"app/src/lib/__tests__/testHelper.test.ts\",\n    \"app/src/main.tsx\",\n    \"app/src/vite-env.d.ts\",\n    \"app/vite.config.ts\",\n    \"app/e2e/fixtures.ts\",\n    \"app/AGENTS.md\",\n    \".harness/inbox/risks.jsonl\"\n  ],\n  \"testsRun\": [\n    \"yarn lint\",\n    \"yarn typecheck\",\n    \"yarn format:check\",\n    \"yarn test:unit\",\n    \"sh scripts/port-lock.sh npx playwright test e2e/fixtures.spec.ts (mobile+desktop: 10 passed)\",\n    \"sh scripts/port-lock.sh npx playwright test --grep-invert @visual (34 passed)\"\n  ],\n  \"confidence\": \"high\",\n  \"notes\": \"The protected test app/e2e/fixtures.spec.ts was not modified. The helper is loaded via dynamic import behind the __PULSAR_TEST_HELPER__ build flag so a production bundle contains no '__pulsarTest' (checked by grep in dist). The seed fixture lets the app's anonymous first-visit sign-in settle before replacing the session with the custom token, which avoids a sign-in race but creates one extra anonymous account per seed test in the emulators (risk recorded).\"\n}\n```"
+}

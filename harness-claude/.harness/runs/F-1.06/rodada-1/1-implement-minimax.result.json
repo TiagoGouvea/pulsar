@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T17:09:20.068Z",
+  "workerId": "minimax",
+  "role": "implement",
+  "featureId": "F-1.06",
+  "stage": 1,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.06064182000000002,
+  "durationMs": 707173,
+  "usage": {
+    "inputTokens": 153990,
+    "outputTokens": 11833,
+    "cachedTokens": 2029568,
+    "costUsd": 0.06064182000000002
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"summary\": \"Implementado o guarda e2e do modo privado. Os indicadores carregados do seed são exibidos somente por IndicatorLabel, alternando entre siglas e nomes com o olho global; emojis permanecem ocultos com o olho fechado. Observações exigem abertura explícita e ficam contidas em elementos data-privacy-allow. O teste protegido não foi alterado.\",\n  \"filesChanged\": [\n    \"app/e2e/support.ts\",\n    \"app/src/App.tsx\",\n    \"app/src/auth/AuthProvider.tsx\",\n    \"app/src/pages/WelcomePage.tsx\",\n    \"app/src/pages/DashboardPage.tsx\",\n    \"app/src/pages/IndicatorsPage.tsx\",\n    \"app/src/features/indicators/indicatorRepository.ts\",\n    \"app/src/features/records/entryRepository.ts\",\n    \".harness/inbox/risks.jsonl\"\n  ],\n  \"testsRun\": [\n    \"yarn lint — passou\",\n    \"yarn typecheck — passou\",\n    \"yarn format:check — passou\",\n    \"yarn test:unit — 102 testes passaram\",\n    \"yarn test:e2e e2e/privacy-mode.spec.ts --project=mobile — 8 testes passaram\"\n  ],\n  \"confidence\": \"high\",\n  \"notes\": \"O e2e desktop não foi considerado requisito porque o aplicativo é exclusivamente mobile. O teste protegido app/e2e/privacy-mode.spec.ts permaneceu inalterado.\"\n}\n```"
+}

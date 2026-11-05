@@ -1,0 +1,108 @@
+[
+  {
+    "kind": "code",
+    "pass": true,
+    "score": 8,
+    "issues": [
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/app/AppShell.tsx",
+        "descricao": "A barra inferior usa `max-w-md` no conteúdo interno, enquanto o cabeçalho e o `<main>` usam `max-w-(--container-app)`. Em telas largas, os itens da navegação ficam em uma coluna mais estreita que o conteúdo, o que diverge da instrução de coluna central única.",
+        "sugestao": "Usar `max-w-(--container-app)` também na barra inferior, ou confirmar com code.html/spec que a largura menor é intencional."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/app/AppShell.tsx",
+        "descricao": "`aria-current` e o estado ativo dependem de `pathname === item.path`. Subrotas futuras (ex.: `/indicators/:id`) deixarão a aba sem destaque.",
+        "sugestao": "Usar `useMatch`/`NavLink` do react-router, ou comparar por prefixo, para que a aba permaneça ativa nas subrotas."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/app/AppShell.tsx",
+        "descricao": "Há valores arbitrários de Tailwind e sombras em linha (`text-[18px]`, `text-[24px]`, `rounded-[10px]`, `shadow-[0_4px_12px_rgba(99,14,212,0.3)]`) em vez de tokens do design system, o que pode gerar divergência com `design/` e `app/src/design/`.",
+        "sugestao": "Trocar por tokens de ícone/sombra existentes no tema, ou extrair o estilo do FAB para um componente da pasta design."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/pages/PlaceholderPage.tsx",
+        "descricao": "O cabeçalho usa `pt-safe` além de `h-16`, mas `<main>` usa `pt-20` fixo, sem considerar o safe-area do topo. Em dispositivos com notch, o conteúdo inicial pode ficar sob o cabeçalho.",
+        "sugestao": "Calcular o padding superior como `calc(4rem + env(safe-area-inset-top))` ou usar a mesma variável do `pt-safe` no `<main>`."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/pages/PlaceholderPage.tsx",
+        "descricao": "Os textos do placeholder do dashboard (emptyTitle, description e CTA para /register) foram redigidos sem verificar o mockup. Isso é conteúdo de feature futura incluído antes da hora, e não há como confirmar a aderência à tela sem comparar com `design/*/code.html`.",
+        "sugestao": "Confirmar os textos com o `code.html` correspondente e manter só o necessário para a rota placeholder."
+      }
+    ],
+    "workerId": "haiku"
+  },
+  {
+    "kind": "ui",
+    "pass": false,
+    "score": 6.4,
+    "issues": [
+      {
+        "severidade": "major",
+        "tela": "home-mobile-privado, home-mobile-nomes, onboarding-mobile-*, home-desktop-*, onboarding-desktop-*",
+        "descricao": "Home e onboarding renderizam só o texto 'Boas-vindas ao Pulsar' e um subtítulo, sem cabeçalho, sem navegação inferior e sem CTA. Nos mockups de onboarding a tela é completa. Nos desktops o bloco fica alinhado à esquerda e a tela inteira parece um placeholder não finalizado.",
+        "sugestao": "Desenhar a tela de boas-vindas/onboarding a partir de design/onboarding_1_fatores e onboarding_2/3 (ou, se a rota estiver fora do AppShell por decisão de spec, registrar a exceção) e incluir o CTA de início."
+      },
+      {
+        "severidade": "major",
+        "tela": "indicators-mobile-privado/nomes, indicators-desktop-privado/nomes",
+        "descricao": "O estado vazio de 'Meus indicadores' não traz nenhuma ação. O mockup meus_indicadores tem o botão 'Novo Indicador' no topo e as seções Fatores/Resultados. Sem CTA o usuário não sabe como criar o primeiro indicador.",
+        "sugestao": "Adicionar o botão primário 'Novo Indicador' acima do estado vazio, como no mockup, e manter o card de estado vazio com o texto atual."
+      },
+      {
+        "severidade": "major",
+        "tela": "design-mobile-privado, design-desktop-privado (Grupos e indicadores, Cartões: Con…)",
+        "descricao": "A sigla da métrica de concentração aparece como 'Con...' em caixa mista com reticências, enquanto as demais siglas (EXE, CAF, ENE) estão em caixa alta. Isso contraria a regra de siglas de três letras em label-code uppercase e quebra a consistência do modo privado.",
+        "sugestao": "Exibir a sigla de três letras 'CON' em label-code uppercase com tracking 0.08em, sem truncamento, igual às outras siglas."
+      },
+      {
+        "severidade": "major",
+        "tela": "design-mobile-*, design-desktop-*: Estados (vazio, carregando, erro, salvo)",
+        "descricao": "As telas mostram apenas estados vazios. Não há estados de carregamento, erro, salvo nem feedback de salvamento desenhados. A rubrica c6 e c8 ficam sem evidência.",
+        "sugestao": "Adicionar e desenhar na página de design system os estados loading (skeleton), erro (inline com cor error) e salvo (feedback discreto), com screenshots."
+      },
+      {
+        "severidade": "minor",
+        "tela": "dashboard-mobile-privado / dashboard-mobile-nomes",
+        "descricao": "O título do card 'Comece registrando o seu dia' quebra deixando 'dia' sozinho na segunda linha, o que fica visualmente pobre.",
+        "sugestao": "Ajustar a largura máxima do texto ou usar text-balance para distribuir melhor as linhas."
+      },
+      {
+        "severidade": "minor",
+        "tela": "design-mobile-privado / design-mobile-nomes (Cartões e controles: escala ENE 0–10)",
+        "descricao": "A escala de chips 0–10 é cortada na borda direita em 375px (o 6 aparece cortado) sem indicador de rolagem horizontal.",
+        "sugestao": "Reduzir o tamanho dos chips ou quebrar em duas linhas, ou adicionar sinal visual de rolagem."
+      },
+      {
+        "severidade": "minor",
+        "tela": "design-mobile-* (toggle 'Lembrete diário às 20h')",
+        "descricao": "O switch desligado aparece só como anel cinza, o que deixa o estado ambíguo e diferente do toggle violeta dos mockups.",
+        "sugestao": "Desenhar o estado off com trilho cinza e thumb branco, e o estado on com trilho violeta, conforme configura_es_e_conta."
+      },
+      {
+        "severidade": "minor",
+        "tela": "*-desktop-* (barra de navegação inferior)",
+        "descricao": "A navegação inferior ocupa a largura total da tela em desktop, enquanto o conteúdo fica numa coluna de cerca de 928px. As abas ficam distantes entre si.",
+        "sugestao": "Limitar a barra à mesma largura máxima do conteúdo (ou manter a barra e centralizar os itens em um container de largura máxima)."
+      }
+    ],
+    "porCriterio": {
+      "c1": 6,
+      "c2": 8,
+      "c3": 7,
+      "c4": 6,
+      "c5": 7,
+      "c6": 4,
+      "c7": 7,
+      "c8": 5,
+      "c9": 6,
+      "c10": 8
+    },
+    "workerId": "haiku"
+  }
+]

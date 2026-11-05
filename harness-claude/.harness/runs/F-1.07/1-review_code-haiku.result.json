@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T17:11:56.473Z",
+  "workerId": "haiku",
+  "role": "review_code",
+  "featureId": "F-1.07",
+  "stage": 1,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.006812145,
+  "durationMs": 21997,
+  "usage": {
+    "inputTokens": 36325,
+    "outputTokens": 4313,
+    "cachedTokens": 11507,
+    "costUsd": 0.006812145
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": " stops do SVG (#0051d5, #316bf3, #630ed4, #7c3aed) contornam os tokens do design system em app/src/design/.\", \"sugestao\": \"Usar classes/tokens de cor (fill-*, stroke-*, text-*) ou variáveis CSS do tema, como nos demais elementos do SVG.\"}, {\"severidade\": \"minor\", \"arquivo\": \"app/src/pages/OnboardingPage.tsx\", \"descricao\": \"Arquivo com 717 linhas e vários componentes internos (FactorsHero, FactorsSandbox, ResultsHero, ConvergenceDiagram, Guarantee etc.) com SVGs longos e dados de demonstração inline. Isso vai contra a diretriz de código mínimo do CLAUDE.md e dificulta a manutenção.\", \"sugestao\": \"Extrair as ilustrações (hero e diagrama) e os dados de demonstração para módulos próprios em app/src/pages/onboarding/ e simplificar os blocos repetidos (ex.: linhas de sliders e garantias) com um mapa de dados.\"}, {\"severidade\": \"minor\", \"arquivo\": \"app/src/pages/OnboardingPage.tsx\", \"descricao\": \"Valores de demonstração como 'r = +0.68', 'N = 28 dias', '7.4 / 5.8' e '+27%' são exibidos como se fossem resultados reais do usuário, sem indicação de que são exemplos ilustrativos.\", \"sugestao\": \"Deixar explícito na interface que são exemplos ilustrativos (ex.: 'Exemplo ilustrativo'), sem depender somente do comentário do código.\"}, {\"severidade\": \"minor\", \"arquivo\": \"app/src/pages/OnboardingPage.tsx\", \"descricao\": \"A função finish() descarta o erro no catch sem registrá-lo. Além disso, ProgressTracker usa React.ReactNode sem importar React, enquanto o restante do arquivo importa ReactNode diretamente.\", \"sugestao\": \"Registrar o erro (ex.: console.error ou um logger) e usar o tipo ReactNode importado, de forma consistente com CodeLabel.\"}, {\"severidade\": \"minor\", \"arquivo\": \"app/src/pages/OnboardingPage.tsx\", \"descricao\": \"Na etapa 1 há dois botões 'Pular introdução' (um no cabeçalho e outro no rodapé), o que duplica a ação e pode confundir a navegação por leitor de tela.\", \"sugestao\": \"Manter um único controle de 'Pular' por etapa, ou diferenciar os rótulos/aria-labels.\"}]}\n```"
+}

@@ -580,9 +580,9 @@
         "F-0.05",
         "F-1.08"
       ],
-      "status": "failing",
-      "attempts": 0,
-      "costUsd": 6.664030509999999,
+      "status": "passing",
+      "attempts": 2,
+      "costUsd": 6.99953383,
       "spendSince": "2026-11-02T15:19:46.503Z",
       "history": [
         {
@@ -598,8 +598,47 @@
           ],
           "ts": "2026-11-02T15:48:09.442Z",
           "note": "gates falharam por networkidle (corrigido no harness); código recuperado na worktree"
+        },
+        {
+          "attempt": 1,
+          "role": "implement_hard",
+          "workerId": "sonnet",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "eventId": "evt-204",
+          "ts": "2026-11-02T15:54:30.887Z"
+        },
+        {
+          "attempt": 2,
+          "role": "implement_hard",
+          "workerId": "kimi-pro",
+          "outcome": "success",
+          "failedGates": [],
+          "eventId": "evt-206",
+          "ts": "2026-11-02T16:01:39.693Z"
         }
       ],
+      "authors": {
+        "implementer": "kimi-pro",
+        "attempts": [
+          "opus ✖ G6,G8,G9,G10",
+          "sonnet ✖ review_rejected",
+          "kimi-pro ✔"
+        ],
+        "testWriter": "sonnet",
+        "reviewers": [
+          "code haiku 8"
+        ],
+        "files": [
+          "app/e2e/anonymous-start.spec.ts",
+          "app/e2e/routes.json",
+          "app/src/App.tsx",
+          "app/src/auth/AuthProvider.tsx",
+          "app/src/auth/__tests__/AuthProvider.test.tsx",
+          "app/src/auth/userRepository.ts",
+          "app/src/pages/HomePlaceholder.tsx"
+        ]
+      },
       "origin": []
     },
     {
@@ -639,10 +678,76 @@
         "F-0.05",
         "F-1.03"
       ],
-      "status": "failing",
-      "attempts": 0,
-      "costUsd": 0,
-      "history": [],
+      "status": "passing",
+      "attempts": 4,
+      "costUsd": 0.6851965560000001,
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement",
+          "workerId": "minimax",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "eventId": "evt-211",
+          "ts": "2026-11-02T16:14:44.597Z"
+        },
+        {
+          "attempt": 2,
+          "role": "implement",
+          "workerId": "minimax",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "eventId": "evt-215",
+          "ts": "2026-11-02T16:31:35.701Z"
+        },
+        {
+          "attempt": 3,
+          "role": "implement_hard",
+          "workerId": "kimi-pro",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "eventId": "evt-218",
+          "ts": "2026-11-02T16:44:43.900Z"
+        },
+        {
+          "attempt": 4,
+          "role": "implement_hard",
+          "workerId": "sonnet",
+          "outcome": "success",
+          "failedGates": [],
+          "eventId": "evt-221",
+          "ts": "2026-11-02T16:56:20.185Z"
+        }
+      ],
+      "authors": {
+        "implementer": "sonnet",
+        "attempts": [
+          "minimax ✖ review_rejected",
+          "minimax ✖ review_rejected",
+          "kimi-pro ✖ review_rejected",
+          "sonnet ✔"
+        ],
+        "testWriter": "sonnet",
+        "reviewers": [
+          "code gemini-argon 9",
+          "ui gemini 9.5"
+        ],
+        "files": [
+          "app/e2e/app-shell.spec.ts",
+          "app/e2e/routes.json",
+          "app/scripts/icons.ts",
+          "app/src/App.tsx",
+          "app/src/app/AppShell.tsx",
+          "app/src/app/__tests__/AppShell.test.tsx",
+          "app/src/design/BrandMark.tsx",
+          "app/src/design/EmptyState.tsx",
+          "app/src/design/icons.ts",
+          "app/src/design/index.ts",
+          "app/src/pages/DesignPage.tsx",
+          "app/src/pages/PlaceholderPage.tsx",
+          "app/src/pages/WelcomePage.tsx"
+        ]
+      },
       "origin": []
     },
     {
@@ -665,7 +770,9 @@
       "tests": [
         "app/e2e/fixtures.spec.ts"
       ],
-      "protectedTests": [],
+      "protectedTests": [
+        "app/e2e/fixtures.spec.ts"
+      ],
       "tags": [],
       "difficulty": "normal",
       "dependsOn": [
@@ -673,15 +780,45 @@
         "F-0.03",
         "F-0.05"
       ],
-      "status": "failing",
-      "attempts": 0,
-      "costUsd": 0,
-      "history": [],
+      "status": "passing",
+      "attempts": 1,
+      "costUsd": 0.231741135,
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement",
+          "workerId": "minimax",
+          "outcome": "success",
+          "failedGates": [],
+          "eventId": "evt-213",
+          "ts": "2026-11-02T16:20:54.085Z"
+        }
+      ],
+      "authors": {
+        "implementer": "minimax",
+        "attempts": [
+          "minimax ✔"
+        ],
+        "testWriter": "sonnet",
+        "reviewers": [
+          "code haiku 7"
+        ],
+        "files": [
+          "app/AGENTS.md",
+          "app/e2e/fixtures.spec.ts",
+          "app/e2e/fixtures.ts",
+          "app/src/lib/__tests__/testHelper.test.ts",
+          "app/src/lib/testHelper.ts",
+          "app/src/main.tsx",
+          "app/src/vite-env.d.ts",
+          "app/vite.config.ts"
+        ]
+      },
       "origin": []
     },
     {
       "id": "F-1.06",
-      "stage": 1,
+      "stage": 2,
       "title": "Guarda e2e do modo privado (sentinelas)",
       "description": "Teste e2e que, com o usuário do seed, percorre todas as rotas de e2e/routes.json com o olho fechado e verifica que ZQX_ENERGIA_7F3, ZQX_SONO_9K2, ZQX_FOCO_4M8 e ZQX_OBS_NOTA_5T1 não aparecem fora de [data-privacy-allow]; abrir o olho revela nomes e emojis; recarregar volta a siglas. Gráficos não são mascarados.",
       "specRefs": [
@@ -701,9 +838,7 @@
       "tests": [
         "app/e2e/privacy-mode.spec.ts"
       ],
-      "protectedTests": [
-        "app/e2e/privacy-mode.spec.ts"
-      ],
+      "protectedTests": [],
       "tags": [
         "privacy-mode",
         "ui"
@@ -711,13 +846,78 @@
       "difficulty": "normal",
       "dependsOn": [
         "F-1.04",
-        "F-1.05"
+        "F-1.05",
+        "F-2.05",
+        "F-2.08",
+        "F-2.09"
       ],
       "status": "failing",
       "attempts": 0,
-      "costUsd": 0,
-      "history": [],
-      "origin": []
+      "costUsd": 0.679299149,
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement",
+          "workerId": "minimax",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "eventId": "evt-226",
+          "ts": "2026-11-02T17:20:25.147Z"
+        },
+        {
+          "attempt": 2,
+          "role": "implement",
+          "workerId": "haiku",
+          "outcome": "failure",
+          "failedGates": [
+            "G6"
+          ],
+          "eventId": "evt-230",
+          "ts": "2026-11-02T17:31:24.595Z"
+        },
+        {
+          "attempt": 3,
+          "role": "implement_hard",
+          "workerId": "sonnet",
+          "outcome": "failure",
+          "failedGates": [
+            "G6"
+          ],
+          "eventId": "evt-233",
+          "ts": "2026-11-02T17:49:02.631Z"
+        },
+        {
+          "attempt": 4,
+          "role": "implement_hard",
+          "workerId": "sonnet",
+          "outcome": "failure",
+          "failedGates": [
+            "G6"
+          ],
+          "eventId": "evt-238",
+          "ts": "2026-11-02T18:01:28.886Z"
+        },
+        {
+          "attempt": 5,
+          "role": "implement_hard",
+          "workerId": "sonnet",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "eventId": "evt-240",
+          "ts": "2026-11-02T18:11:16.873Z"
+        },
+        {
+          "attempt": 0,
+          "role": "manual",
+          "workerId": "-",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "ts": "2026-11-05T09:49:45.283Z",
+          "note": "Movida da etapa 1 para a 2: o teste exige nomes de indicadores e o botão de abrir observação, telas que só existem depois de F-2.05/F-2.08/F-2.09. Na etapa 1 nenhum modelo tinha como passar."
+        }
+      ],
+      "origin": [],
+      "spendSince": "2026-11-05T09:49:45.283Z"
     },
     {
       "id": "F-1.07",
@@ -749,10 +949,53 @@
       "dependsOn": [
         "F-1.04"
       ],
-      "status": "failing",
-      "attempts": 0,
-      "costUsd": 0,
-      "history": [],
+      "status": "passing",
+      "attempts": 2,
+      "costUsd": 0.46788490999999993,
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement_easy",
+          "workerId": "glm-flash",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "eventId": "evt-228",
+          "ts": "2026-11-02T17:22:42.076Z"
+        },
+        {
+          "attempt": 2,
+          "role": "implement_easy",
+          "workerId": "minimax",
+          "outcome": "success",
+          "failedGates": [],
+          "eventId": "evt-235",
+          "ts": "2026-11-02T17:51:48.384Z"
+        }
+      ],
+      "authors": {
+        "implementer": "minimax",
+        "attempts": [
+          "glm-flash ✖ review_rejected",
+          "minimax ✔"
+        ],
+        "testWriter": "sonnet",
+        "reviewers": [
+          "code haiku 7",
+          "ui haiku 7.5"
+        ],
+        "files": [
+          "app/e2e/onboarding.spec.ts",
+          "app/scripts/icons.ts",
+          "app/src/App.tsx",
+          "app/src/auth/__tests__/userRepository.test.ts",
+          "app/src/auth/userRepository.ts",
+          "app/src/design/Button.tsx",
+          "app/src/design/EyeToggle.tsx",
+          "app/src/design/icons.ts",
+          "app/src/pages/OnboardingPage.tsx",
+          "app/src/pages/WelcomePage.tsx"
+        ]
+      },
       "origin": []
     },
     {
@@ -867,9 +1110,71 @@
       ],
       "status": "failing",
       "attempts": 0,
-      "costUsd": 0,
-      "history": [],
-      "origin": []
+      "costUsd": 4.444686275,
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement_hard",
+          "workerId": "kimi-pro",
+          "outcome": "failure",
+          "failedGates": [
+            "G6"
+          ],
+          "eventId": "evt-242",
+          "ts": "2026-11-02T19:50:47.658Z"
+        },
+        {
+          "attempt": 2,
+          "role": "implement_hard",
+          "workerId": "kimi-pro",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "eventId": "evt-244",
+          "ts": "2026-11-02T20:04:27.876Z"
+        },
+        {
+          "attempt": 3,
+          "role": "implement_hard",
+          "workerId": "sonnet",
+          "outcome": "failure",
+          "failedGates": [
+            "G6"
+          ],
+          "eventId": "evt-246",
+          "ts": "2026-11-02T20:14:03.370Z"
+        },
+        {
+          "attempt": 4,
+          "role": "implement_hard",
+          "workerId": "sonnet",
+          "outcome": "failure",
+          "failedGates": [
+            "G6"
+          ],
+          "eventId": "evt-248",
+          "ts": "2026-11-02T20:23:34.848Z"
+        },
+        {
+          "attempt": 5,
+          "role": "implement_hard",
+          "workerId": "kimi-pro",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "eventId": "evt-250",
+          "ts": "2026-11-02T20:34:31.059Z"
+        },
+        {
+          "attempt": 0,
+          "role": "manual",
+          "workerId": "-",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "ts": "2026-11-05T09:49:45.283Z",
+          "note": "A tentativa 5 passou em todos os gates (94 e2e); a revisão reprovou só por isto, corrija sem mexer no resto:\n- BLOCKER app/src/auth/AuthProvider.tsx: o listener do perfil (watchUserProfile) foi removido para todos os usuários. Restaure o comportamento da F-1.03 (perfil atualizado em tempo real durante a sessão).\n- BLOCKER app/src/auth/__tests__/AuthProvider.test.tsx: o teste \"keeps the profile up to date when onboardingCompleted changes during the session\" (F-1.03) foi reescrito. Restaure o teste original (git show 9a2f289:pulsar-claude/app/src/auth/__tests__/AuthProvider.test.tsx) e faça o código passar nele.\n- MAJOR app/src/auth/linkAccount.ts: remova fetchSignInMethodsForEmail (sonda de enumeração); use o erro auth/email-already-in-use / credential-already-in-use do link como única fonte de conflito.\n- MINOR app/src/design/Sheet.tsx: só mude o z-index se for necessário; senão reverta."
+        }
+      ],
+      "origin": [],
+      "spendSince": "2026-11-05T09:49:45.283Z"
     },
     {
       "id": "F-1.10",

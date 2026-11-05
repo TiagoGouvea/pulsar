@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T19:50:47.635Z",
+  "workerId": "gemini-lite",
+  "role": "triage",
+  "featureId": "F-1.09",
+  "stage": 1,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.00121175,
+  "durationMs": 2093,
+  "usage": {
+    "inputTokens": 3557,
+    "outputTokens": 215,
+    "cachedTokens": 0,
+    "costUsd": 0.00121175
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"causaRaiz\": \"A falha no teste 'e-mail already in use' decorre de uma asserção (`expectRecordIntact`) que falha ao verificar a persistência de dados em um ambiente de teste onde a fixture não cria o estado necessário para a conta existente, causando um erro de referência. O timeout no teste 'Google keeps the UID' sugere que o manipulador de pop-up do Playwright foi fechado prematuramente durante a interação com o fluxo de autenticação do Google, indicando uma desincronização entre a UI e a automação.\",\n  \"categoria\": \"test\",\n  \"padrao\": false,\n  \"dica\": \"Ajuste a fixture do teste 'e-mail already in use' para garantir a existência do documento do usuário alvo e aumente o tempo de espera ou utilize `waitForSelector` antes de interagir com o pop-up do Google para evitar o fechamento prematuro do contexto do navegador.\"\n}\n```"
+}

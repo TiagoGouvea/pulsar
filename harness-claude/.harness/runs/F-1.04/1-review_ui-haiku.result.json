@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T16:14:44.571Z",
+  "workerId": "haiku",
+  "role": "review_ui",
+  "featureId": "F-1.04",
+  "stage": 1,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.015342695,
+  "durationMs": 52306,
+  "usage": {
+    "inputTokens": 63839,
+    "outputTokens": 11802,
+    "cachedTokens": 146202,
+    "costUsd": 0.015342695
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "as em label-code maiúsculo com tracking 0,08em e esconde a sigla. No modo privado a sigla deveria estar completa e em maiúsculas.\", \"sugestao\": \"Usar a sigla de três letras em maiúsculas com label-code (CON) e permitir que o rótulo completo fique só no modo nomes ou em tooltip. Garantir que o tamanho das chips não trunque siglas de 3 letras.\"}, {\"severidade\": \"minor\", \"tela\": \"shell: cabeçalho (todas as telas mobile)\", \"descricao\": \"O cabeçalho mostra só o texto 'Pulsar' com o badge BETA V1. Os mockups trazem a marca gráfica (quadrado escuro com ícone de pulso) antes do nome. Isso reduz a fidelidade c1.\", \"sugestao\": \"Adicionar o logo mark do design system ao lado do wordmark 'Pulsar' no cabeçalho do AppShell.\"}, {\"severidade\": \"minor\", \"tela\": \"shell: navegação inferior (mobile e desktop)\", \"descricao\": \"O rótulo 'Registrar' sob o FAB fica cerca de 4px abaixo da linha dos outros rótulos (y≈771 contra y≈767 no mobile; y≈760 contra y≈755 no desktop). A linha de base fica desalinhada.\", \"sugestao\": \"Alinhar o rótulo do FAB à mesma linha de base dos outros itens, por exemplo com altura fixa do slot do FAB e rótulo posicionado de forma absoluta.\"}, {\"severidade\": \"minor\", \"tela\": \"design system (mobile e desktop): escala ENE 0-10\", \"descricao\": \"A escala de chips 0-10 é cortada na borda direita (o 6 no mobile e o 9 no desktop aparecem parcialmente) sem indício visual de rolagem horizontal, como fade ou scroll-snap.\", \"sugestao\": \"Permitir rolagem horizontal com scroll-snap e uma máscara de fade na borda, ou reduzir o tamanho dos chips para caber em 375px.\"}, {\"severidade\": \"minor\", \"tela\": \"design system (mobile e desktop): toggle 'Lembrete diário'\", \"descricao\": \"O estado desligado do toggle é um anel lavanda sem trilho nem contraste suficiente, parecendo um elemento vazio e não um controle. O mockup não especifica esse estado com clareza.\", \"sugestao\": \"Desenhar o trilho do switch com contraste mínimo (borda ou fundo em slate) e um knob claro nos dois estados.\"}]}\n```"
+}

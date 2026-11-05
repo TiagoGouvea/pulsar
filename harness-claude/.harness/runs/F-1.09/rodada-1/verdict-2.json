@@ -1,0 +1,46 @@
+[
+  {
+    "kind": "code",
+    "pass": false,
+    "score": 6,
+    "issues": [
+      {
+        "severidade": "major",
+        "arquivo": "app/src/auth/AuthProvider.tsx",
+        "descricao": "O listener de perfil deixou de existir para usuários anônimos (`user.isAnonymous !== true`). O comentário em userRepository.ts ('Live view ... onboarding completed ... never stale') descreve exatamente esse caso. Como o onboarding roda em sessão anônima, após `completeOnboarding` o `profile` do contexto fica com `onboardingCompleted: false` até um reload. O `RootRedirect` (App.tsx:43) então manda de volta para /onboarding se o usuário visitar '/' na mesma sessão. Isso quebra comportamento de feature já entregue.",
+        "sugestao": "Manter o listener para todos os usuários e parar apenas quando onboardingCompleted for true (remover a condição `isAnonymous`). Se o custo de rede for a preocupação, parar o listener só depois do onboarding, sem excluir anônimos. Adicionar teste cobrindo a transição do onboarding."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/auth/linkAccount.ts",
+        "descricao": "`fetchSignInMethodsForEmail` roda antes de vincular, para qualquer e-mail digitado por sessão anônima. Isso funciona como sonda de existência de conta (enumeração de e-mail), mesmo que a proteção de enumeração do Firebase possa esvaziar o resultado. O ramo também não tem teste unitário: o mock de currentUser não define isAnonymous, então o caminho nunca é exercitado.",
+        "sugestao": "Remover a pré-checagem e confiar no `auth/email-already-in-use` do linkWithCredential (já tratado em conflictFromError), ou justificar a sonda e cobrir o ramo com um teste unitário que defina isAnonymous: true."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/auth/linkAccount.ts",
+        "descricao": "Uso de `user!` (non-null assertion) em linkWithGoogle e completeEmailLinkOnce, com `auth.currentUser` lido várias vezes (currentUid() e depois user). Há redundância e um assert que contradiz a checagem já feita por currentUid().",
+        "sugestao": "Obter o user uma única vez, validar nulo e usar o valor tipado, por exemplo `const user = requireCurrentUser()` retornando o User inteiro."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/pages/SettingsPage.tsx",
+        "descricao": "Em handleEmail, quando needsEmailCompletion é true e o resultado é 'not-a-link' ou 'needs-email', nada é mostrado ao usuário e o formulário fica sem retorno. Também não há tratamento para 'not-a-link' em geral.",
+        "sugestao": "Mostrar uma mensagem de erro ou orientação para esses status, em vez de ignorá-los silenciosamente."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/design/Sheet.tsx",
+        "descricao": "O z-index do componente compartilhado Sheet mudou de z-50 para z-[60]. É uma alteração em componente de design usado por outras telas, feita para esta feature, sem verificação de conflito com outras camadas (AppShell, navegação).",
+        "sugestao": "Confirmar que nenhum outro overlay depende de z-50 para ficar acima ou abaixo do Sheet, ou usar uma prop/variante local para não afetar outros usos."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/e2e/fixtures.ts",
+        "descricao": "O fixture freshUserPage passou a monkeypatchar globalThis.fetch (withExternalAccountProfiles) e a reexecutar cliques no handler do emulador (stabilizeAuthEmulator). Isso afeta todos os testes que usam freshUserPage, não só os de conta.",
+        "sugestao": "Restringir esses helpers aos testes de account-link (opt-in por fixture ou parâmetro), ou rodar a suíte completa para confirmar que não há efeito colateral nos demais testes e2e."
+      }
+    ],
+    "workerId": "haiku"
+  }
+]

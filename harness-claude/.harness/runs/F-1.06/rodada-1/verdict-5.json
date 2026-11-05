@@ -1,0 +1,46 @@
+[
+  {
+    "kind": "code",
+    "pass": false,
+    "score": 3,
+    "issues": [
+      {
+        "severidade": "blocker",
+        "arquivo": "app/src/App.tsx",
+        "descricao": "As novas páginas removem os atalhos existentes “Registrar agora” e “Novo Indicador”.",
+        "sugestao": "Preservar as ações já entregues."
+      },
+      {
+        "severidade": "blocker",
+        "arquivo": "app/src/auth/AuthProvider.tsx",
+        "descricao": "O perfil deixa de ser observado após o onboarding, quebrando a atualização de alterações feitas durante a sessão.",
+        "sugestao": "Manter a observação do perfil durante a sessão."
+      },
+      {
+        "severidade": "major",
+        "arquivo": "app/src/pages/DashboardPage.tsx",
+        "descricao": "A feature de testes adiciona telas, consultas e fluxos de dashboard e indicadores fora do escopo.",
+        "sugestao": "Limitar a mudança à guarda e2e e preservar as telas existentes."
+      },
+      {
+        "severidade": "major",
+        "arquivo": "app/e2e/privacy-mode.spec.ts",
+        "descricao": "A guarda pode verificar as páginas antes do carregamento dos dados; após reload, também não confirma que as siglas apareceram.",
+        "sugestao": "Aguardar sinais verificáveis de carregamento e afirmar a presença das siglas antes de verificar as sentinelas."
+      },
+      {
+        "severidade": "major",
+        "arquivo": "app/e2e/privacy-mode.spec.ts",
+        "descricao": "O teste de observação passa se a nota já estiver visível em data-privacy-allow antes de qualquer abertura explícita.",
+        "sugestao": "Exigir que a nota esteja ausente antes do clique e visível apenas na área permitida depois dele."
+      },
+      {
+        "severidade": "major",
+        "arquivo": "app/e2e/privacy-mode.spec.ts",
+        "descricao": "Não há verificação de que os gráficos permanecem sem máscara ao alternar o olho.",
+        "sugestao": "Verificar um gráfico com dados nos dois estados."
+      }
+    ],
+    "workerId": "codex-mid"
+  }
+]

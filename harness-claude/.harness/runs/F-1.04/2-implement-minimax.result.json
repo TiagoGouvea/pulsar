@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T16:24:09.697Z",
+  "workerId": "minimax",
+  "role": "implement",
+  "featureId": "F-1.04",
+  "stage": 1,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.05368860000000003,
+  "durationMs": 557910,
+  "usage": {
+    "inputTokens": 133918,
+    "outputTokens": 18195,
+    "cachedTokens": 1663744,
+    "costUsd": 0.05368860000000003
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": ", `/saved-insights`, `/settings`) and `/onboarding` now use the shell with a proper empty state + CTA instead of a bare title/paragraph.\n- `src/app/__tests__/AppShell.test.tsx` (new): unit coverage for brand/eye/profile, nav items with one icon, `aria-current=page`, and global eye state.\n\n`app/e2e/routes.json` already contained all required routes (no change needed). Protected test `app/e2e/app-shell.spec.ts` untouched.\n\n```json\n{\n  \"summary\": \"F-1.04 AppShell: cabeçalho com marca gráfica + olho + atalho de perfil, navegação inferior Dashboard/Registrar/Indicadores/Conclusões com aria-current, rótulos alinhados na mesma linha de base, coluna central com max-width var(--container-app) e placeholders das rotas usando um EmptyState reutilizável do design system.\",\n  \"filesChanged\": [\n    \"app/src/app/AppShell.tsx\",\n    \"app/src/app/__tests__/AppShell.test.tsx\",\n    \"app/src/design/BrandMark.tsx\",\n    \"app/src/design/EmptyState.tsx\",\n    \"app/src/design/index.ts\",\n    \"app/src/design/EyeToggle.tsx\",\n    \"app/src/design/Toggle.tsx\",\n    \"app/src/pages/PlaceholderPage.tsx\",\n    \"app/src/App.tsx\",\n    \".harness/inbox/questions.jsonl\",\n    \".harness/inbox/risks.jsonl\"\n  ],\n  \"testsRun\": [\n    \"yarn lint\",\n    \"yarn typecheck\",\n    \"yarn format:check\",\n    \"yarn test:unit (12 files, 100 tests)\",\n    \"yarn test:e2e app-shell.spec.ts (24 passed, mobile+desktop)\",\n    \"yarn test:e2e (56 passed)\",\n    \"yarn test:visual (16 screenshots)\"\n  ],\n  \"confidence\": \"high\",\n  \"notes\": \"Abordagens da tentativa anterior mantidas e refinadas. A sigla fallback 'Con...' e a escala 0-10 pertencem às telas de conteúdo (dashboard/indicadores) e à regra da spec 4.4 já coberta por teste unitário entregue; foram registradas como riscos em .harness/inbox/risks.jsonl em vez de alterar código de features entregues. /onboarding foi envolvido pelo AppShell (sessão anônima automática = tela autenticada, olho global obrigatório); a decisão e o risco para F-1.07 estão em questions.jsonl/risks.jsonl.\"\n}\n```"
+}

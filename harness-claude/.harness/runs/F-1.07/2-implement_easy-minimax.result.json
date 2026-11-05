@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T17:26:33.169Z",
+  "workerId": "minimax",
+  "role": "implement_easy",
+  "featureId": "F-1.07",
+  "stage": 1,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.10636481999999998,
+  "durationMs": 223665,
+  "usage": {
+    "inputTokens": 302914,
+    "outputTokens": 18039,
+    "cachedTokens": 3340288,
+    "costUsd": 0.10636481999999998
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"summary\": \"Ajustado o tutorial de onboarding com três passos faithful aos designs, navegação Próximo/Voltar/Pular, persistência da conclusão, cabeçalho corrigido, CTAs com seta à direita e retorno ao topo ao trocar de passo. O passo 1 agora usa a identidade indigo de Fatores, a órbita não possui sobreposição em 375px e o nome Café Expresso aparece integralmente. O tutorial respeita o modo global de siglas/nomes por meio do olho compacto no cabeçalho. Capturas foram geradas para os três passos, nos modos siglas e nomes, em mobile e desktop.\",\n  \"filesChanged\": [\n    \"app/src/pages/OnboardingPage.tsx\",\n    \"app/src/design/Button.tsx\",\n    \"app/src/design/EyeToggle.tsx\",\n    \".harness/inbox/questions.jsonl\"\n  ],\n  \"testsRun\": [\n    \"yarn lint\",\n    \"yarn typecheck\",\n    \"yarn format:check\",\n    \"yarn test:unit\",\n    \"E2E_BASE_URL=http://127.0.0.1:4793 yarn playwright test e2e/onboarding.spec.ts --workers=1\",\n    \"yarn build:emulator\"\n  ],\n  \"confidence\": \"high\",\n  \"notes\": \"Todos os 103 testes unitários e os 12 cenários protegidos de onboarding, executados nos projetos mobile e desktop, passaram. Capturas completas disponíveis em app/test-results/onboarding-review/ para as combinações mobile/desktop × siglas/nomes × passos 1–3. O teste protegido não foi alterado.\"\n}\n```"
+}

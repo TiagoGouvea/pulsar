@@ -1,0 +1,90 @@
+[
+  {
+    "kind": "code",
+    "pass": true,
+    "score": 8,
+    "issues": [
+      {
+        "severidade": "major",
+        "arquivo": "app/src/App.tsx",
+        "descricao": "Cada rota envolve seu próprio <AppShell>, em vez de usar uma rota de layout com <Outlet/>. Como resultado, o cabeçalho e a barra inferior são desmontados e remontados a cada troca de aba, e o bloco AppShell se repete em 5 rotas.",
+        "sugestao": "Criar uma rota pai com element={<AppShell><Outlet/></AppShell>} envolvendo as 5 rotas autenticadas, e manter apenas o conteúdo de cada tela como filho. Isso remove a repetição e evita o remount."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/App.tsx",
+        "descricao": "O mesmo par <h1 className=\"font-headline-xl-mobile text-headline-xl-mobile\"> é repetido em cinco placeholders, com as mesmas classes de texto.",
+        "sugestao": "Extrair um pequeno componente de título de placeholder, ou aplicar as classes no próprio AppShell, para evitar a duplicação."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/app/AppShell.tsx",
+        "descricao": "A aparência do botão de Registrar depende de comparar o path com a string '/register' (isRegister), o que deixa uma regra específica de rota dentro de um componente genérico de navegação. A tela de cabeçalho também usa pt-20 fixo, que pode ficar sem folga se o pt-safe for maior que 16px em aparelhos com notch.",
+        "sugestao": "Mover a flag de destaque para o próprio item de navegação (ex.: highlight: true em navigationItems) e calcular o padding superior do main com base na altura do cabeçalho mais a safe area."
+      }
+    ],
+    "workerId": "haiku"
+  },
+  {
+    "kind": "ui",
+    "pass": false,
+    "score": 6,
+    "issues": [
+      {
+        "severidade": "major",
+        "tela": "home / onboarding / register (mobile e desktop, privado e nomes)",
+        "descricao": "Essas capturas mostram só o texto 'Boas-vindas ao Pulsar' e um parágrafo, sem cabeçalho, sem navegação inferior, sem logo e sem CTA. Os mockups de onboarding_1/2/3 e dashboard_inicial_estado_vazio trazem conteúdo rico. Não dá para saber se é um bug de rota/gate ou um estado não implementado.",
+        "sugestao": "Verificar a rota que renderiza essas telas. Se o AppShell deve envolver a home, aplicar o shell. Se o onboarding for outra fase, desenhar a tela conforme os mockups onboarding_1..3 e registrar como pendência de feature."
+      },
+      {
+        "severidade": "major",
+        "tela": "dashboard / indicators / saved-insights / settings / register (todas as abas vazias)",
+        "descricao": "Os estados vazios são só título e uma linha de subtítulo, sem ilustração, sem CTA e sem explicação. O mockup dashboard_inicial_estado_vazio tem cartões de sugestão e a ação 'Criar meu próprio indicador'. O critério c6 fica fraco.",
+        "sugestao": "Criar um componente de estado vazio reutilizável (ícone, título, texto e CTA) e usá-lo nas abas, seguindo dashboard_inicial_estado_vazio e meus_indicadores."
+      },
+      {
+        "severidade": "major",
+        "tela": "design system (mobile e desktop, modo privado)",
+        "descricao": "A sigla de CON aparece truncada como 'Con...' em mistura de maiúsculas e minúsculas, nas chips de grupo e no card de Concentração. Isso quebra a regra de siglas em label-code maiúsculo com tracking 0,08em e esconde a sigla. No modo privado a sigla deveria estar completa e em maiúsculas.",
+        "sugestao": "Usar a sigla de três letras em maiúsculas com label-code (CON) e permitir que o rótulo completo fique só no modo nomes ou em tooltip. Garantir que o tamanho das chips não trunque siglas de 3 letras."
+      },
+      {
+        "severidade": "minor",
+        "tela": "shell: cabeçalho (todas as telas mobile)",
+        "descricao": "O cabeçalho mostra só o texto 'Pulsar' com o badge BETA V1. Os mockups trazem a marca gráfica (quadrado escuro com ícone de pulso) antes do nome. Isso reduz a fidelidade c1.",
+        "sugestao": "Adicionar o logo mark do design system ao lado do wordmark 'Pulsar' no cabeçalho do AppShell."
+      },
+      {
+        "severidade": "minor",
+        "tela": "shell: navegação inferior (mobile e desktop)",
+        "descricao": "O rótulo 'Registrar' sob o FAB fica cerca de 4px abaixo da linha dos outros rótulos (y≈771 contra y≈767 no mobile; y≈760 contra y≈755 no desktop). A linha de base fica desalinhada.",
+        "sugestao": "Alinhar o rótulo do FAB à mesma linha de base dos outros itens, por exemplo com altura fixa do slot do FAB e rótulo posicionado de forma absoluta."
+      },
+      {
+        "severidade": "minor",
+        "tela": "design system (mobile e desktop): escala ENE 0-10",
+        "descricao": "A escala de chips 0-10 é cortada na borda direita (o 6 no mobile e o 9 no desktop aparecem parcialmente) sem indício visual de rolagem horizontal, como fade ou scroll-snap.",
+        "sugestao": "Permitir rolagem horizontal com scroll-snap e uma máscara de fade na borda, ou reduzir o tamanho dos chips para caber em 375px."
+      },
+      {
+        "severidade": "minor",
+        "tela": "design system (mobile e desktop): toggle 'Lembrete diário'",
+        "descricao": "O estado desligado do toggle é um anel lavanda sem trilho nem contraste suficiente, parecendo um elemento vazio e não um controle. O mockup não especifica esse estado com clareza.",
+        "sugestao": "Desenhar o trilho do switch com contraste mínimo (borda ou fundo em slate) e um knob claro nos dois estados."
+      }
+    ],
+    "porCriterio": {
+      "c1": 6,
+      "c2": 7,
+      "c3": 7,
+      "c4": 6,
+      "c5": 6,
+      "c6": 4,
+      "c7": 7,
+      "c8": 6,
+      "c9": 6,
+      "c10": 8
+    },
+    "workerId": "haiku"
+  }
+]

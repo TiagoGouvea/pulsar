@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T17:20:25.131Z",
+  "workerId": "haiku",
+  "role": "review_code",
+  "featureId": "F-1.06",
+  "stage": 1,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.00526127,
+  "durationMs": 29737,
+  "usage": {
+    "inputTokens": 17274,
+    "outputTokens": 5974,
+    "cachedTokens": 11507,
+    "costUsd": 0.00526127
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "raria a instrução de código mínimo e objetivo.\", \"sugestao\": \"Usar um objeto simples (por exemplo SENTINELS.energy, SENTINELS.sleep) e derivar a lista com Object.values quando precisar iterar.\"}, {\"severidade\": \"minor\", \"arquivo\": \"app/e2e/privacy-mode.spec.ts\", \"descricao\": \"O teste de observações usa um if condicional (allowed.count() === 0) para decidir se clica no botão. O fluxo não é determinístico e o teste pode passar por caminhos diferentes. Além disso, o teste 'closed eye: seeded indicators' verifica apenas toContainText('SON'), uma asserção fraca por substring.\", \"sugestao\": \"Fazer o clique em 'Ver observação' de forma explícita e obrigatória, sem condicional. Usar asserções exatas, por exemplo pelo texto da sigla em um locator de badge.\"}, {\"severidade\": \"minor\", \"arquivo\": \"app/src/pages/DashboardPage.tsx\", \"descricao\": \"Duplicação: o padrão de useEffect com flag 'active' e busca por user se repete em DashboardPage e IndicatorsPage. O catch do DashboardPage também engole o erro (setNotes([])) sem estado de erro visível, ao contrário do IndicatorsPage.\", \"sugestao\": \"Extrair um hook compartilhado de carregamento (por exemplo useUserData(loader)) e tratar o erro da mesma forma nas duas telas.\"}, {\"severidade\": \"minor\", \"arquivo\": \"app/src/pages/IndicatorsPage.tsx\", \"descricao\": \"Se user for null, o estado loading permanece true e a tela mostra 'Carregando indicadores…' indefinidamente.\", \"sugestao\": \"Tratar explicitamente o caso sem usuário (por exemplo, não renderizar o conteúdo ou definir loading=false) ou garantir que a rota só monte com usuário autenticado.\"}, {\"severidade\": \"minor\", \"arquivo\": \"app/src/pages/WelcomePage.tsx\", \"descricao\": \"O EyeToggle foi adicionado à tela de boas-vindas, que não está descrita na spec da F-1.06. Só se justifica se a varredura de rotas exigir o olho em todas as rotas de routes.json.\", \"sugestao\": \"Confirmar que a rota de boas-vindas está em e2e/routes.json e que a inclusão é necessária. Caso contrário, remover.\"}]}\n```"
+}

@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T16:31:35.675Z",
+  "workerId": "haiku",
+  "role": "review_code",
+  "featureId": "F-1.04",
+  "stage": 1,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.006029645,
+  "durationMs": 22934,
+  "usage": {
+    "inputTokens": 29341,
+    "outputTokens": 4494,
+    "cachedTokens": 11507,
+    "costUsd": 0.006029645
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "e AppShell, rotas, placeholders e e2e/app-shell.spec.ts. Se a remoção for intencional, ela precisa ser uma decisão separada, aprovada pelo usuário.\"}, {\"severidade\": \"major\", \"arquivo\": \"app/src/design/Toggle.tsx\", \"descricao\": \"Alteração visual em um primitivo compartilhado do design system (borda, cores de fundo e estados checked/unchecked) que não aparece nos critérios de aceite da F-1.04. Essa mudança afeta todas as telas que usam Toggle, inclusive features já entregues.\", \"sugestao\": \"Reverter Toggle.tsx e tratar a mudança de design em uma feature própria, com a tela de referência correspondente.\"}, {\"severidade\": \"minor\", \"arquivo\": \"app/src/design/EyeToggle.tsx\", \"descricao\": \"Foram adicionadas classes text-secondary no ícone e no label, mas o botão pai já define text-secondary. A mudança é redundante e não faz parte do escopo.\", \"sugestao\": \"Reverter a mudança em EyeToggle.tsx, que não é necessária para a feature.\"}, {\"severidade\": \"minor\", \"arquivo\": \"app/src/App.tsx\", \"descricao\": \"A rota /onboarding passou a usar AppShell (com cabeçalho e navegação inferior). Não está claro pela feature se o onboarding é uma tela autenticada que deve ter o shell.\", \"sugestao\": \"Confirmar em spec.md (6.1/7.2) se /onboarding deve ter o shell; caso contrário, manter o HomePlaceholder original.\"}, {\"severidade\": \"minor\", \"arquivo\": \"app/src/app/AppShell.tsx\", \"descricao\": \"Classes customizadas como pt-safe, pb-safe, max-w-(--container-app) e px-margin dependem de tokens que não foram verificados no diff. Se não existirem, o layout e o padding seguro falham sem erro de build.\", \"sugestao\": \"Confirmar que essas utilidades estão definidas em design/tokens.css ou em app/src/design/tokens.css.\"}, {\"severidade\": \"minor\", \"arquivo\": \"app/src/design/BrandMark.tsx\", \"descricao\": \"O comentário contém a sequência escapada 'design/*\\\\/code.html', que é ilegível e está fora de padrão.\", \"sugestao\": \"Reescrever o comentário sem escape, por exemplo: 'as in the design header mockup'.\"}]}\n```"
+}

@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T16:44:43.877Z",
+  "workerId": "haiku",
+  "role": "review_ui",
+  "featureId": "F-1.04",
+  "stage": 1,
+  "attempt": 3,
+  "outcome": "success",
+  "costUsd": 0.014442024999999999,
+  "durationMs": 52161,
+  "usage": {
+    "inputTokens": 58857,
+    "outputTokens": 11232,
+    "cachedTokens": 146910,
+    "costUsd": 0.014442024999999999
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "as 'CON' em label-code uppercase com tracking 0.08em, sem truncamento, igual às outras siglas.\"}, {\"severidade\": \"major\", \"tela\": \"design-mobile-*, design-desktop-*: Estados (vazio, carregando, erro, salvo)\", \"descricao\": \"As telas mostram apenas estados vazios. Não há estados de carregamento, erro, salvo nem feedback de salvamento desenhados. A rubrica c6 e c8 ficam sem evidência.\", \"sugestao\": \"Adicionar e desenhar na página de design system os estados loading (skeleton), erro (inline com cor error) e salvo (feedback discreto), com screenshots.\"}, {\"severidade\": \"minor\", \"tela\": \"dashboard-mobile-privado / dashboard-mobile-nomes\", \"descricao\": \"O título do card 'Comece registrando o seu dia' quebra deixando 'dia' sozinho na segunda linha, o que fica visualmente pobre.\", \"sugestao\": \"Ajustar a largura máxima do texto ou usar text-balance para distribuir melhor as linhas.\"}, {\"severidade\": \"minor\", \"tela\": \"design-mobile-privado / design-mobile-nomes (Cartões e controles: escala ENE 0–10)\", \"descricao\": \"A escala de chips 0–10 é cortada na borda direita em 375px (o 6 aparece cortado) sem indicador de rolagem horizontal.\", \"sugestao\": \"Reduzir o tamanho dos chips ou quebrar em duas linhas, ou adicionar sinal visual de rolagem.\"}, {\"severidade\": \"minor\", \"tela\": \"design-mobile-* (toggle 'Lembrete diário às 20h')\", \"descricao\": \"O switch desligado aparece só como anel cinza, o que deixa o estado ambíguo e diferente do toggle violeta dos mockups.\", \"sugestao\": \"Desenhar o estado off com trilho cinza e thumb branco, e o estado on com trilho violeta, conforme configura_es_e_conta.\"}, {\"severidade\": \"minor\", \"tela\": \"*-desktop-* (barra de navegação inferior)\", \"descricao\": \"A navegação inferior ocupa a largura total da tela em desktop, enquanto o conteúdo fica numa coluna de cerca de 928px. As abas ficam distantes entre si.\", \"sugestao\": \"Limitar a barra à mesma largura máxima do conteúdo (ou manter a barra e centralizar os itens em um container de largura máxima).\"}]}\n```"
+}

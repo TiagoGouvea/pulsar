@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T16:12:09.856Z",
+  "workerId": "haiku",
+  "role": "review_code",
+  "featureId": "F-1.04",
+  "stage": 1,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.0036168949999999997,
+  "durationMs": 15206,
+  "usage": {
+    "inputTokens": 18007,
+    "outputTokens": 2502,
+    "cachedTokens": 11507,
+    "costUsd": 0.0036168949999999997
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\"pass\": true, \"score\": 8, \"issues\": [{\"severidade\": \"major\", \"arquivo\": \"app/src/App.tsx\", \"descricao\": \"Cada rota envolve seu próprio <AppShell>, em vez de usar uma rota de layout com <Outlet/>. Como resultado, o cabeçalho e a barra inferior são desmontados e remontados a cada troca de aba, e o bloco AppShell se repete em 5 rotas.\", \"sugestao\": \"Criar uma rota pai com element={<AppShell><Outlet/></AppShell>} envolvendo as 5 rotas autenticadas, e manter apenas o conteúdo de cada tela como filho. Isso remove a repetição e evita o remount.\"}, {\"severidade\": \"minor\", \"arquivo\": \"app/src/App.tsx\", \"descricao\": \"O mesmo par <h1 className=\\\"font-headline-xl-mobile text-headline-xl-mobile\\\"> é repetido em cinco placeholders, com as mesmas classes de texto.\", \"sugestao\": \"Extrair um pequeno componente de título de placeholder, ou aplicar as classes no próprio AppShell, para evitar a duplicação.\"}, {\"severidade\": \"minor\", \"arquivo\": \"app/src/app/AppShell.tsx\", \"descricao\": \"A aparência do botão de Registrar depende de comparar o path com a string '/register' (isRegister), o que deixa uma regra específica de rota dentro de um componente genérico de navegação. A tela de cabeçalho também usa pt-20 fixo, que pode ficar sem folga se o pt-safe for maior que 16px em aparelhos com notch.\", \"sugestao\": \"Mover a flag de destaque para o próprio item de navegação (ex.: highlight: true em navigationItems) e calcular o padding superior do main com base na altura do cabeçalho mais a safe area.\"}]}\n```"
+}

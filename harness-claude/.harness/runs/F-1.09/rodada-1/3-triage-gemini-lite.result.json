@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T20:14:03.325Z",
+  "workerId": "gemini-lite",
+  "role": "triage",
+  "featureId": "F-1.09",
+  "stage": 1,
+  "attempt": 3,
+  "outcome": "success",
+  "costUsd": 0.006778124999999999,
+  "durationMs": 8828,
+  "usage": {
+    "inputTokens": 21739,
+    "outputTokens": 456,
+    "cachedTokens": 26375,
+    "costUsd": 0.006778124999999999
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\"causaRaiz\": \"A falha no gate G6 ocorre porque o teste espera que a transição de UID seja imediata ou síncrona dentro do tempo do `expect.poll`. O `linkWithCredential` dispara um processo assíncrono que pode levar tempo para atualizar o estado do `auth.currentUser` no Firebase, especialmente sob carga de emulação no CI. O teste falha no `expect.poll` com timeout, indicando que o estado esperado não foi alcançado dentro dos 15s, ou houve uma discrepância entre o esperado e o recebido, possivelmente devido a conflitos na execução do `linkWithCredential`.\", \"categoria\": \"flaky\", \"padrao\": true, \"dica\": \"Aumente o timeout do `expect.poll` no teste G6 e garanta que o listener de `onAuthStateChanged` esteja propagando corretamente a mudança de usuário após o `linkWithCredential` para o estado da aplicação.\"}\n```"
+}

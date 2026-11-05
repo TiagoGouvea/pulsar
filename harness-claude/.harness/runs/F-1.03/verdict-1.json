@@ -6,15 +6,9 @@
     "issues": [
       {
         "severidade": "major",
-        "arquivo": "app/src/auth/AuthProvider.tsx:35",
-        "descricao": "Ao mudar a autenticação entre abas, o estado anterior permanece visível durante o carregamento. Uma consulta pendente do usuário anterior também pode sobrescrever o estado do usuário atual.",
-        "sugestao": "Limpar o estado a cada mudança de autenticação e ignorar resultados de consultas e erros pertencentes a estados anteriores."
-      },
-      {
-        "severidade": "major",
-        "arquivo": "app/src/auth/AuthProvider.tsx:41",
-        "descricao": "O perfil é lido apenas quando a autenticação muda. Se onboardingCompleted mudar durante a sessão, navegar para / pode redirecionar usando o valor antigo.",
-        "sugestao": "Manter o perfil atualizado ou consultá-lo novamente antes de redirecionar; testar a mudança sem recarregar a página."
+        "arquivo": "app/src/auth/userRepository.ts",
+        "descricao": "O listener do Firestore pode retornar dados em cache durante falha de rede sem chamar onError. O código os aceita como sucesso e pode direcionar ao onboarding mesmo sem confirmar o perfil.",
+        "sugestao": "Detectar falha de conexão e exigir confirmação do perfil pelo servidor antes de liberar a navegação; testar a interrupção após a autenticação."
       }
     ],
     "workerId": "codex-mid"

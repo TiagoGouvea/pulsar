@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T16:42:15.401Z",
+  "workerId": "haiku",
+  "role": "review_code",
+  "featureId": "F-1.04",
+  "stage": 1,
+  "attempt": 3,
+  "outcome": "success",
+  "costUsd": 0.004956520000000001,
+  "durationMs": 22687,
+  "usage": {
+    "inputTokens": 21656,
+    "outputTokens": 4269,
+    "cachedTokens": 11507,
+    "costUsd": 0.004956520000000001
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "x-w-(--container-app)`. Em telas largas, os itens da navegação ficam em uma coluna mais estreita que o conteúdo, o que diverge da instrução de coluna central única.\", \"sugestao\": \"Usar `max-w-(--container-app)` também na barra inferior, ou confirmar com code.html/spec que a largura menor é intencional.\"}, {\"severidade\": \"minor\", \"arquivo\": \"app/src/app/AppShell.tsx\", \"descricao\": \"`aria-current` e o estado ativo dependem de `pathname === item.path`. Subrotas futuras (ex.: `/indicators/:id`) deixarão a aba sem destaque.\", \"sugestao\": \"Usar `useMatch`/`NavLink` do react-router, ou comparar por prefixo, para que a aba permaneça ativa nas subrotas.\"}, {\"severidade\": \"minor\", \"arquivo\": \"app/src/app/AppShell.tsx\", \"descricao\": \"Há valores arbitrários de Tailwind e sombras em linha (`text-[18px]`, `text-[24px]`, `rounded-[10px]`, `shadow-[0_4px_12px_rgba(99,14,212,0.3)]`) em vez de tokens do design system, o que pode gerar divergência com `design/` e `app/src/design/`.\", \"sugestao\": \"Trocar por tokens de ícone/sombra existentes no tema, ou extrair o estilo do FAB para um componente da pasta design.\"}, {\"severidade\": \"minor\", \"arquivo\": \"app/src/pages/PlaceholderPage.tsx\", \"descricao\": \"O cabeçalho usa `pt-safe` além de `h-16`, mas `<main>` usa `pt-20` fixo, sem considerar o safe-area do topo. Em dispositivos com notch, o conteúdo inicial pode ficar sob o cabeçalho.\", \"sugestao\": \"Calcular o padding superior como `calc(4rem + env(safe-area-inset-top))` ou usar a mesma variável do `pt-safe` no `<main>`.\"}, {\"severidade\": \"minor\", \"arquivo\": \"app/src/pages/PlaceholderPage.tsx\", \"descricao\": \"Os textos do placeholder do dashboard (emptyTitle, description e CTA para /register) foram redigidos sem verificar o mockup. Isso é conteúdo de feature futura incluído antes da hora, e não há como confirmar a aderência à tela sem comparar com `design/*/code.html`.\", \"sugestao\": \"Confirmar os textos com o `code.html` correspondente e manter só o necessário para a rota placeholder.\"}]}\n```"
+}

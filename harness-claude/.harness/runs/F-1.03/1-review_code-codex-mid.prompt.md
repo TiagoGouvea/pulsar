@@ -298,14 +298,14 @@ index 3de0f57..1bbabee 100644
          {
 diff --git a/app/src/auth/AuthProvider.tsx b/app/src/auth/AuthProvider.tsx
 new file mode 100644
-index 0000000..f963e40
+index 0000000..5a25193
 --- /dev/null
 +++ b/app/src/auth/AuthProvider.tsx
-@@ -0,0 +1,57 @@
+@@ -0,0 +1,72 @@
 +import { onAuthStateChanged, signInAnonymously, type User } from 'firebase/auth';
 +import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 +import { auth } from '../lib/firebase';
-+import { ensureUserProfile, type UserProfile } from './userRepository';
++import { ensureUserProfile, watchUserProfile, type UserProfile } from './userRepository';
 +
 +interface AuthState {
 +  user: User | null;
@@ -332,22 +332,37 @@ index 0000000..f963e40
 +  const [state, setState] = useState<AuthState>(initialState);
 +
 +  useEffect(() => {
-+    let active = true;
-+    const fail = (err: unknown) => {
-+      if (active) setState({ user: null, profile: null, loading: false, error: errorMessage(err) });
-+    };
++    // Each auth change starts a new generation; results and errors from older ones are ignored.
++    let generation = 0;
++    let stopProfile = () => {};
 +    const unsubscribe = onAuthStateChanged(auth, (user) => {
++      const current = ++generation;
++      const isCurrent = () => current === generation;
++      const fail = (err: unknown) => {
++        if (isCurrent()) setState({ user: null, profile: null, loading: false, error: errorMessage(err) });
++      };
++      stopProfile();
++      stopProfile = () => {};
++      setState(initialState);
 +      if (!user) {
 +        pendingSignIn ??= signInAnonymously(auth).finally(() => (pendingSignIn = null));
 +        pendingSignIn.catch(fail);
 +        return;
 +      }
-+      ensureUserProfile(user.uid).then((profile) => {
-+        if (active) setState({ user, profile, loading: false, error: null });
++      ensureUserProfile(user.uid).then(() => {
++        if (!isCurrent()) return;
++        stopProfile = watchUserProfile(
++          user.uid,
++          (profile) => {
++            if (isCurrent()) setState({ user, profile, loading: false, error: null });
++          },
++          fail,
++        );
 +      }, fail);
 +    });
 +    return () => {
-+      active = false;
++      generation += 1;
++      stopProfile();
 +      unsubscribe();
 +    };
 +  }, []);
@@ -361,11 +376,11 @@ index 0000000..f963e40
 +}
 diff --git a/app/src/auth/__tests__/AuthProvider.test.tsx b/app/src/auth/__tests__/AuthProvider.test.tsx
 new file mode 100644
-index 0000000..6092caa
+index 0000000..edd4280
 --- /dev/null
 +++ b/app/src/auth/__tests__/AuthProvider.test.tsx
-@@ -0,0 +1,143 @@
-+import { render, screen, waitFor } from '@testing-library/react';
+@@ -0,0 +1,211 @@
++import { act, render, screen, waitFor } from '@testing-library/react';
 +import { beforeEach, describe, expect, it, vi } from 'vitest';
 +
 +// Minimal in-memory fakes of the Firebase SDK pieces the provider is allowed to use.
@@ -378,9 +393,20 @@ index 0000000..6092caa
 +    signInError: null as Error | null,
 +    signInCalls: 0,
 +    nextUid: 1,
++    docListeners: [] as { path: string; cb: (snap: { data: () => unknown }) => void }[],
++    // Pending reads per document path, to simulate slow queries.
++    gates: new Map<string, Promise<void>>(),
 +  };
 +  const emit = () => state.listeners.forEach((l) => l(state.currentUser));
-+  return { state, emit };
++  const notify = (path: string) =>
++    state.docListeners
++      .filter((l) => l.path === path)
++      .forEach((l) => l.cb({ data: () => state.docs.get(path) }));
++  const write = (path: string, data: Record<string, unknown>) => {
++    state.docs.set(path, { ...(state.docs.get(path) ?? {}), ...data });
++    notify(path);
++  };
++  return { state, emit, notify, write };
 +});
 +
 +vi.mock('../../lib/firebase', () => ({ auth: { __fake: 'auth' }, db: { __fake: 'db' } }));
@@ -405,16 +431,24 @@ index 0000000..6092caa
 +vi.mock('firebase/firestore', () => {
 +  const doc = (_db: unknown, ...segments: string[]) => ({ path: segments.join('/') });
 +  const getDoc = async (ref: { path: string }) => {
++    await h.state.gates.get(ref.path);
 +    const data = h.state.docs.get(ref.path);
 +    return { exists: () => data !== undefined, data: () => data };
 +  };
-+  const setDoc = async (ref: { path: string }, data: Record<string, unknown>) => {
-+    h.state.docs.set(ref.path, { ...(h.state.docs.get(ref.path) ?? {}), ...data });
++  const setDoc = async (ref: { path: string }, data: Record<string, unknown>) => h.write(ref.path, data);
++  const onSnapshot = (ref: { path: string }, cb: (snap: { data: () => unknown }) => void) => {
++    const entry = { path: ref.path, cb };
++    h.state.docListeners.push(entry);
++    queueMicrotask(() => cb({ data: () => h.state.docs.get(ref.path) }));
++    return () => {
++      h.state.docListeners = h.state.docListeners.filter((l) => l !== entry);
++    };
 +  };
 +  return {
 +    doc,
 +    getDoc,
 +    setDoc,
++    onSnapshot,
 +    serverTimestamp: () => '__server_timestamp__',
 +    runTransaction: async (
 +      _db: unknown,
@@ -426,11 +460,12 @@ index 0000000..6092caa
 +import { AuthProvider, useAuth } from '../AuthProvider';
 +
 +function Probe() {
-+  const { user, loading, error } = useAuth();
++  const { user, profile, loading, error } = useAuth();
 +  return (
 +    <div>
 +      <span data-testid="loading">{String(loading)}</span>
 +      <span data-testid="uid">{user?.uid ?? 'none'}</span>
++      <span data-testid="onboarding">{String(profile?.onboardingCompleted ?? 'none')}</span>
 +      {error ? <p role="alert">{error}</p> : null}
 +    </div>
 +  );
@@ -450,7 +485,11 @@ index 0000000..6092caa
 +  h.state.signInError = null;
 +  h.state.signInCalls = 0;
 +  h.state.nextUid = 1;
++  h.state.docListeners = [];
++  h.state.gates.clear();
 +});
++
++const text = (id: string) => screen.getByTestId(id).textContent;
 +
 +describe('AuthProvider', () => {
 +  it('exposes loading until the session resolves, then signs in anonymously', async () => {
@@ -507,14 +546,58 @@ index 0000000..6092caa
 +    expect(screen.getByTestId('loading').textContent).toBe('false');
 +    expect(h.state.docs.size).toBe(0);
 +  });
++
++  it('keeps the profile up to date when onboardingCompleted changes during the session', async () => {
++    h.state.currentUser = { uid: 'existing-uid' };
++    renderProvider();
++    await waitFor(() => expect(text('onboarding')).toBe('false'));
++    act(() => h.write('users/existing-uid', { onboardingCompleted: true }));
++    await waitFor(() => expect(text('onboarding')).toBe('true'));
++  });
++
++  it('clears the previous user state while a new auth state loads', async () => {
++    h.state.currentUser = { uid: 'user-a' };
++    renderProvider();
++    await waitFor(() => expect(text('uid')).toBe('user-a'));
++
++    let release = () => {};
++    h.state.gates.set('users/user-b', new Promise<void>((r) => (release = r)));
++    h.state.currentUser = { uid: 'user-b' };
++    act(() => h.emit());
++    expect(text('uid')).toBe('none');
++    expect(text('loading')).toBe('true');
++    expect(text('onboarding')).toBe('none');
++
++    await act(async () => release());
++    await waitFor(() => expect(text('uid')).toBe('user-b'));
++  });
++
++  it('ignores a pending query that belongs to a previous auth state', async () => {
++    let release = () => {};
++    h.state.gates.set('users/user-a', new Promise<void>((r) => (release = r)));
++    h.state.currentUser = { uid: 'user-a' };
++    renderProvider();
++    await waitFor(() => expect(h.state.listeners.length).toBeGreaterThan(0));
++
++    h.state.currentUser = { uid: 'user-b' };
++    act(() => h.emit());
++    await waitFor(() => expect(text('uid')).toBe('user-b'));
++
++    await act(async () => release());
++    expect(text('uid')).toBe('user-b');
++    expect(h.state.docListeners.every((l) => l.path === 'users/user-b')).toBe(true);
++    act(() => h.write('users/user-a', { onboardingCompleted: true }));
++    expect(text('uid')).toBe('user-b');
++    expect(text('onboarding')).toBe('false');
++  });
 +});
 diff --git a/app/src/auth/userRepository.ts b/app/src/auth/userRepository.ts
 new file mode 100644
-index 0000000..8e48731
+index 0000000..4dee403
 --- /dev/null
 +++ b/app/src/auth/userRepository.ts
-@@ -0,0 +1,23 @@
-+import { doc, runTransaction, serverTimestamp } from 'firebase/firestore';
+@@ -0,0 +1,34 @@
++import { doc, onSnapshot, runTransaction, serverTimestamp, type Unsubscribe } from 'firebase/firestore';
 +import { db } from '../lib/firebase';
 +
 +export interface UserProfile {
@@ -523,19 +606,30 @@ index 0000000..8e48731
 +
 +// Idempotent: creates users/{uid} with the defaults only when it does not exist yet, so a reload or another
 +// device never overwrites existing data (createdAt is written once).
-+export function ensureUserProfile(uid: string): Promise<UserProfile> {
++export function ensureUserProfile(uid: string): Promise<void> {
 +  const ref = doc(db, 'users', uid);
 +  return runTransaction(db, async (tx) => {
-+    const snap = await tx.get(ref);
-+    if (snap.exists()) return { onboardingCompleted: snap.data().onboardingCompleted === true };
++    if ((await tx.get(ref)).exists()) return;
 +    tx.set(ref, {
 +      createdAt: serverTimestamp(),
 +      onboardingCompleted: false,
 +      aiConsent: false,
 +      reminderEnabled: false,
 +    });
-+    return { onboardingCompleted: false };
 +  });
++}
++
++// Live view of users/{uid}, so changes made during the session (e.g. onboarding completed) are never stale.
++export function watchUserProfile(
++  uid: string,
++  onProfile: (profile: UserProfile) => void,
++  onError: (err: unknown) => void,
++): Unsubscribe {
++  return onSnapshot(
++    doc(db, 'users', uid),
++    (snap) => onProfile({ onboardingCompleted: snap.data()?.onboardingCompleted === true }),
++    onError,
++  );
 +}
 diff --git a/app/src/pages/HomePlaceholder.tsx b/app/src/pages/HomePlaceholder.tsx
 index 4d2c13f..c5685ed 100644

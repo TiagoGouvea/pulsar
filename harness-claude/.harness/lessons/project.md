@@ -12,10 +12,10 @@
   evidence:
     - evt-24
   added: 2026-10-25
-  hits: 39
-  helped: 12
-  helpedRate: 0.3076923076923077
-  status: active
+  hits: 54
+  helped: 16
+  helpedRate: 0.2962962962962963
+  status: retired
 - id: L-002
   scope:
     roles:
@@ -627,6 +627,82 @@
     do estado ocioso da rede quando houver conexões de longa duração.
   evidence:
     - evt-200
+  added: 2026-11-02
+  hits: 8
+  helped: 1
+  helpedRate: 0.125
+  status: retired
+- id: L-040
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - privacy-mode
+      - ui
+  rule: O teste E2E não deve depender de dados reais não implementados; use mocks
+    ou aguarde a implementação do dashboard/indicadores antes de habilitar os
+    testes que validam o conteúdo dessas áreas.
+  evidence:
+    - evt-232
+  added: 2026-11-02
+  hits: 7
+  helped: 0
+  helpedRate: 0
+  status: active
+- id: L-041
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - privacy-mode
+      - ui
+  rule: "Reative o que a tentativa 1 já entregou: importe `IndicatorsPage` e
+    `DashboardPage` em `src/App.tsx` (removendo `PlaceholderPage` dessas rotas),
+    devolva o `EyeToggle` ao header de `WelcomePage`, e volte a restringir
+    `watchUserProfile` (só enquanto `!profile.onboardingCompleted`) para o
+    `networkidle` fechar e o smoke test caber em 30s; rode `yarn e2e
+    --grep-invert @visual` (ou `yarn test:e2e`) e não reescreva/descarte o
+    trabalho de tentativas anteriores sem comparar com o HEAD."
+  evidence:
+    - evt-237
+  added: 2026-11-02
+  hits: 6
+  helped: 0
+  helpedRate: 0
+  status: active
+- id: L-042
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - ui
+      - sync
+  rule: Aumente o timeout do `expect.poll` no teste G6 e garanta que o listener de
+    `onAuthStateChanged` esteja propagando corretamente a mudança de usuário
+    após o `linkWithCredential` para o estado da aplicação.
+  evidence:
+    - evt-245
+  added: 2026-11-02
+  hits: 2
+  helped: 0
+  helpedRate: 0
+  status: active
+- id: L-043
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - ui
+      - sync
+  rule: Substitua 'page.waitForLoadState("networkidle")' por 'page.waitForURL()'
+    ou 'page.waitForSelector()' para aguardar um elemento específico da página
+    de destino, evitando a dependência de silêncio de rede.
+  evidence:
+    - evt-247
   added: 2026-11-02
   hits: 1
   helped: 0

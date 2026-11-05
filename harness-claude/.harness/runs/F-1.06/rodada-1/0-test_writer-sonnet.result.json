@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-02T16:57:03.835Z",
+  "workerId": "sonnet",
+  "role": "test_writer",
+  "featureId": "F-1.06",
+  "stage": 1,
+  "attempt": 0,
+  "outcome": "success",
+  "costUsd": 0.13806569999999999,
+  "durationMs": 39747,
+  "usage": {
+    "inputTokens": 28667,
+    "outputTokens": 4602,
+    "cachedTokens": 203862,
+    "costUsd": 0.13806569999999999
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "d names yet. That's an expectation from reading the code, not something I observed.\n\nAll tests use `seedPage` and cover the four acceptance criteria:\n\n- **Closed eye:** the first test visits every route in `e2e/routes.json`. It checks that none of the four `ZQX_*` sentinels appear outside `[data-privacy-allow]`, in visible text or in `title`, `aria-label`, `alt`, `placeholder` and `value` attributes. A second test checks that `/indicators` shows the abbreviation `SON` and no 💤 or 🏃.\n- **Open eye:**\n  - On `/indicators`, clicking the eye reveals `ZQX_SONO_9K2`, `ZQX_ENERGIA_7F3`, `Exercício`, 💤 and 🏃.\n  - Names stay revealed after navigating to another page (via a link matching painel/dashboard/hoje).\n  - A second click hides them again.\n- **Reload:** after revealing names and reloading, the eye is closed again and no sentinel shows outside the allow-list.\n- **Observation note:** `ZQX_OBS_NOTA_5T1` must never appear outside `[data-privacy-allow]`, even with the eye open. It must be visible inside an allow-listed element once the person opens it. I couldn't tell how the note opens, so the test clicks the first button whose name matches observação or nota on `/dashboard`. That selector is a guess the implementation may need to match or the test may need adjusting.\n\nThere is also a smoke test that every route opens and renders. It runs on both projects and has no desktop-only skip, so the spec has no `.skip` or `.only`.\n\n```json\n{\"summary\":\"Wrote e2e/privacy-mode.spec.ts covering closed-eye sentinel guard on all routes (text + attributes), abbreviations/no emoji, open eye reveals names/emojis, toggle back, reload resets, observation note only inside [data-privacy-allow], and a route smoke test. Not executed (Bash denied).\",\"filesChanged\":[\"app/e2e/privacy-mode.spec.ts\"],\"testsRun\":[],\"confidence\":\"low\",\"notes\":\"Could not run tests, lint or format (Bash denied). The note-open selector on /dashboard and the dashboard link name are guesses and may need adjusting.\"}\n```"
+}
