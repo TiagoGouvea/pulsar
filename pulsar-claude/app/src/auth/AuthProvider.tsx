@@ -1,7 +1,12 @@
 import { onAuthStateChanged, signInAnonymously, type User } from 'firebase/auth';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { auth } from '../lib/firebase';
-import { ensureUserProfile, watchUserProfile, type UserProfile } from './userRepository';
+import {
+  completeOnboarding as persistOnboardingCompletion,
+  ensureUserProfile,
+  watchUserProfile,
+  type UserProfile,
+} from './userRepository';
 
 interface AuthState {
   user: User | null;
@@ -10,8 +15,19 @@ interface AuthState {
   error: string | null;
 }
 
+interface AuthContextValue extends AuthState {
+  completeOnboarding: () => Promise<void>;
+  refreshCurrentUser: () => void;
+}
+
 const initialState: AuthState = { user: null, profile: null, loading: true, error: null };
-const AuthContext = createContext<AuthState>(initialState);
+const AuthContext = createContext<AuthContextValue>({
+  ...initialState,
+  completeOnboarding: async () => {
+    throw new Error('Authentication is still loading.');
+  },
+  refreshCurrentUser: () => {},
+});
 
 // Shared by every subscriber (e.g. StrictMode double effects) so a first visit never creates two anonymous accounts.
 let pendingSignIn: Promise<unknown> | null = null;
@@ -49,13 +65,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!isCurrent()) return;
         // A transaction is server-confirmed; never release navigation from a cache-only snapshot.
         setState({ user, profile, loading: false, error: null });
-        stopProfile = watchUserProfile(
-          user.uid,
-          (profile) => {
-            if (isCurrent()) setState({ user, profile, loading: false, error: null });
-          },
-          fail,
-        );
+        // A permanent listener would keep every app route network-active forever (browser gates wait for
+        // network silence) and anonymous sessions already update their own flag locally. The live watch
+        // only matters while a converted account can still complete onboarding elsewhere; it stops as
+        // soon as that happens.
+        if (user.isAnonymous !== true && !profile.onboardingCompleted) {
+          stopProfile = watchUserProfile(
+            user.uid,
+            (profile) => {
+              if (!isCurrent()) return;
+              setState({ user, profile, loading: false, error: null });
+              if (profile.onboardingCompleted) stopProfile();
+            },
+            fail,
+          );
+        }
       }, fail);
     });
     return () => {
@@ -65,10 +89,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  return <AuthContext.Provider value={state}>{children}</AuthContext.Provider>;
+  async function completeOnboarding(): Promise<void> {
+    const user = auth.currentUser;
+    if (!user) throw new Error('An authenticated user is required to complete onboarding.');
+    await persistOnboardingCompletion(user.uid);
+    setState((current) =>
+      current.user?.uid === user.uid && current.profile
+        ? { ...current, profile: { ...current.profile, onboardingCompleted: true } }
+        : current,
+    );
+  }
+
+  function refreshCurrentUser(): void {
+    const user = auth.currentUser;
+    setState((current) => (user && current.user?.uid === user.uid ? { ...current, user } : current));
+  }
+
+  return (
+    <AuthContext.Provider value={{ ...state, completeOnboarding, refreshCurrentUser }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
-export function useAuth(): AuthState {
+export function useAuth(): AuthContextValue {
   return useContext(AuthContext);
 }

@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
-import { completeOnboarding } from '../auth/userRepository';
 import { useAuth } from '../auth/AuthProvider';
 import { Button, Card, Chip, EyeToggle, Icon, IndicatorLabel, type IconName } from '../design';
 
@@ -441,7 +440,7 @@ function Guarantee({
  * Finishing or skipping records onboardingCompleted=true and lands on the dashboard.
  */
 export function OnboardingPage() {
-  const { user } = useAuth();
+  const { user, completeOnboarding } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [finishing, setFinishing] = useState(false);
@@ -459,7 +458,7 @@ export function OnboardingPage() {
     setFinishing(true);
     setError(null);
     try {
-      await completeOnboarding(user.uid);
+      await completeOnboarding();
       navigate('/dashboard', { replace: true });
     } catch {
       setError('Não foi possível concluir a introdução. Tente novamente.');

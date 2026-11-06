@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const h = vi.hoisted(() => {
   type Listener = (user: { uid: string } | null) => void;
   const state = {
-    currentUser: null as { uid: string } | null,
+    currentUser: null as { uid: string; isAnonymous?: boolean } | null,
     listeners: [] as Listener[],
     docs: new Map<string, Record<string, unknown>>(),
     signInError: null as Error | null,
@@ -30,7 +30,15 @@ const h = vi.hoisted(() => {
   return { state, emit, notify, write };
 });
 
-vi.mock('../../lib/firebase', () => ({ auth: { __fake: 'auth' }, db: { __fake: 'db' } }));
+vi.mock('../../lib/firebase', () => ({
+  auth: {
+    __fake: 'auth',
+    get currentUser() {
+      return h.state.currentUser;
+    },
+  },
+  db: { __fake: 'db' },
+}));
 
 vi.mock('firebase/auth', () => ({
   onAuthStateChanged: (_auth: unknown, cb: (u: { uid: string } | null) => void) => {
@@ -84,13 +92,16 @@ vi.mock('firebase/firestore', () => {
 import { AuthProvider, useAuth } from '../AuthProvider';
 
 function Probe() {
-  const { user, profile, loading, error } = useAuth();
+  const { user, profile, loading, error, completeOnboarding, refreshCurrentUser } = useAuth();
   return (
     <div>
       <span data-testid="loading">{String(loading)}</span>
       <span data-testid="uid">{user?.uid ?? 'none'}</span>
+      <span data-testid="anonymous">{String(user?.isAnonymous ?? 'none')}</span>
       <span data-testid="onboarding">{String(profile?.onboardingCompleted ?? 'none')}</span>
       {error ? <p role="alert">{error}</p> : null}
+      <button onClick={() => void completeOnboarding()}>Concluir</button>
+      <button onClick={refreshCurrentUser}>Atualizar conta</button>
     </div>
   );
 }
@@ -130,6 +141,19 @@ describe('AuthProvider', () => {
     await waitFor(() => expect(screen.getByTestId('loading').textContent).toBe('false'));
     expect(screen.getByTestId('uid').textContent).toBe('existing-uid');
     expect(h.state.signInCalls).toBe(0);
+  });
+
+  it('refreshes the linked user without reloading the existing profile', async () => {
+    h.state.currentUser = { uid: 'anon-1', isAnonymous: true };
+    renderProvider();
+    await waitFor(() => expect(text('uid')).toBe('anon-1'));
+    h.state.currentUser = { uid: 'anon-1', isAnonymous: false };
+
+    screen.getByRole('button', { name: 'Atualizar conta' }).click();
+
+    await waitFor(() => expect(text('anonymous')).toBe('false'));
+    expect(text('uid')).toBe('anon-1');
+    expect(text('loading')).toBe('false');
   });
 
   it('creates users/{uid} with the defaults', async () => {
@@ -199,12 +223,51 @@ describe('AuthProvider', () => {
     expect(text('onboarding')).toBe('false');
   });
 
+  it('updates the profile when onboarding is completed during the session', async () => {
+    h.state.currentUser = { uid: 'existing-uid' };
+    renderProvider();
+    await waitFor(() => expect(text('onboarding')).toBe('false'));
+    screen.getByRole('button', { name: 'Concluir' }).click();
+    await waitFor(() => expect(text('onboarding')).toBe('true'));
+    expect(h.state.docs.get('users/existing-uid')).toMatchObject({ onboardingCompleted: true });
+  });
+
   it('keeps the profile up to date when onboardingCompleted changes during the session', async () => {
     h.state.currentUser = { uid: 'existing-uid' };
     renderProvider();
     await waitFor(() => expect(text('onboarding')).toBe('false'));
     act(() => h.write('users/existing-uid', { onboardingCompleted: true }));
     await waitFor(() => expect(text('onboarding')).toBe('true'));
+  });
+
+  it('opens no persistent profile listener for an already completed account', async () => {
+    h.state.currentUser = { uid: 'existing-uid' };
+    h.state.docs.set('users/existing-uid', { onboardingCompleted: true });
+    renderProvider();
+    await waitFor(() => expect(text('onboarding')).toBe('true'));
+    expect(h.state.docListeners).toHaveLength(0);
+    act(() => h.write('users/existing-uid', { onboardingCompleted: false }));
+    expect(text('onboarding')).toBe('true');
+  });
+
+  it('stops the live profile listener once onboarding completes', async () => {
+    h.state.currentUser = { uid: 'existing-uid' };
+    renderProvider();
+    await waitFor(() => expect(text('onboarding')).toBe('false'));
+    expect(h.state.docListeners).toHaveLength(1);
+    act(() => h.write('users/existing-uid', { onboardingCompleted: true }));
+    await waitFor(() => expect(text('onboarding')).toBe('true'));
+    expect(h.state.docListeners).toHaveLength(0);
+  });
+
+  it('completes anonymous onboarding without opening a persistent profile listener', async () => {
+    h.state.currentUser = { uid: 'anon-user', isAnonymous: true };
+    renderProvider();
+    await waitFor(() => expect(text('onboarding')).toBe('false'));
+    expect(h.state.docListeners).toHaveLength(0);
+    screen.getByRole('button', { name: 'Concluir' }).click();
+    await waitFor(() => expect(text('onboarding')).toBe('true'));
+    expect(h.state.docListeners).toHaveLength(0);
   });
 
   it('clears the previous user state while a new auth state loads', async () => {

@@ -7,6 +7,7 @@ import { emulatorsEnabled } from './lib/env';
 import { HomePlaceholder } from './pages/HomePlaceholder';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { PlaceholderPage } from './pages/PlaceholderPage';
+import { SettingsPage } from './pages/SettingsPage';
 import { PrivacyProvider } from './privacy/PrivacyContext';
 
 const DesignPage = lazy(() => import('./pages/DesignPage'));
@@ -123,12 +124,7 @@ const routes: RouteObject[] = [
         path: '/settings',
         element: (
           <AppShell>
-            <PlaceholderPage
-              title="Configurações"
-              icon="person"
-              emptyTitle="Sua conta e preferências"
-              description="Gerencie sua conta, sua privacidade visual e seus dados aqui."
-            />
+            <SettingsPage />
           </AppShell>
         ),
       },

@@ -21,7 +21,7 @@ export function Sheet({ open, onClose, title, description, children }: SheetProp
 
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
+    <div className="fixed inset-0 z-[60] flex items-end justify-center">
       <div
         aria-hidden="true"
         onClick={onClose}
