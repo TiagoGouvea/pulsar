@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-05T10:28:18.833Z",
+  "workerId": "codex-mid",
+  "role": "implement_hard",
+  "featureId": "F-1.09",
+  "stage": 1,
+  "attempt": 5,
+  "outcome": "success",
+  "costUsd": 0.20800354999999998,
+  "durationMs": 110592,
+  "usage": {
+    "inputTokens": 77039,
+    "outputTokens": 8127,
+    "cachedTokens": 1806591
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"summary\": \"Estados de conversão e captura da rota inicial ajustados.\",\n  \"filesChanged\": [\"app/src/design/\", \"app/src/pages/\", \"app/e2e/\", \".harness/inbox/risks.jsonl\"],\n  \"testsRun\": \"Lint, typecheck, formatação e 123 testes unitários passaram. E2E e capturas bloqueados: sandbox impede abertura das portas dos emuladores.\",\n  \"confidence\": \"low\",\n  \"notes\": \"O convite no dashboard e as capturas dos dias 2 e 14 continuam pendentes.\"\n}\n```"
+}

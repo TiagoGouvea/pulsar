@@ -1,0 +1,114 @@
+[
+  {
+    "kind": "code",
+    "pass": true,
+    "score": 7,
+    "issues": [
+      {
+        "severidade": "major",
+        "arquivo": "app/src/auth/linkAccount.ts",
+        "descricao": "A pré-checagem fetchSignInMethodsForEmail é um oráculo de existência de e-mail e, com a proteção contra enumeração do Firebase ativa (padrão em projetos novos), retorna lista vazia. Nesse caso o linkWithCredential falha com email-already-in-use e consome o código de ação única. Depois, a opção 'Confirmar entrada na conta existente' usa essa mesma credencial e falha com código inválido, quebrando o critério de aceite de resolução explícita. O e2e só passa porque o emulador não reproduz essa proteção.",
+        "sugestao": "Não depender da pré-checagem para a correção: guardar a credencial e tratar o conflito de forma que 'entrar na conta existente' use uma credencial válida (ex.: obter novo link ou reenviar), ou documentar e testar explicitamente o comportamento com a proteção ativa. Remover fetchSignInMethodsForEmail se não for indispensável."
+      },
+      {
+        "severidade": "major",
+        "arquivo": "app/src/auth/AuthProvider.tsx",
+        "descricao": "Mudança de comportamento em funcionalidade já entregue: o listener de perfil deixa de existir para contas anônimas e o completeOnboarding passa a ser exposto pelo contexto, alterando o fluxo de onboarding existente. Está justificado no comentário, mas o escopo ultrapassa o aceite de F-1.09 (conversão da conta).",
+        "sugestao": "Confirmar com a spec que a remoção do listener para anônimos não afeta outras telas. Se possível, isolar essa mudança em um commit/feature separado ou cobri-la com teste de regressão do onboarding."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/auth/__tests__/linkAccount.test.ts",
+        "descricao": "O mock de firebase/auth não controla fetchSignInMethodsForEmail (usa o original via importOriginal). Os testes de conflito e de vinculação por link dependem do comportamento real da biblioteca no fake auth, ficando frágeis e sem cobrir o caminho de conflito pela pré-checagem.",
+        "sugestao": "Mockar fetchSignInMethodsForEmail explicitamente e adicionar casos para methods.length > 0 (conflito sem chamar linkWithCredential) e para lista vazia com erro no linkWithCredential."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/pages/SettingsPage.tsx",
+        "descricao": "completedActionLink é um estado de módulo que nunca é limpo. Isso é um global mutável fora do ciclo do React, usado para contornar o remount e difícil de raciocinar.",
+        "sugestao": "Limpar a referência após finishLink ou mover o estado para um contexto/hook dedicado. Considerar também reduzir os 10 useState (ex.: um reducer de estado de conta)."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/auth/linkAccount.ts",
+        "descricao": "O e-mail digitado é persistido em localStorage (pulsar.emailForSignInLink) como dado pessoal, sem expiração nem limpeza em caso de abandono do fluxo.",
+        "sugestao": "Aceitável para o fluxo, mas registrar a decisão em DECISOES.md ou limpar a chave ao sair da tela de configurações sem concluir."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/design/Sheet.tsx",
+        "descricao": "A mudança global de z-50 para z-[60] afeta todos os usos de Sheet no app, não só a tela de conta.",
+        "sugestao": "Confirmar que nenhum outro sheet/modal depende da ordem de empilhamento atual, ou passar o z-index como prop."
+      }
+    ],
+    "workerId": "haiku"
+  },
+  {
+    "kind": "ui",
+    "pass": false,
+    "score": 6.9,
+    "issues": [
+      {
+        "severidade": "major",
+        "tela": "settings-mobile-privado / settings-mobile-nomes",
+        "descricao": "O card de conta anônima não mostra o UID/chave temporária (ex.: #PLS-9482), que aparece no mockup configura_es_e_conta. A feature trata justamente de preservar o UID, e o usuário não consegue ver o identificador que será mantido.",
+        "sugestao": "Exibir o identificador (chip ou linha 'UID #PLS-…') no card de conta, nos dois modos de privacidade. Confirmar na spec (docs/) se o UID é obrigatório na tela."
+      },
+      {
+        "severidade": "major",
+        "tela": "dashboard-mobile-* / dashboard-desktop-*",
+        "descricao": "As capturas do dashboard mostram só o estado vazio ('Comece registrando o seu dia'). Não há captura do card 'Garantir dados do Dia 1 e Dia 2' com 'Salvar com Google' e 'Enviar Link Mágico', que é o ponto de entrada da conversão no mockup dashboard_dia_2. Esse fluxo não foi verificado visualmente.",
+        "sugestao": "Adicionar capturas com dados semeados (dia 2 e dia 14) mostrando o card de conversão nos modos privado e nomes, em mobile e desktop."
+      },
+      {
+        "severidade": "major",
+        "tela": "settings-mobile-* / settings-desktop-*",
+        "descricao": "Não há capturas dos estados do fluxo de conversão: link mágico enviado, erro no Google, sucesso ao vincular. Para c6 ('carregando, erro e salvo desenhados'), a tela de Configurações sem feedback de estado fica incompleta.",
+        "sugestao": "Capturar os estados de sucesso, erro e carregamento da vinculação (Google e link mágico), usando os componentes de estado do design system (Erro e Salvo já existem em design-*)."
+      },
+      {
+        "severidade": "minor",
+        "tela": "settings-mobile-privado / settings-mobile-nomes",
+        "descricao": "Há um círculo decorativo rosa-avermelhado no canto superior direito do card de conta, sobreposto ao cabeçalho do card. No desktop ele é cortado pela borda do card. Parece artefato, não elemento de design.",
+        "sugestao": "Remover o blob ou limitá-lo aos limites do card, com opacidade violeta sutil, como nas demais superfícies."
+      },
+      {
+        "severidade": "minor",
+        "tela": "settings-mobile-privado / settings-mobile-nomes / settings-desktop-*",
+        "descricao": "O pill 'CONTA ANÔNIMA ATIVA' usa vermelho (cor de erro, #ba1a1a no token). O estado é informativo e não de erro, e os tokens reservam o vermelho para falhas. Pode gerar alarme desnecessário.",
+        "sugestao": "Usar o tom de alerta âmbar (baixa confiança) ou um pill neutro/indigo com ícone de cadeado, sem vermelho."
+      },
+      {
+        "severidade": "minor",
+        "tela": "design-mobile-privado / design-desktop-privado (escala ENE 0–10)",
+        "descricao": "A escala de 0 a 10 é cortada na borda do card: no mobile o último item visível é o 6 seguido de um círculo cortado; no desktop o 9 aparece cortado. Não há indicação de scroll horizontal, o que lê como overflow (c3/c10).",
+        "sugestao": "Quebrar a escala em duas linhas (0–5 / 6–10) ou usar grid de 6 colunas com scroll explícito e indicador/fade."
+      },
+      {
+        "severidade": "minor",
+        "tela": "design-mobile-nomes / design-desktop-nomes",
+        "descricao": "No modo nomes, os nomes de fatores e resultados recebem emojis (🚴, ☕, ⚡) como ícones. Isso foge do sistema de ícones usado no resto da interface (Fator, Resultado, Análise, Registrado) e quebra a consistência entre telas (c5).",
+        "sugestao": "Usar os ícones já existentes no design system para cada fator/resultado, não emojis."
+      },
+      {
+        "severidade": "minor",
+        "tela": "home-mobile-* / home-desktop-*",
+        "descricao": "As capturas 'home' mostram o onboarding (Passo 1 de 3), o mesmo conteúdo de 'onboarding-*'. Ou a rota home redireciona para o onboarding, ou a captura está errada. Assim, a cobertura real fica duplicada e nenhuma captura mostra o dashboard com dados.",
+        "sugestao": "Confirmar a rota de cada captura e renomear ou corrigir os arquivos home-* para refletir a tela real."
+      }
+    ],
+    "porCriterio": {
+      "c1": 6,
+      "c2": 7,
+      "c3": 6,
+      "c4": 8,
+      "c5": 7,
+      "c6": 6,
+      "c7": 8,
+      "c8": 6,
+      "c9": 8,
+      "c10": 7
+    },
+    "workerId": "haiku"
+  }
+]

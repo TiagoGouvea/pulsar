@@ -11,10 +11,11 @@ Implemente a feature abaixo até que os testes passem e o código respeite o des
 
 ## Escopo
 - Faça **somente** o que esta feature pede (descrição e critérios de aceite), mesmo que a spec ou o design mostrem mais.
-- Estas features da etapa ainda serão feitas por outro implementador; não implemente telas, fluxos nem dados delas:
+- Estas features (desta etapa e das próximas) ainda serão feitas por outro implementador; não implemente telas, fluxos nem dados delas:
 {{otherFeatures}}
 - Se precisar navegar para uma tela de outra feature, crie no máximo um placeholder mínimo (título e uma linha, sem lógica).
 - Não remova nem reescreva código de features já entregues.
+- Se a revisão anterior pedir algo que exija alterar um teste protegido ou sair do escopo, **não faça**: atenda o resto e registre a discordância em `.harness/inbox/questions.jsonl`.
 
 ## Diagnóstico da tentativa anterior
 {{diagnostic}}

@@ -224,10 +224,10 @@
     "falhasPorGate": {}
   },
   "haiku|review_code|*": {
-    "tentativas": 14,
-    "sucessos": 14,
-    "custoMedio": 0.005878866785714286,
-    "duracaoMedia": 22688.35714285714,
+    "tentativas": 16,
+    "sucessos": 16,
+    "custoMedio": 0.006048128125000001,
+    "duracaoMedia": 23621.874999999996,
     "falhasPorGate": {}
   },
   "sonnet|review_code|*": {
@@ -589,10 +589,10 @@
     }
   },
   "gemini-lite|triage|*": {
-    "tentativas": 9,
-    "sucessos": 9,
-    "custoMedio": 0.0018101527777777777,
-    "duracaoMedia": 2952.222222222222,
+    "tentativas": 11,
+    "sucessos": 11,
+    "custoMedio": 0.0016736931818181818,
+    "duracaoMedia": 2904.909090909091,
     "falhasPorGate": {}
   },
   "codex-mid|review_code|sync": {
@@ -617,10 +617,10 @@
     "falhasPorGate": {}
   },
   "gemini-lite|triage|sync": {
-    "tentativas": 5,
-    "sucessos": 5,
-    "custoMedio": 0.002278025,
-    "duracaoMedia": 3401.4,
+    "tentativas": 7,
+    "sucessos": 7,
+    "custoMedio": 0.0019299107142857143,
+    "duracaoMedia": 3198.714285714286,
     "falhasPorGate": {}
   },
   "qwen-coder|implement|*": {
@@ -697,10 +697,10 @@
     "falhasPorGate": {}
   },
   "haiku|review_code|sync": {
-    "tentativas": 5,
-    "sucessos": 5,
-    "custoMedio": 0.006716077,
-    "duracaoMedia": 23782.6,
+    "tentativas": 7,
+    "sucessos": 7,
+    "custoMedio": 0.006863757142857143,
+    "duracaoMedia": 25603.714285714283,
     "falhasPorGate": {}
   },
   "gemini-argon|review_ui|*": {
@@ -731,10 +731,10 @@
     }
   },
   "haiku|review_code|ui": {
-    "tentativas": 8,
-    "sucessos": 8,
-    "custoMedio": 0.006355410000000001,
-    "duracaoMedia": 24170.5,
+    "tentativas": 10,
+    "sucessos": 10,
+    "custoMedio": 0.0065309195,
+    "duracaoMedia": 25367.7,
     "falhasPorGate": {}
   },
   "haiku|review_code|privacy-mode": {
@@ -745,17 +745,17 @@
     "falhasPorGate": {}
   },
   "haiku|review_ui|*": {
-    "tentativas": 4,
-    "sucessos": 4,
-    "custoMedio": 0.01518644,
-    "duracaoMedia": 57572.25,
+    "tentativas": 6,
+    "sucessos": 6,
+    "custoMedio": 0.014696358333333333,
+    "duracaoMedia": 56374.16666666667,
     "falhasPorGate": {}
   },
   "haiku|review_ui|ui": {
-    "tentativas": 4,
-    "sucessos": 4,
-    "custoMedio": 0.01518644,
-    "duracaoMedia": 57572.25,
+    "tentativas": 6,
+    "sucessos": 6,
+    "custoMedio": 0.014696358333333333,
+    "duracaoMedia": 56374.16666666667,
     "falhasPorGate": {}
   },
   "haiku|review_ui|privacy-mode": {
@@ -856,10 +856,10 @@
     "falhasPorGate": {}
   },
   "gemini-lite|triage|ui": {
-    "tentativas": 5,
-    "sucessos": 5,
-    "custoMedio": 0.0023316749999999996,
-    "duracaoMedia": 3410.6,
+    "tentativas": 7,
+    "sucessos": 7,
+    "custoMedio": 0.0019682321428571427,
+    "duracaoMedia": 3205.285714285714,
     "falhasPorGate": {}
   },
   "haiku|implement|privacy-mode": {
@@ -913,6 +913,67 @@
     "sucessos": 1,
     "custoMedio": 0.0063191639999999995,
     "duracaoMedia": 50841,
+    "falhasPorGate": {}
+  },
+  "codex-mid|implement_hard|*": {
+    "tentativas": 4,
+    "sucessos": 0,
+    "custoMedio": 0.1519798375,
+    "duracaoMedia": 89288.25,
+    "falhasPorGate": {
+      "G6": 2,
+      "G9": 1,
+      "G7": 1
+    }
+  },
+  "codex-mid|implement_hard|ui": {
+    "tentativas": 4,
+    "sucessos": 0,
+    "custoMedio": 0.1519798375,
+    "duracaoMedia": 89288.25,
+    "falhasPorGate": {
+      "G6": 2,
+      "G9": 1,
+      "G7": 1
+    }
+  },
+  "codex-mid|implement_hard|sync": {
+    "tentativas": 4,
+    "sucessos": 0,
+    "custoMedio": 0.1519798375,
+    "duracaoMedia": 89288.25,
+    "falhasPorGate": {
+      "G6": 2,
+      "G9": 1,
+      "G7": 1
+    }
+  },
+  "haiku|review_ui|sync": {
+    "tentativas": 2,
+    "sucessos": 2,
+    "custoMedio": 0.013716194999999999,
+    "duracaoMedia": 53978,
+    "falhasPorGate": {}
+  },
+  "glm-or|implement_hard|*": {
+    "tentativas": 1,
+    "sucessos": 0,
+    "custoMedio": 0.699278772,
+    "duracaoMedia": 677792,
+    "falhasPorGate": {}
+  },
+  "glm-or|implement_hard|ui": {
+    "tentativas": 1,
+    "sucessos": 0,
+    "custoMedio": 0.699278772,
+    "duracaoMedia": 677792,
+    "falhasPorGate": {}
+  },
+  "glm-or|implement_hard|sync": {
+    "tentativas": 1,
+    "sucessos": 0,
+    "custoMedio": 0.699278772,
+    "duracaoMedia": 677792,
     "falhasPorGate": {}
   }
 }

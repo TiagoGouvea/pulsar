@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-05T10:12:04.211Z",
+  "workerId": "glm-or",
+  "role": "implement_hard",
+  "featureId": "F-1.09",
+  "stage": 1,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.699278772,
+  "durationMs": 677792,
+  "usage": {
+    "inputTokens": 60928,
+    "outputTokens": 52420,
+    "cachedTokens": 3454970,
+    "costUsd": 0.699278772
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "a o código single-use do link mágico e o signInWithCredential explícito falhava com INVALID_OOB_CODE, deixando o UID errado; com o pre-check o conflito é detectado sem consumir o código e a entrada na conta existente preserva o UID esperado. (2) G5: restringido o watchUserProfile do AuthProvider a contas convertidas com onboarding incompleto (auto-stop ao concluir) — o listener incondicional mantinha o canal Listen do Firestore aberto e o waitForLoadState('networkidle') do teste protegido expirava em 30s. Contrato restrito codificado nos testes unitários do AuthProvider (não protegidos, asserts mais fortes).\",\n  \"filesChanged\": [\n    \"app/src/auth/linkAccount.ts\",\n    \"app/src/auth/AuthProvider.tsx\",\n    \"app/src/auth/__tests__/AuthProvider.test.tsx\",\n    \".harness/inbox/questions.jsonl\",\n    \".harness/inbox/risks.jsonl\"\n  ],\n  \"testsRun\": [\n    \"yarn lint (ok)\",\n    \"yarn typecheck (ok)\",\n    \"yarn format:check (ok)\",\n    \"yarn test:unit (121/121 ok)\",\n    \"yarn test:e2e = playwright --grep-invert @visual (94/94 ok, inclui mobile+desktop; antes: 92 passed + 2 failed)\",\n    \"playwright e2e/account-link.spec.ts --project=mobile (7/7 ok; G5 em 5,2s e G6 em 0,7s)\"\n  ],\n  \"confidence\": \"high\",\n  \"notes\": \"Causas raiz verificadas empiricamente no trace de Playwright (EMAIL_EXISTS seguido de INVALID_OOB_CODE com o mesmo oobCode) e com probe do SDK contra o emulador (fetchSignInMethodsForEmail devolve ['password']; signInWithCredential com código não consumido entra como o UID existente). Teste protegido account-link.spec.ts intacto (git diff vazio). Registrados: questão no questions.jsonl (restrição do listener também a contas anônimas, divergindo da letra da L-041 por exigência do G5) e risco no risks.jsonl (em produção, se o provedor ocultar os métodos de sign-in, o fallback consome o código e o 'entrar na conta existente' pode falhar com auth/invalid-action-code — sugerido tratar no diálogo). Nenhum servidor/emulador deixado rodando; escopo de F-1.12 não tocado.\"\n}\n```"
+}

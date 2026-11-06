@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-05T10:15:03.811Z",
+  "workerId": "haiku",
+  "role": "review_code",
+  "featureId": "F-1.09",
+  "stage": 1,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.0072997700000000006,
+  "durationMs": 33827,
+  "usage": {
+    "inputTokens": 32134,
+    "outputTokens": 6336,
+    "cachedTokens": 11507,
+    "costUsd": 0.0072997700000000006
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "stá justificado no comentário, mas o escopo ultrapassa o aceite de F-1.09 (conversão da conta).\", \"sugestao\": \"Confirmar com a spec que a remoção do listener para anônimos não afeta outras telas. Se possível, isolar essa mudança em um commit/feature separado ou cobri-la com teste de regressão do onboarding.\"}, {\"severidade\": \"minor\", \"arquivo\": \"app/src/auth/__tests__/linkAccount.test.ts\", \"descricao\": \"O mock de firebase/auth não controla fetchSignInMethodsForEmail (usa o original via importOriginal). Os testes de conflito e de vinculação por link dependem do comportamento real da biblioteca no fake auth, ficando frágeis e sem cobrir o caminho de conflito pela pré-checagem.\", \"sugestao\": \"Mockar fetchSignInMethodsForEmail explicitamente e adicionar casos para methods.length > 0 (conflito sem chamar linkWithCredential) e para lista vazia com erro no linkWithCredential.\"}, {\"severidade\": \"minor\", \"arquivo\": \"app/src/pages/SettingsPage.tsx\", \"descricao\": \"completedActionLink é um estado de módulo que nunca é limpo. Isso é um global mutável fora do ciclo do React, usado para contornar o remount e difícil de raciocinar.\", \"sugestao\": \"Limpar a referência após finishLink ou mover o estado para um contexto/hook dedicado. Considerar também reduzir os 10 useState (ex.: um reducer de estado de conta).\"}, {\"severidade\": \"minor\", \"arquivo\": \"app/src/auth/linkAccount.ts\", \"descricao\": \"O e-mail digitado é persistido em localStorage (pulsar.emailForSignInLink) como dado pessoal, sem expiração nem limpeza em caso de abandono do fluxo.\", \"sugestao\": \"Aceitável para o fluxo, mas registrar a decisão em DECISOES.md ou limpar a chave ao sair da tela de configurações sem concluir.\"}, {\"severidade\": \"minor\", \"arquivo\": \"app/src/design/Sheet.tsx\", \"descricao\": \"A mudança global de z-50 para z-[60] afeta todos os usos de Sheet no app, não só a tela de conta.\", \"sugestao\": \"Confirmar que nenhum outro sheet/modal depende da ordem de empilhamento atual, ou passar o z-index como prop.\"}]}\n```"
+}

@@ -68,5 +68,113 @@
     "sha256": "52fe4df7e59bedaa67e113d3c51cdb091cdd1d9971c9b724be93046c68e6615e",
     "asserts": 35,
     "featureId": "F-1.09"
+  },
+  "app/src/lib/__tests__/firebase.test.ts": {
+    "sha256": "a83bd1cf7888f94b47584f5b0b142b907ed1787d8b26c97dcd35ba0f61c9fb7b",
+    "asserts": 4,
+    "featureId": "F-0.04",
+    "additive": true,
+    "tests": [
+      "never connects to emulators in a production build",
+      "connects to the ports from firebase.json in emulator builds"
+    ]
+  },
+  "app/e2e/design.spec.ts": {
+    "sha256": "d877591c55402762fc5737e6db1dff6b93cfc535ae40d7e4ced95de897cba0dc",
+    "asserts": 14,
+    "featureId": "F-0.07",
+    "additive": true,
+    "tests": [
+      "/_design shows abbreviations by default and names after opening the eye",
+      "/_design has no horizontal overflow with the eye open"
+    ]
+  },
+  "app/src/__tests__/designRoute.test.tsx": {
+    "sha256": "e47370c508d8b4977d95d55370487979fdc225f41497e9bc01715122fb81afab",
+    "asserts": 2,
+    "featureId": "F-0.07",
+    "additive": true,
+    "tests": [
+      "renders the design catalog in emulator/dev builds",
+      "does not exist in production builds"
+    ]
+  },
+  "app/tests/rules/usersAdminFields.test.ts": {
+    "sha256": "854a6fc7fa6c9f885a6176ca27a5d2c8765cc30e7b82ea0e77cc559d38de2a7d",
+    "asserts": 0,
+    "featureId": "F-1.08",
+    "additive": true,
+    "tests": [
+      "lets the owner read a missing or client-only profile",
+      "does not expose or let the owner rewrite misplaced admin fields",
+      "denies direct deletion of the profile, with or without admin fields",
+      "keeps the per-user admin document under internal/ unreadable"
+    ]
+  },
+  "app/src/domain/__tests__/entry.test.ts": {
+    "sha256": "7b414fdd514bf5b6d9e6aac14f301fa4aa15a7c37c55c455adbab189cdf0944c",
+    "asserts": 28,
+    "featureId": "F-1.01",
+    "additive": true,
+    "tests": [
+      "accepts boolean values, including false",
+      "accepts numbers for numeric indicators, including 0 and decimals",
+      "rejects non-finite or non-number values",
+      "respects numeric min/max when configured",
+      "keeps scale values inside min..max",
+      "accepts only existing option ids for ordinal indicators",
+      "rejects values incompatible with the indicator type",
+      "rejects empty values and values with more than one key",
+      "reports errors on the value field"
+    ]
+  },
+  "app/src/auth/__tests__/AuthProvider.test.tsx": {
+    "sha256": "b4cec847a61d18b0b11a95c4aadab6a30b96bad1a62ba43da75ea66233b157ea",
+    "asserts": 33,
+    "featureId": "F-1.03",
+    "additive": true,
+    "tests": [
+      "exposes loading until the session resolves, then signs in anonymously",
+      "does not sign in again when a session already exists (same uid)",
+      "creates users/{uid} with the defaults",
+      "never overwrites an existing users/{uid} document",
+      "shows a pt-BR error and no user when the sign-in fails on the network",
+      "shows a network error when the connection fails after authentication",
+      "does not replace the server-confirmed profile with cache-only data",
+      "keeps the profile up to date when onboardingCompleted changes during the session",
+      "clears the previous user state while a new auth state loads",
+      "ignores a pending query that belongs to a previous auth state"
+    ]
+  },
+  "app/src/lib/__tests__/testHelper.test.ts": {
+    "sha256": "45c1387eb27fa653c49e7dfc987c952b1f79c7275621f14187e8124dea145649",
+    "asserts": 5,
+    "featureId": "F-1.05",
+    "additive": true,
+    "tests": [
+      "installs the helper on the window",
+      "signs in with a custom token and reports the signed-in uid"
+    ]
+  },
+  "app/src/app/__tests__/AppShell.test.tsx": {
+    "sha256": "9debc81c7ead84b84f98f20abab2a759f7a8bcfed0c99ff075a658a26203ce1d",
+    "asserts": 9,
+    "featureId": "F-1.04",
+    "additive": true,
+    "tests": [
+      "shows the brand, the global eye toggle and the profile shortcut",
+      "renders the bottom navigation with one icon per item",
+      "marks only the current route with aria-current=page",
+      "keeps the eye state when navigating between tabs"
+    ]
+  },
+  "app/src/auth/__tests__/userRepository.test.ts": {
+    "sha256": "90f7887890ffd877bc58792cd9513aa529fc7cfe4de5ec19105779c178d97a6e",
+    "asserts": 1,
+    "featureId": "F-1.07",
+    "additive": true,
+    "tests": [
+      "records onboardingCompleted=true on users/{uid} with a merge-set"
+    ]
   }
 }

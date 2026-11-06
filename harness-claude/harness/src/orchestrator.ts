@@ -443,7 +443,7 @@ export class Orchestrator {
           verdicts.push(await reviewCode({ ctx, rt: this.rt, f, feature: f, cwd: wt, attempt, implementerFamily: res.worker.family, diff: await g.diff(wt, this.branch), gates }));
           if (verdicts[0].pass && f.tags.includes("ui")) {
             const shots = await this.deps.capture(ctx, this.appAbs(wt), hp(ctx, "runs", f.id, `screens-${attempt}`), (r) => !r.tags?.length || r.tags.some((t) => f.tags.includes(t)));
-            if (shots.length) verdicts.push(await reviewUi({ ctx, rt: this.rt, f, title: f.title, cwd: wt, attempt, implementerFamily: res.worker.family, screenshots: shots }));
+            if (shots.length) verdicts.push(await reviewUi({ ctx, rt: this.rt, f, feature: f, title: f.title, cwd: wt, attempt, implementerFamily: res.worker.family, screenshots: shots }));
           }
           writeJson(hp(ctx, "runs", f.id, `verdict-${attempt}.json`), verdicts);
           if (verdicts.some((v) => !v.pass)) { outcome = "review_rejected"; diag = formatIssues(verdicts); }
@@ -475,9 +475,11 @@ export class Orchestrator {
         reviewers: verdicts.map((v) => `${v.kind} ${v.workerId ?? "?"} ${v.score}`),
         files: (await g.changedFiles(wt, this.branch)).slice(0, 60),
       };
+      const touchedTests = (await g.changedFiles(wt, this.branch)).filter((p) => TEST_FILE.test(p) && !f.protectedTests.includes(p) && existsSync(join(wt, p)));
       const trailers = [`Implemented-by: ${authors.implementer} (tentativa ${attempt})`, authors.testWriter && `Tests-by: ${authors.testWriter}`, ...authors.reviewers.map((r) => `Reviewed-by: ${r}`)].filter(Boolean).join("\n");
       const landed = await this.merge(() => g.land(ctx.repo, wt, this.branch, `feat(${f.id}): ${f.title}\n\n${trailers}`));
       if (!landed.ok) { diag = `Conflito de merge com mudanças recentes de ${this.branch} nos arquivos:\n${landed.conflict}\nResolva os marcadores <<<<<<< mantendo as duas funcionalidades.`; continue; }
+      registerProtected(ctx, wt, f.id, touchedTests, true);   // later features may add cases, never drop or weaken them
       await g.removeWorktree(ctx.repo, f.id);
       updateFeature(ctx, f.id, (x) => { x.status = "passing"; x.authors = authors; });
       this.progress(`✔ ${f.id} passing — ${f.title} (worker ${res.worker.id}, ${attempt} tentativa(s), US$ ${spent(ctx, { featureId: f.id }).toFixed(2)}) │ ${this.stageCount(f.stage)}`);

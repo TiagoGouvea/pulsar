@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-05T10:25:16.023Z",
+  "workerId": "haiku",
+  "role": "review_code",
+  "featureId": "F-1.09",
+  "stage": 1,
+  "attempt": 4,
+  "outcome": "success",
+  "costUsd": 0.0071661450000000005,
+  "durationMs": 26486,
+  "usage": {
+    "inputTokens": 34333,
+    "outputTokens": 5519,
+    "cachedTokens": 11507,
+    "costUsd": 0.0071661450000000005
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "or\", \"arquivo\": \"app/src/auth/linkAccount.ts\", \"descricao\": \"A pré-checagem `fetchSignInMethodsForEmail(...).catch(() => [])` pode retornar lista vazia com a proteção de enumeração ativa, e então `linkWithCredential` acusa `email-already-in-use`. Nesse caso o código de ação de uso único pode já ter sido consumido, e `signInToExistingAccount` falharia com `invalid-action-code`. A resolução explícita do conflito ficaria quebrada em produção, ainda que sem perda de dados.\", \"sugestao\": \"Confirmar o comportamento do Firebase para o código de ação consumido em conflito de e-mail. Reter ou reobter a credencial antes de vincular, ou tratar explicitamente o erro de código inválido na entrada na conta existente, e cobrir esse caso no teste.\"}, {\"severidade\": \"minor\", \"arquivo\": \"app/src/auth/__tests__/linkAccount.test.ts\", \"descricao\": \"`fetchSignInMethodsForEmail` não é mockado. O ramo de conflito pela pré-checagem não é testado em unidade, e o `.catch(() => [])` esconde falhas, então os testes passam por acidente.\", \"sugestao\": \"Mockar `fetchSignInMethodsForEmail` nos testes unitários e adicionar caso para o ramo `email-already-in-use` pela pré-checagem e para a falha da própria pré-checagem.\"}, {\"severidade\": \"minor\", \"arquivo\": \"app/src/pages/SettingsPage.tsx\", \"descricao\": \"Em `enterExistingAccount`, se `signInToExistingAccount` falhar, o `setError` é renderizado fora do `Sheet` aberto (z-60). A mensagem de erro fica atrás do overlay e o usuário não a vê.\", \"sugestao\": \"Exibir o erro dentro do Sheet, ou fechar o Sheet antes de mostrar o erro.\"}, {\"severidade\": \"minor\", \"arquivo\": \"app/src/design/Sheet.tsx\", \"descricao\": \"Alteração de z-index em componente compartilhado do design system, fora do escopo estrito de F-1.09. Não quebra telas existentes, mas não está documentada como necessária.\", \"sugestao\": \"Documentar no commit ou na descrição que a mudança é necessária para o diálogo de conflito ficar acima da navegação, ou isolar o z-index apenas no SettingsPage.\"}]}\n```"
+}

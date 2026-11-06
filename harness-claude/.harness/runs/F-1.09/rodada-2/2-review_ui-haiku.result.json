@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-05T10:16:34.685Z",
+  "workerId": "haiku",
+  "role": "review_ui",
+  "featureId": "F-1.09",
+  "stage": 1,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.01576929,
+  "durationMs": 63345,
+  "usage": {
+    "inputTokens": 63482,
+    "outputTokens": 13968,
+    "cachedTokens": 85019,
+    "costUsd": 0.01576929
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "eçalho do card. No desktop ele é cortado pela borda do card. Parece artefato, não elemento de design.\", \"sugestao\": \"Remover o blob ou limitá-lo aos limites do card, com opacidade violeta sutil, como nas demais superfícies.\"}, {\"severidade\": \"minor\", \"tela\": \"settings-mobile-privado / settings-mobile-nomes / settings-desktop-*\", \"descricao\": \"O pill 'CONTA ANÔNIMA ATIVA' usa vermelho (cor de erro, #ba1a1a no token). O estado é informativo e não de erro, e os tokens reservam o vermelho para falhas. Pode gerar alarme desnecessário.\", \"sugestao\": \"Usar o tom de alerta âmbar (baixa confiança) ou um pill neutro/indigo com ícone de cadeado, sem vermelho.\"}, {\"severidade\": \"minor\", \"tela\": \"design-mobile-privado / design-desktop-privado (escala ENE 0–10)\", \"descricao\": \"A escala de 0 a 10 é cortada na borda do card: no mobile o último item visível é o 6 seguido de um círculo cortado; no desktop o 9 aparece cortado. Não há indicação de scroll horizontal, o que lê como overflow (c3/c10).\", \"sugestao\": \"Quebrar a escala em duas linhas (0–5 / 6–10) ou usar grid de 6 colunas com scroll explícito e indicador/fade.\"}, {\"severidade\": \"minor\", \"tela\": \"design-mobile-nomes / design-desktop-nomes\", \"descricao\": \"No modo nomes, os nomes de fatores e resultados recebem emojis (🚴, ☕, ⚡) como ícones. Isso foge do sistema de ícones usado no resto da interface (Fator, Resultado, Análise, Registrado) e quebra a consistência entre telas (c5).\", \"sugestao\": \"Usar os ícones já existentes no design system para cada fator/resultado, não emojis.\"}, {\"severidade\": \"minor\", \"tela\": \"home-mobile-* / home-desktop-*\", \"descricao\": \"As capturas 'home' mostram o onboarding (Passo 1 de 3), o mesmo conteúdo de 'onboarding-*'. Ou a rota home redireciona para o onboarding, ou a captura está errada. Assim, a cobertura real fica duplicada e nenhuma captura mostra o dashboard com dados.\", \"sugestao\": \"Confirmar a rota de cada captura e renomear ou corrigir os arquivos home-* para refletir a tela real.\"}]}\n```"
+}

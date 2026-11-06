@@ -1,6 +1,7 @@
 {
   "phase": "PAUSED_MANUAL",
   "stage": 1,
+  "pausedFrom": "STAGE_RUNNING",
   "featuresSinceRetro": 4,
   "stageFixRounds": 0,
   "budgetAlerts": [
@@ -13,9 +14,8 @@
     "1": {
       "startedAt": "2026-11-01T18:53:23.876Z",
       "finishedAt": "2026-11-02T14:55:22.323Z",
-      "activeMs": 30444402
+      "activeMs": 32837450
     }
   },
-  "updatedAt": "2026-11-02T20:34:34.080Z",
-  "pausedFrom": "STAGE_RUNNING"
+  "updatedAt": "2026-11-05T10:30:44.069Z"
 }

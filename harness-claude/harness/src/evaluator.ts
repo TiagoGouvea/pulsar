@@ -5,7 +5,7 @@ import type { Ctx } from "./config.js";
 import type { Feature } from "./features.js";
 import type { GateReport } from "./gates/run-gates.js";
 import { NoWorkerError, type Runtime } from "./invoke.js";
-import { designRefs, HARNESS_DIR, render } from "./prompts.js";
+import { designRefs, HARNESS_DIR, otherFeatures, render } from "./prompts.js";
 import { appendJsonl, hp } from "./state.js";
 
 const Issue = z.object({
@@ -64,11 +64,13 @@ export async function reviewCode(b: Base & { ctx: Ctx; feature: Feature; diff: s
 
 const rubric = () => readFileSync(join(HARNESS_DIR, "rubrics", "design.md"), "utf8");
 
-export async function reviewUi(b: Base & { ctx: Ctx; title: string; screenshots: string[] }): Promise<Verdict> {
+export async function reviewUi(b: Base & { ctx: Ctx; feature?: Feature; title: string; screenshots: string[] }): Promise<Verdict> {
   const d = designRefs(b.ctx);
   const tokensPath = join(b.ctx.repo, d.tokens);
   const prompt = render(b.ctx, "review_ui", {
     feature: `${b.f.id} — ${b.title}`,
+    featureSpec: b.feature ? JSON.stringify({ description: b.feature.description, acceptance: b.feature.acceptance }, null, 2) : "(revisão da etapa inteira: todas as telas entregues)",
+    otherFeatures: otherFeatures(b.ctx, b.f),
     rubric: rubric(),
     tokens: existsSync(tokensPath) ? readFileSync(tokensPath, "utf8").slice(0, 8000) : "(tokens.json ausente)",
     screenshots: b.screenshots.join("\n"),

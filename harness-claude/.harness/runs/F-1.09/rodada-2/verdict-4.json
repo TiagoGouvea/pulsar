@@ -1,0 +1,90 @@
+[
+  {
+    "kind": "code",
+    "pass": true,
+    "score": 8,
+    "issues": [
+      {
+        "severidade": "major",
+        "arquivo": "app/src/auth/linkAccount.ts",
+        "descricao": "A pré-checagem `fetchSignInMethodsForEmail(...).catch(() => [])` pode retornar lista vazia com a proteção de enumeração ativa, e então `linkWithCredential` acusa `email-already-in-use`. Nesse caso o código de ação de uso único pode já ter sido consumido, e `signInToExistingAccount` falharia com `invalid-action-code`. A resolução explícita do conflito ficaria quebrada em produção, ainda que sem perda de dados.",
+        "sugestao": "Confirmar o comportamento do Firebase para o código de ação consumido em conflito de e-mail. Reter ou reobter a credencial antes de vincular, ou tratar explicitamente o erro de código inválido na entrada na conta existente, e cobrir esse caso no teste."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/auth/__tests__/linkAccount.test.ts",
+        "descricao": "`fetchSignInMethodsForEmail` não é mockado. O ramo de conflito pela pré-checagem não é testado em unidade, e o `.catch(() => [])` esconde falhas, então os testes passam por acidente.",
+        "sugestao": "Mockar `fetchSignInMethodsForEmail` nos testes unitários e adicionar caso para o ramo `email-already-in-use` pela pré-checagem e para a falha da própria pré-checagem."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/pages/SettingsPage.tsx",
+        "descricao": "Em `enterExistingAccount`, se `signInToExistingAccount` falhar, o `setError` é renderizado fora do `Sheet` aberto (z-60). A mensagem de erro fica atrás do overlay e o usuário não a vê.",
+        "sugestao": "Exibir o erro dentro do Sheet, ou fechar o Sheet antes de mostrar o erro."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/design/Sheet.tsx",
+        "descricao": "Alteração de z-index em componente compartilhado do design system, fora do escopo estrito de F-1.09. Não quebra telas existentes, mas não está documentada como necessária.",
+        "sugestao": "Documentar no commit ou na descrição que a mudança é necessária para o diálogo de conflito ficar acima da navegação, ou isolar o z-index apenas no SettingsPage."
+      }
+    ],
+    "workerId": "haiku"
+  },
+  {
+    "kind": "ui",
+    "pass": false,
+    "score": 7.3,
+    "issues": [
+      {
+        "severidade": "major",
+        "tela": "settings-mobile-privado / settings-mobile-nomes",
+        "descricao": "Os screenshots não mostram os estados do fluxo de conversão: vinculando, sucesso (UID preservado após vincular) e erro. O design system tem os estados 'Salvo' e erro, mas eles não aparecem no fluxo de conta.",
+        "sugestao": "Capturar e desenhar os estados de carregando, sucesso e erro dos botões 'Vincular com Google' e 'Enviar link mágico', reutilizando os componentes de Estados do design system."
+      },
+      {
+        "severidade": "major",
+        "tela": "dashboard-mobile-privado / dashboard-mobile-nomes",
+        "descricao": "A captura do dashboard mostra só o estado vazio ('Comece registrando o seu dia'), sem ponto de entrada para conversão. O mockup dashboard_dia_2 traz o card 'Garantir dados do Dia 1 e Dia 2' com 'Salvar com Google' e 'Enviar Link Mágico', e não há captura dessa tela no run.",
+        "sugestao": "Incluir a captura do dashboard com dados (dia 2 e dia 14) e implementar o card de conversão conforme o mockup, usando os mesmos componentes dos botões de Configurações."
+      },
+      {
+        "severidade": "minor",
+        "tela": "settings-mobile-privado / settings-desktop-privado",
+        "descricao": "A tela de Configurações implementa só o bloco de conta. Faltam as seções do mockup configura_es_e_conta (PWA, lembrete, privacidade, síntese com IA, zona de dados). Pode ser escopo correto da F-1.09, mas a divergência com o mockup não está documentada.",
+        "sugestao": "Confirmar na spec que só o bloco de conta é escopo desta feature e registrar o restante como fora de escopo."
+      },
+      {
+        "severidade": "minor",
+        "tela": "settings-mobile-privado / settings-mobile-nomes",
+        "descricao": "O UID aparece em texto pequeno e cinza claro, com contraste baixo e sem o tratamento de label-code (caixa alta com tracking 0,08em) previsto para códigos.",
+        "sugestao": "Usar label-code com contraste maior (on-surface-variant) e quebra controlada do UID para não depender de uma linha longa em 375px."
+      },
+      {
+        "severidade": "minor",
+        "tela": "home-mobile-* / home-desktop-*",
+        "descricao": "As capturas home-* são idênticas às capturas onboarding-*, sem a rota home aparecer como tela própria. Isso sugere um erro no harness de captura e reduz a cobertura real.",
+        "sugestao": "Corrigir a rota da captura home e recapturar."
+      },
+      {
+        "severidade": "minor",
+        "tela": "desktop com 'nomes' (9 telas)",
+        "descricao": "Não abri as variantes desktop-nomes de dashboard, home, onboarding, register, indicators, indicators-new, saved-insights e design. Só abri settings-desktop-nomes. A avaliação desktop dessas telas se baseia nas variantes privado, que são estruturalmente iguais.",
+        "sugestao": "Abrir essas capturas em uma revisão complementar se for necessário um veredito completo do desktop."
+      }
+    ],
+    "porCriterio": {
+      "c1": 7,
+      "c2": 7,
+      "c3": 8,
+      "c4": 7,
+      "c5": 8,
+      "c6": 6,
+      "c7": 8,
+      "c8": 6,
+      "c9": 8,
+      "c10": 8
+    },
+    "workerId": "haiku"
+  }
+]

@@ -854,6 +854,7 @@
       "status": "failing",
       "attempts": 0,
       "costUsd": 0.679299149,
+      "spendSince": "2026-11-05T09:49:45.283Z",
       "history": [
         {
           "attempt": 1,
@@ -916,8 +917,7 @@
           "note": "Movida da etapa 1 para a 2: o teste exige nomes de indicadores e o botão de abrir observação, telas que só existem depois de F-2.05/F-2.08/F-2.09. Na etapa 1 nenhum modelo tinha como passar."
         }
       ],
-      "origin": [],
-      "spendSince": "2026-11-05T09:49:45.283Z"
+      "origin": []
     },
     {
       "id": "F-1.07",
@@ -1110,7 +1110,8 @@
       ],
       "status": "failing",
       "attempts": 0,
-      "costUsd": 4.444686275,
+      "costUsd": 5.795901952,
+      "spendSince": "2026-11-06T23:22:18.943Z",
       "history": [
         {
           "attempt": 1,
@@ -1171,10 +1172,70 @@
           "failedGates": [],
           "ts": "2026-11-05T09:49:45.283Z",
           "note": "A tentativa 5 passou em todos os gates (94 e2e); a revisão reprovou só por isto, corrija sem mexer no resto:\n- BLOCKER app/src/auth/AuthProvider.tsx: o listener do perfil (watchUserProfile) foi removido para todos os usuários. Restaure o comportamento da F-1.03 (perfil atualizado em tempo real durante a sessão).\n- BLOCKER app/src/auth/__tests__/AuthProvider.test.tsx: o teste \"keeps the profile up to date when onboardingCompleted changes during the session\" (F-1.03) foi reescrito. Restaure o teste original (git show 9a2f289:pulsar-claude/app/src/auth/__tests__/AuthProvider.test.tsx) e faça o código passar nele.\n- MAJOR app/src/auth/linkAccount.ts: remova fetchSignInMethodsForEmail (sonda de enumeração); use o erro auth/email-already-in-use / credential-already-in-use do link como única fonte de conflito.\n- MINOR app/src/design/Sheet.tsx: só mude o z-index se for necessário; senão reverta."
+        },
+        {
+          "attempt": 1,
+          "role": "implement_hard",
+          "workerId": "codex-mid",
+          "outcome": "failure",
+          "failedGates": [
+            "G6"
+          ],
+          "eventId": "evt-252",
+          "ts": "2026-11-05T10:00:33.460Z"
+        },
+        {
+          "attempt": 2,
+          "role": "implement_hard",
+          "workerId": "glm-or",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "eventId": "evt-255",
+          "ts": "2026-11-05T10:16:34.721Z"
+        },
+        {
+          "attempt": 3,
+          "role": "implement_hard",
+          "workerId": "codex-mid",
+          "outcome": "failure",
+          "failedGates": [
+            "G6",
+            "G9"
+          ],
+          "eventId": "evt-257",
+          "ts": "2026-11-05T10:21:39.392Z"
+        },
+        {
+          "attempt": 4,
+          "role": "implement_hard",
+          "workerId": "codex-mid",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "eventId": "evt-260",
+          "ts": "2026-11-05T10:26:28.165Z"
+        },
+        {
+          "attempt": 5,
+          "role": "implement_hard",
+          "workerId": "codex-mid",
+          "outcome": "protected_violation",
+          "failedGates": [
+            "G7"
+          ],
+          "eventId": "evt-261",
+          "ts": "2026-11-05T10:30:44.054Z"
+        },
+        {
+          "attempt": 0,
+          "role": "manual",
+          "workerId": "-",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "ts": "2026-11-06T23:22:18.943Z",
+          "note": "O código atual (tentativa 4 da rodada 2) passou em todos os gates e na revisão de código (nota 8). A revisão de UI reprovou por itens fora do escopo (card do dashboard é da F-2.11; estados transitórios não aparecem nas capturas): ignore-os. Corrija só isto, sem mexer no resto:\n- MAJOR app/src/auth/linkAccount.ts: remova a pré-checagem fetchSignInMethodsForEmail (com a proteção contra enumeração do Firebase ela devolve lista vazia e o código de uso único pode ser consumido). Detecte o conflito só pelo erro do link (auth/email-already-in-use, auth/credential-already-in-use) e ajuste linkAccount.test.ts.\n- MINOR app/src/pages/SettingsPage.tsx: em enterExistingAccount, mostre o erro de signInToExistingAccount dentro do Sheet aberto (hoje fica atrás do overlay).\n- Não altere app/e2e/visual.spec.ts nem outros testes protegidos."
         }
       ],
-      "origin": [],
-      "spendSince": "2026-11-05T09:49:45.283Z"
+      "origin": []
     },
     {
       "id": "F-1.10",

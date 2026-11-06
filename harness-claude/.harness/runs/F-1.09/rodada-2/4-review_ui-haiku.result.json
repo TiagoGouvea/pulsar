@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-05T10:26:28.143Z",
+  "workerId": "haiku",
+  "role": "review_ui",
+  "featureId": "F-1.09",
+  "stage": 1,
+  "attempt": 4,
+  "outcome": "success",
+  "costUsd": 0.0116631,
+  "durationMs": 44611,
+  "usage": {
+    "inputTokens": 46040,
+    "outputTokens": 10073,
+    "cachedTokens": 87175,
+    "costUsd": 0.0116631
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "O mockup dashboard_dia_2 traz o card 'Garantir dados do Dia 1 e Dia 2' com 'Salvar com Google' e 'Enviar Link Mágico', e não há captura dessa tela no run.\", \"sugestao\": \"Incluir a captura do dashboard com dados (dia 2 e dia 14) e implementar o card de conversão conforme o mockup, usando os mesmos componentes dos botões de Configurações.\"}, {\"severidade\": \"minor\", \"tela\": \"settings-mobile-privado / settings-desktop-privado\", \"descricao\": \"A tela de Configurações implementa só o bloco de conta. Faltam as seções do mockup configura_es_e_conta (PWA, lembrete, privacidade, síntese com IA, zona de dados). Pode ser escopo correto da F-1.09, mas a divergência com o mockup não está documentada.\", \"sugestao\": \"Confirmar na spec que só o bloco de conta é escopo desta feature e registrar o restante como fora de escopo.\"}, {\"severidade\": \"minor\", \"tela\": \"settings-mobile-privado / settings-mobile-nomes\", \"descricao\": \"O UID aparece em texto pequeno e cinza claro, com contraste baixo e sem o tratamento de label-code (caixa alta com tracking 0,08em) previsto para códigos.\", \"sugestao\": \"Usar label-code com contraste maior (on-surface-variant) e quebra controlada do UID para não depender de uma linha longa em 375px.\"}, {\"severidade\": \"minor\", \"tela\": \"home-mobile-* / home-desktop-*\", \"descricao\": \"As capturas home-* são idênticas às capturas onboarding-*, sem a rota home aparecer como tela própria. Isso sugere um erro no harness de captura e reduz a cobertura real.\", \"sugestao\": \"Corrigir a rota da captura home e recapturar.\"}, {\"severidade\": \"minor\", \"tela\": \"desktop com 'nomes' (9 telas)\", \"descricao\": \"Não abri as variantes desktop-nomes de dashboard, home, onboarding, register, indicators, indicators-new, saved-insights e design. Só abri settings-desktop-nomes. A avaliação desktop dessas telas se baseia nas variantes privado, que são estruturalmente iguais.\", \"sugestao\": \"Abrir essas capturas em uma revisão complementar se for necessário um veredito completo do desktop.\"}]}\n```"
+}

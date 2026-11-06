@@ -2,7 +2,8 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Ctx } from "./config.js";
-import { type Feature, loadFeatures, stageFeatures } from "./features.js";
+import { type Feature, loadFeatures } from "./features.js";
+import { loadProtected } from "./gates/protected.js";
 import { selectLessons } from "./learning.js";
 import { hp, walk } from "./state.js";
 
@@ -65,6 +66,20 @@ export function designRefs(ctx: Ctx) {
   };
 }
 
+/** Scope guard: features still to be built, in this stage or later (their screens/flows are not this feature's job). */
+export const otherFeatures = (ctx: Ctx, f: Pick<Feature, "id" | "stage">) =>
+  loadFeatures(ctx).features.filter((x) => x.id !== f.id && x.status !== "passing" && x.stage >= f.stage)
+    .map((x) => `- ${x.id} (etapa ${x.stage}) ${x.title}`).join("\n") || "(nenhuma)";
+
+/** What G7 checks: tests nobody may edit, and tests of delivered features that may only gain cases. */
+const protectedList = (ctx: Ctx, f: Feature) => {
+  const passing = new Set(loadFeatures(ctx).features.filter((x) => x.status === "passing").map((x) => x.id));
+  const reg = Object.entries(loadProtected(ctx)).filter(([p, e]) => passing.has(e.featureId) && !f.protectedTests.includes(p));
+  const fixed = [...f.protectedTests, ...reg.filter(([, e]) => !e.additive).map(([p]) => p)];
+  const grow = reg.filter(([, e]) => e.additive).map(([p]) => p);
+  return `${fixed.join("\n") || "(nenhum)"}${grow.length ? `\n- Testes de features já entregues: pode acrescentar casos, mas não remova, renomeie nem enfraqueça os existentes:\n${grow.join("\n")}` : ""}`;
+};
+
 /** Standard context of a feature task. */
 export function featureVars(ctx: Ctx, f: Feature, extra: Record<string, string> = {}) {
   const refs = [...new Set(f.specRefs)].map((r) => `<!-- ${r} -->\n${specSection(ctx, r)}`).join("\n\n").slice(0, 16000);
@@ -74,9 +89,8 @@ export function featureVars(ctx: Ctx, f: Feature, extra: Record<string, string> 
     specExcerpts: refs || "(sem trechos; leia os arquivos da spec)",
     designRefs: [d.tokens, ...d.screens].join("\n"),
     progress: tail(hp(ctx, "progress.md"), 40),
-    protectedFiles: f.protectedTests.join("\n") || "(nenhum)",
-    // scope guard: what other implementers will build in this stage
-    otherFeatures: stageFeatures(loadFeatures(ctx), f.stage).filter((x) => x.id !== f.id && x.status !== "passing").map((x) => `- ${x.id} ${x.title}`).join("\n") || "(nenhuma)",
+    protectedFiles: protectedList(ctx, f),
+    otherFeatures: otherFeatures(ctx, f),
     tags: f.tags.join(", "),
     ...extra,
   };

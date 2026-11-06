@@ -51,3 +51,7 @@
 {"ts":"2026-11-02T18:11:16.856Z","stage":1,"featureId":"F-1.06","kind":"code","workerId":"codex-mid","pass":false,"score":3}
 {"ts":"2026-11-02T20:04:27.857Z","stage":1,"featureId":"F-1.09","kind":"code","workerId":"haiku","pass":false,"score":6}
 {"ts":"2026-11-02T20:34:31.042Z","stage":1,"featureId":"F-1.09","kind":"code","workerId":"haiku","pass":false,"score":5}
+{"ts":"2026-11-05T10:15:03.816Z","stage":1,"featureId":"F-1.09","kind":"code","workerId":"haiku","pass":true,"score":7}
+{"ts":"2026-11-05T10:16:34.690Z","stage":1,"featureId":"F-1.09","kind":"ui","workerId":"haiku","pass":false,"score":6.9}
+{"ts":"2026-11-05T10:25:16.033Z","stage":1,"featureId":"F-1.09","kind":"code","workerId":"haiku","pass":true,"score":8}
+{"ts":"2026-11-05T10:26:28.147Z","stage":1,"featureId":"F-1.09","kind":"ui","workerId":"haiku","pass":false,"score":7.3}

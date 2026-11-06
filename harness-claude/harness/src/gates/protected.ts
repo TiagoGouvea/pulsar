@@ -1,4 +1,4 @@
-// G7: acceptance tests are immutable for implementers.
+// G7: acceptance tests are immutable for implementers; tests of delivered features may only grow.
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
@@ -7,24 +7,26 @@ import { loadFeatures } from "../features.js";
 import { git } from "../git.js";
 import { hp, readJson, walk, writeJson } from "../state.js";
 
-interface Entry { sha256: string; asserts: number; featureId: string }
+// additive: a delivered feature's test; later features may add cases but not drop/rename tests or asserts
+interface Entry { sha256: string; asserts: number; featureId: string; additive?: boolean; tests?: string[] }
 type Registry = Record<string, Entry>;
 
 const file = (ctx: Ctx) => hp(ctx, "protected.json");
 export const loadProtected = (ctx: Ctx): Registry => readJson(file(ctx), {});
 const sha = (s: string) => createHash("sha256").update(s).digest("hex");
 const countAsserts = (s: string) => (s.match(/\bexpect(\.soft)?\(|\bassert[.(]/g) ?? []).length;
+const testNames = (s: string) => [...s.matchAll(/\b(?:it|test)\(\s*(['"`])((?:(?!\1).)*)\1/g)].map((m) => m[2]);
 const FORBIDDEN = /\b(?:test|it|describe)\.(?:skip|only|fixme|todo)\b|\b(?:xit|xdescribe|fit|fdescribe)\(|\btest\.fixme\b/;
 export const TEST_FILE = /\.(test|spec)\.[cm]?[jt]sx?$/;
 
 /** Records hash + assert count of the protected tests (paths relative to the repo root). */
-export function registerProtected(ctx: Ctx, cwd: string, featureId: string, files: string[]) {
+export function registerProtected(ctx: Ctx, cwd: string, featureId: string, files: string[], additive = false) {
   const reg = loadProtected(ctx);
   for (const f of files) {
     const p = join(cwd, f);
     if (!existsSync(p)) throw new Error(`teste protegido ${f} não existe`);
     const c = readFileSync(p, "utf8");
-    reg[f] = { sha256: sha(c), asserts: countAsserts(c), featureId };
+    reg[f] = { sha256: sha(c), asserts: countAsserts(c), featureId, ...(additive && { additive, tests: testNames(c) }) };
   }
   writeJson(file(ctx), reg);
 }
@@ -42,7 +44,10 @@ export async function checkProtected(ctx: Ctx, cwd: string, featureId?: string):
       continue;
     }
     const c = readFileSync(p, "utf8");
-    if (sha(c) !== e.sha256) problems.push(`${f}: alterado (asserts ${e.asserts} -> ${countAsserts(c)})`);
+    if (sha(c) === e.sha256) continue;
+    if (!e.additive) { problems.push(`${f}: alterado (asserts ${e.asserts} -> ${countAsserts(c)})`); continue; }
+    const now = new Set(testNames(c)), gone = (e.tests ?? []).filter((t) => !now.has(t));
+    if (gone.length || countAsserts(c) < e.asserts) problems.push(`${f}: teste de feature entregue enfraquecido (asserts ${e.asserts} -> ${countAsserts(c)}${gone.length ? `; removidos/renomeados: ${gone.join(" | ")}` : ""})`);
   }
   for (const p of walk(join(cwd, ctx.config.project.appDir))) {
     if (!TEST_FILE.test(p)) continue;

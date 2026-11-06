@@ -646,10 +646,10 @@
   evidence:
     - evt-232
   added: 2026-11-02
-  hits: 7
+  hits: 8
   helped: 0
   helpedRate: 0
-  status: active
+  status: retired
 - id: L-041
   scope:
     roles:
@@ -668,10 +668,10 @@
   evidence:
     - evt-237
   added: 2026-11-02
-  hits: 6
+  hits: 8
   helped: 0
   helpedRate: 0
-  status: active
+  status: retired
 - id: L-042
   scope:
     roles:
@@ -686,7 +686,7 @@
   evidence:
     - evt-245
   added: 2026-11-02
-  hits: 2
+  hits: 7
   helped: 0
   helpedRate: 0
   status: active
@@ -704,7 +704,24 @@
   evidence:
     - evt-247
   added: 2026-11-02
-  hits: 1
+  hits: 6
+  helped: 0
+  helpedRate: 0
+  status: active
+- id: L-044
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - ui
+      - sync
+  rule: Ajuste a cor do texto ou do fundo no seletor `.break-all` na SettingsPage
+    para atender ao ratio de contraste mínimo exigido.
+  evidence:
+    - evt-256
+  added: 2026-11-05
+  hits: 2
   helped: 0
   helpedRate: 0
   status: active

@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-05T09:51:49.527Z",
+  "workerId": "codex-mid",
+  "role": "implement_hard",
+  "featureId": "F-1.09",
+  "stage": 1,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.09180165,
+  "durationMs": 57902,
+  "usage": {
+    "inputTokens": 48360,
+    "outputTokens": 3481,
+    "cachedTokens": 520733
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"summary\": \"Listener de perfil restaurado e consulta prévia de métodos de login removida.\",\n  \"filesChanged\": [\n    \"app/src/auth/AuthProvider.tsx\",\n    \"app/src/auth/linkAccount.ts\",\n    \"app/src/auth/__tests__/AuthProvider.test.tsx\",\n    \".harness/inbox/risks.jsonl\"\n  ],\n  \"testsRun\": \"git diff --check passou. Lint, typecheck, format, unitários e e2e não iniciaram: faltam dependências e a instalação falhou por falta de rede.\",\n  \"confidence\": \"low\",\n  \"notes\": \"O z-index do Sheet foi mantido para ficar acima da navegação fixa.\"\n}\n```"
+}

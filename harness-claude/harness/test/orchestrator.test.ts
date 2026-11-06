@@ -82,6 +82,27 @@ describe("orquestrador (adapter fake)", () => {
     expect(sawRestored).toBe(true);
   });
 
+  it("4b. testes que uma feature entregue criou viram protegidos: a próxima os vê no prompt, pode acrescentar casos mas não enfraquecê-los", async () => {
+    const { ctx } = await makeProject();
+    const prompts: string[] = [];
+    let n = 0;
+    setFakeScript(script([{ id: "F-0.01", stage: 0 }, { id: "F-0.02", stage: 0, dependsOn: ["F-0.01"] }], (run) => {
+      if (run.role.startsWith("implement") && run.taskId === "F-0.01") return { files: { "app/src/extra.test.ts": `test("x", () => { expect(2).toBe(2); });\n` } };
+      if (run.role.startsWith("implement") && run.taskId === "F-0.02") {
+        prompts.push(run.prompt);
+        if (++n === 1) return { files: { "app/src/extra.test.ts": `test("x", () => {});\n` } };   // weakened: rejected
+        return { files: { "app/src/extra.test.ts": `test("x", () => { expect(2).toBe(2); });\ntest("y", () => { expect(3).toBe(3); });\n` } };   // only grows: ok
+      }
+    }));
+    await orch(ctx, deps(() => true)).start();
+    expect(JSON.parse(readFileSync(hp(ctx, "protected.json"), "utf8"))["app/src/extra.test.ts"]).toMatchObject({ featureId: "F-0.02", additive: true, tests: ["x", "y"] });
+    expect(prompts[0]).toContain("app/src/extra.test.ts");
+    const f = feature(ctx.root, "F-0.02");
+    expect(f.history[0].outcome).toBe("protected_violation");
+    expect(f.history[1].outcome).toBe("success");
+    expect(f.status).toBe("passing");
+  });
+
   it("5. avaliador da mesma família nunca é escolhido", async () => {
     const { ctx } = await makeProject({ config: { routing: { explorationRate: 0.5, escalateAfterFailures: 2, maxAttemptsPerFeature: 5, hardTags: [], tournament: { enabled: false, tags: [], contenders: 2, judge: "review_code" } } } });
     setFakeScript(script(Array.from({ length: 6 }, (_, i) => ({ id: `F-0.0${i + 1}`, stage: 0, tags: ["ui"] }))));
