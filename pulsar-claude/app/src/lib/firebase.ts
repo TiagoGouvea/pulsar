@@ -1,7 +1,12 @@
 import { initializeApp } from 'firebase/app';
-import { connectAuthEmulator, getAuth } from 'firebase/auth';
+import {
+  browserLocalPersistence,
+  browserSessionPersistence,
+  connectAuthEmulator,
+  indexedDBLocalPersistence,
+  initializeAuth,
+} from 'firebase/auth';
 import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore';
-import { connectFunctionsEmulator, getFunctions } from 'firebase/functions';
 import { emulators } from '../../firebase.json';
 import { emulatorsEnabled } from './env';
 
@@ -17,14 +22,17 @@ export const firebaseApp = initializeApp({
   messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID || undefined,
 });
 
-export const auth = getAuth(firebaseApp);
+// Same persistence hierarchy as getAuth(), but without a global popupRedirectResolver: its proactive
+// Google iframe (apis.google.com) is awaited by auth initialization and used to sit on the startup
+// critical path of every route, delaying the first render (Lighthouse performance). Popup flows pass
+// `browserPopupRedirectResolver` per call instead (see src/auth/linkAccount.ts and accountSession.ts).
+export const auth = initializeAuth(firebaseApp, {
+  persistence: [indexedDBLocalPersistence, browserLocalPersistence, browserSessionPersistence],
+});
 export const db = getFirestore(firebaseApp);
-// Cloud Functions live in Brazil (DECISOES.md), so the callable client must target the same region.
-export const functions = getFunctions(firebaseApp, 'southamerica-east1');
 
 if (emulatorsEnabled) {
   const host = window.location.hostname || '127.0.0.1';
   connectAuthEmulator(auth, `http://${host}:${emulators.auth.port}`, { disableWarnings: true });
   connectFirestoreEmulator(db, host, emulators.firestore.port);
-  connectFunctionsEmulator(functions, host, emulators.functions.port);
 }

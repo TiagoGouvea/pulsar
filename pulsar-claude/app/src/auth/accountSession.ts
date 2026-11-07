@@ -1,6 +1,10 @@
-import { GoogleAuthProvider, reauthenticateWithPopup, type User } from 'firebase/auth';
+import {
+  browserPopupRedirectResolver,
+  GoogleAuthProvider,
+  reauthenticateWithPopup,
+  type User,
+} from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
-import { functions } from '../lib/firebase';
 import { sendEmailLink } from './linkAccount';
 
 const GOOGLE_PROVIDER_ID = 'google.com';
@@ -32,7 +36,8 @@ function recentReauthenticationFor(user: User): boolean {
 export async function ensureRecentLogin(user: User): Promise<'ready' | 'link-sent'> {
   if (recentReauthenticationFor(user)) return 'ready';
   if (user.providerData.some((provider) => provider.providerId === GOOGLE_PROVIDER_ID)) {
-    await reauthenticateWithPopup(user, new GoogleAuthProvider());
+    // The global auth instance has no popup resolver (see src/lib/firebase.ts), so popups pass it per call.
+    await reauthenticateWithPopup(user, new GoogleAuthProvider(), browserPopupRedirectResolver);
     markReauthenticated(user);
     return 'ready';
   }
@@ -43,5 +48,7 @@ export async function ensureRecentLogin(user: User): Promise<'ready' | 'link-sen
 
 /** Deletes the caller's account and all its data on the server; the caller then signs out locally. */
 export async function deleteCurrentAccount(): Promise<void> {
+  // Imported on demand so the callable client (and its SDK) never joins the startup bundle.
+  const { functions } = await import('../lib/functions');
   await httpsCallable<void, { deleted: boolean }>(functions, 'deleteAccount')();
 }
