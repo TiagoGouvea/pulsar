@@ -1,6 +1,6 @@
-import { describe, expect, test } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
 import type { ModelCandidate } from "../../src/domain/types.js";
-import { extractResult, lastAssistantOutput, localApiFor, prepareResponseDiagnostic, recoverResultWithFormatter, supportsPiReasoningEffort, type ResultRepairDiagnostic } from "../../src/executors/pi.js";
+import { extractResult, createRuntime, lastAssistantOutput, localApiFor, prepareResponseDiagnostic, recoverResultWithFormatter, supportsPiReasoningEffort, type ResultRepairDiagnostic } from "../../src/executors/pi.js";
 
 const result = {
   taskId: "task-001",
@@ -29,6 +29,28 @@ function localCandidate(input: Partial<ModelCandidate>): ModelCandidate {
     ...input,
   };
 }
+
+function remoteCandidate(input: Partial<ModelCandidate>): ModelCandidate {
+  return {
+    alias: "remote-test",
+    executor: "pi",
+    provider: "openrouter",
+    modelId: "minimax/minimax-m3.1-flash",
+    family: "minimax-m3.1",
+    modality: "metered_api",
+    capabilities: ["text", "vision", "tools", "reasoning"],
+    roles: ["implementer"],
+    enabled: true,
+    contextTokens: 1_000_000,
+    maxOutputTokens: 8192,
+    inputUsdPerMillion: "0.075",
+    outputUsdPerMillion: "0.30",
+    credentialEnv: "HARNESS_TEST_OPENROUTER_KEY",
+    ...input,
+  };
+}
+
+afterEach(() => vi.unstubAllEnvs());
 
 describe("contrato estruturado do Pi", () => {
   test("preserva resposta não parseável com segredos mascarados e tamanho limitado", () => {
@@ -176,5 +198,22 @@ describe("protocolo local do Pi", () => {
     }])).toBe(JSON.stringify(result));
     expect(lastAssistantOutput([{ role: "assistant", content: [{ type: "thinking", thinking: "We need analyze carefully" }] }])).toBeUndefined();
     expect(lastAssistantOutput(messages, "resposta normal")).toBe("resposta normal");
+  });
+});
+
+describe("catálogo remoto do Pi", () => {
+  test.each([
+    "minimax/minimax-m3.1-flash",
+    "moonshotai/kimi-k3.1-pro",
+    "openai/gpt-6.1-terra",
+  ])("registra dinamicamente %s se estiver ausente do catálogo instalado", async (modelId) => {
+    vi.stubEnv("HARNESS_TEST_OPENROUTER_KEY", "test-key-not-used-for-network");
+    const { runtime, model } = await createRuntime(remoteCandidate({ modelId }));
+
+    expect(model.id).toBe(modelId);
+    expect(model.provider).toBe("openrouter");
+    expect(model.contextWindow).toBe(1_000_000);
+    expect(model.maxTokens).toBe(8192);
+    expect(runtime.getProvider("openrouter")?.baseUrl).toContain("openrouter.ai");
   });
 });

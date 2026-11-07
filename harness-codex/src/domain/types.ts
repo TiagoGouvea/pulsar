@@ -112,6 +112,7 @@ export interface ExecutionResult {
     primaryOutputTokens?: number;
     primaryCachedTokens?: number;
     primaryDurationMs?: number;
+    costStatus?: "complete" | "partial";
     additionalCalls?: Array<{
       alias: string;
       provider: string;

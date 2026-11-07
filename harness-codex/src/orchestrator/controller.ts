@@ -12,6 +12,7 @@ import type { Executor } from "../executors/types.js";
 import { changedPathsBetweenSnapshots, checkpointFiles, currentRevision, inspectGitWorkspace, snapshotWorkspaceChanges } from "../git/workspace.js";
 import { createTasks, extractRequirements, milestoneFromRequirementId } from "../planning/requirements.js";
 import { ModelCatalog } from "../providers/catalog.js";
+import { shouldMarkProviderCostUncertain } from "../budget/call-accounting.js";
 import { firebaseProjectChecks } from "../preflight/doctor.js";
 import { writeBudgetReport, writeFinalReport, writeHumanReview, writePlan } from "../reports/generator.js";
 import { assertWorkspace } from "../security/workspace.js";
@@ -573,7 +574,11 @@ export class Orchestrator {
     );
     const actualMicros = parseUsdToMicros(result.usage?.costUsd ?? "0") ?? 0n;
     const primaryMicros = parseUsdToMicros(result.usage?.primaryCostUsd ?? result.usage?.costUsd ?? "0") ?? 0n;
-    const uncertain = candidate.modality === "metered_api" && result.outcome === "failed" && !result.usage;
+    const uncertain = shouldMarkProviderCostUncertain({
+      modality: candidate.modality, outcome: result.outcome, hasUsage: Boolean(result.usage),
+      partialUsage: result.usage?.costStatus === "partial",
+      ...(result.diagnostics?.phase ? { phase: result.diagnostics.phase } : {}),
+    });
     this.finishProviderCall(providerCallId, result, uncertain, estimatedModel, primaryMicros);
     this.recordAdditionalProviderCalls(attemptId, result.usage?.additionalCalls);
     this.ledger.reconcile({ runId, taskId: task.id, reservationId, providerCallId, amountMicros: uncertain ? estimated : actualMicros, uncertain });
@@ -583,10 +588,19 @@ export class Orchestrator {
       modelId: candidate.modelId, modality: candidate.modality, startedAt: this.store.get<Record<string, unknown>>("SELECT started_at FROM provider_calls WHERE id=?", providerCallId)?.started_at,
       finishedAt: nowUtc(), durationMs: result.usage?.primaryDurationMs ?? callDurationMs, totalDurationMs: callDurationMs, outcome: result.outcome, inputTokens: result.usage?.primaryInputTokens ?? result.usage?.inputTokens ?? null,
       outputTokens: result.usage?.primaryOutputTokens ?? result.usage?.outputTokens ?? null, cachedTokens: result.usage?.primaryCachedTokens ?? result.usage?.cachedTokens ?? null,
-      costUsd: uncertain ? null : result.usage?.primaryCostUsd ?? result.usage?.costUsd ?? "0", totalCostUsd: uncertain ? null : result.usage?.costUsd ?? "0", additionalCalls: result.usage?.additionalCalls ?? [], estimatedCostUsd: String(estimatedModel), reservedCostUsd: String(estimated), uncertain,
+      costUsd: result.usage?.primaryCostUsd ?? result.usage?.costUsd ?? (uncertain ? null : "0"),
+      totalCostUsd: result.usage?.costUsd ?? (uncertain ? null : "0"),
+      costStatus: result.usage?.costStatus ?? (uncertain ? "uncertain" : "complete"),
+      uncertainCostUsd: uncertain ? this.formatUsdMicros(estimated) : null,
+      additionalCalls: result.usage?.additionalCalls ?? [], estimatedCostUsd: String(estimatedModel), reservedCostUsd: String(estimated), uncertain,
     };
     await writeJson(path.join(attemptDirectory, "model-call.json"), callRecord);
-    this.log(`Modelo ${candidate.alias} [${this.modelLocation(candidate.modality)}] · ${result.outcome} · ${result.usage?.primaryInputTokens ?? result.usage?.inputTokens ?? "?"}/${result.usage?.primaryOutputTokens ?? result.usage?.outputTokens ?? "?"} tokens · USD ${uncertain ? "incerto" : result.usage?.primaryCostUsd ?? result.usage?.costUsd ?? "0"} · ${callDurationMs} ms · ${this.progress(runId, task.milestoneId)}.`);
+    const callCost = uncertain
+      ? result.usage?.costStatus === "partial"
+        ? `USD ${result.usage.primaryCostUsd ?? result.usage.costUsd ?? "0"} parcial + USD ${this.formatUsdMicros(estimated)} incerto`
+        : `USD ${this.formatUsdMicros(estimated)} incerto`
+      : `USD ${result.usage?.primaryCostUsd ?? result.usage?.costUsd ?? "0"}`;
+    this.log(`Modelo ${candidate.alias} [${this.modelLocation(candidate.modality)}] · ${result.outcome} · ${result.usage?.primaryInputTokens ?? result.usage?.inputTokens ?? "?"}/${result.usage?.primaryOutputTokens ?? result.usage?.outputTokens ?? "?"} tokens · ${callCost} · ${callDurationMs} ms · ${this.progress(runId, task.milestoneId)}.`);
     this.store.run(
       "INSERT INTO routing_observations(id, run_id, attempt_id, candidate_key, role, task_category, duration_ms, cost_micros, outcome, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       createId("route"), runId, attemptId, candidate.alias, task.role, "implementation", result.usage?.primaryDurationMs ?? Math.round(performance.now() - started), primaryMicros, result.outcome, nowUtc(),
@@ -1023,7 +1037,8 @@ export class Orchestrator {
        reasoning_tokens=?, reported_micros=?, uncertain_micros=?, finished_at=? WHERE id=?`,
       uncertain ? "uncertain" : technicalFailure ? "failed" : "completed",
       result.usage?.providerRequestId ?? null, result.usage?.primaryInputTokens ?? result.usage?.inputTokens ?? null, result.usage?.primaryOutputTokens ?? result.usage?.outputTokens ?? null,
-      result.usage?.primaryCachedTokens ?? result.usage?.cachedTokens ?? null, result.usage?.reasoningTokens ?? null, uncertain ? null : actualMicros,
+      result.usage?.primaryCachedTokens ?? result.usage?.cachedTokens ?? null, result.usage?.reasoningTokens ?? null,
+      uncertain ? (result.usage ? actualMicros : null) : actualMicros,
       uncertain ? estimatedMicros : null, finishedAt, callId,
     );
   }
@@ -1144,7 +1159,11 @@ export class Orchestrator {
     this.recordExecutionFailure(runId, task.id, attemptId, candidate.alias, result);
     const actualMicros = parseUsdToMicros(result.usage?.costUsd ?? "0") ?? 0n;
     const primaryMicros = parseUsdToMicros(result.usage?.primaryCostUsd ?? result.usage?.costUsd ?? "0") ?? 0n;
-    const uncertain = candidate.modality === "metered_api" && result.outcome === "failed" && !result.usage;
+    const uncertain = shouldMarkProviderCostUncertain({
+      modality: candidate.modality, outcome: result.outcome, hasUsage: Boolean(result.usage),
+      partialUsage: result.usage?.costStatus === "partial",
+      ...(result.diagnostics?.phase ? { phase: result.diagnostics.phase } : {}),
+    });
     this.finishProviderCall(providerCallId, result, uncertain, estimatedModel, primaryMicros);
     this.recordAdditionalProviderCalls(attemptId, result.usage?.additionalCalls);
     this.ledger.reconcile({ runId, taskId: task.id, reservationId, providerCallId, amountMicros: uncertain ? estimated : actualMicros, uncertain });
@@ -1154,9 +1173,18 @@ export class Orchestrator {
       provider: candidate.provider, modelId: candidate.modelId, modality: candidate.modality,
       durationMs: result.usage?.primaryDurationMs ?? reviewDurationMs, totalDurationMs: reviewDurationMs, outcome: result.outcome, inputTokens: result.usage?.primaryInputTokens ?? result.usage?.inputTokens ?? null,
       outputTokens: result.usage?.primaryOutputTokens ?? result.usage?.outputTokens ?? null, cachedTokens: result.usage?.primaryCachedTokens ?? result.usage?.cachedTokens ?? null,
-      costUsd: uncertain ? null : result.usage?.primaryCostUsd ?? result.usage?.costUsd ?? "0", totalCostUsd: uncertain ? null : result.usage?.costUsd ?? "0", additionalCalls: result.usage?.additionalCalls ?? [], estimatedCostUsd: String(estimatedModel), reservedCostUsd: String(estimated), uncertain,
+      costUsd: result.usage?.primaryCostUsd ?? result.usage?.costUsd ?? (uncertain ? null : "0"),
+      totalCostUsd: result.usage?.costUsd ?? (uncertain ? null : "0"),
+      costStatus: result.usage?.costStatus ?? (uncertain ? "uncertain" : "complete"),
+      uncertainCostUsd: uncertain ? this.formatUsdMicros(estimated) : null,
+      additionalCalls: result.usage?.additionalCalls ?? [], estimatedCostUsd: String(estimatedModel), reservedCostUsd: String(estimated), uncertain,
     });
-    this.log(`Revisão ${candidate.alias} [${this.modelLocation(candidate.modality)}] · ${result.outcome} · ${result.usage?.primaryInputTokens ?? result.usage?.inputTokens ?? "?"}/${result.usage?.primaryOutputTokens ?? result.usage?.outputTokens ?? "?"} tokens · USD ${uncertain ? "incerto" : result.usage?.primaryCostUsd ?? result.usage?.costUsd ?? "0"} · ${reviewDurationMs} ms.`);
+    const reviewCost = uncertain
+      ? result.usage?.costStatus === "partial"
+        ? `USD ${result.usage.primaryCostUsd ?? result.usage.costUsd ?? "0"} parcial + USD ${this.formatUsdMicros(estimated)} incerto`
+        : `USD ${this.formatUsdMicros(estimated)} incerto`
+      : `USD ${result.usage?.primaryCostUsd ?? result.usage?.costUsd ?? "0"}`;
+    this.log(`Revisão ${candidate.alias} [${this.modelLocation(candidate.modality)}] · ${result.outcome} · ${result.usage?.primaryInputTokens ?? result.usage?.inputTokens ?? "?"}/${result.usage?.primaryOutputTokens ?? result.usage?.outputTokens ?? "?"} tokens · ${reviewCost} · ${reviewDurationMs} ms.`);
     if (result.outcome === "failed") {
       this.log(`  ↳ Motivo: ${result.summary.replace(/\s+/g, " ").slice(0, 1000)}`);
     }

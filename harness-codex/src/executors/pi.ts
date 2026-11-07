@@ -419,7 +419,7 @@ export async function recoverResultWithFormatter(
   }
 }
 
-async function createRuntime(candidate: ModelCandidate): Promise<{ runtime: ModelRuntime; model: NonNullable<ReturnType<ModelRuntime["getModel"]>> }> {
+export async function createRuntime(candidate: ModelCandidate): Promise<{ runtime: ModelRuntime; model: NonNullable<ReturnType<ModelRuntime["getModel"]>> }> {
   const runtime = await ModelRuntime.create({
     allowModelNetwork: false,
     modelsPath: null,
@@ -443,12 +443,44 @@ async function createRuntime(candidate: ModelCandidate): Promise<{ runtime: Mode
       }],
     });
   }
-  if (candidate.credentialEnv) {
-    const credential = process.env[candidate.credentialEnv];
-    if (!credential) throw new Error(`Credencial ausente: ${candidate.credentialEnv}`);
-    await runtime.setRuntimeApiKey(candidate.provider, credential);
+  const credential = candidate.credentialEnv ? process.env[candidate.credentialEnv] : undefined;
+  if (candidate.credentialEnv && !credential) throw new Error(`Credencial ausente: ${candidate.credentialEnv}`);
+
+  let model = runtime.getModel(candidate.provider, candidate.modelId);
+  if (!model && candidate.modality === "metered_api") {
+    const provider = runtime.getProvider(candidate.provider);
+    const knownModel = runtime.getModels(candidate.provider)[0];
+    const baseUrl = provider?.baseUrl ?? (candidate.provider === "openrouter"
+      ? "https://openrouter.ai/api/v1"
+      : candidate.provider === "openai" ? "https://api.openai.com/v1" : undefined);
+    const api = knownModel?.api ?? (candidate.provider === "openai" ? "openai-responses" as const : "openai-completions" as const);
+    if (!baseUrl) throw new Error(`Pi não conhece ${candidate.provider}/${candidate.modelId} e não há baseUrl configurada para registrar o modelo.`);
+    const inputCost = Number(candidate.inputUsdPerMillion ?? 0);
+    const outputCost = Number(candidate.outputUsdPerMillion ?? 0);
+    runtime.registerProvider(candidate.provider, {
+      name: provider?.name ?? candidate.provider,
+      baseUrl,
+      api,
+      apiKey: credential ?? "harness-runtime-credential",
+      models: [{
+        id: candidate.modelId,
+        name: candidate.alias,
+        api,
+        input: candidate.capabilities.includes("vision") ? ["text", "image"] : ["text"],
+        cost: { input: inputCost, output: outputCost, cacheRead: inputCost, cacheWrite: inputCost },
+        reasoning: candidate.capabilities.includes("reasoning"),
+        contextWindow: candidate.contextTokens,
+        maxTokens: candidate.maxOutputTokens,
+        ...(candidate.provider === "openrouter" && candidate.capabilities.includes("reasoning")
+          ? { compat: { thinkingFormat: "openrouter" as const } }
+          : {}),
+      }],
+    });
+    model = runtime.getModel(candidate.provider, candidate.modelId);
   }
-  const model = runtime.getModel(candidate.provider, candidate.modelId);
+  if (candidate.credentialEnv) {
+    await runtime.setRuntimeApiKey(candidate.provider, credential as string);
+  }
   if (!model) throw new Error(`Pi não encontrou ${candidate.provider}/${candidate.modelId}.`);
   return { runtime, model };
 }
@@ -489,7 +521,9 @@ export class PiExecutor implements Executor {
       await writeJson(errorPath, {
         at: nowUtc(), phase: failure.phase, provider: request.candidate.provider,
         modelId: request.candidate.modelId, alias: request.candidate.alias,
-        timeoutMs: request.timeoutMs, error: errorDetails(failure.cause ?? failure, this.config.security.redactPatterns),
+        timeoutMs: request.timeoutMs,
+        ...(failure.usage ? { usage: failure.usage } : {}),
+        error: errorDetails(failure.cause ?? failure, this.config.security.redactPatterns),
       });
       const failureSummary = redact(safeError(failure), this.config.security.redactPatterns);
       return {
@@ -614,33 +648,41 @@ export class PiExecutor implements Executor {
     let outcome: "success" | "failure" | "interrupted" = "failure";
     const primaryStartedAt = Date.now();
     let primaryDurationMs = 0;
+    const primaryStats = (
+      costStatus: "complete" | "partial" = "complete",
+      onlyIfObserved = false,
+    ): NonNullable<ExecutionResult["usage"]> | undefined => {
+      const stats = session.getSessionStats();
+      if (onlyIfObserved && stats.tokens.input === 0 && stats.tokens.output === 0 && stats.cost === 0) return undefined;
+      return {
+        inputTokens: stats.tokens.input,
+        outputTokens: stats.tokens.output,
+        cachedTokens: stats.tokens.cacheRead,
+        costUsd: String(stats.cost),
+        primaryCostUsd: String(stats.cost),
+        primaryInputTokens: stats.tokens.input,
+        primaryOutputTokens: stats.tokens.output,
+        primaryCachedTokens: stats.tokens.cacheRead,
+        primaryDurationMs,
+        costStatus,
+        additionalCalls: [],
+      };
+    };
     try {
       recordExchange("executor", "request", request.prompt);
       try { await session.prompt(request.prompt); }
       catch (error) {
         recordExchange("executor", "error", safeError(error));
-        throw new PiExecutionError(timeoutState.triggered ? "timeout" : "provider_request", error);
+        primaryDurationMs = Date.now() - primaryStartedAt;
+        throw new PiExecutionError(timeoutState.triggered ? "timeout" : "provider_request", error, primaryStats("partial", true));
       }
       primaryDurationMs = Date.now() - primaryStartedAt;
-      if (timeoutState.triggered) throw new PiExecutionError("timeout", new Error(`Sessão excedeu ${request.timeoutMs} ms.`));
+      if (timeoutState.triggered) {
+        throw new PiExecutionError("timeout", new Error(`Sessão excedeu ${request.timeoutMs} ms.`), primaryStats("partial", true));
+      }
       const initialResponse = lastAssistantOutput(session.messages, session.getLastAssistantText());
       recordExchange("executor", "response", initialResponse ?? "[EMPTY RESPONSE]");
       let rawResponse = initialResponse;
-      const primaryStats = (): NonNullable<ExecutionResult["usage"]> => {
-        const stats = session.getSessionStats();
-        return {
-          inputTokens: stats.tokens.input,
-          outputTokens: stats.tokens.output,
-          cachedTokens: stats.tokens.cacheRead,
-          costUsd: String(stats.cost),
-          primaryCostUsd: String(stats.cost),
-          primaryInputTokens: stats.tokens.input,
-          primaryOutputTokens: stats.tokens.output,
-          primaryCachedTokens: stats.tokens.cacheRead,
-          primaryDurationMs,
-          additionalCalls: [],
-        };
-      };
       const saveRawResponse = async (parsedResult?: ExecutionResult): Promise<void> => {
         const diagnostic = prepareResponseDiagnostic(rawResponse, parsedResult, this.config.security.redactPatterns);
         const rawResponsePath = path.join(request.outputDirectory, "raw-response.txt");
@@ -663,7 +705,7 @@ export class PiExecutor implements Executor {
         );
       } catch (error) {
         initialParseError = error;
-        const primaryUsage = primaryStats();
+        const primaryUsage = primaryStats() as NonNullable<ExecutionResult["usage"]>;
         if (this.config.responseFormatting.enabled && !initialResponse?.trim()) {
           await saveRawResponse();
           throw new PiExecutionError(
@@ -715,9 +757,13 @@ export class PiExecutor implements Executor {
         try { await session.prompt(repairPrompt); }
         catch (repairError) {
           recordExchange("executor-repair", "error", safeError(repairError));
-          throw new PiExecutionError(timedOut() ? "timeout" : "provider_request", repairError);
+          primaryDurationMs = Date.now() - primaryStartedAt;
+          throw new PiExecutionError(timedOut() ? "timeout" : "provider_request", repairError, primaryStats("partial", true));
         }
-        if (timedOut()) throw new PiExecutionError("timeout", new Error(`Sessão excedeu ${request.timeoutMs} ms.`));
+        if (timedOut()) {
+          primaryDurationMs = Date.now() - primaryStartedAt;
+          throw new PiExecutionError("timeout", new Error(`Sessão excedeu ${request.timeoutMs} ms.`), primaryStats("partial", true));
+        }
         const repairedResponse = lastAssistantOutput(session.messages, session.getLastAssistantText());
         recordExchange("executor-repair", "response", repairedResponse ?? "[EMPTY RESPONSE]");
         rawResponse = [
@@ -735,13 +781,13 @@ export class PiExecutor implements Executor {
           throw new PiExecutionError(
             "response_parse",
             new Error(`Resposta inicial inválida: ${safeError(initialParseError)} Resposta de reparo inválida: ${safeError(repairParseError)}`),
-            primaryStats(),
+            primaryStats() as NonNullable<ExecutionResult["usage"]>,
           );
         }
         }
       }
       await saveRawResponse(result);
-      if (!result.usage) result.usage = primaryStats();
+      if (!result.usage) result.usage = primaryStats() as NonNullable<ExecutionResult["usage"]>;
       outcome = "success";
       return result;
     } finally {
