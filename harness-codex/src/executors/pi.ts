@@ -3,12 +3,14 @@ import {
   ModelRuntime,
   SessionManager,
 } from "@earendil-works/pi-coding-agent";
+import { InMemoryCredentialStore } from "@earendil-works/pi-ai";
 import { parseFromLLM } from "json-llm-repair";
 import { appendFileSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { HarnessConfig } from "../config/schema.js";
 import type { ExecutionRequest, ExecutionResult, ModelCandidate } from "../domain/types.js";
+import { ModelCatalog } from "../providers/catalog.js";
 import { withLmStudioModel, type LocalModelDiagnostic } from "../providers/lmstudio.js";
 import { redact } from "../security/redaction.js";
 import { nowUtc, safeError, writeJson } from "../utils/core.js";
@@ -71,21 +73,60 @@ export function lastAssistantOutput(messages: readonly unknown[], preferredText?
         ? [block.thinking]
         : [];
     }).join("\n").trim();
-    if (thinking.startsWith("{") && thinking.endsWith("}")) {
+    if (thinking) {
+      const fenced = /```(?:json)?\s*([\s\S]*?)```/i.exec(thinking)?.[1];
+      const first = thinking.indexOf("{");
+      const last = thinking.lastIndexOf("}");
+      const candidates = [fenced, first >= 0 && last > first ? thinking.slice(first, last + 1) : undefined, thinking]
+        .flatMap((candidate) => candidate?.trim() ? [candidate.trim()] : []);
+      for (const candidate of candidates) {
       try {
-        const candidate = JSON.parse(thinking) as unknown;
-        if (candidate && typeof candidate === "object" && !Array.isArray(candidate)) return thinking;
+          const parsed = JSON.parse(candidate) as unknown;
+          if (parsed && typeof parsed === "object" && !Array.isArray(parsed) && resultKeys.every((key) => key in parsed)) return candidate;
       } catch { /* Ignore free-form or incomplete reasoning; the normal repair path handles it. */ }
+      }
     }
   }
   return undefined;
 }
 
 class PiExecutionError extends Error {
-  constructor(readonly phase: string, cause: unknown) {
+  constructor(readonly phase: string, cause: unknown, readonly usage?: ExecutionResult["usage"]) {
     super(safeError(cause), { cause });
     this.name = "PiExecutionError";
   }
+}
+
+class FormatterCallError extends Error {
+  constructor(
+    cause: unknown,
+    readonly call?: NonNullable<NonNullable<ExecutionResult["usage"]>["additionalCalls"]>[number],
+    readonly responseText?: string,
+  ) {
+    super(safeError(cause), { cause });
+    this.name = "FormatterCallError";
+  }
+}
+
+function estimateCandidateCost(candidate: ModelCandidate, inputTokens: number, outputTokens: number): number | undefined {
+  if (candidate.inputUsdPerMillion == null || candidate.outputUsdPerMillion == null) return undefined;
+  return (inputTokens * Number(candidate.inputUsdPerMillion) + outputTokens * Number(candidate.outputUsdPerMillion)) / 1_000_000;
+}
+
+function formatterPrompt(text: string, taskId: string): string {
+  return [
+    "Reformate a resposta abaixo para o contrato JSON do harness. Não use ferramentas, não explique e não invente informações.",
+    "Preserve exatamente o significado e os valores; se faltar um campo de lista, use []. Se não puder preencher um campo obrigatório sem inventar, mantenha a resposta sem alteração.",
+    `O campo taskId deve ser exatamente ${JSON.stringify(taskId)}.`,
+    "Retorne somente um objeto JSON com exatamente: taskId, outcome, summary, changedFiles, claimedChecks, decisions, blockers, suggestedFollowUps.",
+    "outcome deve ser um de ready_for_verification, changes_requested, blocked, failed. Campos de lista devem conter somente strings.",
+    "Resposta original:",
+    text,
+  ].join("\n\n");
+}
+
+function combineUsd(left: string | undefined, right: string): string {
+  return (Number(left ?? "0") + Number(right)).toFixed(8).replace(/0+$/, "").replace(/\.$/, "") || "0";
 }
 
 function errorDetails(error: unknown, patterns: string[]): { name: string; message: string; stack?: string } {
@@ -357,8 +398,30 @@ export function extractResult(
   }
 }
 
+export async function recoverResultWithFormatter(
+  original: string | undefined,
+  initialError: unknown,
+  taskId: string,
+  acceptedTaskIds: string[],
+  formatter: (original: string) => Promise<{ text: string; call: NonNullable<NonNullable<ExecutionResult["usage"]>["additionalCalls"]>[number] }>,
+  observeRepair?: ResultRepairObserver,
+): Promise<{ result: ExecutionResult; response: string; call: NonNullable<NonNullable<ExecutionResult["usage"]>["additionalCalls"]>[number] }> {
+  if (!original?.trim()) throw initialError;
+  const formatted = await formatter(original);
+  try {
+    const result = extractResult(formatted.text, taskId, acceptedTaskIds, observeRepair);
+    return { result, response: formatted.text, call: formatted.call };
+  } catch (error) {
+    throw new FormatterCallError(new Error(`Saída do formatador incompatível com o contrato: ${safeError(error)}`), formatted.call, formatted.text);
+  }
+}
+
 async function createRuntime(candidate: ModelCandidate): Promise<{ runtime: ModelRuntime; model: NonNullable<ReturnType<ModelRuntime["getModel"]>> }> {
-  const runtime = await ModelRuntime.create({ allowModelNetwork: false });
+  const runtime = await ModelRuntime.create({
+    allowModelNetwork: false,
+    modelsPath: null,
+    credentials: new InMemoryCredentialStore(),
+  });
   if (candidate.modality === "local") {
     const endpoint = candidate.endpoint ?? "http://localhost:1235/v1";
     runtime.registerProvider(candidate.provider, {
@@ -436,6 +499,7 @@ export class PiExecutor implements Executor {
           ...(failure.phase === "response_parse" ? { responseRepairLogPath: path.join(request.outputDirectory, "response-repair.jsonl") } : {}),
           ...(request.candidate.modality === "local" ? { localModelLifecyclePath: path.join(request.outputDirectory, "local-model-lifecycle.json") } : {}),
         },
+        ...(failure.usage ? { usage: failure.usage } : {}),
       };
     } finally {
       if (request.candidate.modality === "local") {
@@ -500,12 +564,30 @@ export class PiExecutor implements Executor {
     const timedOut = (): boolean => timeoutState.triggered;
     const timeout = setTimeout(() => { timeoutState.triggered = true; void session.abort(); }, request.timeoutMs);
     let outcome: "success" | "failure" | "interrupted" = "failure";
+    const primaryStartedAt = Date.now();
+    let primaryDurationMs = 0;
     try {
       try { await session.prompt(request.prompt); }
       catch (error) { throw new PiExecutionError(timeoutState.triggered ? "timeout" : "provider_request", error); }
+      primaryDurationMs = Date.now() - primaryStartedAt;
       if (timeoutState.triggered) throw new PiExecutionError("timeout", new Error(`Sessão excedeu ${request.timeoutMs} ms.`));
       const initialResponse = lastAssistantOutput(session.messages, session.getLastAssistantText());
       let rawResponse = initialResponse;
+      const primaryStats = (): NonNullable<ExecutionResult["usage"]> => {
+        const stats = session.getSessionStats();
+        return {
+          inputTokens: stats.tokens.input,
+          outputTokens: stats.tokens.output,
+          cachedTokens: stats.tokens.cacheRead,
+          costUsd: String(stats.cost),
+          primaryCostUsd: String(stats.cost),
+          primaryInputTokens: stats.tokens.input,
+          primaryOutputTokens: stats.tokens.output,
+          primaryCachedTokens: stats.tokens.cacheRead,
+          primaryDurationMs,
+          additionalCalls: [],
+        };
+      };
       const saveRawResponse = async (parsedResult?: ExecutionResult): Promise<void> => {
         const diagnostic = prepareResponseDiagnostic(rawResponse, parsedResult, this.config.security.redactPatterns);
         const rawResponsePath = path.join(request.outputDirectory, "raw-response.txt");
@@ -528,6 +610,48 @@ export class PiExecutor implements Executor {
         );
       } catch (error) {
         initialParseError = error;
+        const primaryUsage = primaryStats();
+        if (this.config.responseFormatting.enabled && !initialResponse?.trim()) {
+          await saveRawResponse();
+          throw new PiExecutionError(
+            "response_parse",
+            new Error(`Resposta vazia; formatador não acionado e nova chamada ao modelo executor evitada. ${safeError(initialParseError)}`),
+            primaryUsage,
+          );
+        }
+        if (this.config.responseFormatting.enabled && initialResponse?.trim()) {
+          try {
+            const formatted = await recoverResultWithFormatter(
+              initialResponse, initialParseError, request.task.id,
+              request.acceptedResultTaskIds ?? [request.task.id],
+              (response) => this.formatResponse(request, response, primaryStartedAt, progress, observeResponseRepair),
+              observeResponseRepair,
+            );
+            rawResponse = ["[INITIAL RESPONSE]", initialResponse, "", "[FORMATTER RESPONSE]", formatted.response].join("\n");
+            result = formatted.result;
+            primaryUsage.additionalCalls = [formatted.call];
+            primaryUsage.costUsd = combineUsd(primaryUsage.costUsd, formatted.call.costUsd);
+          } catch (formatterError) {
+            const additionalCall = formatterError instanceof FormatterCallError ? formatterError.call : undefined;
+            if (formatterError instanceof FormatterCallError && formatterError.responseText) {
+              rawResponse = ["[INITIAL RESPONSE]", initialResponse, "", "[FORMATTER RESPONSE]", formatterError.responseText].join("\n");
+            }
+            const usage = {
+              ...primaryUsage,
+              ...(additionalCall ? {
+                additionalCalls: [additionalCall],
+                costUsd: combineUsd(primaryUsage.costUsd, additionalCall.costUsd),
+              } : {}),
+            };
+            await saveRawResponse();
+            throw new PiExecutionError(
+              "response_parse",
+              new Error(`Resposta inicial inválida: ${safeError(initialParseError)} Formatador não resolveu: ${safeError(formatterError)}`),
+              usage,
+            );
+          }
+          result.usage = primaryUsage;
+        } else {
         const repairPrompt = [
           "Sua resposta anterior não apresentou o objeto JSON final válido.",
           "Não use ferramentas e não explique.",
@@ -553,17 +677,13 @@ export class PiExecutor implements Executor {
           throw new PiExecutionError(
             "response_parse",
             new Error(`Resposta inicial inválida: ${safeError(initialParseError)} Resposta de reparo inválida: ${safeError(repairParseError)}`),
+            primaryStats(),
           );
+        }
         }
       }
       await saveRawResponse(result);
-      const stats = session.getSessionStats();
-      result.usage = {
-        inputTokens: stats.tokens.input,
-        outputTokens: stats.tokens.output,
-        cachedTokens: stats.tokens.cacheRead,
-        costUsd: String(stats.cost),
-      };
+      if (!result.usage) result.usage = primaryStats();
       outcome = "success";
       return result;
     } finally {
@@ -574,6 +694,84 @@ export class PiExecutor implements Executor {
       progress.finish(outcome);
       appendFileSync(tracePath, `${JSON.stringify({ at: nowUtc(), type: "session_disposed", timedOut: timeoutState.triggered })}\n`, { encoding: "utf8", mode: 0o600 });
       session.dispose();
+    }
+  }
+
+  private async formatResponse(
+    request: ExecutionRequest,
+    original: string,
+    requestStartedAt: number,
+    progress: ReturnType<typeof startLiveProgress>,
+    observeRepair: ResultRepairObserver,
+  ): Promise<{ text: string; call: NonNullable<NonNullable<ExecutionResult["usage"]>["additionalCalls"]>[number] }> {
+    const settings = this.config.responseFormatting;
+    if (original.length > settings.maxInputChars) throw new Error(`Resposta longa demais para reparo (${original.length} caracteres; limite ${settings.maxInputChars}).`);
+    const text = redact(original, this.config.security.redactPatterns);
+    const candidate = new ModelCatalog(this.config).select("responseFormatter", ["text"], { seed: request.task.id });
+    const inputTokens = Math.ceil(formatterPrompt(text, request.task.id).length / 4);
+    const maximumCost = estimateCandidateCost(candidate, inputTokens, settings.maxOutputTokens);
+    if (maximumCost == null) throw new Error(`Não há preços configurados para estimar o teto do formatador ${candidate.alias}; chamada cancelada.`);
+    if (maximumCost > Number(settings.maxCostUsd ?? "0")) {
+      throw new Error(`Custo máximo estimado USD ${maximumCost.toFixed(6)} excede o teto do formatador USD ${settings.maxCostUsd}.`);
+    }
+    const timeoutMs = Math.min(settings.timeoutSeconds * 1000, request.timeoutMs - (Date.now() - requestStartedAt));
+    if (timeoutMs <= 0) throw new Error("Não há tempo restante na chamada para acionar o formatador.");
+    progress.log(`Formatador de resposta · iniciado · ${candidate.alias} [${modalityLabel(candidate.modality)}] · limite USD ${settings.maxCostUsd} · até ${settings.maxOutputTokens} tokens.`);
+    const startedAt = Date.now();
+    let created: Awaited<ReturnType<typeof createAgentSession>> | undefined;
+    let call: NonNullable<NonNullable<ExecutionResult["usage"]>["additionalCalls"]>[number] | undefined;
+    try {
+      const runtimeAndModel = await createRuntime(candidate);
+      created = await createAgentSession({
+        cwd: request.workspace,
+        modelRuntime: runtimeAndModel.runtime,
+        model: { ...runtimeAndModel.model, maxTokens: settings.maxOutputTokens },
+        sessionManager: SessionManager.inMemory(),
+        tools: [],
+      });
+      const timeoutState = { triggered: false };
+      const timeout = setTimeout(() => { timeoutState.triggered = true; void created?.session.abort(); }, timeoutMs);
+      let formatterText = "";
+      try {
+        await created.session.prompt(formatterPrompt(text, request.task.id));
+        formatterText = lastAssistantOutput(created.session.messages, created.session.getLastAssistantText()) ?? "";
+      } finally { clearTimeout(timeout); }
+      const stats = created.session.getSessionStats();
+      const costUsd = String(stats.cost);
+      call = {
+        alias: candidate.alias, provider: candidate.provider, modelId: candidate.modelId, modality: candidate.modality,
+        inputTokens: stats.tokens.input, outputTokens: stats.tokens.output, cachedTokens: stats.tokens.cacheRead,
+          reasoningTokens: 0, costUsd, durationMs: Date.now() - startedAt,
+        outcome: "failed",
+      };
+      if (timeoutState.triggered) throw new Error(`Formatador excedeu ${Math.ceil(timeoutMs / 1000)} s do tempo restante.`);
+      if (!formatterText.trim()) throw new Error("Formatador retornou resposta vazia.");
+      try {
+        extractResult(
+          formatterText, request.task.id, request.acceptedResultTaskIds ?? [request.task.id],
+          (diagnostic) => observeRepair({ ...diagnostic, reason: `formatador: ${diagnostic.reason}` }),
+        );
+      }
+      catch (error) { throw new FormatterCallError(error, call, formatterText); }
+      call = { ...call, outcome: "ready_for_verification" };
+      progress.log(`Formatador de resposta · recuperou resposta válida · ${candidate.alias} [${modalityLabel(candidate.modality)}].`);
+      await writeJson(path.join(request.outputDirectory, "response-formatting.json"), {
+        at: nowUtc(), status: "resolved", alias: candidate.alias, provider: candidate.provider, modelId: candidate.modelId,
+        modality: candidate.modality, inputTokens: call.inputTokens, outputTokens: call.outputTokens,
+        costUsd, durationMs: call.durationMs, originalChars: original.length, formattedChars: formatterText.length,
+      });
+      return { text: formatterText, call };
+    } catch (error) {
+      if (call) call = { ...call, durationMs: Date.now() - startedAt };
+      await writeJson(path.join(request.outputDirectory, "response-formatting.json"), {
+        at: nowUtc(), status: "failed", alias: candidate.alias, provider: candidate.provider, modelId: candidate.modelId,
+        modality: candidate.modality, costUsd: call?.costUsd ?? null, durationMs: Date.now() - startedAt,
+        originalChars: original.length, error: redact(safeError(error), this.config.security.redactPatterns),
+      });
+      if (error instanceof FormatterCallError) throw error;
+      throw new FormatterCallError(error, call);
+    } finally {
+      created?.session.dispose();
     }
   }
 

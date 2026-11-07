@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import type { ModelCandidate } from "../../src/domain/types.js";
-import { extractResult, lastAssistantOutput, localApiFor, prepareResponseDiagnostic, supportsPiReasoningEffort } from "../../src/executors/pi.js";
+import { extractResult, lastAssistantOutput, localApiFor, prepareResponseDiagnostic, recoverResultWithFormatter, supportsPiReasoningEffort } from "../../src/executors/pi.js";
 
 const result = {
   taskId: "task-001",
@@ -102,6 +102,44 @@ describe("contrato estruturado do Pi", () => {
       .toThrow(/não pôde ser executado sem conteúdo/);
     expect(diagnostics).toEqual([expect.objectContaining({ status: "skipped", responseChars: 0 })]);
   });
+
+  test("usa um formatador isolado apenas quando a resposta original não pode ser validada", async () => {
+    const call = {
+      alias: "glm-cheap", provider: "openrouter", modelId: "z-ai/glm-5.3-flash", modality: "metered_api" as const,
+      inputTokens: 12, outputTokens: 8, cachedTokens: 0, reasoningTokens: 0, costUsd: "0.0001", durationMs: 30,
+      outcome: "ready_for_verification" as const,
+    };
+    let calls = 0;
+    const recovered = await recoverResultWithFormatter(
+      "Aqui está o resultado: taskId=task-001; outcome=ready_for_verification",
+      new Error("resposta fora do contrato"), "task-001", ["task-001"],
+      () => { calls += 1; return Promise.resolve({ text: JSON.stringify(result), call }); },
+    );
+    expect(recovered.result).toMatchObject({ taskId: "task-001", outcome: "ready_for_verification" });
+    expect(recovered.call.alias).toBe("glm-cheap");
+    expect(calls).toBe(1);
+  });
+
+  test("não chama formatador para resposta vazia e rejeita uma reformatação que continua inválida", async () => {
+    let calls = 0;
+    await expect(recoverResultWithFormatter(
+      "", new Error("vazio"), "task-001", ["task-001"],
+      () => { calls += 1; return Promise.resolve({ text: JSON.stringify(result), call: {} as never }); },
+    )).rejects.toThrow("vazio");
+    expect(calls).toBe(0);
+
+    await expect(recoverResultWithFormatter(
+      "resposta sem JSON", new Error("inválida"), "task-001", ["task-001"],
+      () => Promise.resolve({
+        text: JSON.stringify({ ...result, claimedChecks: [42] }),
+        call: {
+          alias: "glm-cheap", provider: "openrouter", modelId: "z-ai/glm-5.3-flash", modality: "metered_api",
+          inputTokens: 12, outputTokens: 8, cachedTokens: 0, reasoningTokens: 0, costUsd: "0.0001", durationMs: 30,
+          outcome: "ready_for_verification",
+        },
+      }),
+    )).rejects.toThrow(/Formatador incompatível|claimedChecks inválido/);
+  });
 });
 
 describe("protocolo local do Pi", () => {
@@ -127,6 +165,10 @@ describe("protocolo local do Pi", () => {
       content: [{ type: "thinking", thinking: JSON.stringify(result) }],
     }];
     expect(lastAssistantOutput(messages)).toBe(JSON.stringify(result));
+    expect(lastAssistantOutput([{
+      role: "assistant",
+      content: [{ type: "thinking", thinking: `Vou estruturar a saída.\n\n\`\`\`json\n${JSON.stringify(result)}\n\`\`\`` }],
+    }])).toBe(JSON.stringify(result));
     expect(lastAssistantOutput([{ role: "assistant", content: [{ type: "thinking", thinking: "We need analyze carefully" }] }])).toBeUndefined();
     expect(lastAssistantOutput(messages, "resposta normal")).toBe("resposta normal");
   });

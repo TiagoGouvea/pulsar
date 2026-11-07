@@ -17,7 +17,7 @@ export type RunState = (typeof RUN_STATES)[number];
 export type TaskState = (typeof TASK_STATES)[number];
 export type MilestoneState = (typeof MILESTONE_STATES)[number];
 export type Role = "planner" | "implementer" | "testAuthor" | "diagnostic" |
-  "functionalReviewer" | "visualReviewer" | "securityReviewer" | "learningAnalyst";
+  "functionalReviewer" | "visualReviewer" | "securityReviewer" | "learningAnalyst" | "responseFormatter";
 export type ProviderModality = "metered_api" | "subscription" | "local" | "fake";
 
 export interface Requirement {
@@ -105,6 +105,24 @@ export interface ExecutionResult {
     reasoningTokens?: number;
     costUsd?: string;
     providerRequestId?: string;
+    primaryCostUsd?: string;
+    primaryInputTokens?: number;
+    primaryOutputTokens?: number;
+    primaryCachedTokens?: number;
+    primaryDurationMs?: number;
+    additionalCalls?: Array<{
+      alias: string;
+      provider: string;
+      modelId: string;
+      modality: ProviderModality;
+      inputTokens: number;
+      outputTokens: number;
+      cachedTokens: number;
+      reasoningTokens: number;
+      costUsd: string;
+      durationMs: number;
+      outcome: "ready_for_verification" | "failed";
+    }>;
   };
 }
 

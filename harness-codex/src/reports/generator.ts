@@ -96,7 +96,7 @@ export async function writeWorkAttributionReport(
      CASE WHEN pc.finished_at IS NULL OR pc.started_at IS NULL THEN NULL
        ELSE CAST((julianday(pc.finished_at)-julianday(pc.started_at))*86400000 AS INTEGER) END AS duration_ms
      FROM attempts a LEFT JOIN sessions s ON s.attempt_id=a.id
-     LEFT JOIN provider_calls pc ON pc.attempt_id=a.id
+     LEFT JOIN provider_calls pc ON pc.attempt_id=a.id AND COALESCE(pc.call_role, s.role) != 'responseFormatter'
      WHERE a.run_id=? ORDER BY a.started_at, a.number`,
     runId,
   );
@@ -235,7 +235,7 @@ export async function writeModelPerformanceReport(config: HarnessConfig, store: 
     ? "AND EXISTS (SELECT 1 FROM tasks t WHERE t.run_id=a.run_id AND t.milestone_id=? AND (a.task_id=t.id OR a.task_id=t.id || '-review'))"
     : "";
   const calls = store.all<Record<string, unknown>>(
-    `SELECT s.model_key AS alias, s.role, pc.provider, pc.model_id, pc.input_tokens, pc.output_tokens, pc.reported_micros, pc.uncertain_micros,
+    `SELECT COALESCE(pc.model_alias, s.model_key) AS alias, COALESCE(pc.call_role, s.role) AS role, pc.provider, pc.model_id, pc.input_tokens, pc.output_tokens, pc.reported_micros, pc.uncertain_micros,
      CASE WHEN pc.finished_at IS NULL THEN 0 ELSE CAST((julianday(pc.finished_at)-julianday(pc.started_at))*86400000 AS INTEGER) END AS duration_ms, a.result_json
      FROM provider_calls pc
      JOIN attempts a ON a.id=pc.attempt_id

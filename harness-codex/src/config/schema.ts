@@ -10,6 +10,7 @@ const commandSchema = z.array(z.string().min(1)).min(1);
 const roleSchema = z.enum([
   "planner", "implementer", "testAuthor", "diagnostic", "functionalReviewer",
   "visualReviewer", "securityReviewer", "learningAnalyst",
+  "responseFormatter",
 ]);
 
 const milestoneSchema = z.object({
@@ -79,6 +80,13 @@ export const harnessConfigSchema = z.object({
     maxOutputTokens: 2048,
     memoryPressureAction: "unload_and_route_or_pause",
   }),
+  responseFormatting: z.object({
+    enabled: z.boolean().default(false),
+    maxInputChars: z.number().int().positive().max(64_000).default(64_000),
+    maxOutputTokens: z.number().int().positive().max(4_096).default(2_048),
+    maxCostUsd: moneySchema.default("0.005"),
+    timeoutSeconds: z.number().int().positive().max(120).default(60),
+  }).default({ enabled: false, maxInputChars: 64_000, maxOutputTokens: 2_048, maxCostUsd: "0.005", timeoutSeconds: 60 }),
   review: z.object({
     requireIndependentSession: z.boolean().default(true),
     preferDifferentModelFamily: z.boolean().default(true),
@@ -101,6 +109,7 @@ export const harnessConfigSchema = z.object({
       securityReviewer: modelPoolSchema,
       diagnostic: modelPoolSchema,
       learningAnalyst: modelPoolSchema,
+      responseFormatter: modelPoolSchema,
     }),
     hardTaskPatterns: z.array(z.string().min(1)).default([]),
   }).optional(),
@@ -160,6 +169,18 @@ export const harnessConfigSchema = z.object({
         if (!aliases.includes(alias)) {
           context.addIssue({ code: "custom", path: ["routing", "pools", pool], message: `Modelo inexistente no pool: ${alias}.` });
         }
+      }
+    }
+  }
+  if (config.responseFormatting.enabled && !config.routing?.pools.responseFormatter.length) {
+    context.addIssue({ code: "custom", path: ["routing", "pools", "responseFormatter"], message: "O reparo de resposta exige um pool responseFormatter." });
+  }
+  if (config.responseFormatting.enabled) {
+    const formatterAliases = config.routing?.pools.responseFormatter ?? [];
+    for (const alias of formatterAliases) {
+      const candidate = config.models.find((model) => model.alias === alias);
+      if (candidate && (candidate.modality !== "metered_api" || !candidate.inputUsdPerMillion || !candidate.outputUsdPerMillion)) {
+        context.addIssue({ code: "custom", path: ["routing", "pools", "responseFormatter"], message: `O formatador ${alias} deve ser remoto e ter preços de entrada e saída configurados.` });
       }
     }
   }

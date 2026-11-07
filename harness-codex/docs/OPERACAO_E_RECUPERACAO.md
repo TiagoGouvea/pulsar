@@ -3,6 +3,8 @@
 ## Acompanhar uma execução
 
 - O terminal mostra timestamp, etapa/tarefa, tentativa, modelo, tokens, custo e duração.
+- Respostas não vazias que o parser local não consegue validar podem passar por uma sessão Pi separada, sem ferramentas; o pool `responseFormatter` tem teto estimado de custo, limite de tokens/tempo e chamadas registradas separadamente na performance.
+- Resposta vazia não dispara chamada de reparo: fica registrada como falha técnica para o roteador tentar o próximo modelo.
 - O SQLite continua sendo a fonte de verdade em `.harness/state.sqlite`. Para consulta manual, cada execução também tem um espelho legível em `.harness/runs/<id>/state.json` e seu histórico em `events.jsonl`; o snapshot contém versão de schema e hash de integridade.
 - Ao abrir o harness, espelhos das execuções existentes são exportados/reconciliados do SQLite. Durante a execução, eventos são acrescentados ao JSONL e o snapshot é atualizado em eventos, heartbeat/lease, antes de chamadas longas aos modelos e no encerramento. Se houver divergência ou JSONL truncado, a próxima abertura reconstrói os artefatos a partir do banco; execuções com lease ativo de outro processo não são tocadas.
 - Esses JSON/JSONL são espelhos de leitura e diagnóstico, não edite-os esperando alterar o estado: mudanças serão substituídas pelo SQLite. Segredos de ambiente não são exportados; diretórios/arquivos são criados com permissões restritas.

@@ -297,4 +297,12 @@ export const migrations: Migration[] = [
       CREATE INDEX idx_run_sessions_run ON run_sessions(run_id, started_at);
     `,
   },
+  {
+    version: 4,
+    name: "provider_call_model_attribution",
+    sql: `
+      ALTER TABLE provider_calls ADD COLUMN model_alias TEXT;
+      ALTER TABLE provider_calls ADD COLUMN call_role TEXT;
+    `,
+  },
 ];

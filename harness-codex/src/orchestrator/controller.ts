@@ -511,7 +511,9 @@ export class Orchestrator {
     const attemptDirectory = path.join(this.config.storage.root, "runs", runId, "tasks", task.id, `attempt-${String(attemptNumber).padStart(3, "0")}`);
     await mkdir(attemptDirectory, { recursive: true });
     const prompt = await buildTaskContext({ config: this.config, store: this.store, runId, task, requirements, attemptDirectory });
-    const estimated = this.ledger.estimate(candidate, Math.ceil(prompt.length / 4), candidate.maxOutputTokens);
+    const estimatedModel = this.ledger.estimate(candidate, Math.ceil(prompt.length / 4), candidate.maxOutputTokens);
+    const estimated = estimatedModel
+      + (this.config.responseFormatting.enabled ? parseUsdToMicros(this.config.responseFormatting.maxCostUsd ?? "0") ?? 0n : 0n);
     let reservationId: string;
     try {
       reservationId = this.ledger.reserve(runId, task.id, candidate, estimated);
@@ -533,7 +535,7 @@ export class Orchestrator {
       sessionId, attemptId, task.role, candidate.alias, path.join(attemptDirectory, "context-manifest.json"), nowUtc(),
     );
     const beforeWorkspace = await snapshotWorkspaceChanges(this.config.project.workspace);
-    const providerCallId = this.startProviderCall(attemptId, candidate, estimated);
+    const providerCallId = this.startProviderCall(attemptId, candidate, estimatedModel, task.role);
     this.store.run("UPDATE cost_reservations SET provider_call_id=? WHERE id=? AND provider_call_id IS NULL", providerCallId, reservationId);
     this.store.refreshJsonMirror(runId);
     const started = performance.now();
@@ -570,22 +572,24 @@ export class Orchestrator {
       result.outcome, failureSignature, JSON.stringify(result), nowUtc(), attemptId,
     );
     const actualMicros = parseUsdToMicros(result.usage?.costUsd ?? "0") ?? 0n;
+    const primaryMicros = parseUsdToMicros(result.usage?.primaryCostUsd ?? result.usage?.costUsd ?? "0") ?? 0n;
     const uncertain = candidate.modality === "metered_api" && result.outcome === "failed" && !result.usage;
-    this.finishProviderCall(providerCallId, result, uncertain, estimated, actualMicros);
+    this.finishProviderCall(providerCallId, result, uncertain, estimatedModel, primaryMicros);
+    this.recordAdditionalProviderCalls(attemptId, result.usage?.additionalCalls);
     this.ledger.reconcile({ runId, taskId: task.id, reservationId, providerCallId, amountMicros: uncertain ? estimated : actualMicros, uncertain });
     const callDurationMs = Math.round(performance.now() - started);
     const callRecord = {
       providerCallId, runId, taskId: task.id, role: task.role, alias: candidate.alias, provider: candidate.provider,
       modelId: candidate.modelId, modality: candidate.modality, startedAt: this.store.get<Record<string, unknown>>("SELECT started_at FROM provider_calls WHERE id=?", providerCallId)?.started_at,
-      finishedAt: nowUtc(), durationMs: callDurationMs, outcome: result.outcome, inputTokens: result.usage?.inputTokens ?? null,
-      outputTokens: result.usage?.outputTokens ?? null, cachedTokens: result.usage?.cachedTokens ?? null,
-      costUsd: uncertain ? null : result.usage?.costUsd ?? "0", estimatedCostUsd: String(estimated), uncertain,
+      finishedAt: nowUtc(), durationMs: result.usage?.primaryDurationMs ?? callDurationMs, totalDurationMs: callDurationMs, outcome: result.outcome, inputTokens: result.usage?.primaryInputTokens ?? result.usage?.inputTokens ?? null,
+      outputTokens: result.usage?.primaryOutputTokens ?? result.usage?.outputTokens ?? null, cachedTokens: result.usage?.primaryCachedTokens ?? result.usage?.cachedTokens ?? null,
+      costUsd: uncertain ? null : result.usage?.primaryCostUsd ?? result.usage?.costUsd ?? "0", totalCostUsd: uncertain ? null : result.usage?.costUsd ?? "0", additionalCalls: result.usage?.additionalCalls ?? [], estimatedCostUsd: String(estimatedModel), reservedCostUsd: String(estimated), uncertain,
     };
     await writeJson(path.join(attemptDirectory, "model-call.json"), callRecord);
-    this.log(`Modelo ${candidate.alias} [${this.modelLocation(candidate.modality)}] · ${result.outcome} · ${result.usage?.inputTokens ?? "?"}/${result.usage?.outputTokens ?? "?"} tokens · USD ${uncertain ? "incerto" : result.usage?.costUsd ?? "0"} · ${callDurationMs} ms · ${this.progress(runId, task.milestoneId)}.`);
+    this.log(`Modelo ${candidate.alias} [${this.modelLocation(candidate.modality)}] · ${result.outcome} · ${result.usage?.primaryInputTokens ?? result.usage?.inputTokens ?? "?"}/${result.usage?.primaryOutputTokens ?? result.usage?.outputTokens ?? "?"} tokens · USD ${uncertain ? "incerto" : result.usage?.primaryCostUsd ?? result.usage?.costUsd ?? "0"} · ${callDurationMs} ms · ${this.progress(runId, task.milestoneId)}.`);
     this.store.run(
       "INSERT INTO routing_observations(id, run_id, attempt_id, candidate_key, role, task_category, duration_ms, cost_micros, outcome, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-      createId("route"), runId, attemptId, candidate.alias, task.role, "implementation", Math.round(performance.now() - started), actualMicros, result.outcome, nowUtc(),
+      createId("route"), runId, attemptId, candidate.alias, task.role, "implementation", result.usage?.primaryDurationMs ?? Math.round(performance.now() - started), primaryMicros, result.outcome, nowUtc(),
     );
     if (result.outcome !== "ready_for_verification") return this.handleFailure(runId, task, priorAttempts, failureSignature, result);
     return this.verifyReadyResult(runId, task, result, candidate, attemptDirectory);
@@ -979,25 +983,48 @@ export class Orchestrator {
     return true;
   }
 
-  private startProviderCall(attemptId: string, candidate: ReturnType<ModelCatalog["get"]>, estimatedMicros: bigint): string {
+  private startProviderCall(attemptId: string, candidate: ReturnType<ModelCatalog["get"]>, estimatedMicros: bigint, role: string): string {
     const id = createId("call");
     this.store.run(
-      `INSERT INTO provider_calls(id, attempt_id, provider, model_id, modality, state, estimated_micros, started_at)
-       VALUES (?, ?, ?, ?, ?, 'running', ?, ?)`,
-      id, attemptId, candidate.provider, candidate.modelId, candidate.modality, estimatedMicros, nowUtc(),
+      `INSERT INTO provider_calls(id, attempt_id, provider, model_id, modality, state, estimated_micros, started_at, model_alias, call_role)
+       VALUES (?, ?, ?, ?, ?, 'running', ?, ?, ?, ?)`,
+      id, attemptId, candidate.provider, candidate.modelId, candidate.modality, estimatedMicros, nowUtc(), candidate.alias, role,
     );
     return id;
   }
 
+  private recordAdditionalProviderCalls(
+    attemptId: string,
+    calls: NonNullable<ExecutionResult["usage"]>["additionalCalls"],
+  ): void {
+    for (const call of calls ?? []) {
+      this.store.run(
+        `INSERT INTO provider_calls(id, attempt_id, provider, model_id, modality, state, input_tokens, output_tokens,
+         cached_tokens, reasoning_tokens, reported_micros, started_at, finished_at, model_alias, call_role)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        createId("call"), attemptId, call.provider, call.modelId, call.modality,
+        call.outcome === "ready_for_verification" ? "completed" : "failed",
+        call.inputTokens, call.outputTokens, call.cachedTokens, call.reasoningTokens,
+        parseUsdToMicros(call.costUsd) ?? 0n,
+        new Date(Date.now() - call.durationMs).toISOString(), nowUtc(), call.alias, "responseFormatter",
+      );
+      this.log(`Formatador ${call.alias} [${this.modelLocation(call.modality)}] · ${call.outcome} · ${call.inputTokens}/${call.outputTokens} tokens · USD ${call.costUsd} · ${call.durationMs} ms.`);
+    }
+  }
+
   private finishProviderCall(callId: string, result: ExecutionResult, uncertain: boolean, estimatedMicros: bigint, actualMicros: bigint): void {
     const technicalFailure = result.outcome === "failed" && result.blockers.includes("pi_execution_failed");
+    const startedAt = this.store.get<Record<string, unknown>>("SELECT started_at FROM provider_calls WHERE id=?", callId)?.started_at;
+    const finishedAt = typeof startedAt === "string" && typeof result.usage?.primaryDurationMs === "number"
+      ? new Date(Date.parse(startedAt) + result.usage.primaryDurationMs).toISOString()
+      : nowUtc();
     this.store.run(
       `UPDATE provider_calls SET state=?, provider_request_id=?, input_tokens=?, output_tokens=?, cached_tokens=?,
        reasoning_tokens=?, reported_micros=?, uncertain_micros=?, finished_at=? WHERE id=?`,
       uncertain ? "uncertain" : technicalFailure ? "failed" : "completed",
-      result.usage?.providerRequestId ?? null, result.usage?.inputTokens ?? null, result.usage?.outputTokens ?? null,
-      result.usage?.cachedTokens ?? null, result.usage?.reasoningTokens ?? null, uncertain ? null : actualMicros,
-      uncertain ? estimatedMicros : null, nowUtc(), callId,
+      result.usage?.providerRequestId ?? null, result.usage?.primaryInputTokens ?? result.usage?.inputTokens ?? null, result.usage?.primaryOutputTokens ?? result.usage?.outputTokens ?? null,
+      result.usage?.primaryCachedTokens ?? result.usage?.cachedTokens ?? null, result.usage?.reasoningTokens ?? null, uncertain ? null : actualMicros,
+      uncertain ? estimatedMicros : null, finishedAt, callId,
     );
   }
 
@@ -1066,7 +1093,9 @@ export class Orchestrator {
       "changedFiles, claimedChecks, decisions, blockers e suggestedFollowUps devem ser arrays JSON de strings; use [] quando vazios, nunca objeto ou null. claimedChecks não é evidência.",
       "Inclua taskId, outcome, summary, changedFiles, claimedChecks, decisions, blockers e suggestedFollowUps.",
     ].join("\n\n");
-    const estimated = this.ledger.estimate(candidate, Math.ceil(prompt.length / 4), candidate.maxOutputTokens);
+    const estimatedModel = this.ledger.estimate(candidate, Math.ceil(prompt.length / 4), candidate.maxOutputTokens);
+    const estimated = estimatedModel
+      + (this.config.responseFormatting.enabled ? parseUsdToMicros(this.config.responseFormatting.maxCostUsd ?? "0") ?? 0n : 0n);
     const attemptNumber = Number(this.store.get<Record<string, unknown>>(
       "SELECT COUNT(*) AS count FROM attempts WHERE run_id=? AND task_id=?",
       runId, reviewTask.id,
@@ -1094,7 +1123,7 @@ export class Orchestrator {
       "INSERT INTO sessions(id, attempt_id, role, model_key, independent, started_at) VALUES (?, ?, ?, ?, 1, ?)",
       sessionId, attemptId, role, candidate.alias, nowUtc(),
     );
-    const providerCallId = this.startProviderCall(attemptId, candidate, estimated);
+    const providerCallId = this.startProviderCall(attemptId, candidate, estimatedModel, role);
     this.store.run("UPDATE cost_reservations SET provider_call_id=? WHERE id=? AND provider_call_id IS NULL", providerCallId, reservationId);
     this.store.refreshJsonMirror(runId);
     const reviewStarted = performance.now();
@@ -1114,18 +1143,20 @@ export class Orchestrator {
     await writeJson(path.join(outputDirectory, "result.json"), result);
     this.recordExecutionFailure(runId, task.id, attemptId, candidate.alias, result);
     const actualMicros = parseUsdToMicros(result.usage?.costUsd ?? "0") ?? 0n;
+    const primaryMicros = parseUsdToMicros(result.usage?.primaryCostUsd ?? result.usage?.costUsd ?? "0") ?? 0n;
     const uncertain = candidate.modality === "metered_api" && result.outcome === "failed" && !result.usage;
-    this.finishProviderCall(providerCallId, result, uncertain, estimated, actualMicros);
+    this.finishProviderCall(providerCallId, result, uncertain, estimatedModel, primaryMicros);
+    this.recordAdditionalProviderCalls(attemptId, result.usage?.additionalCalls);
     this.ledger.reconcile({ runId, taskId: task.id, reservationId, providerCallId, amountMicros: uncertain ? estimated : actualMicros, uncertain });
     const reviewDurationMs = Math.round(performance.now() - reviewStarted);
     await writeJson(path.join(outputDirectory, "model-call.json"), {
       providerCallId, runId, taskId: task.id, role, alias: candidate.alias,
       provider: candidate.provider, modelId: candidate.modelId, modality: candidate.modality,
-      durationMs: reviewDurationMs, outcome: result.outcome, inputTokens: result.usage?.inputTokens ?? null,
-      outputTokens: result.usage?.outputTokens ?? null, cachedTokens: result.usage?.cachedTokens ?? null,
-      costUsd: uncertain ? null : result.usage?.costUsd ?? "0", estimatedCostUsd: String(estimated), uncertain,
+      durationMs: result.usage?.primaryDurationMs ?? reviewDurationMs, totalDurationMs: reviewDurationMs, outcome: result.outcome, inputTokens: result.usage?.primaryInputTokens ?? result.usage?.inputTokens ?? null,
+      outputTokens: result.usage?.primaryOutputTokens ?? result.usage?.outputTokens ?? null, cachedTokens: result.usage?.primaryCachedTokens ?? result.usage?.cachedTokens ?? null,
+      costUsd: uncertain ? null : result.usage?.primaryCostUsd ?? result.usage?.costUsd ?? "0", totalCostUsd: uncertain ? null : result.usage?.costUsd ?? "0", additionalCalls: result.usage?.additionalCalls ?? [], estimatedCostUsd: String(estimatedModel), reservedCostUsd: String(estimated), uncertain,
     });
-    this.log(`Revisão ${candidate.alias} [${this.modelLocation(candidate.modality)}] · ${result.outcome} · ${result.usage?.inputTokens ?? "?"}/${result.usage?.outputTokens ?? "?"} tokens · USD ${uncertain ? "incerto" : result.usage?.costUsd ?? "0"} · ${reviewDurationMs} ms.`);
+    this.log(`Revisão ${candidate.alias} [${this.modelLocation(candidate.modality)}] · ${result.outcome} · ${result.usage?.primaryInputTokens ?? result.usage?.inputTokens ?? "?"}/${result.usage?.primaryOutputTokens ?? result.usage?.outputTokens ?? "?"} tokens · USD ${uncertain ? "incerto" : result.usage?.primaryCostUsd ?? result.usage?.costUsd ?? "0"} · ${reviewDurationMs} ms.`);
     if (result.outcome === "failed") {
       this.log(`  ↳ Motivo: ${result.summary.replace(/\s+/g, " ").slice(0, 1000)}`);
     }

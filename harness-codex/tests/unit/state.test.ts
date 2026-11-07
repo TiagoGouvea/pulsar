@@ -28,7 +28,7 @@ describe("estado durável", () => {
     try {
       store.upsertProject({ id: "p", workspace: "/tmp/p", profile: "generic", timezone: "UTC" });
       store.createRun({ id: "r", projectId: "p", configPath: "/tmp/c", configHash: "h" });
-      expect(store.get<Record<string, unknown>>("SELECT version FROM schema_migrations ORDER BY version DESC LIMIT 1")?.version).toBe(3);
+      expect(store.get<Record<string, unknown>>("SELECT version FROM schema_migrations ORDER BY version DESC LIMIT 1")?.version).toBe(4);
       expect(store.get<Record<string, unknown>>("SELECT name FROM sqlite_master WHERE type='table' AND name='run_sessions'")?.name).toBe("run_sessions");
       expect(store.listEvents("r")).toHaveLength(1);
       store.createMilestone("r", { id: "0-setup", title: "Setup", objective: "Setup", position: 1 });

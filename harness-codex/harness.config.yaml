@@ -82,6 +82,12 @@ localInference:
   initialContextTokens: 24576
   maxOutputTokens: 2048
   memoryPressureAction: unload_and_route_or_pause
+responseFormatting:
+  enabled: true
+  maxInputChars: 64000
+  maxOutputTokens: 2048
+  maxCostUsd: "0.005"
+  timeoutSeconds: 60
 review:
   requireIndependentSession: true
   preferDifferentModelFamily: true
@@ -100,6 +106,7 @@ routing:
     securityReviewer: [gemini-argon, terra-review, sol-top, openai-sol, glm-5]
     diagnostic: [glm-5, deepseek-code, minimax-flash, gemini-mid, luna-cheap]
     learningAnalyst: [gemini-mid, terra-review, glm-5]
+    responseFormatter: [glm-cheap, luna-cheap, deepseek-code]
   hardTaskPatterns:
     - firestore|security rules|auth|privacidade|exclusão de conta
     - estatística|correlação|significância|insight
@@ -274,7 +281,7 @@ models:
     family: openai-gpt-6
     modality: metered_api
     capabilities: [text, tools, reasoning]
-    roles: [diagnostic, functionalReviewer]
+    roles: [diagnostic, functionalReviewer, responseFormatter]
     enabled: true
     contextTokens: 200000
     maxOutputTokens: 4096
@@ -288,7 +295,7 @@ models:
     family: glm-5
     modality: metered_api
     capabilities: [text, tools, reasoning]
-    roles: [implementer, diagnostic, functionalReviewer, visualReviewer]
+    roles: [implementer, diagnostic, functionalReviewer, visualReviewer, responseFormatter]
     enabled: true
     contextTokens: 131072
     maxOutputTokens: 4096
