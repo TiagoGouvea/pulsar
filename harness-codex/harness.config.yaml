@@ -132,7 +132,7 @@ commands:
     - build
   e2e:
     - yarn
-    - test:e2e
+    - test:e2e:emulators
 models:
   - alias: sol-top
     executor: pi
