@@ -11,7 +11,6 @@ import { SettingsPage } from './pages/SettingsPage';
 import { PrivacyProvider } from './privacy/PrivacyContext';
 
 const DesignPage = lazy(() => import('./pages/DesignPage'));
-const textClass = 'font-body-lg text-body-lg text-on-surface-variant';
 
 // App routes only render once the anonymous session and users/{uid} are ready; errors never look like success.
 function AuthGate() {
@@ -27,14 +26,8 @@ function AuthGate() {
         </Button>
       </HomePlaceholder>
     );
-  if (loading)
-    return (
-      <HomePlaceholder>
-        <p role="status" className={textClass}>
-          Preparando seu espaço…
-        </p>
-      </HomePlaceholder>
-    );
+  // Render nothing while loading (only the body background) to avoid a flash of interim content.
+  if (loading) return null;
   return <Outlet />;
 }
 
