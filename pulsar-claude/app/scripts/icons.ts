@@ -14,6 +14,7 @@ const names = [
   'bolt',
   'check_circle',
   'close',
+  'cloud_sync',
   'coffee',
   'edit_note',
   'fitness_center',

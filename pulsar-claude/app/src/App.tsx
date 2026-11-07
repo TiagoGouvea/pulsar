@@ -4,6 +4,7 @@ import { AppShell } from './app/AppShell';
 import { AuthProvider, useAuth } from './auth/AuthProvider';
 import { Button } from './design';
 import { emulatorsEnabled } from './lib/env';
+import { DashboardPage } from './pages/DashboardPage';
 import { HomePlaceholder } from './pages/HomePlaceholder';
 import { IndicatorEditorPage } from './pages/IndicatorEditorPage';
 import { OnboardingPage } from './pages/OnboardingPage';
@@ -51,13 +52,7 @@ const routes: RouteObject[] = [
         path: '/dashboard',
         element: (
           <AppShell>
-            <PlaceholderPage
-              title="Seu painel"
-              icon="ssid_chart"
-              emptyTitle="Comece registrando o seu dia"
-              description="O Pulsar cruza fatores e resultados para revelar relações entre a sua rotina e como você se sente."
-              cta={{ label: 'Registrar agora', to: '/register' }}
-            />
+            <DashboardPage />
           </AppShell>
         ),
       },
