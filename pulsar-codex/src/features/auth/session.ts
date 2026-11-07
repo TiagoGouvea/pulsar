@@ -19,6 +19,7 @@ import {
 import { httpsCallable } from 'firebase/functions';
 import { auth, functions } from '@lib/firebase/config';
 import { clearLocalAccountData } from './localData';
+import { usePrivacyStore } from '@features/privacy/store';
 
 const pendingKey = 'pulsar.auth.emailLink';
 const signedOutKey = 'pulsar.auth.signedOut';
@@ -195,6 +196,7 @@ export async function logout(): Promise<void> {
   } catch {
     // The session is already signed out; pending-link cleanup is best effort.
   }
+  usePrivacyStore.getState().resetPrivacy();
 }
 
 export async function deleteAccount(): Promise<void> {

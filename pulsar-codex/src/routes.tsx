@@ -6,6 +6,7 @@ import { RootRedirect } from '@components/routing/RootRedirect';
 // Lazy-loaded pages
 const OnboardingPage = lazy(() => import('@pages/onboarding/OnboardingPage'));
 const DashboardPage = lazy(() => import('@pages/dashboard/DashboardPage'));
+const RegisterPage = lazy(() => import('@pages/entries/RegisterPage'));
 const IndicatorsPage = lazy(() => import('@pages/indicators/IndicatorsPage'));
 const NewIndicatorPage = lazy(() => import('@pages/indicators/NewIndicatorPage'));
 const EditIndicatorPage = lazy(() => import('@pages/indicators/EditIndicatorPage'));
@@ -34,6 +35,10 @@ export const routes: RouteObject[] = [
       {
         path: 'dashboard',
         element: <DashboardPage />
+      },
+      {
+        path: 'registrar',
+        element: <RegisterPage />
       },
       {
         path: 'indicators',

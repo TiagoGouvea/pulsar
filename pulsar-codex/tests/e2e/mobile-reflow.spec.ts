@@ -59,6 +59,10 @@ test.describe('onboarding and initial dashboard', () => {
 
     await page.getByRole('button', { name: /começar a explorar/i }).click();
     await expect(page.getByRole('heading', { name: 'Bem-vindo ao Pulsar' })).toBeVisible();
+    // The app starts in privacy mode; names are revealed only by the eye.
+    await expect(page.getByRole('heading', { name: 'EXE' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Exercício Físico' })).toHaveCount(0);
+    await page.getByRole('button', { name: /Alternar modo discrição e siglas/i }).click();
     await expect(page.getByRole('heading', { name: 'Exercício Físico' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Concentração / Foco' })).toBeVisible();
     await expect(page.getByRole('link', { name: /Criar meu próprio indicador/i })).toBeVisible();
@@ -94,6 +98,8 @@ for (const viewport of viewports) {
     await page.goto('/dashboard');
 
     await expect(page.getByRole('heading', { name: 'Bem-vindo ao Pulsar' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'EXE' })).toBeVisible();
+    await page.getByRole('button', { name: /Alternar modo discrição e siglas/i }).click();
     await expect(page.getByRole('heading', { name: 'Exercício Físico' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Café Expresso' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Nível de Energia' })).toBeVisible();

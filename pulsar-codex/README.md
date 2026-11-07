@@ -6,7 +6,7 @@ As especificações ficam em `../harness-codex/docs`, as referências visuais em
 
 ## Estado atual
 
-Etapa 1 — Base: entrada por Firebase Anonymous Authentication, conversão para Google ou link mágico preservando UID, logout, exclusão integral via Cloud Function, tutorial de três telas com conclusão persistida e dashboard inicial com sugestões opcionais. O Firestore tem isolamento por UID, proteção de campos internos, limites de schema e testes de emulador; a exclusão remove a árvore inteira e só então o usuário do Auth. A interface é mobile-first em pt-BR, com alvos de 390 px e 430 px; telas largas apenas refluem o mesmo conteúdo.
+Etapa 1 — Base: entrada por Firebase Anonymous Authentication, conversão para Google ou link mágico preservando UID, logout, exclusão integral via Cloud Function, tutorial de três telas com conclusão persistida e dashboard inicial com sugestões opcionais. O Firestore tem isolamento por UID, proteção de campos internos, limites de schema e testes de emulador; a exclusão remove a árvore inteira e só então o usuário do Auth. A etapa 2 adiciona cadastro e gestão de indicadores, registro diário por subconjunto com observação opcional, agregação de eventos e privacidade visual global por siglas. A interface é mobile-first em pt-BR, com alvos de 390 px e 430 px; telas largas apenas refluem o mesmo conteúdo.
 
 ## Comandos
 

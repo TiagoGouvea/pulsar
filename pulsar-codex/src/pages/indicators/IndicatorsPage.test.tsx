@@ -1,6 +1,7 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { usePrivacyStore } from '@features/privacy/store';
 import IndicatorsPage from './IndicatorsPage';
 
 const mocks = vi.hoisted(() => ({
@@ -106,6 +107,7 @@ function renderPage(initialEntry = '/indicators') {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  usePrivacyStore.setState({ isNameRevealed: true });
   mocks.useIndicators.mockReturnValue(indicatorList);
   mocks.archiveIndicator.mockResolvedValue(undefined);
   mocks.restoreIndicator.mockResolvedValue(undefined);
@@ -113,6 +115,21 @@ beforeEach(() => {
 });
 
 describe('indicators list', () => {
+  it('starts in abbreviations and hides full names and emojis', () => {
+    usePrivacyStore.setState({ isNameRevealed: false });
+    renderPage();
+
+    expect(screen.getByRole('heading', { name: 'EXE' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'CAF' })).toBeInTheDocument();
+    expect(screen.queryByText('Exercício Físico')).not.toBeInTheDocument();
+    expect(screen.queryByText('Café Expresso')).not.toBeInTheDocument();
+    expect(screen.queryByText('🏋️')).not.toBeInTheDocument();
+
+    act(() => usePrivacyStore.getState().toggleNames());
+
+    expect(screen.getByRole('heading', { name: /Exercício Físico/ })).toBeInTheDocument();
+  });
+
   it('renders the active factors and results with their configuration chips', () => {
     renderPage();
 

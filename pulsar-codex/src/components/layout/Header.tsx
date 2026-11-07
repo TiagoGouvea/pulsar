@@ -1,10 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useFirebase } from '@lib/firebase/context';
-import { Button } from '@components/ui/Button';
+import { MaterialIcon } from '@components/ui/MaterialIcon';
+import { usePrivacyMode } from '@features/privacy/store';
 
 export const Header: React.FC = () => {
   const { user } = useFirebase();
+  const { isNameRevealed, toggleNames } = usePrivacyMode();
 
   const isAuthPage = false;
 
@@ -44,14 +46,23 @@ export const Header: React.FC = () => {
           </div>
         </div>
         <div className="flex items-center gap-space-sm">
-          <Button
-            variant="ghost"
-            size="sm"
+          <button
+            type="button"
+            aria-label="Alternar modo discrição e siglas"
+            aria-pressed={isNameRevealed}
+            title={isNameRevealed ? 'Ocultar nomes e emojis' : 'Mostrar nomes e emojis'}
+            onClick={toggleNames}
             className="min-h-[44px] min-w-[44px] px-2.5 py-1.5 rounded-full bg-surface-container flex items-center justify-center gap-1.5 text-on-surface-variant hover:text-on-surface active:scale-95 transition-transform duration-150"
           >
-            <span className="material-symbols-outlined text-[19px] text-secondary">visibility</span>
-            <span className="font-label-code text-label-code uppercase tracking-wider text-secondary">Siglas</span>
-          </Button>
+            <MaterialIcon
+              name={isNameRevealed ? 'visibility' : 'visibility_off'}
+              size={19}
+              className="text-secondary"
+            />
+            <span className="font-label-code text-label-code uppercase tracking-wider text-secondary">
+              {isNameRevealed ? 'Nomes' : 'Siglas'}
+            </span>
+          </button>
           <Link to="/account" className="min-h-[44px] min-w-[44px] flex items-center justify-center">
             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center ring-2 ring-primary-fixed/50">
               <span className="material-symbols-outlined text-on-primary text-[18px]">person</span>

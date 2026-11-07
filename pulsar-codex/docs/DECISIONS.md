@@ -358,3 +358,33 @@ VITE_FIREBASE_MEASUREMENT_ID=...
 **Status anterior à task-004:** ✅ Task-001 concluída; task-002 (entrada anônima e conversão) e task-003 (onboarding e estado inicial) prontas para verificação  
 **Build:** ✅ Passando (app + functions)  
 **Testes:** ✅ 61 Vitest + 9 functions; E2E 60/60 nos cinco projetos
+
+## 16. Task-006 — Registro diário e privacidade visual (07/11/2026)
+
+### Modelo e persistência dos registros
+
+- `users/{uid}/entries/{entryId}` guarda uma resposta estruturada por documento: `indicatorId`, `localDate` (`YYYY-MM-DD` definida no navegador no momento do registro), `recordedAt` com relógio do servidor, `valueType`, `value` (`{ boolean }`, `{ number }` ou `{ optionId }`) e `note` opcional. Ausência é a inexistência do documento; não há conversão de falta de resposta em `false` ou `0`.
+- Frequência `single_per_day` usa ID determinístico `indicatorId_localDate`: uma nova resposta no dia vigente substitui o documento daquele dia. Frequência `multiple_per_day` cria um documento novo por evento; a agregação escolhida no indicador consolida o dia. O mesmo ID determinístico é exigido pelas Rules.
+- O cliente só registra o dia atual. Não há seletor de data, edição de dias anteriores nem validação de “hoje” no servidor (a especificação proíbe essa validação adicional). A exclusão é permitida para qualquer registro, inclusive passado, e não remove a trava `firstEntryAt`.
+- A primeira resposta de um indicador grava `firstEntryAt: serverTimestamp()` no mesmo batch. Antes do batch, o repositório relê o documento do indicador para não depender de um snapshot local possivelmente desatualizado; assim duas abas não reescrevem a catraca.
+- `saveDailyEntries` e `deleteEntry` aguardam `waitForPendingWrites`; a tela só anuncia sucesso depois da confirmação do servidor. Falha ou pendência permanece como erro/pendência explícita.
+- A observação é opcional, limitada a 500 bytes UTF-8 e enviada junto dos indicadores respondidos naquele envio. Ela complementa o valor estruturado e não participa do cálculo estatístico da V1.
+
+### Agregação diária
+
+- A função pura `aggregateDay` aplica `sum`, `mean`, `last` ou `any` conforme o indicador e preserva `0` e `false` como respostas válidas. `last` ordena por `recordedAt` e usa o ID como desempate estável. A UI mostra o valor consolidado e, quando há mais de um evento, a contagem e o nome da agregação.
+- A tela `/registrar` segue `design/preenchimento_r_pido`: Fatores e Resultados, entrada específica por tipo, observação do dia, ação de salvar e histórico. O formulário aceita qualquer subconjunto; um envio sem respostas é recusado com feedback, nunca persistido vazio.
+- O histórico mostra todos os registros carregados, incluindo dias anteriores, com valor, horário, observação e ação de exclusão.
+
+### Privacidade visual
+
+- O estado global `isNameRevealed` vive apenas em memória (Zustand). Ele inicia em `false` em toda abertura e não é gravado em localStorage ou Firestore; recarregar o app volta às siglas.
+- O olho do Header alterna globalmente a exibição. Em siglas, listas, dashboard, preenchimento e histórico mostram abreviação (ou as três primeiras letras + `...`) e ocultam emojis. Em nomes, mostram nome completo e emoji. A edição explícita de indicador continua exibindo o nome no formulário, como manda a especificação.
+- Textos auxiliares, avisos, ARIA labels e o menu de opções usam o rótulo do modo corrente para não vazar nomes em leitores de tela. Valores, eixos e dados de gráficos nunca são mascarados; a demonstração de privacidade da conta também mantém os valores visíveis.
+- A seção “Privacidade na Tela” foi adicionada à conta seguindo `design/configura_es_e_conta`, com demonstração e o mesmo estado global do Header.
+
+### Testes
+
+- Rules cobrem ownership, schema, IDs, compatibilidade com o indicador, ausência/zero/false, arquivamento, substituição do dia, exclusão passada e catraca de `firstEntryAt`.
+- Vitest cobre datas locais, agregações, validações, repositório (ID determinístico, eventos, batch e confirmação), a página de registro, o olho global e a exibição mascarada.
+- Playwright cobre o fluxo real com emuladores: subconjunto, observação, `0`/`Não`/ausência, soma de eventos, substituição no dia, exclusão, nomes/emoji ocultos, valores visíveis e reinício em siglas após reload.

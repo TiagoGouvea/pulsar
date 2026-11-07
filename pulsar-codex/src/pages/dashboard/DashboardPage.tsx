@@ -1,8 +1,17 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useFirebase } from '@lib/firebase/context';
 import { useAccountSaveInvite } from '@features/account/useAccountSaveInvite';
 import { valueTypeSummary } from '@features/indicators/model';
+import {
+  aggregateDay,
+  formatDailyAggregate,
+  privacyEmoji,
+  privacyLabel
+} from '@features/entries/model';
+import { useEntries } from '@features/entries/useEntries';
+import { useTodayLocalDate } from '@features/entries/useTodayLocalDate';
+import { usePrivacyMode } from '@features/privacy/store';
 import { createIndicator } from '@features/indicators/repository';
 import { INITIAL_INDICATOR_SUGGESTIONS } from '@features/indicators/suggestions';
 import type { Indicator, IndicatorSuggestion } from '@features/indicators/types';
@@ -49,8 +58,17 @@ export const DashboardPage: React.FC = () => {
   const [actionError, setActionError] = useState('');
   const [notice, setNotice] = useState('');
   const invite = useAccountSaveInvite(anonymous);
+  const { entries } = useEntries(user?.uid);
+  const { isNameRevealed } = usePrivacyMode();
+  const today = useTodayLocalDate();
 
   const indicators = mergeIndicators(remoteIndicators, optimistic).filter((indicator) => !indicator.archivedAt);
+  const todayAggregates = useMemo(() => {
+    const map = new Map<string, ReturnType<typeof aggregateDay>>();
+    for (const indicator of indicators) map.set(indicator.id, aggregateDay(indicator, entries, today));
+    return map;
+  }, [indicators, entries, today]);
+  const todayEntryCount = entries.filter((entry) => entry.localDate === today).length;
   const addedKeys = new Set(
     INITIAL_INDICATOR_SUGGESTIONS
       .filter((suggestion) =>
@@ -86,7 +104,9 @@ export const DashboardPage: React.FC = () => {
       const created = await createIndicator(user.uid, suggestion.input);
       setOptimistic((current) => [...current.filter((item) => item.id !== created.id), created]);
       invite.markUsefulInteraction();
-      setNotice(`${suggestion.name} adicionado. Nenhum outro indicador foi criado automaticamente.`);
+      setNotice(
+        `${privacyLabel(suggestion, isNameRevealed)} adicionado. Nenhum outro indicador foi criado automaticamente.`
+      );
     } catch {
       setActionError('Não foi possível adicionar o indicador agora. Tente novamente.');
     } finally {
@@ -125,6 +145,19 @@ export const DashboardPage: React.FC = () => {
         </div>
       </section>
 
+
+      <Link
+        to="/registrar"
+        onClick={invite.markUsefulInteraction}
+        className="w-full min-h-[52px] rounded-full bg-primary-container text-on-primary font-label-lg text-label-lg flex items-center justify-center gap-2 shadow-lg shadow-primary/20 active:scale-[0.98] transition-transform"
+      >
+        <MaterialIcon name="edit_note" size={20} />
+        <span>Registrar agora</span>
+        <span className="px-2 py-0.5 rounded-full bg-white/20 font-label-code text-label-code uppercase tracking-wider">
+          {todayEntryCount} hoje
+        </span>
+      </Link>
+
       {invite.visible && (
         <div aria-live="polite">
           <AccountSaveInvite onDismiss={invite.dismiss} />
@@ -153,23 +186,39 @@ export const DashboardPage: React.FC = () => {
             </span>
           </div>
           <ul className="flex flex-col gap-space-sm">
-            {indicators.map((indicator) => (
-              <li key={indicator.id} className="rounded-lg bg-surface-container-lowest p-space-md shadow-sm flex items-center gap-space-sm">
-                <span className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${iconTone[indicator.group]}`} aria-hidden="true">
-                  <span className="font-label-code text-label-code font-bold">{indicator.abbreviation}</span>
-                </span>
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <span className={`px-2 py-0.5 rounded-full font-label-code text-label-code uppercase tracking-wider ${groupTone[indicator.group]}`}>
-                      {groupLabel[indicator.group]}
-                    </span>
-                    <span className="font-body-sm text-body-sm text-outline">{valueTypeSummary(indicator)}</span>
+            {indicators.map((indicator) => {
+              const aggregate = todayAggregates.get(indicator.id) ?? null;
+              const emoji = privacyEmoji(indicator, isNameRevealed);
+              const label = privacyLabel(indicator, isNameRevealed);
+              return (
+                <li key={indicator.id} className="rounded-lg bg-surface-container-lowest p-space-md shadow-sm flex items-center gap-space-sm">
+                  <span className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${iconTone[indicator.group]}`} aria-hidden="true">
+                    {isNameRevealed ? (
+                      <span className="font-label-code text-label-code font-bold">
+                        {indicator.abbreviation.trim() || label}
+                      </span>
+                    ) : (
+                      <MaterialIcon name={indicator.group === 'factor' ? 'input' : 'output'} size={18} />
+                    )}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className={`px-2 py-0.5 rounded-full font-label-code text-label-code uppercase tracking-wider ${groupTone[indicator.group]}`}>
+                        {groupLabel[indicator.group]}
+                      </span>
+                      <span className="font-body-sm text-body-sm text-outline">{valueTypeSummary(indicator)}</span>
+                    </div>
+                    <h3 className="font-label-lg text-label-lg text-on-surface truncate mt-0.5">
+                      {emoji ? `${emoji} ` : ''}
+                      {label}
+                    </h3>
                   </div>
-                  <h3 className="font-label-lg text-label-lg text-on-surface truncate mt-0.5">{indicator.name}</h3>
-                </div>
-                <span className="font-label-code text-label-code text-tertiary text-right shrink-0">Pronto</span>
-              </li>
-            ))}
+                  <span className={`font-label-code text-label-code text-right shrink-0 ${aggregate ? 'text-tertiary' : 'text-outline'}`}>
+                    {aggregate ? formatDailyAggregate(indicator, aggregate) : 'Sem registro'}
+                  </span>
+                </li>
+              );
+            })}
           </ul>
         </section>
       )}
@@ -191,6 +240,7 @@ export const DashboardPage: React.FC = () => {
           <ul className="flex flex-col gap-space-sm">
             {availableSuggestions.map((suggestion) => {
               const isAdding = pendingKey === suggestion.key;
+              const suggestionLabel = privacyLabel(suggestion, isNameRevealed);
               return (
                 <li key={suggestion.key} className="rounded-lg bg-surface-container-lowest p-space-md shadow-sm">
                   <div className="flex items-center justify-between gap-space-sm">
@@ -208,14 +258,14 @@ export const DashboardPage: React.FC = () => {
                           </span>
                           <span className="font-body-sm text-body-sm text-outline truncate">{suggestion.meta}</span>
                         </div>
-                        <h3 className="font-headline-md text-headline-md text-on-surface truncate mt-0.5">{suggestion.name}</h3>
+                        <h3 className="font-headline-md text-headline-md text-on-surface truncate mt-0.5">{suggestionLabel}</h3>
                         <p className="font-body-sm text-body-sm text-on-surface-variant truncate">{suggestion.valueSummary}</p>
                       </div>
                     </div>
                     <button
                       type="button"
                       className={`shrink-0 min-h-[44px] px-3.5 py-2 rounded-full font-label-lg text-label-lg active:scale-95 transition-all flex items-center gap-1.5 shadow-sm disabled:opacity-60 ${suggestion.group === 'factor' ? 'bg-secondary text-on-secondary' : 'bg-primary text-on-primary'}`}
-                      aria-label={`Adicionar ${suggestion.name}`}
+                      aria-label={`Adicionar ${suggestionLabel}`}
                       onClick={() => void addSuggestion(suggestion)}
                       disabled={pendingKey !== null}
                     >

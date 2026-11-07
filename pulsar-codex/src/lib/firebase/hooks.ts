@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from './config';
+import { usePrivacyStore } from '@features/privacy/store';
 
 /**
  * Hook to listen to user document in Firestore
@@ -60,21 +61,11 @@ export const useOnboardingStatus = (userId?: string) => {
 };
 
 /**
- * Hook to toggle user name visibility preference
+ * Hook to toggle indicator name visibility. Privacy mode is intentionally
+ * in-memory only: reopening the app always starts in abbreviations (spec 4.4).
  */
 export const useNameRevealed = () => {
-  const [isNameRevealed, setIsNameRevealed] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('isNameRevealed') === 'true';
-    }
-    return false;
-  });
-
-  useEffect(() => {
-    localStorage.setItem('isNameRevealed', String(isNameRevealed));
-  }, [isNameRevealed]);
-
-  const toggleNameRevealed = () => setIsNameRevealed((prev) => !prev);
-
+  const isNameRevealed = usePrivacyStore((state) => state.isNameRevealed);
+  const toggleNameRevealed = usePrivacyStore((state) => state.toggleNames);
   return { isNameRevealed, toggleNameRevealed };
 };

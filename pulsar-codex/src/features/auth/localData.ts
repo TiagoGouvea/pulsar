@@ -1,6 +1,7 @@
 import { clearCachedIndicators } from '@features/indicators/repository';
 import { clearOnboardingCompletion } from '@features/onboarding/completion';
 import { clearAccountSaveInvite } from '@features/account/useAccountSaveInvite';
+import { usePrivacyStore } from '@features/privacy/store';
 
 const NAME_REVEAL_KEY = 'isNameRevealed';
 
@@ -13,6 +14,7 @@ export function clearLocalAccountData(uid: string): void {
   clearCachedIndicators(uid);
   clearOnboardingCompletion(uid);
   clearAccountSaveInvite();
+  usePrivacyStore.getState().resetPrivacy();
   try {
     localStorage.removeItem(NAME_REVEAL_KEY);
   } catch {

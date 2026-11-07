@@ -4,6 +4,8 @@ import clsx from 'clsx';
 import { MaterialIcon } from '@components/ui/MaterialIcon';
 import { BottomSheet } from '@components/ui/BottomSheet';
 import { useFirebase } from '@lib/firebase/context';
+import { privacyEmoji, privacyLabel } from '@features/entries/model';
+import { usePrivacyMode } from '@features/privacy/store';
 import { useIndicators } from '@features/indicators/useIndicators';
 import {
   dailyAggregationSummary,
@@ -73,6 +75,7 @@ export const IndicatorsPage: React.FC = () => {
   const indicators = useIndicators(uid);
   const location = useLocation();
   const navigate = useNavigate();
+  const { isNameRevealed } = usePrivacyMode();
 
   const initialNotice = (location.state as { notice?: string } | null)?.notice ?? '';
   const [notice, setNotice] = useState(initialNotice);
@@ -131,7 +134,7 @@ export const IndicatorsPage: React.FC = () => {
     void runAction(
       target.id,
       () => archiveIndicator(uid, target.id),
-      `${target.name} foi arquivado. O histórico continua preservado.`
+      `${privacyLabel(target, isNameRevealed)} foi arquivado. O histórico continua preservado.`
     );
   }
 
@@ -140,7 +143,7 @@ export const IndicatorsPage: React.FC = () => {
     void runAction(
       target.id,
       () => restoreIndicator(uid, target.id),
-      `${target.name} foi restaurado para o registro diário.`
+      `${privacyLabel(target, isNameRevealed)} foi restaurado para o registro diário.`
     );
   }
 
@@ -172,6 +175,8 @@ export const IndicatorsPage: React.FC = () => {
     const isFirst = index <= 0;
     const isLast = index === groupList.length - 1;
     const tone = indicator.group === 'factor' ? 'factor' : 'result';
+    const label = privacyLabel(indicator, isNameRevealed);
+    const emoji = privacyEmoji(indicator, isNameRevealed);
     return (
       <li
         key={indicator.id}
@@ -185,7 +190,7 @@ export const IndicatorsPage: React.FC = () => {
             <span className="flex flex-col gap-0.5">
               <button
                 type="button"
-                aria-label={`Mover ${indicator.name} para cima`}
+                aria-label={`Mover ${label} para cima`}
                 disabled={isFirst || pendingAction !== null}
                 onClick={() => void move(indicator, -1)}
                 className="w-7 h-7 rounded-full flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container disabled:opacity-30 disabled:cursor-not-allowed"
@@ -194,7 +199,7 @@ export const IndicatorsPage: React.FC = () => {
               </button>
               <button
                 type="button"
-                aria-label={`Mover ${indicator.name} para baixo`}
+                aria-label={`Mover ${label} para baixo`}
                 disabled={isLast || pendingAction !== null}
                 onClick={() => void move(indicator, 1)}
                 className="w-7 h-7 rounded-full flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container disabled:opacity-30 disabled:cursor-not-allowed"
@@ -202,17 +207,35 @@ export const IndicatorsPage: React.FC = () => {
                 <MaterialIcon name="arrow_downward" size={16} />
               </button>
             </span>
-            <span
-              className={clsx(
-                'px-2 py-0.5 rounded-full font-label-code text-label-code tracking-wider uppercase shrink-0',
-                tone === 'factor'
-                  ? 'bg-secondary/10 text-secondary'
-                  : 'bg-primary/10 text-primary'
-              )}
-            >
-              {displayAbbreviation(indicator)}
-            </span>
-            <h3 className="font-label-lg text-label-lg text-on-surface truncate">{indicator.name}</h3>
+            {isNameRevealed ? (
+              <>
+                <span
+                  className={clsx(
+                    'px-2 py-0.5 rounded-full font-label-code text-label-code tracking-wider uppercase shrink-0',
+                    tone === 'factor'
+                      ? 'bg-secondary/10 text-secondary'
+                      : 'bg-primary/10 text-primary'
+                  )}
+                >
+                  {displayAbbreviation(indicator)}
+                </span>
+                <h3 className="font-label-lg text-label-lg text-on-surface truncate">
+                  {emoji ? `${emoji} ` : ''}
+                  {label}
+                </h3>
+              </>
+            ) : (
+              <h3
+                className={clsx(
+                  'px-2 py-0.5 rounded-full font-label-code text-label-code tracking-wider uppercase shrink-0 truncate',
+                  tone === 'factor'
+                    ? 'bg-secondary/10 text-secondary'
+                    : 'bg-primary/10 text-primary'
+                )}
+              >
+                {label}
+              </h3>
+            )}
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <span
@@ -222,7 +245,7 @@ export const IndicatorsPage: React.FC = () => {
             />
             <button
               type="button"
-              aria-label={`Opções para ${indicator.name}`}
+              aria-label={`Opções para ${label}`}
               onClick={() => setMenuTarget(indicator)}
               className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container transition-colors"
             >
@@ -433,41 +456,48 @@ export const IndicatorsPage: React.FC = () => {
                       Nenhum indicador arquivado.
                     </p>
                   ) : (
-                    archived.map((indicator) => (
-                      <div
-                        key={indicator.id}
-                        className="rounded-2xl bg-surface-container-lowest/80 p-space-md shadow-sm flex flex-col gap-space-sm"
-                      >
-                        <div className="flex items-center justify-between gap-space-xs">
-                          <div className="flex items-center gap-space-sm min-w-0">
-                            <span className="px-2 py-0.5 rounded-full bg-surface-dim text-outline font-label-code text-label-code tracking-wider uppercase shrink-0">
-                              {displayAbbreviation(indicator)}
+                    archived.map((indicator) => {
+                      const label = privacyLabel(indicator, isNameRevealed);
+                      const emoji = privacyEmoji(indicator, isNameRevealed);
+                      return (
+                        <div
+                          key={indicator.id}
+                          className="rounded-2xl bg-surface-container-lowest/80 p-space-md shadow-sm flex flex-col gap-space-sm"
+                        >
+                          <div className="flex items-center justify-between gap-space-xs">
+                            <div className="flex items-center gap-space-sm min-w-0">
+                              {isNameRevealed && (
+                                <span className="px-2 py-0.5 rounded-full bg-surface-dim text-outline font-label-code text-label-code tracking-wider uppercase shrink-0">
+                                  {displayAbbreviation(indicator)}
+                                </span>
+                              )}
+                              <h3 className="font-label-lg text-label-lg text-on-surface-variant truncate">
+                                {emoji ? `${emoji} ` : ''}
+                                {label}
+                              </h3>
+                            </div>
+                            <span className="px-2 py-0.5 rounded-full bg-surface-container-high text-outline font-label-code text-label-code uppercase tracking-wider shrink-0">
+                              Arquivado
                             </span>
-                            <h3 className="font-label-lg text-label-lg text-on-surface-variant truncate">
-                              {indicator.name}
-                            </h3>
                           </div>
-                          <span className="px-2 py-0.5 rounded-full bg-surface-container-high text-outline font-label-code text-label-code uppercase tracking-wider shrink-0">
-                            Arquivado
-                          </span>
+                          <div className="flex flex-wrap items-center justify-between gap-space-sm pt-1">
+                            <span className="font-body-sm text-body-sm text-on-surface-variant">
+                              {valueTypeName(indicator.valueType)} • {archivedDaysText(indicator.archivedAt)}
+                            </span>
+                            <button
+                              type="button"
+                              aria-label={`Restaurar ${label}`}
+                              disabled={pendingAction !== null}
+                              onClick={() => restore(indicator)}
+                              className="px-3 min-h-[36px] rounded-full bg-primary-fixed text-primary font-label-md text-label-md flex items-center gap-1 active:scale-95 transition-transform disabled:opacity-60"
+                            >
+                              <MaterialIcon name={pendingAction === indicator.id ? 'hourglass_top' : 'restore'} size={16} />
+                              <span>{pendingAction === indicator.id ? 'Restaurando…' : 'Restaurar'}</span>
+                            </button>
+                          </div>
                         </div>
-                        <div className="flex flex-wrap items-center justify-between gap-space-sm pt-1">
-                          <span className="font-body-sm text-body-sm text-on-surface-variant">
-                            {valueTypeName(indicator.valueType)} • {archivedDaysText(indicator.archivedAt)}
-                          </span>
-                          <button
-                            type="button"
-                            aria-label={`Restaurar ${indicator.name}`}
-                            disabled={pendingAction !== null}
-                            onClick={() => restore(indicator)}
-                            className="px-3 min-h-[36px] rounded-full bg-primary-fixed text-primary font-label-md text-label-md flex items-center gap-1 active:scale-95 transition-transform disabled:opacity-60"
-                          >
-                            <MaterialIcon name={pendingAction === indicator.id ? 'hourglass_top' : 'restore'} size={16} />
-                            <span>{pendingAction === indicator.id ? 'Restaurando…' : 'Restaurar'}</span>
-                          </button>
-                        </div>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
                   <div className="p-space-sm rounded-xl bg-surface-container-low text-on-surface-variant font-body-sm text-body-sm flex items-start gap-2">
                     <MaterialIcon name="info" size={18} className="text-outline shrink-0 mt-0.5" />
@@ -498,7 +528,7 @@ export const IndicatorsPage: React.FC = () => {
       <BottomSheet
         open={menuTarget !== null}
         title="Opções do Indicador"
-        subtitle={menuTarget?.name}
+        subtitle={menuTarget ? privacyLabel(menuTarget, isNameRevealed) : undefined}
         onClose={() => setMenuTarget(null)}
       >
         <button

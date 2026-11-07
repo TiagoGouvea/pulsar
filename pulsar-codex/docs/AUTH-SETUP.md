@@ -68,4 +68,4 @@ Os testes exigem Java e usam `firebase.test.json` com Firestore em `8090`, Auth 
 
 - Não habilite limpeza automática de contas anônimas sem analisar o impacto: ela apagaria dados de quem ainda não converteu.
 - A PWA pode ter armazenamento separado no iPhone; ofereça a conversão antes do convite de instalação (etapa de PWA).
-- Regras de `entries`, `insights`, `savedInsights`, `insightFeedback`, `pushSubscriptions` e `dailySummaries` ficam fechadas até as tarefas dos respectivos recursos, que devem ampliar o schema ao lado do recurso. O congelamento estrutural do indicador após o primeiro registro pertence a REQ-2-001/REQ-2-002.
+- Regras de `indicators` e `entries` validam o schema, o dono, a compatibilidade de valor e o congelamento estrutural após o primeiro registro. `insights`, `savedInsights`, `insightFeedback`, `pushSubscriptions` e `dailySummaries` ficam fechadas até as tarefas dos respectivos recursos, que devem ampliar o schema ao lado do recurso.

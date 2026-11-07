@@ -4,12 +4,14 @@ import { Button } from '@components/ui/Button';
 import { GoogleIcon } from '@components/ui/GoogleIcon';
 import { useFirebase } from '@lib/firebase/context';
 import { accountErrorMessage, getErrorCode } from '@features/auth/errors';
+import { usePrivacyMode } from '@features/privacy/store';
 
 const actionClass = 'min-h-[48px] w-full';
 const cardClass = 'rounded-lg bg-surface-container-lowest p-space-lg shadow-sm flex flex-col gap-space-md';
 
 export function AccountPage() {
   const account = useFirebase();
+  const { isNameRevealed, toggleNames } = usePrivacyMode();
   const { user, anonymous, isLoading, emailLinkPending } = account;
   const [email, setEmail] = useState(account.pendingEmail || user?.email || '');
   const [emailIntent, setEmailIntent] = useState<'link' | 'login' | 'reauthenticate' | null>(null);
@@ -82,6 +84,49 @@ export function AccountPage() {
       </div>}
       {notice && <div role="status" className="rounded-2xl bg-tertiary-fixed text-on-tertiary-fixed p-3 body-sm">{notice}</div>}
       {busy && <p role="status" className="body-sm">Aguarde a confirmação…</p>}
+
+      <section className={cardClass} aria-labelledby="privacy-mode-heading">
+        <div className="flex items-center justify-between gap-space-sm">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-full bg-secondary-fixed text-secondary flex items-center justify-center shrink-0">
+              <span aria-hidden="true" className="material-symbols-outlined text-[20px]">visibility_off</span>
+            </div>
+            <div className="min-w-0">
+              <h2 id="privacy-mode-heading" className="headline-md">Privacidade na Tela</h2>
+              <span className="label-code text-outline uppercase tracking-wider">Modo Discrição &amp; Siglas</span>
+            </div>
+          </div>
+          <span className={`label-code rounded-full px-2.5 py-1 self-start ${isNameRevealed ? 'bg-primary-fixed text-primary' : 'bg-secondary-fixed text-on-secondary-fixed'}`}>
+            {isNameRevealed ? 'Nomes visíveis' : 'Siglas ativas'}
+          </span>
+        </div>
+        <p className="body-sm text-on-surface-variant leading-relaxed">
+          O app sempre abre em siglas de 3 letras e oculta emojis e nomes completos em listas,
+          preenchimento, dashboard e textos. Valores e gráficos continuam visíveis. Reabrir o
+          aplicativo reinicia no modo de siglas.
+        </p>
+        <div className="p-3.5 rounded-2xl bg-surface-container flex flex-col gap-2.5">
+          <span className="label-code uppercase text-on-surface-variant font-semibold tracking-wider">Demonstração Visual</span>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="p-2.5 rounded-xl bg-surface-container-lowest flex flex-col gap-1">
+              <span className="label-code text-secondary font-bold">EXE</span>
+              <span className="body-sm text-on-surface truncate">{isNameRevealed ? '🏋️ Exercício Físico' : 'Nome oculto'}</span>
+            </div>
+            <div className="p-2.5 rounded-xl bg-surface-container-lowest flex flex-col gap-1">
+              <span className="label-code text-primary font-bold">ENE</span>
+              <span className="body-sm text-on-surface truncate">{isNameRevealed ? '⚡ Nível de Energia' : 'Nome oculto'}</span>
+            </div>
+          </div>
+        </div>
+        <Button
+          variant="ghost"
+          className={`${actionClass} bg-surface-container-low`}
+          aria-pressed={isNameRevealed}
+          onClick={toggleNames}
+        >
+          {isNameRevealed ? 'Ocultar nomes e emojis' : 'Mostrar nomes e emojis'}
+        </Button>
+      </section>
 
       <fieldset disabled={busy || isLoading} className="min-w-0 flex flex-col gap-space-lg">
         <section className={cardClass} aria-labelledby="account-status">

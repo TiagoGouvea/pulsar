@@ -277,9 +277,8 @@ describe('internal fields and server-only collections', () => {
     )
   })
 
-  it('keeps entries, insights, feedback and summaries closed until their own tasks add rules', async () => {
+  it('keeps insights, feedback and summaries closed until their own tasks add rules', async () => {
     for (const [name, data] of [
-      ['entries', { indicatorId: 'i1' }],
       ['insights', { type: 'association' }],
       ['savedInsights', { type: 'association' }],
       ['insightFeedback', { action: 'liked' }],
@@ -292,7 +291,6 @@ describe('internal fields and server-only collections', () => {
 
 describe('isolation defense in depth', () => {
   it.each([
-    'entries',
     'insights',
     'savedInsights',
     'insightFeedback',
@@ -902,6 +900,280 @@ describe('indicator structural freeze after the first entry', () => {
         updatedAt: serverTimestamp()
       })
     )
+  })
+})
+
+describe('daily entries (REQ-2-002)', () => {
+  const DATE = '2026-10-24'
+  const PAST_DATE = '2026-10-01'
+  const SINGLE_ID = `indicator-1_${DATE}`
+  const PAST_SINGLE_ID = `indicator-1_${PAST_DATE}`
+
+  function entryPath(uid: string, entryId: string) {
+    return doc(client(uid), 'users', uid, 'entries', entryId)
+  }
+
+  function booleanEntry(overrides: DocumentData = {}) {
+    return {
+      indicatorId: 'indicator-1',
+      localDate: DATE,
+      recordedAt: serverTimestamp(),
+      valueType: 'boolean',
+      value: { boolean: true },
+      ...overrides
+    }
+  }
+
+  async function seedIndicatorAndEntry(
+    indicatorId: string,
+    indicator: DocumentData,
+    entryId: string,
+    entry: DocumentData
+  ) {
+    await seed(['users', OWNER, 'indicators', indicatorId], indicator)
+    await seed(['users', OWNER, 'entries', entryId], entry)
+  }
+
+  it('accepts owner reads, the deterministic single document and deletion', async () => {
+    await seed(['users', OWNER, 'indicators', 'indicator-1'], booleanIndicator())
+    await assertSucceeds(setDoc(entryPath(OWNER, SINGLE_ID), booleanEntry()))
+    await assertSucceeds(getDoc(entryPath(OWNER, SINGLE_ID)))
+    await assertSucceeds(getDocs(collection(client(OWNER), 'users', OWNER, 'entries')))
+    await assertSucceeds(deleteDoc(entryPath(OWNER, SINGLE_ID)))
+  })
+
+  it('accepts a valid entry for each structured value type', async () => {
+    await seed(['users', OWNER, 'indicators', 'scale'], scaleIndicator())
+    await assertSucceeds(
+      setDoc(entryPath(OWNER, `scale_${DATE}`), {
+        indicatorId: 'scale',
+        localDate: DATE,
+        recordedAt: serverTimestamp(),
+        valueType: 'scale',
+        value: { number: 7 },
+        note: 'Depois do almoço'
+      })
+    )
+
+    await seed(['users', OWNER, 'indicators', 'numeric'], numericIndicator())
+    await assertSucceeds(
+      setDoc(entryPath(OWNER, 'numeric-event-1'), {
+        indicatorId: 'numeric',
+        localDate: DATE,
+        recordedAt: serverTimestamp(),
+        valueType: 'numeric',
+        value: { number: 0 }
+      })
+    )
+
+    await seed(['users', OWNER, 'indicators', 'ordinal'], ordinalIndicator())
+    await assertSucceeds(
+      setDoc(entryPath(OWNER, `ordinal_${DATE}`), {
+        indicatorId: 'ordinal',
+        localDate: DATE,
+        recordedAt: serverTimestamp(),
+        valueType: 'ordinal',
+        value: { optionId: 'high' }
+      })
+    )
+  })
+
+  it('never lets another UID or an unauthenticated client read, list, write or delete entries', async () => {
+    await seedIndicatorAndEntry('indicator-1', booleanIndicator(), SINGLE_ID, booleanEntry())
+    const other = client(OTHER)
+    const anonymous = testEnv.unauthenticatedContext().firestore()
+    for (const db of [other, anonymous]) {
+      await assertFails(getDoc(doc(db, 'users', OWNER, 'entries', SINGLE_ID)))
+      await assertFails(getDocs(collection(db, 'users', OWNER, 'entries')))
+      await assertFails(
+        setDoc(doc(db, 'users', OWNER, 'entries', `new_${DATE}`), booleanEntry())
+      )
+      await assertFails(
+        updateDoc(doc(db, 'users', OWNER, 'entries', SINGLE_ID), {
+          value: { boolean: false },
+          recordedAt: serverTimestamp()
+        })
+      )
+      await assertFails(deleteDoc(doc(db, 'users', OWNER, 'entries', SINGLE_ID)))
+    }
+  })
+
+  it('requires the deterministic ID for single-frequency indicators and unique IDs for multiple events', async () => {
+    await seed(['users', OWNER, 'indicators', 'indicator-1'], booleanIndicator())
+    await assertFails(setDoc(entryPath(OWNER, 'random-single-id'), booleanEntry()))
+    await assertSucceeds(setDoc(entryPath(OWNER, SINGLE_ID), booleanEntry()))
+
+    await seed(['users', OWNER, 'indicators', 'numeric'], numericIndicator())
+    const numericEntry = {
+      indicatorId: 'numeric',
+      localDate: DATE,
+      recordedAt: serverTimestamp(),
+      valueType: 'numeric',
+      value: { number: 2 }
+    }
+    await assertSucceeds(setDoc(entryPath(OWNER, 'numeric-event-1'), numericEntry))
+    await assertSucceeds(setDoc(entryPath(OWNER, 'numeric-event-2'), numericEntry))
+  })
+
+  it('rejects entries for an unknown or archived indicator', async () => {
+    await assertFails(setDoc(entryPath(OWNER, SINGLE_ID), booleanEntry()))
+
+    await seed(['users', OWNER, 'indicators', 'indicator-1'], {
+      ...booleanIndicator(),
+      archivedAt: new Date(0)
+    })
+    await assertFails(setDoc(entryPath(OWNER, SINGLE_ID), booleanEntry()))
+  })
+
+  it.each([
+    [
+      'mismatched value type',
+      booleanIndicator(),
+      { valueType: 'numeric', value: { number: 1 } }
+    ],
+    [
+      'boolean value with an extra key',
+      booleanIndicator(),
+      { value: { boolean: true, number: 1 } }
+    ],
+    [
+      'non-boolean value',
+      booleanIndicator(),
+      { value: { boolean: 'yes' } }
+    ],
+    [
+      'scale value out of range',
+      scaleIndicator(),
+      { valueType: 'scale', value: { number: 11 } }
+    ],
+    [
+      'scale value without a number',
+      scaleIndicator(),
+      { valueType: 'scale', value: { optionId: 'high' } }
+    ],
+    [
+      'numeric value below its minimum',
+      numericIndicator(),
+      { valueType: 'numeric', value: { number: -1 } }
+    ],
+    [
+      'numeric value above its maximum',
+      { ...numericIndicator(), numeric: { unit: 'mg', min: 0, max: 10, step: 1 } },
+      { valueType: 'numeric', value: { number: 11 } }
+    ],
+    [
+      'unknown ordinal option',
+      ordinalIndicator(),
+      { valueType: 'ordinal', value: { optionId: 'missing' } }
+    ],
+    [
+      'ordinal value without an option id',
+      ordinalIndicator(),
+      { valueType: 'ordinal', value: { number: 2 } }
+    ],
+    [
+      'unknown field',
+      booleanIndicator(),
+      { private: true }
+    ],
+    [
+      'invalid local date',
+      booleanIndicator(),
+      { localDate: '24/10/2026' }
+    ],
+    [
+      'client date instead of the server clock',
+      booleanIndicator(),
+      { recordedAt: new Date(0) }
+    ],
+    [
+      'note above the byte limit',
+      booleanIndicator(),
+      { note: 'x'.repeat(501) }
+    ]
+  ])('rejects %s', async (_name, indicator, overrides) => {
+    await seed(['users', OWNER, 'indicators', 'indicator-1'], indicator)
+    const entry = {
+      ...booleanEntry(),
+      indicatorId: 'indicator-1',
+      valueType: indicator.valueType,
+      ...overrides
+    }
+    await assertFails(setDoc(entryPath(OWNER, SINGLE_ID), entry))
+  })
+
+  it('accepts false and zero as stored values, distinct from absence', async () => {
+    await seed(['users', OWNER, 'indicators', 'indicator-1'], booleanIndicator())
+    await assertSucceeds(setDoc(entryPath(OWNER, SINGLE_ID), booleanEntry({ value: { boolean: false } })))
+    expect((await getDoc(entryPath(OWNER, SINGLE_ID))).data()?.value).toEqual({ boolean: false })
+
+    await seed(['users', OWNER, 'indicators', 'numeric'], numericIndicator())
+    await assertSucceeds(
+      setDoc(entryPath(OWNER, 'numeric-event-1'), {
+        indicatorId: 'numeric',
+        localDate: DATE,
+        recordedAt: serverTimestamp(),
+        valueType: 'numeric',
+        value: { number: 0 }
+      })
+    )
+    expect((await getDoc(entryPath(OWNER, 'numeric-event-1'))).data()?.value).toEqual({ number: 0 })
+    await assertSucceeds(getDocs(collection(client(OWNER), 'users', OWNER, 'entries')))
+  })
+
+  it('allows replacing the current single entry and deleting a past record', async () => {
+    await seedIndicatorAndEntry('indicator-1', booleanIndicator(), SINGLE_ID, booleanEntry())
+    await seedIndicatorAndEntry(
+      'indicator-1',
+      booleanIndicator(),
+      PAST_SINGLE_ID,
+      booleanEntry({ localDate: PAST_DATE, value: { boolean: false } })
+    )
+
+    await assertSucceeds(
+      updateDoc(entryPath(OWNER, SINGLE_ID), {
+        value: { boolean: false },
+        recordedAt: serverTimestamp()
+      })
+    )
+    await assertFails(
+      updateDoc(entryPath(OWNER, SINGLE_ID), {
+        localDate: PAST_DATE,
+        recordedAt: serverTimestamp()
+      })
+    )
+    await assertFails(
+      updateDoc(entryPath(OWNER, SINGLE_ID), {
+        indicatorId: 'other-indicator',
+        recordedAt: serverTimestamp()
+      })
+    )
+    await assertSucceeds(deleteDoc(entryPath(OWNER, PAST_SINGLE_ID)))
+    const deleted = await getDoc(entryPath(OWNER, PAST_SINGLE_ID))
+    expect(deleted.exists()).toBe(false)
+  })
+
+  it('sets firstEntryAt in the same batch as the first answer and never rewinds it', async () => {
+    await seed(['users', OWNER, 'indicators', 'indicator-1'], booleanIndicator())
+    const db = client(OWNER)
+    const batch = writeBatch(db)
+    batch.set(doc(db, 'users', OWNER, 'entries', SINGLE_ID), booleanEntry())
+    batch.update(doc(db, 'users', OWNER, 'indicators', 'indicator-1'), {
+      firstEntryAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    })
+    await assertSucceeds(batch.commit())
+
+    const second = writeBatch(db)
+    second.set(
+      doc(db, 'users', OWNER, 'entries', `indicator-1_${PAST_DATE}`),
+      booleanEntry({ localDate: PAST_DATE })
+    )
+    second.update(doc(db, 'users', OWNER, 'indicators', 'indicator-1'), {
+      firstEntryAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    })
+    await assertFails(second.commit())
   })
 })
 

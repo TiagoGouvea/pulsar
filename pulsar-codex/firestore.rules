@@ -8,10 +8,9 @@ rules_version = '2';
 //    by UID, protection of internal server state, and validation primitives
 //    for types and size limits.
 // 2. Resource rules live in the section of the resource they describe. The
-//    indicator schema is here because the indicator resource already exists.
-//    The records/entries rules are added in the same place when the daily log
-//    resource is implemented (REQ-2-002), and every other collection stays
-//    closed until its own resource defines the schema.
+//    indicator (REQ-2-001) and daily entry (REQ-2-002) schemas are already
+//    implemented; every other collection stays closed until its own resource
+//    defines the schema.
 //
 // Invariants enforced everywhere:
 //   - a request only reaches data under its own UID (`users/{uid}`);
@@ -405,16 +404,103 @@ service cloud.firestore {
     }
 
     // ------------------------------------------------------------------
-    // Resource layer: records/entries `users/{uid}/entries/{entryId}`
+    // Resource layer: daily entries `users/{uid}/entries/{entryId}`
     // ------------------------------------------------------------------
-    // The daily log resource does not exist yet (REQ-2-002). Its rules are
-    // added here, next to the resource, together with the ownership and limit
-    // checks it needs: entries belong to the owner, carry one indicator, one
-    // value, one local date and one server timestamp, and can be deleted only
-    // by the owner. Until then the collection stays closed to clients.
+    // REQ-2-002 owns this schema. Each document is one structured answer for
+    // one indicator; absence is a missing document, never `false` or `0`.
+    // Single-frequency indicators use a deterministic ID (indicatorId +
+    // localDate), so a new answer for the current day replaces the stored one.
+    // Multiple-frequency indicators use unique IDs and every answer becomes an
+    // event that the selected daily aggregation consolidates. The browser owns
+    // `localDate` at write time; the rules validate format but not "today", as
+    // required by the specification. Deletion is allowed for any day.
+
+    function entryKeys() {
+      return ['indicatorId', 'localDate', 'recordedAt', 'valueType', 'value', 'note'];
+    }
+
+    function isValidEntryFields(data) {
+      return hasOnlyKeys(data, entryKeys())
+        && isNonEmptyStringAtMost(data.indicatorId, 128)
+        && data.localDate is string
+        && data.localDate.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}')
+        && data.recordedAt is timestamp
+        && isStringIn(data.valueType, ['boolean', 'scale', 'numeric', 'ordinal'])
+        && data.value is map
+        && (!data.keys().hasAny(['note']) || isStringAtMost(data.note, 500));
+    }
+
+    // Rules cannot iterate a list, so every allowed option position is checked
+    // explicitly (the indicator schema limits the list to 8 options).
+    function hasOption(options, optionId) {
+      let count = options.size();
+      return (count > 0 && options[0].id == optionId)
+        || (count > 1 && options[1].id == optionId)
+        || (count > 2 && options[2].id == optionId)
+        || (count > 3 && options[3].id == optionId)
+        || (count > 4 && options[4].id == optionId)
+        || (count > 5 && options[5].id == optionId)
+        || (count > 6 && options[6].id == optionId)
+        || (count > 7 && options[7].id == optionId);
+    }
+
+    function hasCompatibleEntryValue(indicator, data) {
+      let value = data.value;
+      return data.valueType == 'boolean'
+        ? (value.keys().hasOnly(['boolean'])
+          && value.keys().hasAll(['boolean'])
+          && value.boolean is bool)
+        : (data.valueType == 'ordinal'
+          ? (value.keys().hasOnly(['optionId'])
+            && value.keys().hasAll(['optionId'])
+            && isStringAtMost(value.optionId, 64)
+            && hasOption(indicator.options, value.optionId))
+          : (value.keys().hasOnly(['number'])
+            && value.keys().hasAll(['number'])
+            && (value.number is int || value.number is float)
+            && (data.valueType == 'scale'
+              ? (value.number >= indicator.scale.min && value.number <= indicator.scale.max)
+              : ((indicator.numeric.min == null || value.number >= indicator.numeric.min)
+                && (indicator.numeric.max == null || value.number <= indicator.numeric.max)))));
+    }
+
+    function entryIdMatchesFrequency(entryId, data, indicator) {
+      return indicator.frequency == 'single_per_day'
+        ? entryId == data.indicatorId + '_' + data.localDate
+        : entryId.matches('[A-Za-z0-9_-]{1,128}');
+    }
+
+    function isValidEntryCreate(uid, entryId, data) {
+      let indicator = get(/databases/$(database)/documents/users/$(uid)/indicators/$(data.indicatorId)).data;
+      return isValidEntryFields(data)
+        && isServerTimestamp(data.recordedAt)
+        && indicator.get('archivedAt', null) == null
+        && data.valueType == indicator.valueType
+        && entryIdMatchesFrequency(entryId, data, indicator)
+        && hasCompatibleEntryValue(indicator, data);
+    }
+
+    function isValidEntryUpdate(uid, entryId, data, existing) {
+      let indicator = get(/databases/$(database)/documents/users/$(uid)/indicators/$(data.indicatorId)).data;
+      return isValidEntryFields(data)
+        && isServerTimestamp(data.recordedAt)
+        && indicator.get('archivedAt', null) == null
+        && data.indicatorId == existing.indicatorId
+        && data.localDate == existing.localDate
+        && data.valueType == existing.valueType
+        && data.valueType == indicator.valueType
+        && entryIdMatchesFrequency(entryId, data, indicator)
+        && hasCompatibleEntryValue(indicator, data);
+    }
 
     match /users/{uid}/entries/{entryId} {
-      allow read, write: if false;
+      allow read: if ownsUser(uid);
+      allow create: if ownsUser(uid) && isValidEntryCreate(uid, entryId, request.resource.data);
+      allow update: if ownsUser(uid)
+        && isValidEntryUpdate(uid, entryId, request.resource.data, resource.data);
+      // Any record, including past days, can be deleted by its owner. The
+      // ratchet `firstEntryAt` on the indicator is never removed by deletion.
+      allow delete: if ownsUser(uid);
     }
 
     // ------------------------------------------------------------------

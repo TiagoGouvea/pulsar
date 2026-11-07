@@ -1,6 +1,7 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { usePrivacyStore } from '@features/privacy/store';
 import { AppShell } from './AppShell';
 
 // Hermetic unit test: the shell does not depend on a live Firebase session.
@@ -35,6 +36,10 @@ const renderWithRouter = (ui: React.ReactElement) =>
     </MemoryRouter>
   );
 
+beforeEach(() => {
+  usePrivacyStore.setState({ isNameRevealed: false });
+});
+
 describe('AppShell', () => {
   it('renders the fixed header and a full-width fluid main area', () => {
     renderWithRouter(<AppShell />);
@@ -44,6 +49,22 @@ describe('AppShell', () => {
     // Fluid width only: no fixed desktop max-width or exclusive desktop chrome.
     expect(main.className).toContain('w-full');
     expect(screen.getByText('conteúdo principal')).toBeInTheDocument();
+  });
+
+  it('starts in abbreviations and toggles the global privacy mode from the header', () => {
+    renderWithRouter(<AppShell />);
+
+    const toggle = screen.getByRole('button', { name: /Alternar modo discrição e siglas/i });
+    expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByText('Siglas')).toBeInTheDocument();
+
+    fireEvent.click(toggle);
+
+    expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText('Nomes')).toBeInTheDocument();
+
+    fireEvent.click(toggle);
+    expect(screen.getByText('Siglas')).toBeInTheDocument();
   });
 
   it('keeps the same shell on wide screens (no desktop-only navigation)', () => {

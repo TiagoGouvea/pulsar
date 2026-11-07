@@ -20,6 +20,11 @@ test.describe('indicator management', () => {
   test('creates, reorders, archives, restores and edits indicators', async ({ page }) => {
     await page.goto('/indicators');
 
+    // Start in privacy mode, then reveal names for this management flow.
+    expect(await page.locator('[data-desktop-only]').count()).toBe(0);
+    await expect(page.getByRole('button', { name: /Alternar modo discrição e siglas/i })).toBeVisible();
+    await page.getByRole('button', { name: /Alternar modo discrição e siglas/i }).click();
+
     // Empty account: no indicator is created automatically.
     await expect(page.getByRole('heading', { name: 'Nenhum indicador ainda' })).toBeVisible();
 
