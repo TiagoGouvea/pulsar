@@ -19,7 +19,9 @@ export const FeatureSchema = z.object({
   attempts: z.number().int().default(0),
   costUsd: z.number().default(0),
   blockedReason: z.string().optional(),
-  spendSince: z.string().optional(),   // ISO ts: the feature cap only counts spend after it (set when a feature is reset)
+  spendSince: z.string().optional(),
+  // attempt whose (paid) worker call finished but whose gates/review did not: a resume evaluates that code instead of re-running a model
+  pending: z.object({ attempt: z.number().int(), role: z.string(), workerId: z.string() }).optional(),   // ISO ts: the feature cap only counts spend after it (set when a feature is reset)
   history: z.array(z.record(z.string(), z.any())).default([]),
   // who did what (filled when the feature lands): implementer, attempt trail, test writer, reviewers, files
   authors: z.object({

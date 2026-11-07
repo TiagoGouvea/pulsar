@@ -10,7 +10,7 @@ import { a11yGate, layoutGate, lighthouseGate } from "./quality.js";
 
 export interface GateResult { id: string; name: string; ok: boolean; required: boolean; skipped?: string; durationMs: number; output: string }
 export interface GateReport { ok: boolean; mode: "feature" | "stage"; stage: number; failed: string[]; results: GateResult[] }
-export interface GateOpts { stage: number; mode: "feature" | "stage"; base?: string; only?: string[]; featureId?: string }
+export interface GateOpts { stage: number; mode: "feature" | "stage"; base?: string; only?: string[]; featureId?: string; extra?: string[] }
 export type RunGates = (ctx: Ctx, cwd: string, o: GateOpts) => Promise<GateReport>;
 
 const SECRET_PATTERNS = [
@@ -43,7 +43,7 @@ export const runGates: RunGates = (ctx, cwd, o) => withPortLock(ctx, join(cwd, c
   const results: GateResult[] = [];
   for (const [id, g] of Object.entries(ctx.config.gates)) {
     if (o.only && !o.only.includes(id)) continue;
-    const skip = o.stage < g.fromStage ? `a partir da etapa ${g.fromStage}` : g.scope === "stage" && o.mode === "feature" ? "só no fim de etapa" : undefined;
+    const skip = o.stage < g.fromStage ? `a partir da etapa ${g.fromStage}` : g.scope === "stage" && o.mode === "feature" && !o.extra?.includes(id) ? "só no fim de etapa" : undefined;
     const start = Date.now();
     if (skip) { results.push({ id, name: g.name, ok: true, required: g.required, skipped: skip, durationMs: 0, output: "" }); continue; }
     let r: { ok: boolean; output: string };

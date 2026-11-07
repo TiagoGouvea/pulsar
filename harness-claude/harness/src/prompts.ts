@@ -10,18 +10,41 @@ import { hp, walk } from "./state.js";
 export const HARNESS_DIR = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 /** Extracts the last JSON object of an agent answer (```json block or trailing {...}). */
-export function extractJson(text: string): unknown {
-  const blocks = [...text.matchAll(/```(?:json)?\s*\n([\s\S]*?)```/g)].map((m) => m[1]);
-  for (const b of blocks.reverse()) {
-    try { return JSON.parse(b); } catch { /* next */ }
+/** Every JSON object a model answer may hold, most likely first: fenced blocks, then top-level {...} spans, last to first.
+ *  Models vary a lot (prose around, several blocks, trailing commas, English keys), so callers validate each against a schema. */
+export function jsonCandidates(text: string): unknown[] {
+  const raw = [...text.matchAll(/```(?:json)?\s*\n([\s\S]*?)```/g)].map((m) => m[1]).reverse();
+  const t = text.slice(-40000);
+  const spans: string[] = [];
+  let depth = 0, start = -1, str = false, esc = false;
+  for (let i = 0; i < t.length; i++) {
+    const c = t[i];
+    if (str) { if (esc) esc = false; else if (c === "\\") esc = true; else if (c === '"') str = false; continue; }
+    if (c === '"') str = true;
+    else if (c === "{") { if (depth++ === 0) start = i; }
+    else if (c === "}" && depth > 0 && --depth === 0) spans.push(t.slice(start, i + 1));
   }
-  const t = text.slice(-20000);
-  const end = t.lastIndexOf("}");
-  let tries = 0;
-  for (let start = t.lastIndexOf("{", end); start >= 0 && tries++ < 500; start = t.lastIndexOf("{", start - 1)) {
-    try { return JSON.parse(t.slice(start, end + 1)); } catch { /* widen */ }
+  const out: unknown[] = [];
+  for (const s of [...raw, ...spans.reverse()]) {
+    for (const v of [s, s.replace(/,\s*([}\]])/g, "$1")]) {   // tolerate trailing commas
+      try { out.push(JSON.parse(v)); break; } catch { /* next */ }
+    }
   }
-  return undefined;
+  return out;
+}
+
+export const extractJson = (text: string): unknown => jsonCandidates(text)[0];
+
+// English (or variant) keys models use instead of the Portuguese ones of the schemas
+const KEY_ALIASES: Record<string, string> = {
+  severity: "severidade", file: "arquivo", path: "arquivo", description: "descricao", descrição: "descricao", suggestion: "sugestao", sugestão: "sugestao",
+  screen: "tela", passed: "pass", approved: "pass", rootCause: "causaRaiz", root_cause: "causaRaiz", category: "categoria", pattern: "padrao", padrão: "padrao",
+  hint: "dica", tip: "dica", answers: "respostasDuvidas", adjustments: "ajustes", criteria: "porCriterio",
+};
+export function aliasKeys(v: unknown): unknown {
+  if (Array.isArray(v)) return v.map(aliasKeys);
+  if (!v || typeof v !== "object") return v;
+  return Object.fromEntries(Object.entries(v).map(([k, x]) => [k in KEY_ALIASES && !(KEY_ALIASES[k] in v) ? KEY_ALIASES[k] : k, aliasKeys(x)]));
 }
 
 const slug = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");

@@ -38,7 +38,10 @@ export function candidates(ctx: Ctx, o: PickOpts): WorkerSpec[] {
   return list;
 }
 
-/** Expected value: Laplace-smoothed success rate, penalized by expected cost and duration.
+/** Value of an hour of waiting, in US$: a slow model costs time too (glm-or: cheap per token, 15 min per attempt). */
+const TIME_USD_PER_HOUR = 2;
+
+/** Inverse of the expected cost of one success: (cost per call + waiting time) / Laplace-smoothed success rate.
  * Without history in the role, cost comes from `coldCost` (prices.yaml); smoke priors only count for success. */
 export function score(stats: RoutingStats, w: WorkerSpec, role: string, tags: string[] = [], coldCost = 0) {
   const s = [key(w.id, role), ...tags.map((t) => key(w.id, role, t))].map((k) => stats[k]).filter(Boolean);
@@ -47,7 +50,7 @@ export function score(stats: RoutingStats, w: WorkerSpec, role: string, tags: st
   const ok = s.reduce((a, x) => a + x.sucessos, 0) + (prior?.sucessos ?? 0);
   const cost = s[0]?.custoMedio ?? coldCost;
   const dur = s[0]?.duracaoMedia ?? 600_000;
-  return ((ok + 1) / (n + 2)) / (1 + cost / 2) / (1 + dur / 3_600_000);
+  return ((ok + 1) / (n + 2)) / (cost + (dur / 3_600_000) * TIME_USD_PER_HOUR + 0.01);
 }
 
 /** Bandit choice: best score, or a random other candidate with probability explorationRate. */

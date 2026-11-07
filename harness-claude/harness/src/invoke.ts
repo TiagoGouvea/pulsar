@@ -7,7 +7,7 @@ import { breach, type Cap, estimate, record, spent, stageCap, usageRatio } from 
 import { type Ctx, enabledWorkers, remoteTwin, workerTag } from "./config.js";
 import { loadFeatures, stageFeatures } from "./features.js";
 import { fmtDur, log, logEvent } from "./logger.js";
-import { extractJson } from "./prompts.js";
+import { aliasKeys, jsonCandidates } from "./prompts.js";
 import { candidates, pick, recordStats } from "./router.js";
 import { hp, writeJson } from "./state.js";
 
@@ -91,7 +91,10 @@ export class Runtime {
     try {
       const dir = hp(this.ctx, "runs", r.taskId);
       mkdirSync(dir, { recursive: true });
-      const base = `${r.attempt}-${r.role}-${w.id}`;
+      // a resumed attempt reuses its number: never overwrite the logs of the interrupted call
+      const b0 = `${r.attempt}-${r.role}-${w.id}`;
+      let base = b0;
+      for (let n = 2; existsSync(join(dir, `${base}.prompt.md`)); n++) base = `${b0}~${n}`;
       writeFileSync(join(dir, `${base}.prompt.md`), r.prompt);
       let result = await this.exec(w, r, r.prompt, join(dir, `${base}.jsonl`));
       let costUsd = record(this.ctx, w, r.role, r.stage, r.featureId, result.usage).costUsd;
@@ -106,14 +109,19 @@ export class Runtime {
       let data: T | undefined;
       if (outcome === "success" && r.schema) {
         data = this.parse(r.schema, result.finalText);
-        if (data === undefined) {
-          // one formatting retry, same worker, previous answer as context
+        if (data === undefined && r.role !== "formatter") {
           const retry = `Sua resposta anterior não terminou com um bloco JSON válido no formato exigido.\nResposta anterior (final):\n${result.finalText.slice(-4000)}\n\nNÃO refaça o trabalho e NÃO repita o JSON da feature. Responda SOMENTE com o bloco \`\`\`json final no formato pedido nas instruções abaixo (se o papel não definir outro, use {"summary","filesChanged","testsRun","confidence","notes"}).\n\n${r.prompt.slice(-6000)}`;
-          result = await this.exec(w, r, retry, join(dir, `${base}.format-retry.jsonl`));
-          costUsd += record(this.ctx, w, r.role, r.stage, r.featureId, result.usage).costUsd;
-          data = result.ok ? this.parse(r.schema, result.finalText) : undefined;
+          if (this.ctx.config.roles.formatter) {
+            // the work is done: a cheap model only rewrites the answer in the expected format (re-running an agent is expensive)
+            const f = await this.invoke({ role: "formatter", taskId: r.taskId, featureId: r.featureId, stage: r.stage, attempt: r.attempt, cwd: r.cwd, prompt: retry, schema: r.schema, tags: r.tags }).catch(() => undefined);
+            data = f?.data;
+          } else {
+            result = await this.exec(w, r, retry, join(dir, `${base}.format-retry.jsonl`));
+            costUsd += record(this.ctx, w, r.role, r.stage, r.featureId, result.usage).costUsd;
+            data = result.ok ? this.parse(r.schema, result.finalText) : undefined;
+          }
           if (data === undefined) outcome = "invalid_json";
-        }
+        } else if (data === undefined) outcome = "invalid_json";
       }
       let eventId: string | undefined;
       if (!r.deferEvent) {
@@ -144,9 +152,15 @@ export class Runtime {
     log(`${r.featureId ?? r.taskId} ${r.role} ${w.id}${workerTag(this.ctx, w.id)} t${r.attempt} ${outcome === "success" ? "✔" : `✖ ${outcome}`} ${fmtDur(ms)} US$${costUsd.toFixed(2)} │ etapa US$${spent(this.ctx, { stage: r.stage }).toFixed(2)}/${stageCap(this.ctx, r.stage)}${progress}`);
   }
 
+  /** First JSON object of the answer that fits the schema, as written or with English keys mapped. */
   private parse<T>(schema: z.ZodType<T>, text: string): T | undefined {
-    const r = schema.safeParse(extractJson(text));
-    return r.success ? r.data : undefined;
+    for (const c of jsonCandidates(text)) {
+      for (const v of [c, aliasKeys(c)]) {
+        const r = schema.safeParse(v);
+        if (r.success) return r.data;
+      }
+    }
+    return undefined;
   }
 
   /** Worker crashes never take the orchestrator down (except FatalError). */

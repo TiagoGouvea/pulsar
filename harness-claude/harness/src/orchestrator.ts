@@ -9,7 +9,7 @@ import {
   addQuestion, addRisk, ApprovalSchema, type Approval, buildCheckpoint, checkpointDir, computeHash, deployPreview,
   freezeSpec, markAnswered, parseApprovalFiles, resolveAnswer, storedHash, writeSpecChange,
 } from "./checkpoint.js";
-import { type Ctx, remoteTwin } from "./config.js";
+import { type Ctx, enabledWorkers, remoteTwin } from "./config.js";
 import { formatIssues, judge, reviewCode, reviewFeatures, reviewUi, TriageSchema, type Verdict } from "./evaluator.js";
 import {
   type Feature, FeaturesFileSchema, loadFeatures, nextFeature, resetInProgress, saveFeatures, stageFeatures, stageSettled,
@@ -57,6 +57,18 @@ async function question(q: string) {
   const rl = createInterface({ input: process.stdin, output: process.stdout });
   try { return await rl.question(q); } finally { rl.close(); }
 }
+
+/** What failed, without timings/retries: two different models with the same signature are not making progress. */
+export const failureSig = (gates: GateReport) => gates.failed.map((id) => {
+  const out = gates.results.find((r) => r.id === id)?.output ?? "";
+  const keys = out.split("\n").filter((l) => /✘|›.*›|Error:|error TS\d+|FAIL|expected|received/i.test(l) && !/retry #/.test(l))
+    .map((l) => l.replace(/\(?\d+(\.\d+)?m?s\)?/g, "").replace(/\s+/g, " ").trim()).filter(Boolean);
+  return keys.length ? `${id}:${[...new Set(keys)].slice(0, 8).join("|")}` : "";   // no recognizable error lines: not comparable
+}).filter(Boolean).join("\n");
+
+/** Features created by the stage end (fix) or by the human (adj) get unique ids: a reused id inherited old spend/logs. */
+const nextIndex = (all: { features: { id: string }[] }, prefix: string) =>
+  1 + Math.max(0, ...all.features.map((f) => f.id.startsWith(prefix) ? Number(f.id.slice(prefix.length)) || 0 : 0));
 
 /** tsc errors expected in acceptance tests written before the code: missing module, export or member, and implicit any from them. */
 const TDD_TS_ERRORS = /error TS(2307|2305|2724|2614|2339|2551|7006|7031):/;
@@ -161,7 +173,10 @@ export class Orchestrator {
     if (!this.deps.ask || (e.cap !== "stage" && e.cap !== "run")) return false;
     const s = this.state.stage, cap = e.cap === "stage" ? stageCap(this.ctx, s) : this.ctx.budget.caps.run;
     const used = spent(this.ctx, e.cap === "stage" ? { stage: s } : {});
-    const a = (await this.deps.ask(`⏸ Teto ${e.cap === "stage" ? `da etapa ${s}` : "da execução"} atingido (US$ ${used.toFixed(2)} de ${cap}). Aumentar em quantos US$ e continuar? [Enter = pausar] `)).trim().replace(",", ".");
+    this.save();   // waiting for the human is not active time
+    const answer = this.deps.ask(`⏸ Teto ${e.cap === "stage" ? `da etapa ${s}` : "da execução"} atingido (US$ ${used.toFixed(2)} de ${cap}). Aumentar em quantos US$ e continuar? [Enter = pausar] `);
+    const a = (await answer).trim().replace(",", ".");
+    this.lastTick = Date.now();
     const by = Number(a);
     if (!a || !(by > 0)) return false;
     raiseCap(this.ctx, e.cap, s, by);
@@ -399,7 +414,8 @@ export class Orchestrator {
   private async featureLoop(f0: Feature, wt: string) {
     const ctx = this.ctx;
     const cfg = ctx.config.routing;
-    let f = await this.ensureAcceptanceTests(f0, wt);
+    // human adjustments are small: no new acceptance test (the implementer updates tests; gates, G7 and reviews still apply)
+    let f = f0.id.includes(".adj-") ? f0 : await this.ensureAcceptanceTests(f0, wt);
     const testsBase = await g.head(wt);
     const last = f0.history.at(-1);
     let diag = last ? `Retomada após interrupção: continue a partir do código já presente. Tentativa anterior: ${last.outcome}${last.failedGates?.length ? ` (gates ${last.failedGates.join(",")})` : ""}.${last.note ? `\n${last.note}` : ""}` : "";
@@ -412,16 +428,25 @@ export class Orchestrator {
       const attemptBase = await g.head(wt);
       if (!integ.ok) diag = `Há conflitos de merge com a branch ${this.branch} nos arquivos:\n${integ.conflict}\nResolva os marcadores <<<<<<< mantendo as duas funcionalidades.\n\n${diag}`;
       const lessonIds = selectLessons(ctx, role, f.tags).map((l) => l.id);
-      const prompt = render(ctx, role, featureVars(ctx, f, { diagnostic: diag || "(primeira tentativa)", attempt: String(attempt) }), f.tags);
-      this.clearInbox(wt);
-      const useTournament = attempt === 1 && cfg.tournament.enabled && f.tags.some((t) => cfg.tournament.tags.includes(t));
-      // last attempt failed on a local model: same model served remotely (unless escalated to implement_hard)
       const prev = f.history.at(-1);
-      const twin = prev && prev.outcome !== "success" && role !== "implement_hard" ? remoteTwin(ctx, prev.workerId) : undefined;
-      if (twin) log(`↻ ${f.id} ${prev!.workerId} (local) ✖ ${prev!.outcome}: tentativa ${attempt} com o mesmo modelo remoto (${twin})`);
-      const res = useTournament ? await this.tournament(f, wt, prompt, testsBase) : await this.rt.invoke({ role, taskId: f.id, featureId: f.id, stage: f.stage, attempt, cwd: wt, prompt, schema: WorkerFinal, tags: f.tags, deferEvent: true, workerId: twin });
-      this.harvestInbox(wt, f.id);
-      await g.commitAll(wt, `wip(${f.id}): tentativa ${attempt} (${res.worker.id})`);
+      const paid = f.pending && enabledWorkers(ctx).find((w) => w.id === f.pending!.workerId);
+      let res: InvokeRes<unknown>;
+      if (paid) {
+        // the worker call of this attempt was paid and committed, then the run stopped (budget prompt, Ctrl+C): evaluate that code
+        log(`↻ ${f.id} t${f.pending!.attempt}: retomando a avaliação do código de ${paid.id} (sem nova chamada de modelo)`);
+        res = { worker: paid, outcome: "success", costUsd: 0, result: { ok: true, exitCode: 0, finalText: "(retomada: código da tentativa já presente)", usage: { inputTokens: 0, outputTokens: 0 }, durationMs: 0, transcriptPath: "" } };
+      } else {
+        const prompt = render(ctx, role, featureVars(ctx, f, { diagnostic: diag || "(primeira tentativa)", attempt: String(attempt) }), f.tags);
+        this.clearInbox(wt);
+        const useTournament = attempt === 1 && cfg.tournament.enabled && f.tags.some((t) => cfg.tournament.tags.includes(t));
+        // last attempt failed on a local model: same model served remotely (unless escalated to implement_hard)
+        const twin = prev && prev.outcome !== "success" && role !== "implement_hard" ? remoteTwin(ctx, prev.workerId) : undefined;
+        if (twin) log(`↻ ${f.id} ${prev!.workerId} (local) ✖ ${prev!.outcome}: tentativa ${attempt} com o mesmo modelo remoto (${twin})`);
+        res = useTournament ? await this.tournament(f, wt, prompt, testsBase) : await this.rt.invoke({ role, taskId: f.id, featureId: f.id, stage: f.stage, attempt, cwd: wt, prompt, schema: WorkerFinal, tags: f.tags, deferEvent: true, workerId: twin });
+        this.harvestInbox(wt, f.id);
+        await g.commitAll(wt, `wip(${f.id}): tentativa ${attempt} (${res.worker.id})`);
+        if (res.outcome === "success") updateFeature(ctx, f.id, (x) => { x.pending = { attempt, role, workerId: res.worker.id }; });
+      }
 
       let outcome: "success" | "failure" | "timeout" | "invalid_json" | "protected_violation" | "review_rejected" = res.outcome;
       let gates: GateReport | undefined;
@@ -430,7 +455,7 @@ export class Orchestrator {
         diag = `A tentativa anterior terminou com "${res.outcome}". Final da resposta:\n${res.result.finalText.slice(-1500)}`;
       } else {
         await this.tidy(wt, f.id);
-        gates = await this.deps.runGates(ctx, wt, { stage: f.stage, mode: "feature", base: this.branch, featureId: f.id });
+        gates = await this.deps.runGates(ctx, wt, { stage: f.stage, mode: "feature", base: this.branch, featureId: f.id, extra: f.tags.filter((t) => t.startsWith("gate:")).map((t) => t.slice(5)) });
         writeJson(hp(ctx, "runs", f.id, `gate-report-${attempt}.json`), gates);
         if (gates.failed.includes("G7")) {
           outcome = "protected_violation";
@@ -457,11 +482,17 @@ export class Orchestrator {
       });
       recordStats(ctx, res.worker.id, role, f.tags, { success: outcome === "success", costUsd: res.costUsd, durationMs: res.result.durationMs, failedGates: gates?.failed });
       recordLessonOutcome(ctx, lessonIds, outcome === "success");
+      const sig = outcome === "failure" && gates ? failureSig(gates) : undefined;
       const fNow = updateFeature(ctx, f.id, (x) => {
         x.attempts = attempt;
         x.costUsd = spent(ctx, { featureId: f.id });
-        x.history.push({ attempt, role, workerId: res.worker.id, outcome, failedGates: gates?.failed ?? [], eventId, ts: new Date().toISOString() });
+        x.pending = undefined;
+        x.history.push({ attempt, role, workerId: res.worker.id, outcome, failedGates: gates?.failed ?? [], eventId, ts: new Date().toISOString(), ...(sig && { sig }) });
       });
+      // a second model failing exactly like the previous one: the cause is likely the test, the spec or the environment
+      if (sig && prev?.sig === sig && prev.workerId !== res.worker.id) {
+        return this.block(fNow, `sem progresso: ${prev.workerId} e ${res.worker.id} falharam igual (gates ${gates!.failed.join(",")}); provável problema no teste, na spec ou no ambiente`);
+      }
       if (outcome !== "success") {
         const why = outcome === "failure" && gates ? `gates ${gates.failed.join(",")}` : outcome === "review_rejected" ? `revisão reprovou (${verdicts.filter((v) => !v.pass).map((v) => `${v.kind} ${v.workerId ?? "?"} nota ${v.score}`).join(", ")})` : outcome;
         log(`↻ ${f.id} t${attempt} ${res.worker.id}: ${why} │ US$ ${spent(ctx, { featureId: f.id }).toFixed(2)} na feature`);
@@ -561,7 +592,8 @@ export class Orchestrator {
     const canFix = this.state.stageFixRounds < ctx.config.loop.maxStageFixRounds;
     let suiteNote = gates.ok ? `Todos os gates obrigatórios passaram em ${this.branch}.` : `Gates falhando: ${gates.failed.join(", ")}`;
     if (!gates.ok) {
-      if (canFix) return this.addFixFeature(s, `Suíte completa da etapa falhou nos gates ${gates.failed.join(", ")}`, gates.results.filter((r) => !r.ok).map((r) => `${r.id}: ${r.output.slice(-1500)}`).join("\n\n"), ["regression"]);
+      // stage-only gates (Lighthouse...) also run on the fix feature, so its implementer sees the score it must reach
+      if (canFix) return this.addFixFeature(s, `Suíte completa da etapa falhou nos gates ${gates.failed.join(", ")}`, gates.results.filter((r) => !r.ok).map((r) => `${r.id}: ${r.output.slice(-1500)}`).join("\n\n"), ["regression", ...gates.failed.filter((id) => ctx.config.gates[id]?.scope === "stage").map((id) => `gate:${id}`)]);
       addRisk(ctx, { risco: `suíte da etapa ${s} falhando após ${this.state.stageFixRounds} rodadas: ${gates.failed.join(", ")}`, probabilidade: "alta", impacto: "alto", sugestao: "revisar manualmente antes de aprovar" });
       suiteNote += " (limite de rodadas de correção atingido)";
     }
@@ -586,7 +618,7 @@ export class Orchestrator {
     const all = loadFeatures(this.ctx);
     this.state.stageFixRounds++;
     all.features.push({
-      id: `F-${stage}.fix-${this.state.stageFixRounds}`, stage, title, description: details.slice(0, 8000), specRefs: [], covers: [],
+      id: `F-${stage}.fix-${nextIndex(all, `F-${stage}.fix-`)}`, stage, title, description: details.slice(0, 8000), specRefs: [], covers: [],
       acceptance: ["Todos os gates obrigatórios da etapa passam na suíte completa", "Nenhum teste protegido é alterado"],
       tests: [], protectedTests: [...new Set(stageFeatures(all, stage).filter((f) => f.status === "passing").flatMap((f) => f.protectedTests))], tags, difficulty: "hard",
       dependsOn: [], status: "failing", attempts: 0, costUsd: 0, history: [], origin: [],
@@ -644,7 +676,9 @@ export class Orchestrator {
     const ajustes = a.ajustes.map((x) => (typeof x === "string" ? { titulo: x, descricao: x, criterios: [x], tags: [] as string[], features: [] as string[] } : x));
     if (!a.aprovado && !ajustes.length) return `✖ APROVACAO.md da etapa ${s} não está preenchido (Status: aprovado, ou ajustes + lista). Nada mudou.`;
     const summary = [`Etapa ${s}: ${a.aprovado && !ajustes.length ? "APROVADA" : "AJUSTES"}`, ...ajustes.map((x) => `  ajuste: ${x.titulo}`), ...a.respostasDuvidas.map((r) => `  ${r.id}: ${r.resposta}`)].join("\n");
-    if (!(await this.deps.confirm(summary))) return "✖ aprovação cancelada: nada mudou";
+    const ok = await this.deps.confirm(summary);
+    this.lastTick = Date.now();   // waiting for the human is not active time
+    if (!ok) return "✖ aprovação cancelada: nada mudou";
 
     const wt = await this.stageWt(s);
     if (a.respostasDuvidas.length) {
@@ -656,11 +690,12 @@ export class Orchestrator {
     }
     if (ajustes.length) {
       const all = loadFeatures(ctx);
-      const n = all.features.filter((f) => f.id.startsWith(`F-${s}.adj-`)).length;
+      const n = nextIndex(all, `F-${s}.adj-`) - 1;
       ajustes.forEach((x, i) => all.features.push({
-        id: `F-${s}.adj-${String(n + i + 1).padStart(2, "0")}`, stage: s, title: x.titulo, description: x.descricao || x.titulo, specRefs: [], covers: [],
+        id: `F-${s}.adj-${String(n + i + 1).padStart(2, "0")}`, stage: s, title: x.titulo,
+        description: `${x.descricao || x.titulo}\n\n(Ajuste pedido pelo humano no checkpoint: sem teste de aceite novo. Atualize ou acrescente testes se o comportamento mudar; não mexa no que não foi pedido.)`, specRefs: [], covers: [],
         acceptance: x.criterios.length ? x.criterios : [x.titulo], tests: [], protectedTests: [], tags: x.tags.length ? x.tags : ["ui"],
-        difficulty: "normal", dependsOn: [], status: "failing", attempts: 0, costUsd: 0, history: [], origin: x.features,
+        difficulty: "easy", dependsOn: [], status: "failing", attempts: 0, costUsd: 0, history: [], origin: x.features,
       }));
       saveFeatures(ctx, all);
       this.state.stageFixRounds = 0;

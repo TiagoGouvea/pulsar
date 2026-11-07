@@ -194,3 +194,28 @@ describe("watch: glifos por evento do transcript", () => {
       g({ type: "user", message: { content: [{ type: "tool_result", is_error: false }, { type: "tool_result", is_error: true }] } }), glyphs("não é json")].join("")).toBe("·T✎✓✗");
   });
 });
+
+describe("JSON das respostas dos modelos", () => {
+  it("acha o objeto certo entre vários, tolera vírgula sobrando e chaves em inglês", async () => {
+    const { jsonCandidates, aliasKeys } = await import("../src/prompts.js");
+    const { ReviewCodeSchema } = await import("../src/evaluator.js");
+    const text = 'Li a feature {"id":"F-1.01","title":"x"} e revisei.\n{"pass": false, "score": 6, "issues": [{"severity": "blocker", "file": "a.ts", "description": "quebra", }],}\nfim';
+    const cs = jsonCandidates(text);
+    expect(cs).toHaveLength(2);
+    const ok = cs.map((c) => ReviewCodeSchema.safeParse(aliasKeys(c))).find((r) => r.success);
+    expect(ok?.data).toMatchObject({ pass: false, score: 6, issues: [{ severidade: "blocker", arquivo: "a.ts", descricao: "quebra" }] });
+    expect(jsonCandidates('```json\n{"a": "chave } dentro de string"}\n```')[0]).toEqual({ a: "chave } dentro de string" });
+  });
+});
+
+describe("roteador por custo de um sucesso", () => {
+  it("barato por chamada mas lento perde para um pouco mais caro e rápido", async () => {
+    const { score } = await import("../src/router.js");
+    const w = (id: string) => ({ id }) as any;
+    const stats = {
+      "slow|implement|*": { tentativas: 4, sucessos: 2, custoMedio: 0.49, duracaoMedia: 15 * 60_000, falhasPorGate: {} },
+      "fast|implement|*": { tentativas: 5, sucessos: 1, custoMedio: 0.15, duracaoMedia: 84_000, falhasPorGate: {} },
+    };
+    expect(score(stats, w("fast"), "implement")).toBeGreaterThan(score(stats, w("slow"), "implement"));
+  });
+});

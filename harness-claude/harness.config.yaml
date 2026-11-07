@@ -56,7 +56,7 @@ workers:
   glm-or:       { cli: pi,     model: "openrouter/z-ai/glm-5.3",       family: zhipu, tier: mid, vision: false, billing: api, concurrency: 2, timeoutMin: 30 }
   glm-flash:    { cli: pi,     model: "openrouter/z-ai/glm-5.3-flash", family: zhipu, tier: low, vision: true,  billing: api, concurrency: 3, timeoutMin: 20 }
   # mesmo preço do sonnet (US$ 2/10): alternativa de outra família no implement_hard, nunca antes do sonnet
-  kimi-pro:     { cli: pi,     model: "openrouter/moonshotai/kimi-k3.1-pro",  family: moonshot, tier: high, vision: true, billing: api, concurrency: 2, timeoutMin: 45 }
+  kimi-pro:     { cli: pi,     model: "openrouter/moonshotai/kimi-k3.1-pro",  family: moonshot, tier: high, vision: true, billing: api, concurrency: 2, timeoutMin: 20 }   # etapa 1: até 40 min numa tentativa
   # --- Locais (LM Studio, LMSTUDIO_BASE_URL, padrão http://localhost:1235/v1) ---
   local-gptoss: { cli: pi, model: "lmstudio/mlx-community/gpt-oss-20b",         family: openai, tier: local, vision: false, billing: local, concurrency: 1, timeoutMin: 30, maxContextTokens: 65536, remote: gptoss-or, enabled: false }   # etapa 1: só remotos
   local-coder:  { cli: pi, model: "lmstudio/qwen3-coder-30b-a3b-instruct-mlx",  family: qwen,   tier: local, vision: false, billing: local, concurrency: 1, timeoutMin: 40, maxContextTokens: 32000, requiresFreeRamGb: 18, enabled: false }   # não carrega com 24 GB
@@ -71,14 +71,15 @@ workers:
 roles:
   # Etapa 1: só remotos (locais desligados); a ordem só desempata, quem escolhe é o roteador (histórico e preço).
   initializer:     { pool: [opus],                              note: "decompõe spec, scaffold, design system" }
-  test_writer:     { pool: [codex-mid, glm-or],                 note: "escreve testes de aceite ANTES da implementação (sem sonnet: US$ 5 só de testes na etapa 1)" }
-  implement:       { pool: [minimax, haiku, glm-or, codex-mid], note: "features comuns (sem qwen-coder/kimi/deepseek-flash: 0 sucessos, lentos)" }
+  test_writer:     { pool: [codex-mid, glm-or],                 note: "escreve testes de aceite ANTES da implementação (sem sonnet: US$ 5 só de testes na etapa 1); glm-or só se o codex-mid faltar" }
+  implement:       { pool: [minimax, haiku, codex-mid],         note: "features comuns (sem qwen-coder/kimi/deepseek-flash: 0 sucessos; sem glm-or: 15 min por tentativa)" }
   implement_easy:  { pool: [minimax, glm-flash, haiku],         note: "features difficulty=easy" }
   implement_hard:  { pool: [codex-mid, glm-or, kimi-pro],       note: "estatística, security rules e difficulty=hard (sem opus/sonnet: US$ 10,65 com 8/37 sucessos na etapa 1; como o harness do Codex)" }
   review_code:     { pool: [gemini, glm-or, gemini-argon, codex-mid, haiku, sonnet], rule: different_family_from_implementer }
   review_ui:       { pool: [gemini, gemini-argon, haiku, sonnet],                    rule: different_family_from_implementer, requires: vision }
   triage:          { pool: [haiku, glm-flash, deepseek-flash, gemini-lite] }   # deepseek v4-pro saiu: 4-5 min e até US$ 0,64 por triagem
   approval_parser: { pool: [haiku, glm-flash, gemini-lite],  note: "converte APROVACAO.md/DUVIDAS.md em JSON" }
+  formatter:       { pool: [gemini-lite, glm-flash, haiku],  note: "reescreve no formato JSON exigido a resposta de um worker que errou o formato (não refaz o trabalho)" }
   retro:           { pool: [sonnet] }
   postmortem:      { pool: [sonnet] }
 
