@@ -78,6 +78,7 @@ export interface ExecutionRequest {
   timeoutMs: number;
   outputDirectory: string;
   readOnly?: boolean | undefined;
+  captureModelExchange?: boolean | undefined;
   acceptedResultTaskIds?: string[] | undefined;
   timeZone?: string | undefined;
 }

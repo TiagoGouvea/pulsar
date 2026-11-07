@@ -529,6 +529,16 @@ export class PiExecutor implements Executor {
     const { session } = created;
     const tracePath = path.join(request.outputDirectory, "session-trace.jsonl");
     const responseRepairLogPath = path.join(request.outputDirectory, "response-repair.jsonl");
+    const exchangePath = path.join(request.outputDirectory, "model-exchange.jsonl");
+    const recordExchange = (stage: string, direction: "request" | "response" | "error" | "event", content: string, model = request.candidate, tool?: string): void => {
+      if (!request.captureModelExchange) return;
+      const safeContent = redact(content, this.config.security.redactPatterns);
+      appendFileSync(exchangePath, `${JSON.stringify({
+        at: nowUtc(), stage, direction, modelAlias: model.alias, modelId: model.modelId, ...(tool ? { tool } : {}),
+        content: safeContent.slice(0, MAX_RAW_RESPONSE_CHARS),
+        truncated: safeContent.length > MAX_RAW_RESPONSE_CHARS,
+      })}\n`, { encoding: "utf8", mode: 0o600 });
+    };
     appendFileSync(tracePath, `${JSON.stringify({
       at: nowUtc(), type: "session_start", provider: request.candidate.provider,
       modelId: request.candidate.modelId, alias: request.candidate.alias,
@@ -557,7 +567,15 @@ export class PiExecutor implements Executor {
     };
     const unsubscribe = session.subscribe((event) => {
       const summary = eventSummary(event);
-      if (summary) progress.event(summary);
+      if (!summary) return;
+      progress.event(summary);
+      if (summary.type === "tool_execution_start" || summary.type === "tool_execution_end") {
+        const eventData = event as Record<string, unknown>;
+        const exchangeEvent = summary.type === "tool_execution_start" && "args" in eventData
+          ? { ...summary, args: eventData.args }
+          : summary;
+        recordExchange("tool", "event", JSON.stringify(exchangeEvent), request.candidate, typeof summary.toolName === "string" ? summary.toolName : undefined);
+      }
     });
     const timeoutState = { triggered: false, cancelled: false };
     this.abortCurrent = async () => { timeoutState.cancelled = true; await session.abort(); };
@@ -567,11 +585,16 @@ export class PiExecutor implements Executor {
     const primaryStartedAt = Date.now();
     let primaryDurationMs = 0;
     try {
+      recordExchange("executor", "request", request.prompt);
       try { await session.prompt(request.prompt); }
-      catch (error) { throw new PiExecutionError(timeoutState.triggered ? "timeout" : "provider_request", error); }
+      catch (error) {
+        recordExchange("executor", "error", safeError(error));
+        throw new PiExecutionError(timeoutState.triggered ? "timeout" : "provider_request", error);
+      }
       primaryDurationMs = Date.now() - primaryStartedAt;
       if (timeoutState.triggered) throw new PiExecutionError("timeout", new Error(`Sessão excedeu ${request.timeoutMs} ms.`));
       const initialResponse = lastAssistantOutput(session.messages, session.getLastAssistantText());
+      recordExchange("executor", "response", initialResponse ?? "[EMPTY RESPONSE]");
       let rawResponse = initialResponse;
       const primaryStats = (): NonNullable<ExecutionResult["usage"]> => {
         const stats = session.getSessionStats();
@@ -624,7 +647,7 @@ export class PiExecutor implements Executor {
             const formatted = await recoverResultWithFormatter(
               initialResponse, initialParseError, request.task.id,
               request.acceptedResultTaskIds ?? [request.task.id],
-              (response) => this.formatResponse(request, response, primaryStartedAt, progress, observeResponseRepair),
+              (response) => this.formatResponse(request, response, primaryStartedAt, progress, observeResponseRepair, recordExchange),
               observeResponseRepair,
             );
             rawResponse = ["[INITIAL RESPONSE]", initialResponse, "", "[FORMATTER RESPONSE]", formatted.response].join("\n");
@@ -658,10 +681,15 @@ export class PiExecutor implements Executor {
           `Responda agora somente com o JSON solicitado. O campo taskId deve ser exatamente "${request.task.id}".`,
           "Inclua taskId, outcome, summary, changedFiles, claimedChecks, decisions, blockers e suggestedFollowUps.",
         ].join("\n");
+        recordExchange("executor-repair", "request", repairPrompt);
         try { await session.prompt(repairPrompt); }
-        catch (repairError) { throw new PiExecutionError(timedOut() ? "timeout" : "provider_request", repairError); }
+        catch (repairError) {
+          recordExchange("executor-repair", "error", safeError(repairError));
+          throw new PiExecutionError(timedOut() ? "timeout" : "provider_request", repairError);
+        }
         if (timedOut()) throw new PiExecutionError("timeout", new Error(`Sessão excedeu ${request.timeoutMs} ms.`));
         const repairedResponse = lastAssistantOutput(session.messages, session.getLastAssistantText());
+        recordExchange("executor-repair", "response", repairedResponse ?? "[EMPTY RESPONSE]");
         rawResponse = [
           "[INITIAL RESPONSE]", initialResponse ?? "[EMPTY RESPONSE]",
           "", "[REPAIR RESPONSE]", repairedResponse ?? "[EMPTY RESPONSE]",
@@ -703,6 +731,7 @@ export class PiExecutor implements Executor {
     requestStartedAt: number,
     progress: ReturnType<typeof startLiveProgress>,
     observeRepair: ResultRepairObserver,
+    recordExchange: (stage: string, direction: "request" | "response" | "error" | "event", content: string, model?: ModelCandidate, tool?: string) => void,
   ): Promise<{ text: string; call: NonNullable<NonNullable<ExecutionResult["usage"]>["additionalCalls"]>[number] }> {
     const settings = this.config.responseFormatting;
     if (original.length > settings.maxInputChars) throw new Error(`Resposta longa demais para reparo (${original.length} caracteres; limite ${settings.maxInputChars}).`);
@@ -733,8 +762,15 @@ export class PiExecutor implements Executor {
       const timeout = setTimeout(() => { timeoutState.triggered = true; void created?.session.abort(); }, timeoutMs);
       let formatterText = "";
       try {
-        await created.session.prompt(formatterPrompt(text, request.task.id));
+        const prompt = formatterPrompt(text, request.task.id);
+        recordExchange("response-formatter", "request", prompt, candidate);
+        try { await created.session.prompt(prompt); }
+        catch (error) {
+          recordExchange("response-formatter", "error", safeError(error), candidate);
+          throw error;
+        }
         formatterText = lastAssistantOutput(created.session.messages, created.session.getLastAssistantText()) ?? "";
+        recordExchange("response-formatter", "response", formatterText || "[EMPTY RESPONSE]", candidate);
       } finally { clearTimeout(timeout); }
       const stats = created.session.getSessionStats();
       const costUsd = String(stats.cost);

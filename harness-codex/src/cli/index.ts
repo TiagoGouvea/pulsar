@@ -88,7 +88,8 @@ models.command("list").requiredOption("--config <path>").action(async (options: 
 });
 models.command("probe").requiredOption("--config <path>").requiredOption("--alias <alias>")
   .option("--inference", "Executa smoke tests reais de texto e ferramentas")
-  .action(async (options: { config: string; alias: string; inference?: boolean }) => {
+  .option("--show-exchange", "Exibe o prompt enviado e as respostas textuais recebidas do Pi")
+  .action(async (options: { config: string; alias: string; inference?: boolean; showExchange?: boolean }) => {
     const config = await loadConfig(options.config);
     const candidate = config.models.find((item) => item.alias === options.alias);
     if (!candidate) throw new Error(`Alias desconhecido: ${options.alias}`);
@@ -99,7 +100,7 @@ models.command("probe").requiredOption("--config <path>").requiredOption("--alia
       return;
     }
     if (options.inference && candidate.modality === "metered_api") {
-      const result = await runPiModelSmoke(config, candidate);
+      const result = await runPiModelSmoke(config, candidate, options.showExchange ?? false);
       if (result.outcome !== "ready_for_verification" || result.toolCalls < 1) process.exitCode = 2;
     }
   });
@@ -433,6 +434,7 @@ function printChecks(checks: Array<{ status: string; id: string; summary: string
 async function runPiModelSmoke(
   config: Awaited<ReturnType<typeof loadConfig>>,
   candidate: ModelCandidate,
+  showExchange = false,
 ): Promise<{ outcome: ExecutionResult["outcome"]; toolCalls: number }> {
   if (config.budget.diagnosticsLimit == null) throw new Error("Smoke test remoto bloqueado: defina diagnosticsLimit como teto explícito.");
   const promptTokensEstimate = 500;
@@ -456,6 +458,12 @@ async function runPiModelSmoke(
     plannedFiles: [], maxAttempts: 1,
   };
   terminalLog(`Smoke test do runtime Pi · ${candidate.alias} (${candidate.modelId}) [remoto] · estimativa até USD ${formatMicros(estimatedMicros)}.`, { timeZone: config.project.timezone, tone: "blue" });
+  const prompt = [
+    "Esta é uma chamada de diagnóstico; não altere arquivos.",
+    "Use a ferramenta de leitura para abrir package.json no workspace e confirme o nome do projeto.",
+    `Responda ao final somente com o contrato JSON completo e taskId exatamente ${probeId}.`,
+    "Use outcome ready_for_verification, summary curta e arrays vazios nos demais campos.",
+  ].join("\n\n");
   const result = await new PiExecutor(config).execute({
     runId: probeId,
     attemptId: createId("attempt"),
@@ -465,13 +473,9 @@ async function runPiModelSmoke(
     timeoutMs: 120_000,
     outputDirectory,
     readOnly: true,
+    captureModelExchange: showExchange,
     timeZone: config.project.timezone,
-    prompt: [
-      "Esta é uma chamada de diagnóstico; não altere arquivos.",
-      "Use a ferramenta de leitura para abrir package.json no workspace e confirme o nome do projeto.",
-      `Responda ao final somente com o contrato JSON completo e taskId exatamente ${probeId}.`,
-      "Use outcome ready_for_verification, summary curta e arrays vazios nos demais campos.",
-    ].join("\n\n"),
+    prompt,
   });
   const tracePath = path.join(outputDirectory, "session-trace.jsonl");
   const trace = existsSync(tracePath) ? readFileSync(tracePath, "utf8") : "";
@@ -480,7 +484,21 @@ async function runPiModelSmoke(
     alias: candidate.alias, provider: candidate.provider, modelId: candidate.modelId,
     modality: candidate.modality, estimatedCostUsd: formatMicros(estimatedMicros),
     actualCostUsd: result.usage?.costUsd ?? null, toolCalls, result,
+    ...(showExchange ? { exchangePath: path.join(outputDirectory, "model-exchange.jsonl") } : {}),
   });
+  if (showExchange) {
+    const exchangePath = path.join(outputDirectory, "model-exchange.jsonl");
+    terminalLog(`Intercâmbio Pi salvo em ${exchangePath}`, { timeZone: config.project.timezone, tone: "cyan" });
+    if (existsSync(exchangePath)) {
+      for (const line of readFileSync(exchangePath, "utf8").split(/\r?\n/).filter(Boolean)) {
+        const record = JSON.parse(line) as { stage?: string; direction?: string; modelAlias?: string; content?: string; tool?: string };
+        const label = record.direction === "event"
+          ? `Ferramenta ${record.tool ?? "evento"} · ${record.direction} · ${record.modelAlias ?? "modelo"}`
+          : `${record.stage ?? "Pi"} ${record.direction ?? "registro"} · ${record.modelAlias ?? "modelo"}`;
+        console.log(`\n--- ${label} ---\n${record.content ?? ""}`);
+      }
+    }
+  }
   const tone = result.outcome === "ready_for_verification" && toolCalls > 0 ? "green" : "red";
   terminalLog(`Smoke Pi ${candidate.alias} [remoto] · ${result.outcome} · ferramentas ${toolCalls} · USD ${result.usage?.costUsd ?? "incerto"} · evidência ${outputDirectory}`, { timeZone: config.project.timezone, tone });
   if (result.outcome === "failed") terminalLog(`↳ ${result.summary}`, { timeZone: config.project.timezone, tone: "red" });
