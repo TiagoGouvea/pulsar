@@ -53,12 +53,14 @@ Para registrar a evolução cronológica do projeto e permitir comparação prec
 
 ## Relatório por etapa
 
-| Etapa | Modelo | Relatório |
-| :---: | :--- | :--- |
-| **0** | Claude | [`harness-claude/observacoes/etapa-0.md`](harness-claude/observacoes/etapa-0.md) |
-| **0** | Codex | [`harness-codex/docs/retrospectiva-0-setup.md`](harness-codex/docs/retrospectiva-0-setup.md) |
-| **1** | Claude | [`harness-claude/observacoes/etapa-1.md`](harness-claude/observacoes/etapa-1.md) |
-| **1** | Codex | [`harness-codex/docs/retrospectiva-1-base.md`](harness-codex/docs/retrospectiva-1-base.md) |
+| Etapa | Papel | Modelo / Agente | Relatório |
+| :---: | :--- | :--- | :--- |
+| **0** | Harness | Claude | [`harness-claude/observacoes/etapa-0.md`](harness-claude/observacoes/etapa-0.md) |
+| **0** | Harness | Codex | [`harness-codex/docs/retrospectiva-0-setup.md`](harness-codex/docs/retrospectiva-0-setup.md) |
+| **0** | Observer | Agy | [`observer-agy/c-etapa-0-setup.md`](observer-agy/c-etapa-0-setup.md) |
+| **1** | Harness | Claude | [`harness-claude/observacoes/etapa-1.md`](harness-claude/observacoes/etapa-1.md) |
+| **1** | Harness | Codex | [`harness-codex/docs/retrospectiva-1-base.md`](harness-codex/docs/retrospectiva-1-base.md) |
+| **1** | Observer | Agy | [`observer-agy/d-etapa-1-base.md`](observer-agy/d-etapa-1-base.md) |
 
 ---
 
