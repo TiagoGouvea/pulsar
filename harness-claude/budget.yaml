@@ -5,7 +5,7 @@ caps:
   byStage:
     # por etapa (id em harness.config.yaml > stages); opcionais fora do escopo não gastam
     "0": 16 # Setup: inicializador (opus), scaffold, design system (1ª rodada sozinha custou US$ 4,71)
-    "1": 32 # Base: auth, security rules (implement_hard); ~US$ 7,50 perdidos com bugs do harness
+    "1": 33 # Base: auth, security rules (implement_hard); ~US$ 7,50 perdidos com bugs do harness
     "2": 9 # Registro
     "3": 12 # Insights: estatística (implement_hard)
     "4": 5 # Curadoria
