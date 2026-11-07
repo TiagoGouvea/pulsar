@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './auth/AuthProvider';
 import { Button } from './design';
 import { emulatorsEnabled } from './lib/env';
 import { HomePlaceholder } from './pages/HomePlaceholder';
+import { IndicatorEditorPage } from './pages/IndicatorEditorPage';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { PlaceholderPage } from './pages/PlaceholderPage';
 import { SettingsPage } from './pages/SettingsPage';
@@ -91,12 +92,15 @@ const routes: RouteObject[] = [
         path: '/indicators/new',
         element: (
           <AppShell>
-            <PlaceholderPage
-              title="Novo Indicador"
-              icon="tune"
-              emptyTitle="Em breve"
-              description="A criação de indicadores chega em breve."
-            />
+            <IndicatorEditorPage mode="create" />
+          </AppShell>
+        ),
+      },
+      {
+        path: '/indicators/:id/edit',
+        element: (
+          <AppShell>
+            <IndicatorEditorPage mode="edit" />
           </AppShell>
         ),
       },

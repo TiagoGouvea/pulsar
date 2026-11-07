@@ -94,6 +94,22 @@ function assertValidSortOrder(sortOrder: number): void {
   }
 }
 
+function storedIndicatorFrom(document: {
+  id: string;
+  data: () => Record<string, unknown> | undefined;
+}): StoredIndicator {
+  const data = document.data() ?? {};
+  return {
+    ...(data as unknown as IndicatorInput),
+    id: document.id,
+    sortOrder: data.sortOrder as number,
+    archivedAt: (data.archivedAt as Timestamp | null | undefined) ?? null,
+    lockedAt: (data.lockedAt as Timestamp | null | undefined) ?? null,
+    createdAt: (data.createdAt as Timestamp | null | undefined) ?? null,
+    updatedAt: (data.updatedAt as Timestamp | null | undefined) ?? null,
+  };
+}
+
 function indicatorInputFrom(data: IndicatorInput): IndicatorInput {
   return {
     group: data.group,
@@ -109,6 +125,15 @@ function indicatorInputFrom(data: IndicatorInput): IndicatorInput {
     frequency: data.frequency,
     dailyAggregation: data.dailyAggregation,
   };
+}
+
+/**
+ * One-shot read of a single indicator for the editor. A read-only transaction uses a unary request,
+ * so the route does not keep Firestore's watch stream open the way getDoc/getDocs would.
+ */
+export async function getIndicator(uid: string, id: string): Promise<StoredIndicator | null> {
+  const snapshot = await runTransaction(db, (transaction) => transaction.get(indicatorRef(uid, id)));
+  return snapshot.exists() ? storedIndicatorFrom(snapshot) : null;
 }
 
 export async function createIndicator(uid: string, input: CreateIndicatorInput): Promise<string> {
@@ -225,15 +250,7 @@ export function useIndicators(uid: string): IndicatorsState {
       (snapshot) => {
         if (!active) return;
         const next = snapshot.docs
-          .map((document) => {
-            const data = document.data();
-            return {
-              ...data,
-              id: document.id,
-              archivedAt: data.archivedAt ?? null,
-              lockedAt: data.lockedAt ?? null,
-            } as StoredIndicator;
-          })
+          .map(storedIndicatorFrom)
           .sort((a, b) => a.sortOrder - b.sortOrder || a.id.localeCompare(b.id));
         setState({ uid, indicators: next, loading: false, error: null });
       },

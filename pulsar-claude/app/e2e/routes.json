@@ -5,6 +5,7 @@
   { "path": "/register", "name": "register", "tags": ["ui"] },
   { "path": "/indicators", "name": "indicators", "tags": ["ui"] },
   { "path": "/indicators/new", "name": "indicators-new", "tags": ["ui"] },
+  { "path": "/indicators/:id/edit", "name": "indicators-edit", "tags": ["ui"] },
   { "path": "/saved-insights", "name": "saved-insights", "tags": ["ui"] },
   { "path": "/settings", "name": "settings", "tags": ["ui"] },
   { "path": "/_design", "name": "design", "tags": ["ui"] }
