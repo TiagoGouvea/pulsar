@@ -104,6 +104,7 @@ export class Orchestrator {
     this.state = s;
     rmSync(PAUSE_FILE(this.ctx), { force: true });
     if (["CRASHED", "PAUSED_MANUAL", "PAUSED_BUDGET", "PAUSED_QUOTA"].includes(s.phase)) this.set(s.pausedFrom ?? "STAGE_RUNNING");
+    this.state.lastError = undefined;   // the crash is kept in crashes.jsonl; a stale stack here only misleads
     return this.run();
   }
 

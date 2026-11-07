@@ -8,7 +8,7 @@ import { appendJsonl, hp, readJsonl } from "./state.js";
 
 export interface LedgerRow {
   ts: string; workerId: string; provider: string; role: string; featureId?: string; stage: number;
-  tokensIn: number; tokensOut: number; costUsd: number; billing: string;
+  tokensIn: number; tokensOut: number; tokensCached?: number; costUsd: number; billing: string; modality?: "local" | "remote";
 }
 export type Cap = "feature" | "stage" | "run" | "provider";
 
@@ -32,7 +32,8 @@ export function costOf(ctx: Ctx, w: WorkerSpec, u: Usage): number {
 export function record(ctx: Ctx, w: WorkerSpec, role: string, stage: number, featureId: string | undefined, u: Usage): LedgerRow {
   const row: LedgerRow = {
     ts: new Date().toISOString(), workerId: w.id, provider: providerOf(w), role, featureId, stage,
-    tokensIn: u.inputTokens, tokensOut: u.outputTokens, costUsd: costOf(ctx, w, u), billing: w.billing,
+    tokensIn: u.inputTokens, tokensOut: u.outputTokens, tokensCached: u.cachedTokens ?? 0, costUsd: costOf(ctx, w, u), billing: w.billing,
+    modality: w.tier === "local" ? "local" : "remote",
   };
   appendJsonl(file(ctx), row);
   return row;
