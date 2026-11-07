@@ -14,7 +14,7 @@ const settings = JSON.stringify({
 export const claudeCode = cliAdapter({
   bin: "claude",
   args: (spec, run) => [
-    "-p", withAttachments(run), "--output-format", "json", "--model", spec.model,
+    "-p", withAttachments(run), "--output-format", "stream-json", "--verbose",   // streamed for harness watch; last line is the result "--model", spec.model,
     "--permission-mode", "dontAsk", "--settings", settings, "--setting-sources", "project",
     "--strict-mcp-config", "--no-session-persistence",
   ],

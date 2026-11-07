@@ -1,0 +1,66 @@
+[
+  {
+    "kind": "code",
+    "pass": true,
+    "score": 7,
+    "issues": [
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/auth/linkAccount.ts",
+        "descricao": "Duplicação: sendEmailLink e resendExistingAccountLink repetem o mesmo bloco de gravar o e-mail no localStorage, enviar sendSignInLinkToEmail e reverter em caso de falha. A leitura de continueUrl/linkUid também aparece duplicada em completeEmailLinkOnce e em continueUrlParams.",
+        "sugestao": "Extrair um helper único, por exemplo sendLinkTo(email, params), que recebe os parâmetros extras da URL e é usado pelas duas funções."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/pages/SettingsPage.tsx",
+        "descricao": "O tipo CompletedLinkResult está declarado no meio dos imports, e o import de auth vem depois dele. Isso quebra a organização do arquivo e foge do padrão do projeto.",
+        "sugestao": "Mover o tipo para depois de todos os imports e agrupar os imports de lib/firebase junto aos demais."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/pages/SettingsPage.tsx",
+        "descricao": "A função finishLink lida com o e-mail usando o estado 'email', que no useEffect de montagem ainda é a string vazia. Se auth.currentUser.email vier nulo, o e-mail exibido fica em branco.",
+        "sugestao": "Usar apenas auth.currentUser?.email, ou passar o e-mail digitado explicitamente para finishLink em vez de ler o estado dentro da closure."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/design/Sheet.tsx",
+        "descricao": "A mudança de z-50 para z-[60] altera um componente compartilhado do design system, que outras features usam. O diff não mostra justificativa, e isso pode afetar a sobreposição de outros overlays.",
+        "sugestao": "Confirmar que nenhum outro overlay depende da camada z-50 ou, se possível, resolver a sobreposição na própria tela de Configurações."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/pages/SettingsPage.tsx",
+        "descricao": "O diff está truncado no meio do arquivo. Não foi possível verificar o restante da UI: o diálogo de conflito com a confirmação 'Confirmar', o aviso de conta anônima e a ausência de campos de senha ou telefone.",
+        "sugestao": "Revisar o arquivo completo, ou rodar os testes e2e account-link.spec.ts, que cobrem esses pontos, para confirmar o comportamento."
+      }
+    ],
+    "workerId": "haiku"
+  },
+  {
+    "kind": "ui",
+    "pass": true,
+    "score": 8,
+    "issues": [
+      {
+        "severidade": "minor",
+        "tela": "Configurações > Conta (mobile e desktop, privado e nomes)",
+        "descricao": "As capturas mostram só o estado de conta anônima. Os estados de conflito (credential-already-in-use / email-already-in-use) e de envio do link não aparecem, então a resolução explícita não pode ser avaliada visualmente.",
+        "sugestao": "Nenhuma mudança obrigatória: são estados transitórios fora do escopo de captura. Confirmar no código que o diálogo de conflito oferece cancelar e entrar na conta existente, sem mesclar nem apagar dados."
+      }
+    ],
+    "porCriterio": {
+      "c1": 8,
+      "c2": 8,
+      "c3": 9,
+      "c4": 8,
+      "c5": 8,
+      "c6": 7,
+      "c7": 9,
+      "c8": 7,
+      "c9": 8,
+      "c10": 9
+    },
+    "workerId": "haiku"
+  }
+]

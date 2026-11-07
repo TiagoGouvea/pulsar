@@ -319,3 +319,9 @@
 {"ts":"2026-11-05T10:25:16.018Z","workerId":"haiku","provider":"anthropic","role":"review_code","featureId":"F-1.09","stage":1,"tokensIn":34333,"tokensOut":5519,"costUsd":0.0071661450000000005,"billing":"api"}
 {"ts":"2026-11-05T10:26:28.139Z","workerId":"haiku","provider":"anthropic","role":"review_ui","featureId":"F-1.09","stage":1,"tokensIn":46040,"tokensOut":10073,"costUsd":0.0116631,"billing":"api"}
 {"ts":"2026-11-05T10:28:18.832Z","workerId":"codex-mid","provider":"openai","role":"implement_hard","featureId":"F-1.09","stage":1,"tokensIn":77039,"tokensOut":8127,"costUsd":0.20800354999999998,"billing":"api"}
+{"ts":"2026-11-06T23:39:08.327Z","workerId":"glm-or","provider":"openrouter","role":"implement_hard","featureId":"F-1.09","stage":1,"tokensIn":54697,"tokensOut":52592,"costUsd":0.6599294999999997,"billing":"api"}
+{"ts":"2026-11-06T23:41:46.588Z","workerId":"haiku","provider":"anthropic","role":"review_code","featureId":"F-1.09","stage":1,"tokensIn":35295,"tokensOut":3624,"costUsd":0.006338895,"billing":"api"}
+{"ts":"2026-11-06T23:42:44.151Z","workerId":"haiku","provider":"anthropic","role":"review_ui","featureId":"F-1.09","stage":1,"tokensIn":65284,"tokensOut":6860,"costUsd":0.01248091,"billing":"api"}
+{"ts":"2026-11-06T23:45:21.247Z","workerId":"codex-mid","provider":"openai","role":"test_writer","featureId":"F-1.12","stage":1,"tokensIn":86578,"tokensOut":16207,"costUsd":0.26537835,"billing":"api"}
+{"ts":"2026-11-06T23:54:47.640Z","workerId":"haiku","provider":"anthropic","role":"implement","featureId":"F-1.12","stage":1,"tokensIn":137547,"tokensOut":54473,"costUsd":0.369812495,"billing":"api"}
+{"ts":"2026-11-06T23:58:15.458Z","workerId":"deepseek-flash","provider":"openrouter","role":"triage","featureId":"F-1.12","stage":1,"tokensIn":4181,"tokensOut":358,"costUsd":0.00101034,"billing":"api"}

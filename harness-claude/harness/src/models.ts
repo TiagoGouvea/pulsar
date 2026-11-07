@@ -3,6 +3,7 @@ import { readLedger, spent } from "./budget.js";
 import { type Ctx, workerTag } from "./config.js";
 import { loadFeatures } from "./features.js";
 import { fmtDur, readEvents } from "./logger.js";
+import { liveTicker } from "./live.js";
 import { hp, readJsonl } from "./state.js";
 
 export interface ReviewRow { ts: string; stage: number; featureId: string; kind: string; workerId?: string; pass: boolean; score: number }
@@ -84,11 +85,16 @@ export async function watch(ctx: Ctx) {
     process.stdout.write(all.split("\n").slice(-30).join("\n"));
     pos = Buffer.byteLength(all);
   }
+  process.stdout.write("\n(· turno do modelo  T ferramenta  ✎ edição  ✓/✗ resultado  ! erro)\n");
+  const live = liveTicker(ctx, (s) => process.stdout.write(s));
   for (;;) {
     await new Promise((r) => setTimeout(r, 1000));
-    if (!existsSync(file) || statSync(file).size <= pos) continue;
-    const buf = readFileSync(file).subarray(pos);
-    pos += buf.length;
-    process.stdout.write(buf.toString());
+    if (existsSync(file) && statSync(file).size > pos) {
+      const buf = readFileSync(file).subarray(pos);
+      pos += buf.length;
+      live.breakLine();
+      process.stdout.write(buf.toString());
+    }
+    live.tick();
   }
 }

@@ -129,19 +129,24 @@
     ]
   },
   "app/src/auth/__tests__/AuthProvider.test.tsx": {
-    "sha256": "b4cec847a61d18b0b11a95c4aadab6a30b96bad1a62ba43da75ea66233b157ea",
-    "asserts": 33,
-    "featureId": "F-1.03",
+    "sha256": "b97fff257d8920242d30945537ac7e60ed248bbedc3b4b3843fe7976940151be",
+    "asserts": 51,
+    "featureId": "F-1.09",
     "additive": true,
     "tests": [
       "exposes loading until the session resolves, then signs in anonymously",
       "does not sign in again when a session already exists (same uid)",
+      "refreshes the linked user without reloading the existing profile",
       "creates users/{uid} with the defaults",
       "never overwrites an existing users/{uid} document",
       "shows a pt-BR error and no user when the sign-in fails on the network",
       "shows a network error when the connection fails after authentication",
       "does not replace the server-confirmed profile with cache-only data",
+      "updates the profile when onboarding is completed during the session",
       "keeps the profile up to date when onboardingCompleted changes during the session",
+      "opens no persistent profile listener for an already completed account",
+      "stops the live profile listener once onboarding completes",
+      "completes anonymous onboarding without opening a persistent profile listener",
       "clears the previous user state while a new auth state loads",
       "ignores a pending query that belongs to a previous auth state"
     ]
@@ -176,5 +181,46 @@
     "tests": [
       "records onboardingCompleted=true on users/{uid} with a merge-set"
     ]
+  },
+  "app/e2e/account-link-visual.spec.ts": {
+    "sha256": "46e67908e9abb57b87708b175613b6c90d7ef39b96b78048f5399e9dbd0ec7d0",
+    "asserts": 7,
+    "featureId": "F-1.09",
+    "additive": true,
+    "tests": [
+      "account linking states @visual"
+    ]
+  },
+  "app/src/auth/__tests__/linkAccount.test.ts": {
+    "sha256": "01997a907b2fa8838eae2140098d33a7a7e95151630061aa10c72fe9a376403f",
+    "asserts": 53,
+    "featureId": "F-1.09",
+    "additive": true,
+    "tests": [
+      "links Google to the current anonymous user and keeps the same UID",
+      "fails loudly if the UID changed after linking",
+      "reports credential-already-in-use as a conflict without signing in, merging or deleting",
+      "rethrows unrelated errors",
+      "throws when there is no current user instead of creating a new one",
+      "sends the sign-in link for the typed address, to be opened inside the app",
+      "does not store anything if sending fails",
+      "completes the link with the e-mail remembered at send time and keeps the UID",
+      "asks for the e-mail when the link is opened where it was not requested",
+      "uses the e-mail typed again on another device",
+      "does not consume a link intended for a different anonymous session",
+      "ignores URLs that are not sign-in links",
+      "detects the conflict without consuming the single-use code when the lookup reports the address",
+      "signs into the existing account with a re-sent access link instead of linking",
+      "signs into the existing account from an access link even without a current anonymous session",
+      "signs in with the conflicting credential only when called explicitly, returning the existing UID",
+      "re-sends an access link when the single-use code was consumed while detecting the conflict",
+      "rolls the remembered address back when re-sending the access link fails",
+      "rethrows sign-in failures when no e-mail is known to re-send a link"
+    ]
+  },
+  "app/e2e/account-delete.spec.ts": {
+    "sha256": "3f487b4035f1ad7625d89bcddb274d89f0b5d774ac355da6c92ceea1ac882689",
+    "asserts": 47,
+    "featureId": "F-1.12"
   }
 }

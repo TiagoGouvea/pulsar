@@ -1108,9 +1108,9 @@
         "F-1.04",
         "F-1.05"
       ],
-      "status": "failing",
-      "attempts": 0,
-      "costUsd": 5.795901952,
+      "status": "passing",
+      "attempts": 1,
+      "costUsd": 6.474651257,
       "spendSince": "2026-11-06T23:22:18.943Z",
       "history": [
         {
@@ -1233,8 +1233,53 @@
           "failedGates": [],
           "ts": "2026-11-06T23:22:18.943Z",
           "note": "O código atual (tentativa 4 da rodada 2) passou em todos os gates e na revisão de código (nota 8). A revisão de UI reprovou por itens fora do escopo (card do dashboard é da F-2.11; estados transitórios não aparecem nas capturas): ignore-os. Corrija só isto, sem mexer no resto:\n- MAJOR app/src/auth/linkAccount.ts: remova a pré-checagem fetchSignInMethodsForEmail (com a proteção contra enumeração do Firebase ela devolve lista vazia e o código de uso único pode ser consumido). Detecte o conflito só pelo erro do link (auth/email-already-in-use, auth/credential-already-in-use) e ajuste linkAccount.test.ts.\n- MINOR app/src/pages/SettingsPage.tsx: em enterExistingAccount, mostre o erro de signInToExistingAccount dentro do Sheet aberto (hoje fica atrás do overlay).\n- Não altere app/e2e/visual.spec.ts nem outros testes protegidos."
+        },
+        {
+          "attempt": 1,
+          "role": "implement_hard",
+          "workerId": "glm-or",
+          "outcome": "success",
+          "failedGates": [],
+          "eventId": "evt-264",
+          "ts": "2026-11-06T23:42:44.175Z"
         }
       ],
+      "authors": {
+        "implementer": "glm-or",
+        "attempts": [
+          "kimi-pro ✖ G6",
+          "kimi-pro ✖ review_rejected",
+          "sonnet ✖ G6",
+          "sonnet ✖ G6",
+          "kimi-pro ✖ review_rejected",
+          "- ✖ review_rejected",
+          "codex-mid ✖ G6",
+          "glm-or ✖ review_rejected",
+          "codex-mid ✖ G6,G9",
+          "codex-mid ✖ review_rejected",
+          "codex-mid ✖ G7",
+          "- ✖ review_rejected",
+          "glm-or ✔"
+        ],
+        "testWriter": "sonnet",
+        "reviewers": [
+          "code haiku 7",
+          "ui haiku 8"
+        ],
+        "files": [
+          "app/e2e/account-link-visual.spec.ts",
+          "app/e2e/account-link.spec.ts",
+          "app/e2e/fixtures.ts",
+          "app/src/App.tsx",
+          "app/src/auth/AuthProvider.tsx",
+          "app/src/auth/__tests__/AuthProvider.test.tsx",
+          "app/src/auth/__tests__/linkAccount.test.ts",
+          "app/src/auth/linkAccount.ts",
+          "app/src/design/Sheet.tsx",
+          "app/src/pages/OnboardingPage.tsx",
+          "app/src/pages/SettingsPage.tsx"
+        ]
+      },
       "origin": []
     },
     {
@@ -1424,11 +1469,35 @@
         "F-1.09",
         "F-1.11"
       ],
-      "status": "failing",
-      "attempts": 0,
-      "costUsd": 0,
-      "history": [],
-      "origin": []
+      "status": "in_progress",
+      "attempts": 1,
+      "costUsd": 0.636201185,
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement",
+          "workerId": "haiku",
+          "outcome": "failure",
+          "failedGates": [
+            "G6"
+          ],
+          "eventId": "evt-267",
+          "ts": "2026-11-06T23:58:15.482Z"
+        },
+        {
+          "attempt": 1,
+          "role": "manual",
+          "workerId": "-",
+          "outcome": "failure",
+          "failedGates": [
+            "G6"
+          ],
+          "ts": "2026-11-07T00:16:41.495Z",
+          "note": "As 2 falhas de G6 eram do teste de aceite, não do código: ele listava contas por uma rota que o emulador não tem (405) e comparava e-mail com maiúsculas. O operador corrigiu o teste (commit 85fe29a) e, com o código atual, os 10 casos de e2e/account-delete.spec.ts passam (mobile e desktop). A tentativa 2 (minimax) foi descartada: ela alterava firebase-tools dentro de node_modules — nunca faça isso. Não reescreva o que já existe: rode yarn lint, yarn typecheck, yarn test:unit e o e2e account-delete; se tudo passar, termine sem mudanças; só corrija o que falhar."
+        }
+      ],
+      "origin": [],
+      "spendSince": "2026-11-07T00:16:41.495Z"
     },
     {
       "id": "F-2.01",

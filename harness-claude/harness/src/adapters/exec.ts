@@ -1,4 +1,5 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { createWriteStream, mkdirSync, writeFileSync } from "node:fs";
+import { once } from "node:events";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { execa } from "execa";
@@ -12,18 +13,21 @@ export function baseEnv(extra: Record<string, string> = {}): Record<string, stri
   return { ...env, CI: "1", TERM: "dumb", ...extra };
 }
 
-/** Runs a command killing the whole process tree on timeout. */
-export async function runProcess(bin: string, args: string[], o: { cwd: string; env: Record<string, string>; timeoutMs: number; shell?: boolean }) {
+/** Runs a command killing the whole process tree on timeout; `tee` streams stdout to a file while it runs (harness watch). */
+export async function runProcess(bin: string, args: string[], o: { cwd: string; env: Record<string, string>; timeoutMs: number; shell?: boolean; tee?: string }) {
   const start = Date.now();
   let timedOut = false;
   const child = execa(bin, args, {
     cwd: o.cwd, env: o.env, extendEnv: false, reject: false, detached: true, stdin: "ignore",
     shell: o.shell, maxBuffer: 256 * 1024 * 1024, all: true,
   });
+  const tee = o.tee ? createWriteStream(o.tee) : undefined;
+  if (tee) child.stdout?.pipe(tee);
   const kill = (sig: NodeJS.Signals) => { try { process.kill(-child.pid!, sig); } catch { /* already gone */ } };
   const timer = setTimeout(() => { timedOut = true; kill("SIGTERM"); setTimeout(() => kill("SIGKILL"), 5000).unref(); }, o.timeoutMs);
   const res = await child;
   clearTimeout(timer);
+  if (tee && !tee.closed) await once(tee, "close");
   return { stdout: String(res.stdout ?? ""), stderr: String(res.stderr ?? ""), all: String(res.all ?? ""), exitCode: res.exitCode ?? -1, timedOut, durationMs: Date.now() - start };
 }
 
@@ -41,8 +45,8 @@ export function cliAdapter(def: {
     prepare: def.prepare,
     release: def.release,
     async run(spec, run, opts: RunOpts): Promise<WorkerResult> {
-      const p = await runProcess(def.bin, def.args(spec, run), { cwd: run.cwd, env: baseEnv(opts.env), timeoutMs: spec.timeoutMin * 60_000 });
       mkdirSync(dirname(opts.transcriptPath), { recursive: true });
+      const p = await runProcess(def.bin, def.args(spec, run), { cwd: run.cwd, env: baseEnv(opts.env), timeoutMs: spec.timeoutMin * 60_000, tee: opts.transcriptPath });
       writeFileSync(opts.transcriptPath, p.stdout);
       if (p.stderr) writeFileSync(opts.transcriptPath.replace(/\.jsonl$/, ".stderr.log"), p.stderr);
       let parsed: ReturnType<typeof def.parse>;

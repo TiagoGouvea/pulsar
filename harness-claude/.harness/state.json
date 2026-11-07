@@ -1,8 +1,8 @@
 {
-  "phase": "PAUSED_MANUAL",
+  "phase": "STAGE_RUNNING",
   "stage": 1,
   "pausedFrom": "STAGE_RUNNING",
-  "featuresSinceRetro": 4,
+  "featuresSinceRetro": 5,
   "stageFixRounds": 0,
   "budgetAlerts": [
     0.5,
@@ -14,8 +14,8 @@
     "1": {
       "startedAt": "2026-11-01T18:53:23.876Z",
       "finishedAt": "2026-11-02T14:55:22.323Z",
-      "activeMs": 32837450
+      "activeMs": 35679669
     }
   },
-  "updatedAt": "2026-11-05T10:30:44.069Z"
+  "updatedAt": "2026-11-07T00:12:18.822Z"
 }

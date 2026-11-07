@@ -686,10 +686,10 @@
   evidence:
     - evt-245
   added: 2026-11-02
-  hits: 7
-  helped: 0
-  helpedRate: 0
-  status: active
+  hits: 8
+  helped: 1
+  helpedRate: 0.125
+  status: retired
 - id: L-043
   scope:
     roles:
@@ -704,10 +704,10 @@
   evidence:
     - evt-247
   added: 2026-11-02
-  hits: 6
-  helped: 0
-  helpedRate: 0
-  status: active
+  hits: 8
+  helped: 1
+  helpedRate: 0.125
+  status: retired
 - id: L-044
   scope:
     roles:
@@ -721,7 +721,7 @@
   evidence:
     - evt-256
   added: 2026-11-05
-  hits: 2
-  helped: 0
-  helpedRate: 0
+  hits: 4
+  helped: 1
+  helpedRate: 0.25
   status: active

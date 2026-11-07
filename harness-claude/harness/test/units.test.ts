@@ -180,3 +180,17 @@ describe("utilitários", () => {
     expect(parseCodex(out).usage).toEqual({ inputTokens: 200, outputTokens: 50, cachedTokens: 800 });
   });
 });
+
+describe("watch: glifos por evento do transcript", () => {
+  it("pi, codex e claude stream-json", async () => {
+    const { glyphs } = await import("../src/live.js");
+    const g = (o: object) => glyphs(JSON.stringify(o));
+    expect([g({ type: "turn_start" }), g({ type: "tool_execution_start", toolName: "bash" }), g({ type: "tool_execution_start", toolName: "edit" }),
+      g({ type: "tool_execution_end", isError: false }), g({ type: "tool_execution_end", isError: true }), g({ type: "message_update" })].join("")).toBe("·T✎✓✗");
+    expect([g({ type: "item.started", item: { type: "command_execution" } }), g({ type: "item.completed", item: { type: "command_execution", status: "failed" } }),
+      g({ type: "item.started", item: { type: "file_change" } }), g({ type: "item.completed", item: { type: "file_change", status: "completed" } }),
+      g({ type: "item.completed", item: { type: "agent_message" } }), g({ type: "item.completed", item: { type: "error" } })].join("")).toBe("T✗✎✓·!");
+    expect([g({ type: "assistant", message: { content: [{ type: "text" }, { type: "tool_use", name: "Bash" }, { type: "tool_use", name: "Edit" }] } }),
+      g({ type: "user", message: { content: [{ type: "tool_result", is_error: false }, { type: "tool_result", is_error: true }] } }), glyphs("não é json")].join("")).toBe("·T✎✓✗");
+  });
+});

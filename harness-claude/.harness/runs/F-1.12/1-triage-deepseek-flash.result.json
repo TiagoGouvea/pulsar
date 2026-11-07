@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-06T23:58:15.461Z",
+  "workerId": "deepseek-flash",
+  "role": "triage",
+  "featureId": "F-1.12",
+  "stage": 1,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.00101034,
+  "durationMs": 3252,
+  "usage": {
+    "inputTokens": 4181,
+    "outputTokens": 358,
+    "cachedTokens": 0,
+    "costUsd": 0.00101034
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\"causaRaiz\":\"As duas falhas restantes não são do código da feature: vêm do próprio e2e/account-delete.spec.ts (protegido), que não é compatível com o ambiente de emulador. (1) authUserIds() usa GET /emulator/v1/projects/{p}/accounts, rota em que o firebase-tools 15.34.1 implementa apenas DELETE, então response.ok é false e o teste morre na linha 29 — isso explica o erro do log. (2) No teste de conta vinculada, o spec monta o e-mail do link com o UID em caixa mista enquanto o emulador persiste oobCodes/e-mails em minúsculas, então o link de reautenticação nunca é encontrado. O implementador optou por não alterar o spec protegido e validou os fluxos com um spec temporário (mobile e desktop), deixando pendente a remoção de tmp-verify-delete.spec.ts e test-results/.\",\"categoria\":\"test\",\"padrao\":false,\"dica\":\"Ajustar (com autorização do orquestrador) o spec protegido: derivar os e-mails a partir dos oobCodes do emulador usando comparação case-insensitive e trocar authUserIds() para uma forma suportada (listar via Admin SDK/emulador Auth ou filtrar por e-mail), depois remover app/e2e/tmp-verify-delete.spec.ts e app/test-results/ e reexecutar account-delete.spec.ts até 10/10 em mobile e desktop.\"}\n```"
+}
