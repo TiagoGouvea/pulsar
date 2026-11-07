@@ -1,8 +1,12 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
+import { signOut } from 'firebase/auth';
 import { useAuth } from '../auth/AuthProvider';
+import { deleteCurrentAccount, ensureRecentLogin, markReauthenticated } from '../auth/accountSession';
 import {
   completeEmailLink,
+  completeEmailReauth,
+  isReauthLink,
   linkWithGoogle,
   sendEmailLink,
   signInToExistingAccount,
@@ -57,6 +61,10 @@ export function SettingsPage() {
   const [conflictError, setConflictError] = useState<string | null>(null);
   const [confirmExisting, setConfirmExisting] = useState(false);
   const [needsEmailCompletion, setNeedsEmailCompletion] = useState(false);
+  const [dialog, setDialog] = useState<'sign-out' | 'delete' | null>(null);
+  const [confirmText, setConfirmText] = useState('');
+  const [dialogNotice, setDialogNotice] = useState<string | null>(null);
+  const [dialogError, setDialogError] = useState<string | null>(null);
   const processedHref = useRef<string | null>(null);
 
   function finishLink(result: CompletedLinkResult, completedWithEmail = false) {
@@ -91,6 +99,21 @@ export function SettingsPage() {
     processedHref.current = href;
     if (completedActionLink?.href === href) {
       finishLink(completedActionLink.result, true);
+      return;
+    }
+    if (isReauthLink(href)) {
+      setBusy(true);
+      completeEmailReauth(href)
+        .then(() => {
+          const current = auth.currentUser;
+          if (current) markReauthenticated(current);
+          setMessage('Identidade confirmada. Abra "Excluir conta" novamente para concluir.');
+        })
+        .catch((reason: unknown) => setError(actionError(reason)))
+        .finally(() => {
+          setBusy(false);
+          navigate('/settings', { replace: true });
+        });
       return;
     }
 
@@ -188,6 +211,75 @@ export function SettingsPage() {
     } finally {
       setBusy(false);
     }
+  }
+
+  function openDialog(kind: 'sign-out' | 'delete') {
+    setDialog(kind);
+    setConfirmText('');
+    setDialogNotice(null);
+    setDialogError(null);
+  }
+
+  function closeDialog() {
+    if (busy) return;
+    setDialog(null);
+  }
+
+  async function confirmSignOut() {
+    if (busy) return;
+    setBusy(true);
+    setDialogError(null);
+    try {
+      await signOut(auth);
+      setDialog(null);
+      // AuthProvider signs in a fresh anonymous session as soon as the previous one ends.
+      navigate('/onboarding', { replace: true });
+    } catch (reason) {
+      setDialogError(actionError(reason));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function confirmDelete() {
+    if (busy || confirmText !== 'EXCLUIR') return;
+    setBusy(true);
+    setDialogNotice(null);
+    setDialogError(null);
+    let deletionStarted = false;
+    try {
+      const current = auth.currentUser;
+      if (current && !current.isAnonymous) {
+        // deleteAccount only accepts a login from the last few minutes, so reauthenticate right before it.
+        if ((await ensureRecentLogin(current)) === 'link-sent') {
+          setDialogNotice(
+            `Por segurança, é preciso reautenticar sua conta antes de excluí-la. Enviamos um link para ${current.email}. Abra-o neste aparelho e depois exclua novamente.`,
+          );
+          return;
+        }
+      }
+      deletionStarted = true;
+      await deleteCurrentAccount();
+    } catch (reason) {
+      if (deletionStarted) {
+        // The server removes subcollections one by one, so a failure here leaves an uncertain result:
+        // part of the data may already be gone. Never claim that nothing was changed.
+        setDialogError(
+          'Não foi possível confirmar a exclusão da sua conta. O resultado é incerto: parte dos dados pode já ter sido apagada no servidor. Tente novamente; se o problema continuar, entre em contato com o suporte antes de recriar sua conta.',
+        );
+      } else {
+        // The failure happened during reauthentication, before any destructive call ran.
+        setDialogError(actionError(reason));
+      }
+      return;
+    } finally {
+      setBusy(false);
+    }
+    setDialog(null);
+    // The account is already gone on the server; a local failure here must not trap the person in
+    // the sheet. AuthProvider reacts to the ended session by starting a fresh anonymous one.
+    await signOut(auth).catch(() => undefined);
+    navigate('/onboarding', { replace: true });
   }
 
   return (
@@ -293,6 +385,15 @@ export function SettingsPage() {
         )}
       </Card>
 
+      <Card className="gap-space-md p-space-lg">
+        <Button variant="neutral" onClick={() => openDialog('sign-out')} disabled={busy}>
+          Sair da conta
+        </Button>
+        <Button variant="danger" onClick={() => openDialog('delete')} disabled={busy}>
+          Excluir conta
+        </Button>
+      </Card>
+
       {busy && (
         <p
           role="status"
@@ -310,6 +411,79 @@ export function SettingsPage() {
           {error ?? message}
         </p>
       )}
+
+      <Sheet
+        open={dialog === 'sign-out'}
+        onClose={closeDialog}
+        title="Sair da conta?"
+        description="Você voltará ao início com uma nova sessão anônima."
+      >
+        {anonymous && (
+          <p className="rounded-2xl bg-error-container p-3 font-body-md text-body-md text-on-error-container">
+            Esta conta é anônima. Ao sair, você perderá o acesso aos dados e registros salvos neste navegador.
+          </p>
+        )}
+        {dialogError && (
+          <p
+            role="alert"
+            className="rounded-2xl bg-error-container p-3 font-body-md text-body-md text-on-error-container"
+          >
+            {dialogError}
+          </p>
+        )}
+        <Button fullWidth onClick={confirmSignOut} disabled={busy}>
+          Sair
+        </Button>
+        <Button fullWidth variant="neutral" onClick={closeDialog} disabled={busy}>
+          Cancelar
+        </Button>
+      </Sheet>
+
+      <Sheet
+        open={dialog === 'delete'}
+        onClose={closeDialog}
+        title="Excluir conta"
+        description="A exclusão é imediata e definitiva. Registros, indicadores e dados pessoais serão apagados sem período de carência."
+      >
+        <label htmlFor="delete-confirmation" className="font-label-md text-label-md text-on-surface">
+          Para confirmar, digite EXCLUIR
+        </label>
+        <input
+          id="delete-confirmation"
+          type="text"
+          autoComplete="off"
+          value={confirmText}
+          onChange={(event) => setConfirmText(event.target.value)}
+          className="h-12 w-full rounded-full border border-outline-variant bg-surface-container-lowest px-4 font-body-lg text-body-lg text-on-surface outline-none focus:border-primary focus:ring-2 focus:ring-primary"
+        />
+        {dialogNotice && (
+          <p
+            role="status"
+            className="rounded-2xl bg-tertiary-fixed p-3 font-body-md text-body-md text-on-tertiary-fixed-variant"
+          >
+            {dialogNotice}
+          </p>
+        )}
+        {dialogError && (
+          <p
+            role="alert"
+            className="rounded-2xl bg-error-container p-3 font-body-md text-body-md text-on-error-container"
+          >
+            {dialogError}
+          </p>
+        )}
+        <Button
+          variant="danger"
+          fullWidth
+          onClick={confirmDelete}
+          disabled={busy || confirmText !== 'EXCLUIR'}
+        >
+          Excluir minha conta
+        </Button>
+        <Button fullWidth variant="neutral" onClick={closeDialog} disabled={busy}>
+          Cancelar
+        </Button>
+      </Sheet>
 
       <Sheet
         open={conflict !== null}

@@ -5,6 +5,7 @@ import {
   isSignInWithEmailLink,
   linkWithCredential,
   linkWithPopup,
+  reauthenticateWithCredential,
   sendSignInLinkToEmail,
   signInWithCredential,
   signInWithEmailLink,
@@ -95,11 +96,12 @@ export async function linkWithGoogle(): Promise<LinkResult> {
 }
 
 /** Sends an in-app link and durably associates the typed address with the pending request. */
-export async function sendEmailLink(email: string): Promise<void> {
+export async function sendEmailLink(email: string, extraParams: Record<string, string> = {}): Promise<void> {
   const normalizedEmail = email.trim();
   const uid = requireCurrentUser().uid;
   const returnUrl = new URL('/settings', window.location.origin);
   returnUrl.searchParams.set('linkUid', uid);
+  for (const [key, value] of Object.entries(extraParams)) returnUrl.searchParams.set(key, value);
   const previousEmail = window.localStorage.getItem(EMAIL_FOR_LINK_KEY);
   // Keep the address before awaiting the request: the browser may open the emailed URL as soon as
   // the emulator/mail provider receives it. Roll back the optimistic write if sending fails.
@@ -184,6 +186,21 @@ export function completeEmailLink(href: string, typedEmail?: string): Promise<Em
   const attempt = completeEmailLinkOnce(href, typedEmail).finally(() => pendingEmailLinks.delete(key));
   pendingEmailLinks.set(key, attempt);
   return attempt;
+}
+
+/** True for the e-mail link sent by `reauthenticate` (account deletion) when it is opened on /settings. */
+export function isReauthLink(href: string): boolean {
+  const actionUrl = new URL(href);
+  return actionUrl.searchParams.get('reauth') === '1' || continueUrlParams(actionUrl).get('reauth') === '1';
+}
+
+/** Confirms the current user's identity with the e-mail link; it never changes the UID. */
+export async function completeEmailReauth(href: string): Promise<void> {
+  const user = requireCurrentUser();
+  const email = window.localStorage.getItem(EMAIL_FOR_LINK_KEY);
+  if (!email) throw new Error('The e-mail for the reauthentication link is missing.');
+  await reauthenticateWithCredential(user, EmailAuthProvider.credentialWithLink(email, href));
+  window.localStorage.removeItem(EMAIL_FOR_LINK_KEY);
 }
 
 /** Re-sends an access link (plain sign-in) for the existing account after the code was consumed. */
