@@ -59,7 +59,7 @@ Sequência: `0-setup`, `1-base`, `2-registro`, `3-insights`, `4-curadoria`, `5-p
 * `src/providers/`: Catálogo de modelos, LM Studio local e probes de credenciais.
 * `src/verification/`: Verificação de comandos de teste, lint, build e evidência visual Playwright/Axe.
 * `src/budget/`: Ledger contábil e controle transacional de reservas em microdólares.
-* `src/state/`: Persistência de auditoria e eventos em SQLite (`.harness/state.sqlite`).
+* `src/state/`: Estado transacional em SQLite (`.harness/state.sqlite`) com espelhos por execução em JSON e eventos em JSONL (`.harness/runs/<id>/state.json` e `events.jsonl`).
 * `src/dashboard/`: Servidor HTTP do painel de controle local.
 * `harness.config.yaml`: Configuração de modelos, limites de custo, timeouts e comandos.
 * `Harness_Especificacao_Completa_Codex.md`: Especificação técnica completa de implementação.

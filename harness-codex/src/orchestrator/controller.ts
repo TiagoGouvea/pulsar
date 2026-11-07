@@ -535,6 +535,7 @@ export class Orchestrator {
     const beforeWorkspace = await snapshotWorkspaceChanges(this.config.project.workspace);
     const providerCallId = this.startProviderCall(attemptId, candidate, estimated);
     this.store.run("UPDATE cost_reservations SET provider_call_id=? WHERE id=? AND provider_call_id IS NULL", providerCallId, reservationId);
+    this.store.refreshJsonMirror(runId);
     const started = performance.now();
     const workStartedAt = nowUtc();
     let result: ExecutionResult;
@@ -1095,6 +1096,7 @@ export class Orchestrator {
     );
     const providerCallId = this.startProviderCall(attemptId, candidate, estimated);
     this.store.run("UPDATE cost_reservations SET provider_call_id=? WHERE id=? AND provider_call_id IS NULL", providerCallId, reservationId);
+    this.store.refreshJsonMirror(runId);
     const reviewStarted = performance.now();
     const executor = createExecutor(this.config);
     this.activeExecutor = executor;

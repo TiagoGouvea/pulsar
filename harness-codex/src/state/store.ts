@@ -1,11 +1,33 @@
 import { DatabaseSync, type SQLInputValue } from "node:sqlite";
-import { mkdirSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import type { MilestoneState, Requirement, RunState, Task, TaskState } from "../domain/types.js";
-import { createId, nowUtc } from "../utils/core.js";
+import { createId, nowUtc, sha256 } from "../utils/core.js";
 import { migrations } from "./migrations.js";
 
 type Row = Record<string, unknown>;
+type JsonObject = Record<string, unknown>;
+
+const JSON_STATE_FORMAT = "pulsar-harness-run-state";
+const JSON_STATE_SCHEMA_VERSION = 1;
+
+function parseJsonColumns(row: Row): JsonObject {
+  const parsed: JsonObject = {};
+  for (const [key, value] of Object.entries(row)) {
+    if (key.endsWith("_json") && typeof value === "string") {
+      try { parsed[key.slice(0, -5)] = JSON.parse(value) as unknown; }
+      catch { parsed[key] = value; }
+    } else parsed[key] = value;
+  }
+  return parsed;
+}
+
+function writeJsonAtomic(file: string, content: string): void {
+  mkdirSync(path.dirname(file), { recursive: true, mode: 0o700 });
+  const temp = `${file}.${process.pid}.tmp`;
+  writeFileSync(temp, content, { encoding: "utf8", mode: 0o600 });
+  renameSync(temp, file);
+}
 
 function isProcessAlive(pid: number): boolean {
   try {
@@ -19,6 +41,9 @@ function isProcessAlive(pid: number): boolean {
 export class StateStore {
   readonly databasePath: string;
   private readonly db: DatabaseSync;
+  private transactionDepth = 0;
+  private readonly pendingMirrorRunIds = new Set<string>();
+  private readonly mirroredEventCounts = new Map<string, number>();
 
   constructor(storageRoot: string) {
     mkdirSync(storageRoot, { recursive: true, mode: 0o700 });
@@ -26,18 +51,29 @@ export class StateStore {
     this.db = new DatabaseSync(this.databasePath);
     this.db.exec("PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;");
     this.migrate();
+    this.syncAllJsonMirrors(true);
   }
 
-  close(): void { this.db.close(); }
+  close(): void {
+    this.syncAllJsonMirrors(false);
+    this.db.close();
+  }
 
   transaction<T>(work: () => T): T {
+    const previousPending = new Set(this.pendingMirrorRunIds);
     this.db.exec("BEGIN IMMEDIATE");
+    this.transactionDepth += 1;
     try {
       const result = work();
       this.db.exec("COMMIT");
+      this.transactionDepth -= 1;
+      if (this.transactionDepth === 0) this.flushPendingJsonMirrors();
       return result;
     } catch (error) {
       this.db.exec("ROLLBACK");
+      this.transactionDepth -= 1;
+      this.pendingMirrorRunIds.clear();
+      for (const runId of previousPending) this.pendingMirrorRunIds.add(runId);
       throw error;
     }
   }
@@ -66,6 +102,8 @@ export class StateStore {
   all<T extends Row>(sql: string, ...params: SQLInputValue[]): T[] {
     return this.db.prepare(sql).all(...params) as T[];
   }
+
+  refreshJsonMirror(runId: string): void { this.queueJsonMirror(runId); }
 
   upsertProject(input: { id: string; workspace: string; profile: string; timezone: string }): void {
     const now = nowUtc();
@@ -125,6 +163,7 @@ export class StateStore {
       `UPDATE runs SET lease_owner=?, lease_expires_at=?, heartbeat_at=?, pid=?, updated_at=?
        WHERE id=? AND (lease_owner IS NULL OR lease_expires_at < ? OR lease_owner=?)`,
     ).run(owner, expires, now, process.pid, now, runId, now, owner);
+    this.queueJsonMirror(runId);
     return result.changes === 1;
   }
 
@@ -132,10 +171,12 @@ export class StateStore {
     const now = nowUtc();
     const expires = new Date(Date.now() + ttlSeconds * 1000).toISOString();
     this.run("UPDATE runs SET heartbeat_at=?, lease_expires_at=?, updated_at=? WHERE id=? AND lease_owner=?", now, expires, now, runId, owner);
+    this.queueJsonMirror(runId);
   }
 
   releaseLease(runId: string, owner: string): void {
     this.run("UPDATE runs SET lease_owner=NULL, lease_expires_at=NULL, pid=NULL WHERE id=? AND lease_owner=?", runId, owner);
+    this.queueJsonMirror(runId);
   }
 
   event(runId: string | null, type: string, entityType: string, entityId: string | null, payload: unknown): string {
@@ -144,7 +185,110 @@ export class StateStore {
       "INSERT INTO events(id, run_id, type, entity_type, entity_id, payload_json, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
       id, runId, type, entityType, entityId, JSON.stringify(payload), nowUtc(),
     );
+    if (runId) this.queueJsonMirror(runId);
     return id;
+  }
+
+  private queueJsonMirror(runId: string): void {
+    if (this.transactionDepth > 0) {
+      this.pendingMirrorRunIds.add(runId);
+      return;
+    }
+    try { this.syncRunJsonMirror(runId); }
+    catch (error) {
+      process.stderr.write(`[harness] Falha ao atualizar o espelho JSON da execução ${runId}: ${String(error)}\n`);
+    }
+  }
+
+  private flushPendingJsonMirrors(): void {
+    const runIds = [...this.pendingMirrorRunIds];
+    this.pendingMirrorRunIds.clear();
+    for (const runId of runIds) this.queueJsonMirror(runId);
+  }
+
+  private syncAllJsonMirrors(forceEventRebuild: boolean): void {
+    const runs = this.all<Row>("SELECT id, pid, lease_owner, lease_expires_at FROM runs ORDER BY created_at, id");
+    for (const row of runs) {
+      const runId = String(row.id);
+      const leaseExpiresAt = typeof row.lease_expires_at === "string" ? Date.parse(row.lease_expires_at) : 0;
+      const activeForeignLease = typeof row.lease_owner === "string"
+        && typeof row.pid === "number"
+        && row.pid !== process.pid
+        && leaseExpiresAt > Date.now()
+        && isProcessAlive(row.pid);
+      if (activeForeignLease) continue;
+      try { this.syncRunJsonMirror(runId, forceEventRebuild); }
+      catch (error) {
+        process.stderr.write(`[harness] Falha ao atualizar o espelho JSON da execução ${runId}: ${String(error)}\n`);
+      }
+    }
+  }
+
+  private syncRunJsonMirror(runId: string, forceEventRebuild = false): void {
+    const run = this.get<Row>("SELECT * FROM runs WHERE id=?", runId);
+    if (!run) return;
+    const project = this.get<Row>("SELECT * FROM projects WHERE id=?", String(run.project_id));
+    const attempts = this.all<Row>("SELECT * FROM attempts WHERE run_id=? ORDER BY started_at, number", runId);
+    const events = this.all<Row>("SELECT * FROM events WHERE run_id=? ORDER BY sequence", runId);
+    const eventRows = events.map((event) => ({
+      sequence: event.sequence,
+      id: event.id,
+      at: event.created_at,
+      type: event.type,
+      entityType: event.entity_type,
+      entityId: event.entity_id,
+      payload: parseJsonColumns({ payload_json: event.payload_json }).payload,
+    }));
+    const runDirectory = path.join(path.dirname(this.databasePath), "runs", runId);
+    const eventsPath = path.join(runDirectory, "events.jsonl");
+    const eventContent = eventRows.map((event) => JSON.stringify(event)).join("\n") + (eventRows.length ? "\n" : "");
+    const previousCount = this.mirroredEventCounts.get(runId);
+    if (forceEventRebuild || previousCount === undefined || previousCount > eventRows.length) {
+      writeJsonAtomic(eventsPath, eventContent);
+    } else if (previousCount < eventRows.length) {
+      const missing = eventRows.slice(previousCount).map((event) => JSON.stringify(event)).join("\n") + "\n";
+      appendFileSync(eventsPath, missing, { encoding: "utf8", mode: 0o600 });
+    }
+    this.mirroredEventCounts.set(runId, eventRows.length);
+
+    const attemptIds = attempts.map((attempt) => String(attempt.id));
+    const runData: JsonObject = {
+      format: JSON_STATE_FORMAT,
+      schemaVersion: JSON_STATE_SCHEMA_VERSION,
+      sourceOfTruth: "../state.sqlite",
+      runId,
+      project: project ? parseJsonColumns(project) : null,
+      run: parseJsonColumns(run),
+      milestones: this.all<Row>("SELECT * FROM milestones WHERE run_id=? ORDER BY position", runId).map(parseJsonColumns),
+      requirements: this.all<Row>("SELECT * FROM requirements WHERE run_id=? ORDER BY id", runId).map(parseJsonColumns),
+      tasks: this.all<Row>("SELECT * FROM tasks WHERE run_id=? ORDER BY created_at, id", runId).map(parseJsonColumns),
+      dependencies: this.all<Row>("SELECT * FROM dependencies WHERE run_id=? ORDER BY task_id, depends_on_task_id", runId),
+      attempts: attempts.map(parseJsonColumns),
+      sessions: this.all<Row>("SELECT s.* FROM sessions s JOIN attempts a ON a.id=s.attempt_id WHERE a.run_id=? ORDER BY s.started_at, s.id", runId).map(parseJsonColumns),
+      runSessions: this.all<Row>("SELECT * FROM run_sessions WHERE run_id=? ORDER BY started_at, id", runId).map(parseJsonColumns),
+      providerCalls: this.all<Row>("SELECT p.* FROM provider_calls p JOIN attempts a ON a.id=p.attempt_id WHERE a.run_id=? ORDER BY p.started_at, p.id", runId).map(parseJsonColumns),
+      costReservations: this.all<Row>("SELECT * FROM cost_reservations WHERE run_id=? ORDER BY created_at, id", runId).map(parseJsonColumns),
+      ledgerEntries: this.all<Row>("SELECT * FROM ledger_entries WHERE run_id=? ORDER BY created_at, rowid", runId).map(parseJsonColumns),
+      verifierRuns: this.all<Row>("SELECT * FROM verifier_runs WHERE run_id=? ORDER BY started_at, id", runId).map(parseJsonColumns),
+      findings: this.all<Row>("SELECT * FROM findings WHERE run_id=? ORDER BY created_at, id", runId).map(parseJsonColumns),
+      approvals: this.all<Row>("SELECT * FROM approvals WHERE run_id=? ORDER BY created_at, id", runId).map(parseJsonColumns),
+      decisions: this.all<Row>("SELECT * FROM decisions WHERE run_id=? ORDER BY created_at, id", runId).map(parseJsonColumns),
+      lessons: project ? this.all<Row>("SELECT * FROM lessons WHERE project_id=? ORDER BY created_at, id", String(project.id)).map(parseJsonColumns) : [],
+      routingObservations: this.all<Row>("SELECT * FROM routing_observations WHERE run_id=? ORDER BY created_at, id", runId).map(parseJsonColumns),
+      inputVersions: this.all<Row>("SELECT * FROM input_versions WHERE run_id=? ORDER BY captured_at, id", runId).map(parseJsonColumns),
+      controlCommands: this.all<Row>("SELECT * FROM control_commands WHERE run_id=? ORDER BY created_at, id", runId).map(parseJsonColumns),
+      events: { path: "events.jsonl", count: eventRows.length, firstSequence: eventRows[0]?.sequence ?? null, lastSequence: eventRows.at(-1)?.sequence ?? null },
+      attemptsCount: attemptIds.length,
+    };
+    const snapshotSha256 = sha256(JSON.stringify(runData));
+    const statePath = path.join(runDirectory, "state.json");
+    if (existsSync(statePath)) {
+      try {
+        const existing = JSON.parse(readFileSync(statePath, "utf8")) as { snapshotSha256?: string };
+        if (existing.snapshotSha256 === snapshotSha256) return;
+      } catch { /* Rebuild a malformed or incomplete mirror from SQLite. */ }
+    }
+    writeJsonAtomic(statePath, `${JSON.stringify({ ...runData, exportedAt: nowUtc(), snapshotSha256 }, null, 2)}\n`);
   }
 
   saveRequirement(runId: string, requirement: Requirement): void {

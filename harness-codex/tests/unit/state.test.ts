@@ -1,4 +1,4 @@
-import { mkdtemp } from "node:fs/promises";
+import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, test } from "vitest";
@@ -44,5 +44,38 @@ describe("estado durável", () => {
       }, true);
       expect(store.get<Record<string, unknown>>("SELECT status FROM lessons WHERE id=?", id)?.status).toBe("validated");
     } finally { store.close(); }
+  });
+
+  test("espelha todo o estado da execução em JSON e reconstitui o JSONL a partir do SQLite", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "harness-json-mirror-"));
+    const store = new StateStore(root);
+    const runDirectory = path.join(root, "runs", "r-json");
+    try {
+      store.upsertProject({ id: "p-json", workspace: "/tmp/p", profile: "generic", timezone: "UTC" });
+      store.createRun({ id: "r-json", projectId: "p-json", configPath: "/tmp/c", configHash: "h" });
+      store.createMilestone("r-json", { id: "0-setup", title: "Setup", objective: "Objetivo", position: 0 });
+      store.setMilestoneState("r-json", "0-setup", "in_progress");
+
+      const snapshot = JSON.parse(await readFile(path.join(runDirectory, "state.json"), "utf8")) as Record<string, unknown>;
+      expect(snapshot.format).toBe("pulsar-harness-run-state");
+      expect(snapshot.schemaVersion).toBe(1);
+      expect((snapshot.project as Record<string, unknown>).id).toBe("p-json");
+      expect((snapshot.events as Record<string, unknown>).count).toBe(2);
+      const eventsBefore = (await readFile(path.join(runDirectory, "events.jsonl"), "utf8"))
+        .trim().split("\n").map((line) => JSON.parse(line) as Record<string, unknown>);
+      expect(eventsBefore.map((event) => event.type)).toEqual(["run.created", "milestone.in_progress"]);
+
+      await writeFile(path.join(runDirectory, "events.jsonl"), "corrupted\n");
+    } finally { store.close(); }
+
+    const recovered = new StateStore(root);
+    try {
+      const rows = recovered.listEvents("r-json");
+      const mirrored = (await readFile(path.join(runDirectory, "events.jsonl"), "utf8"))
+        .trim().split("\n").map((line) => JSON.parse(line) as Record<string, unknown>);
+      expect(mirrored.map((event) => event.id)).toEqual(rows.reverse().map((event) => event.id));
+      const snapshot = JSON.parse(await readFile(path.join(runDirectory, "state.json"), "utf8")) as Record<string, unknown>;
+      expect((snapshot.milestones as Array<Record<string, unknown>>)[0]?.state).toBe("in_progress");
+    } finally { recovered.close(); }
   });
 });

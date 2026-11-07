@@ -3,6 +3,9 @@
 ## Acompanhar uma execução
 
 - O terminal mostra timestamp, etapa/tarefa, tentativa, modelo, tokens, custo e duração.
+- O SQLite continua sendo a fonte de verdade em `.harness/state.sqlite`. Para consulta manual, cada execução também tem um espelho legível em `.harness/runs/<id>/state.json` e seu histórico em `events.jsonl`; o snapshot contém versão de schema e hash de integridade.
+- Ao abrir o harness, espelhos das execuções existentes são exportados/reconciliados do SQLite. Durante a execução, eventos são acrescentados ao JSONL e o snapshot é atualizado em eventos, heartbeat/lease, antes de chamadas longas aos modelos e no encerramento. Se houver divergência ou JSONL truncado, a próxima abertura reconstrói os artefatos a partir do banco; execuções com lease ativo de outro processo não são tocadas.
+- Esses JSON/JSONL são espelhos de leitura e diagnóstico, não edite-os esperando alterar o estado: mudanças serão substituídas pelo SQLite. Segredos de ambiente não são exportados; diretórios/arquivos são criados com permissões restritas.
 - Cada sessão do controlador atualiza `runs/<id>/run-summary.json`; pausas entre sessões não entram no tempo ativo.
 - Cada interação grava `model-call.json` junto do `result.json`, `session-trace.jsonl` e demais evidências da tentativa.
 - Quando a resposta não puder ser interpretada, `raw-response.txt` preserva o texto inicial e a tentativa de reparo após mascarar segredos conhecidos; o arquivo é local, restrito ao usuário (0600) e limitado a 64 mil caracteres. Ele pode conter trechos de código/contexto: não o compartilhe publicamente sem revisar.
