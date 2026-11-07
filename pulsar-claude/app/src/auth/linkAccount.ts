@@ -1,4 +1,5 @@
 import {
+  browserPopupRedirectResolver,
   EmailAuthProvider,
   fetchSignInMethodsForEmail,
   GoogleAuthProvider,
@@ -85,7 +86,7 @@ export async function linkWithGoogle(): Promise<LinkResult> {
   const user = requireCurrentUser();
   const uidBefore = user.uid;
   try {
-    const result = await linkWithPopup(user, new GoogleAuthProvider());
+    const result = await linkWithPopup(user, new GoogleAuthProvider(), browserPopupRedirectResolver);
     assertSameUid(uidBefore, result.user.uid);
     return { status: 'linked', uid: result.user.uid };
   } catch (error) {

@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { browserPopupRedirectResolver } from 'firebase/auth';
 
 // Contract under test (src/auth/linkAccount.ts):
 //   linkWithGoogle(): Promise<LinkResult>
@@ -94,6 +95,7 @@ describe('linkWithGoogle', () => {
     expect(result).toEqual({ status: 'linked', uid: 'anon-uid-1' });
     expect(mocks.linkWithPopup).toHaveBeenCalledTimes(1);
     expect(mocks.linkWithPopup.mock.calls[0]?.[0]).toBe(mocks.currentUser);
+    expect(mocks.linkWithPopup.mock.calls[0]?.[2]).toBe(browserPopupRedirectResolver);
     expectNothingDestructive();
   });
 
