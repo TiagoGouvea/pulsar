@@ -457,7 +457,9 @@ export class Orchestrator {
     const ctx = this.ctx;
     const cfg = ctx.config.routing;
     // human adjustments are small: no new acceptance test (the implementer updates tests; gates, G7 and reviews still apply)
-    let f = f0.id.includes(".adj-") ? f0 : await this.ensureAcceptanceTests(f0, wt);
+    // non-critical features write their own tests in the same session (protected once delivered): a separate writer is paid only where independence matters
+    const critical = f0.difficulty === "hard" || cfg.testWriterTags.includes("*") || f0.tags.some((t) => cfg.testWriterTags.includes(t));
+    let f = f0.id.includes(".adj-") || !critical ? f0 : await this.ensureAcceptanceTests(f0, wt);
     const testsBase = await g.head(wt);
     const last = f0.history.at(-1);
     let diag = last ? `Retomada após interrupção: continue a partir do código já presente. Tentativa anterior: ${last.outcome}${last.failedGates?.length ? ` (gates ${last.failedGates.join(",")})` : ""}.${last.note ? `\n${last.note}` : ""}` : "";
@@ -497,7 +499,7 @@ export class Orchestrator {
         diag = `A tentativa anterior terminou com "${res.outcome}". Final da resposta:\n${res.result.finalText.slice(-1500)}`;
       } else {
         await this.tidy(wt, f.id);
-        gates = await this.deps.runGates(ctx, wt, { stage: f.stage, mode: "feature", base: this.branch, featureId: f.id, extra: f.tags.filter((t) => t.startsWith("gate:")).map((t) => t.slice(5)) });
+        gates = await this.deps.runGates(ctx, wt, { stage: f.stage, mode: "feature", base: this.branch, featureId: f.id, extra: f.tags.filter((t) => t.startsWith("gate:")).map((t) => t.slice(5)), tags: f.tags, tests: [...new Set([...f.tests, ...f.protectedTests])] });
         writeJson(hp(ctx, "runs", f.id, `gate-report-${attempt}.json`), gates);
         if (gates.failed.includes("G7")) {
           outcome = "protected_violation";

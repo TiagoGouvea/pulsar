@@ -37,6 +37,7 @@ const Gate = z.object({
   fromStage: z.number().default(0),
   scope: z.enum(["feature", "stage"]).default("feature"),
   required: z.boolean().default(true),
+  onlyTags: z.array(z.string()).optional(),   // feature mode: runs only for features with one of these tags (browser gates: ui)
 });
 
 export const ConfigSchema = z.object({
@@ -63,6 +64,8 @@ export const ConfigSchema = z.object({
     escalateAfterFailures: z.number().int(),
     maxAttemptsPerFeature: z.number().int(),
     hardTags: z.array(z.string()).default([]),
+    // features with these tags (or difficulty hard) get acceptance tests from a separate test_writer; the others write their own
+    testWriterTags: z.array(z.string()).default([]),
     tournament: z.object({
       enabled: z.boolean(),
       tags: z.array(z.string()),

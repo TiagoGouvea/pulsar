@@ -115,6 +115,17 @@ describe("orquestrador (adapter fake)", () => {
     expect(f.history[1].outcome).toBe("success");
   });
 
+  it("4d. feature não crítica: sem test_writer, o implementador escreve o teste e ele fica protegido ao entregar", async () => {
+    const { ctx } = await makeProject({ config: { routing: { explorationRate: 0, escalateAfterFailures: 2, maxAttemptsPerFeature: 5, hardTags: [], testWriterTags: ["security-rules"], tournament: { enabled: false, tags: [], contenders: 2, judge: "review_code" } } } });
+    setFakeScript(script([{ id: "F-0.01", stage: 0, protectedTests: [] }], (run) => {
+      if (run.role.startsWith("implement")) return { files: { "app/e2e/F-0.01.spec.ts": `test("ok", () => { expect(1).toBe(1); });\n` } };
+    }));
+    await orch(ctx, deps(() => true)).start();
+    expect(readEvents(ctx).some((e) => e.role === "test_writer")).toBe(false);
+    expect(feature(ctx.root, "F-0.01").status).toBe("passing");
+    expect(JSON.parse(readFileSync(hp(ctx, "protected.json"), "utf8"))["app/e2e/F-0.01.spec.ts"]).toMatchObject({ featureId: "F-0.01", additive: true });
+  });
+
   it("5. avaliador da mesma família nunca é escolhido", async () => {
     const { ctx } = await makeProject({ config: { routing: { explorationRate: 0.5, escalateAfterFailures: 2, maxAttemptsPerFeature: 5, hardTags: [], tournament: { enabled: false, tags: [], contenders: 2, judge: "review_code" } } } });
     setFakeScript(script(Array.from({ length: 6 }, (_, i) => ({ id: `F-0.0${i + 1}`, stage: 0, tags: ["ui"] }))));

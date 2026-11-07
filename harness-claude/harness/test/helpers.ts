@@ -18,7 +18,7 @@ export const WORKERS = {
   "fake-cheap": fakeWorker("deepseek", "low", false),
 };
 
-export interface FeatureSeed { id: string; stage: number; tags?: string[]; dependsOn?: string[]; difficulty?: string; covers?: string[] }
+export interface FeatureSeed { id: string; stage: number; tags?: string[]; dependsOn?: string[]; difficulty?: string; covers?: string[]; protectedTests?: string[] }
 
 export function config(over: Record<string, any> = {}) {
   return {
@@ -36,7 +36,7 @@ export function config(over: Record<string, any> = {}) {
       retro: { pool: ["fake-anthropic"] },
       postmortem: { pool: ["fake-anthropic"] },
     },
-    routing: { explorationRate: 0, escalateAfterFailures: 2, maxAttemptsPerFeature: 5, hardTags: [], tournament: { enabled: false, tags: ["statistics"], contenders: 2, judge: "review_code" } },
+    routing: { explorationRate: 0, escalateAfterFailures: 2, maxAttemptsPerFeature: 5, hardTags: [], testWriterTags: ["*"], tournament: { enabled: false, tags: ["statistics"], contenders: 2, judge: "review_code" } },
     loop: { maxParallelTasks: 1, retroEveryNFeatures: 10, stopOnSpecChange: true, maxStageFixRounds: 1 },
     stages: [{ id: 0, name: "Setup" }, { id: 1, name: "Base" }],
     gates: { G7: { name: "protected-tests", builtin: "protected" } },

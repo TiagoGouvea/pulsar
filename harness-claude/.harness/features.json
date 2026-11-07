@@ -1542,50 +1542,13 @@
     {
       "id": "F-2.01",
       "stage": 2,
-      "title": "Repositório de indicadores",
-      "description": "src/data/indicators.ts + hook useIndicators (onSnapshot): criar (aplicando sugestão de agregação), editar campos editáveis, arquivar/restaurar (archivedAt), reordenar dentro do grupo (sortOrder), sem apagar registros. Campos travados não são enviados depois de lockedAt.",
+      "title": "Repositório e regras de indicadores",
+      "description": "src/data/indicators.ts + hook useIndicators (onSnapshot): criar (aplicando sugestão de agregação), editar campos editáveis, arquivar/restaurar (archivedAt), reordenar dentro do grupo (sortOrder), sem apagar registros. Campos travados não são enviados depois de lockedAt.\n\nfirestore.rules para users/{uid}/indicators: validação de schema/tipos/tamanhos; após lockedAt != null, group, valueType, numeric (unidade), scale, options, frequency e dailyAggregation são imutáveis; nome/sigla/emoji/sortOrder/archivedAt/desiredDirection/idealRange editáveis; direção só para Resultado; idealRange.min <= max; lockedAt não pode voltar a null.",
       "specRefs": [
         "spec.md#4.1",
         "spec.md#4.5",
-        "arquitetura.md#3.2"
-      ],
-      "covers": [
-        "AC-07"
-      ],
-      "acceptance": [
-        "Criar grava todos os campos do modelo com createdAt/updatedAt de servidor",
-        "Arquivar não apaga registros e tira o indicador do preenchimento",
-        "Reordenar preserva a ordem por grupo após reload",
-        "Edição de indicador travado só envia nome/sigla/emoji/ordem/status/direção/faixa"
-      ],
-      "tests": [
-        "app/src/data/__tests__/indicators.test.ts"
-      ],
-      "protectedTests": [],
-      "tags": [
-        "sync"
-      ],
-      "difficulty": "normal",
-      "dependsOn": [
-        "F-1.01",
-        "F-1.03",
-        "F-2.02"
-      ],
-      "status": "failing",
-      "attempts": 0,
-      "costUsd": 0,
-      "history": [],
-      "origin": []
-    },
-    {
-      "id": "F-2.02",
-      "stage": 2,
-      "title": "Regras: schema e trava de indicadores",
-      "description": "firestore.rules para users/{uid}/indicators: validação de schema/tipos/tamanhos; após lockedAt != null, group, valueType, numeric (unidade), scale, options, frequency e dailyAggregation são imutáveis; nome/sigla/emoji/sortOrder/archivedAt/desiredDirection/idealRange editáveis; direção só para Resultado; idealRange.min <= max; lockedAt não pode voltar a null.",
-      "specRefs": [
-        "spec.md#4.1",
-        "spec.md#4.3",
         "arquitetura.md#3.2",
+        "spec.md#4.3",
         "arquitetura.md#9.2"
       ],
       "covers": [
@@ -1593,24 +1556,31 @@
         "AC-08"
       ],
       "acceptance": [
+        "Criar grava todos os campos do modelo com createdAt/updatedAt de servidor",
+        "Arquivar não apaga registros e tira o indicador do preenchimento",
+        "Reordenar preserva a ordem por grupo após reload",
+        "Edição de indicador travado só envia nome/sigla/emoji/ordem/status/direção/faixa",
         "Indicador com lockedAt rejeita mudança de grupo/tipo/unidade/escala/opções/frequência/agregação",
         "Indicador com lockedAt aceita mudar nome, sigla, emoji, ordem, arquivamento e direção/faixa",
         "Agregação incompatível com o tipo é rejeitada",
         "Fator com desiredDirection é rejeitado; faixa com min > max é rejeitada"
       ],
       "tests": [
+        "app/src/data/__tests__/indicators.test.ts",
         "app/tests/rules/indicators.test.ts"
       ],
       "protectedTests": [
         "app/tests/rules/indicators.test.ts"
       ],
       "tags": [
+        "sync",
         "security-rules"
       ],
       "difficulty": "hard",
       "dependsOn": [
-        "F-1.08",
-        "F-1.01"
+        "F-1.01",
+        "F-1.03",
+        "F-1.08"
       ],
       "status": "failing",
       "attempts": 0,
@@ -1621,29 +1591,41 @@
     {
       "id": "F-2.03",
       "stage": 2,
-      "title": "Editor de indicador (parte 1): grupo, identificação e tipo",
-      "description": "Sheet 'Novo Indicador' (design/novo_indicador_modal): grupo Fator/Resultado, nome (input com data-privacy-allow), sigla (até 4), emoji opcional, tipo de resposta (Sim/Não, Escala, Opções ordenadas, Número + unidade) com configuração: escala min/max/passo (padrão 0–10 passo 1), 2–7 opções ordenadas editáveis, unidades sugeridas da spec + personalizada + sem unidade.",
+      "title": "Editor de indicador",
+      "description": "Sheet 'Novo Indicador' (design/novo_indicador_modal): grupo Fator/Resultado, nome (input com data-privacy-allow), sigla (até 4), emoji opcional, tipo de resposta (Sim/Não, Escala, Opções ordenadas, Número + unidade) com configuração: escala min/max/passo (padrão 0–10 passo 1), 2–7 opções ordenadas editáveis, unidades sugeridas da spec + personalizada + sem unidade.\n\nFrequência única/múltipla; com múltipla, mostrar agregação sugerida e 'Configurações avançadas' com apenas agregações válidas e um exemplo do efeito; Resultado: direção (sem preferência padrão, maior, menor, faixa ideal com min/max para numérico/escala). Em edição de indicador com histórico, campos travados aparecem desabilitados com explicação.",
       "specRefs": [
         "spec.md#4.1",
         "spec.md#4.2",
-        "spec.md#4.4"
+        "spec.md#4.4",
+        "spec.md#4.1.1",
+        "spec.md#4.3",
+        "arquitetura.md#4"
       ],
       "covers": [
         "AC-05",
-        "AC-07"
+        "AC-07",
+        "AC-06",
+        "AC-08"
       ],
       "acceptance": [
         "Os quatro tipos podem ser criados com sua configuração",
         "Nome é obrigatório; sigla vazia mostra prévia 'Abc...'",
         "Campo de nome mostra o nome real (data-privacy-allow) mesmo com olho fechado",
-        "Mensagens de validação em pt-BR"
+        "Mensagens de validação em pt-BR",
+        "Agregação não aparece para frequência única",
+        "Configurações avançadas listam só opções válidas e mostram exemplo",
+        "Direção padrão 'Sem preferência'; faixa ideal exige min <= max",
+        "Com histórico, tipo/grupo/unidade/frequência/agregação ficam bloqueados e direção/faixa continuam editáveis"
       ],
       "tests": [
         "app/src/indicators/__tests__/IndicatorEditor.test.tsx",
-        "app/e2e/indicator-create.spec.ts"
+        "app/e2e/indicator-create.spec.ts",
+        "app/src/indicators/__tests__/AggregationControl.test.tsx",
+        "app/e2e/indicator-edit-lock.spec.ts"
       ],
       "protectedTests": [
-        "app/e2e/indicator-create.spec.ts"
+        "app/e2e/indicator-create.spec.ts",
+        "app/e2e/indicator-edit-lock.spec.ts"
       ],
       "tags": [
         "ui"
@@ -1652,48 +1634,6 @@
       "dependsOn": [
         "F-2.01",
         "F-1.04"
-      ],
-      "status": "failing",
-      "attempts": 0,
-      "costUsd": 0,
-      "history": [],
-      "origin": []
-    },
-    {
-      "id": "F-2.04",
-      "stage": 2,
-      "title": "Editor de indicador (parte 2): frequência, agregação, direção e trava",
-      "description": "Frequência única/múltipla; com múltipla, mostrar agregação sugerida e 'Configurações avançadas' com apenas agregações válidas e um exemplo do efeito; Resultado: direção (sem preferência padrão, maior, menor, faixa ideal com min/max para numérico/escala). Em edição de indicador com histórico, campos travados aparecem desabilitados com explicação.",
-      "specRefs": [
-        "spec.md#4.1",
-        "spec.md#4.1.1",
-        "spec.md#4.3",
-        "arquitetura.md#4"
-      ],
-      "covers": [
-        "AC-06",
-        "AC-07",
-        "AC-08"
-      ],
-      "acceptance": [
-        "Agregação não aparece para frequência única",
-        "Configurações avançadas listam só opções válidas e mostram exemplo",
-        "Direção padrão 'Sem preferência'; faixa ideal exige min <= max",
-        "Com histórico, tipo/grupo/unidade/frequência/agregação ficam bloqueados e direção/faixa continuam editáveis"
-      ],
-      "tests": [
-        "app/src/indicators/__tests__/AggregationControl.test.tsx",
-        "app/e2e/indicator-edit-lock.spec.ts"
-      ],
-      "protectedTests": [
-        "app/e2e/indicator-edit-lock.spec.ts"
-      ],
-      "tags": [
-        "ui"
-      ],
-      "difficulty": "normal",
-      "dependsOn": [
-        "F-2.03"
       ],
       "status": "failing",
       "attempts": 0,
@@ -1742,17 +1682,21 @@
     {
       "id": "F-2.06",
       "stage": 2,
-      "title": "Repositório de registros",
-      "description": "src/data/entries.ts: saveEntry só para o localDate de hoje; registros são imutáveis (nunca usa update/set sobre documento existente): único por dia substitui o de hoje com um batch atômico 'cria novo documento (ID gerado) + exclui o registro de hoje do indicador' (DECISOES.md#Registros imutáveis); múltiplo gera ID único por evento; recordedAt serverTimestamp (UTC); note opcional; no primeiro registro grava lockedAt no indicador na mesma transação/batch; deleteEntry de qualquer dia. Estados pendente/erro sem sucesso antecipado.",
+      "title": "Repositório e regras de registros",
+      "description": "src/data/entries.ts: saveEntry só para o localDate de hoje; registros são imutáveis (nunca usa update/set sobre documento existente): único por dia substitui o de hoje com um batch atômico 'cria novo documento (ID gerado) + exclui o registro de hoje do indicador' (DECISOES.md#Registros imutáveis); múltiplo gera ID único por evento; recordedAt serverTimestamp (UTC); note opcional; no primeiro registro grava lockedAt no indicador na mesma transação/batch; deleteEntry de qualquer dia. Estados pendente/erro sem sucesso antecipado.\n\nfirestore.rules para users/{uid}/entries: create com valor compatível com o tipo do indicador (get), indicador do mesmo UID e travado (getAfter lockedAt), note string <= 500, campos exatos; update sempre negado (registros imutáveis: nenhum valor de nenhum dia pode ser reescrito por escrita direta); delete pelo dono em qualquer data. A substituição do único de hoje é create + delete em batch (F-2.06). Sem validação de data no servidor.",
       "specRefs": [
         "spec.md#5.2",
         "spec.md#5.4",
-        "arquitetura.md#3.3"
+        "arquitetura.md#3.3",
+        "spec.md#9",
+        "arquitetura.md#9.2",
+        "DECISOES.md#Registros imutáveis"
       ],
       "covers": [
         "AC-09",
         "AC-10",
-        "AC-11"
+        "AC-11",
+        "AC-04"
       ],
       "acceptance": [
         "Não existe API para criar registro em data passada",
@@ -1760,47 +1704,7 @@
         "Remover a resposta de hoje de indicador único exclui o registro (ausência)",
         "Múltiplo: cada save cria documento independente",
         "Exclusão funciona para qualquer dia; não há edição de valores de dias passados",
-        "Promise só resolve após persistência confirmada"
-      ],
-      "tests": [
-        "app/src/data/__tests__/entries.test.ts"
-      ],
-      "protectedTests": [
-        "app/src/data/__tests__/entries.test.ts"
-      ],
-      "tags": [
-        "sync"
-      ],
-      "difficulty": "hard",
-      "dependsOn": [
-        "F-2.01",
-        "F-1.02",
-        "F-2.07"
-      ],
-      "status": "failing",
-      "attempts": 0,
-      "costUsd": 0,
-      "history": [],
-      "origin": []
-    },
-    {
-      "id": "F-2.07",
-      "stage": 2,
-      "title": "Regras: registros",
-      "description": "firestore.rules para users/{uid}/entries: create com valor compatível com o tipo do indicador (get), indicador do mesmo UID e travado (getAfter lockedAt), note string <= 500, campos exatos; update sempre negado (registros imutáveis: nenhum valor de nenhum dia pode ser reescrito por escrita direta); delete pelo dono em qualquer data. A substituição do único de hoje é create + delete em batch (F-2.06). Sem validação de data no servidor.",
-      "specRefs": [
-        "spec.md#5.2",
-        "spec.md#9",
-        "arquitetura.md#3.3",
-        "arquitetura.md#9.2",
-        "DECISOES.md#Registros imutáveis"
-      ],
-      "covers": [
-        "AC-04",
-        "AC-10",
-        "AC-11"
-      ],
-      "acceptance": [
+        "Promise só resolve após persistência confirmada",
         "update em qualquer registro (passado ou de hoje, inclusive só mudando value ou note) é rejeitado",
         "Batch create (novo ID) + delete do registro de hoje é aceito para o dono",
         "Valor incompatível com o tipo é rejeitado; opção inexistente é rejeitada",
@@ -1809,17 +1713,21 @@
         "Exclusão permitida ao dono para qualquer data"
       ],
       "tests": [
+        "app/src/data/__tests__/entries.test.ts",
         "app/tests/rules/entries.test.ts"
       ],
       "protectedTests": [
+        "app/src/data/__tests__/entries.test.ts",
         "app/tests/rules/entries.test.ts"
       ],
       "tags": [
+        "sync",
         "security-rules"
       ],
       "difficulty": "hard",
       "dependsOn": [
-        "F-2.02"
+        "F-2.01",
+        "F-1.02"
       ],
       "status": "failing",
       "attempts": 0,
@@ -1865,8 +1773,7 @@
       "difficulty": "hard",
       "dependsOn": [
         "F-2.06",
-        "F-2.04",
-        "F-2.07"
+        "F-2.03"
       ],
       "status": "failing",
       "attempts": 0,
@@ -1906,8 +1813,7 @@
       "difficulty": "normal",
       "dependsOn": [
         "F-2.06",
-        "F-2.05",
-        "F-2.07"
+        "F-2.05"
       ],
       "status": "failing",
       "attempts": 0,
@@ -1944,8 +1850,7 @@
       "difficulty": "normal",
       "dependsOn": [
         "F-2.01",
-        "F-1.07",
-        "F-2.02"
+        "F-1.07"
       ],
       "status": "failing",
       "attempts": 0,
@@ -1985,8 +1890,7 @@
       "dependsOn": [
         "F-2.06",
         "F-1.09",
-        "F-1.08",
-        "F-2.07"
+        "F-1.08"
       ],
       "status": "failing",
       "attempts": 0,
@@ -3258,7 +3162,7 @@
       ],
       "difficulty": "normal",
       "dependsOn": [
-        "F-2.07",
+        "F-2.06",
         "F-4.02",
         "F-5.03"
       ],

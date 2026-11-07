@@ -158,3 +158,9 @@ Branch `1-base`. **Custo final: US$ 32,94** da etapa (teto inicial de 18, aument
 - **RELATORIO.md** com tabela por feature, custo por modelo e próximos passos.
 - **Tempo ativo** não conta a espera nos prompts.
 - **`watch`:** um caractere por evento do modelo e, entre as chamadas, o gate que está rodando.
+- **Menos tarefas e mais coesas:** a etapa 2 caiu de 12 para 9 features. O editor de indicador agora é uma feature só, e cada repositório vai junto com as regras dele. O review_features passa a reprovar fatiamento em "parte 1/parte 2".
+- **test_writer só nas features críticas** (security-rules, statistics, privacy-mode e hard). Nas demais, o implementador escreve os testes na mesma sessão. O revisor confere a cobertura, e os testes ficam protegidos quando a feature é entregue.
+- **Gates em camadas:**
+  - em cada feature, o G6 roda só os e2e da própria feature;
+  - os gates G8, G9 e G10 só rodam em features de UI ou de privacy-mode;
+  - o G11 (visual) e a suíte e2e completa rodam no fim da etapa.

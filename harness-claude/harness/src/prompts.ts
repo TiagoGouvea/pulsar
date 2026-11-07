@@ -114,6 +114,7 @@ export function featureVars(ctx: Ctx, f: Feature, extra: Record<string, string> 
     progress: tail(hp(ctx, "progress.md"), 40),
     protectedFiles: protectedList(ctx, f),
     otherFeatures: otherFeatures(ctx, f),
+    featureTests: f.tests.join(", ") || "(escolha caminhos em app/e2e/ ou app/src/**/__tests__/)",
     tags: f.tags.join(", "),
     ...extra,
   };

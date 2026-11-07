@@ -90,6 +90,7 @@ routing:
   explorationRate: 0.10        # 10% das tarefas testam worker fora do melhor histórico
   escalateAfterFailures: 2     # implement -> implement_hard
   maxAttemptsPerFeature: 5     # depois: bloqueia a feature e registra em DUVIDAS
+  testWriterTags: [security-rules, statistics, privacy-mode]   # + difficulty hard: teste escrito por outro modelo; o resto escreve o próprio teste
   hardTags: [statistics, security-rules]   # vão direto para implement_hard (sync/privacy-mode saíram: mandavam metade da etapa para a fila cara)
   tournament:
     enabled: false               # dobra o custo das features críticas
@@ -121,12 +122,12 @@ gates:
   G3:  { name: typecheck,      cmd: "yarn typecheck" }
   G4:  { name: unit,           cmd: "yarn test:unit --coverage" }
   G5:  { name: security-rules, cmd: "yarn test:rules", fromStage: 1 }
-  G6:  { name: e2e,            cmd: "yarn test:e2e" }
+  G6:  { name: e2e,            cmd: "yarn test:e2e {tests}" }   # feature: só os e2e da própria feature; fim de etapa: suíte completa
   G7:  { name: protected-tests, builtin: protected }
-  G8:  { name: privacy-leak,   builtin: privacy, fromStage: 1 }
-  G9:  { name: a11y,           builtin: a11y }
-  G10: { name: mobile-layout,  builtin: layout }
-  G11: { name: visual-regression, cmd: "yarn test:visual", updateCmd: "yarn test:visual --update-snapshots", fromStage: 2 }
+  G8:  { name: privacy-leak,   builtin: privacy, fromStage: 1, onlyTags: [ui, privacy-mode] }
+  G9:  { name: a11y,           builtin: a11y, onlyTags: [ui] }
+  G10: { name: mobile-layout,  builtin: layout, onlyTags: [ui] }
+  G11: { name: visual-regression, cmd: "yarn test:visual", updateCmd: "yarn test:visual --update-snapshots", fromStage: 2, scope: stage }
   G12: { name: lighthouse,     builtin: lighthouse, scope: stage }
   G13: { name: secrets,        builtin: secrets }
 

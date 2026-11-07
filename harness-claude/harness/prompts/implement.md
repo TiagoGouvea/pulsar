@@ -9,6 +9,9 @@ Implemente a feature abaixo até que os testes passem e o código respeite o des
 - Se a feature criar uma tela nova, adicione a rota em `app/e2e/routes.json`.
 - Nunca implemente "para o teste" (hardcode, mocks no código de produção): um avaliador de outra família revisa o diff.
 
+## Testes
+- Se a lista de testes protegidos acima estiver vazia, **você** escreve os testes de aceite em `{{featureTests}}` (um por critério de `acceptance`, determinísticos, e2e no projeto `mobile`). Eles ficam protegidos quando a feature for entregue: não escreva testes triviais.
+
 ## Escopo
 - Faça **somente** o que esta feature pede (descrição e critérios de aceite), mesmo que a spec ou o design mostrem mais.
 - Estas features (desta etapa e das próximas) ainda serão feitas por outro implementador; não implemente telas, fluxos nem dados delas:

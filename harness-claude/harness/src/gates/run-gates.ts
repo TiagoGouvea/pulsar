@@ -11,7 +11,7 @@ import { a11yGate, layoutGate, lighthouseGate } from "./quality.js";
 
 export interface GateResult { id: string; name: string; ok: boolean; required: boolean; skipped?: string; durationMs: number; output: string }
 export interface GateReport { ok: boolean; mode: "feature" | "stage"; stage: number; failed: string[]; results: GateResult[] }
-export interface GateOpts { stage: number; mode: "feature" | "stage"; base?: string; only?: string[]; featureId?: string; extra?: string[] }
+export interface GateOpts { stage: number; mode: "feature" | "stage"; base?: string; only?: string[]; featureId?: string; extra?: string[]; tags?: string[]; tests?: string[] }
 export type RunGates = (ctx: Ctx, cwd: string, o: GateOpts) => Promise<GateReport>;
 
 const SECRET_PATTERNS = [
@@ -44,7 +44,12 @@ export const runGates: RunGates = (ctx, cwd, o) => withPortLock(ctx, join(cwd, c
   const results: GateResult[] = [];
   for (const [id, g] of Object.entries(ctx.config.gates)) {
     if (o.only && !o.only.includes(id)) continue;
-    const skip = o.stage < g.fromStage ? `a partir da etapa ${g.fromStage}` : g.scope === "stage" && o.mode === "feature" && !o.extra?.includes(id) ? "só no fim de etapa" : undefined;
+    // {tests}: feature mode runs only the feature's own spec files (the whole suite runs at the stage end)
+    const own = (o.tests ?? []).filter((p) => /\.spec\.[cm]?[jt]sx?$/.test(p)).map((p) => p.replace(new RegExp(`^${ctx.config.project.appDir.replace(/\/$/, "")}/`), ""));
+    const cmd = g.cmd?.replace("{tests}", o.mode === "feature" ? own.join(" ") : "");
+    const skip = o.stage < g.fromStage ? `a partir da etapa ${g.fromStage}` : g.scope === "stage" && o.mode === "feature" && !o.extra?.includes(id) ? "só no fim de etapa"
+      : o.mode === "feature" && g.onlyTags && !g.onlyTags.some((t) => o.tags?.includes(t)) ? `só em features ${g.onlyTags.join("/")}`
+      : o.mode === "feature" && g.cmd?.includes("{tests}") && !own.length ? "a feature não tem e2e próprio" : undefined;
     const start = Date.now();
     if (skip) { results.push({ id, name: g.name, ok: true, required: g.required, skipped: skip, durationMs: 0, output: "" }); continue; }
     let r: { ok: boolean; output: string };
@@ -59,7 +64,7 @@ export const runGates: RunGates = (ctx, cwd, o) => withPortLock(ctx, join(cwd, c
       else if (g.builtin === "layout") r = await layoutGate(ctx, appAbs);
       else if (g.builtin === "lighthouse") r = await lighthouseGate(ctx, appAbs);
       else {
-        const p = await runProcess("sh", ["-c", g.cmd!], { cwd: appAbs, env: gateEnv(ctx), timeoutMs: 30 * 60_000 });
+        const p = await runProcess("sh", ["-c", cmd!], { cwd: appAbs, env: gateEnv(ctx), timeoutMs: 30 * 60_000 });
         r = { ok: p.exitCode === 0 && !p.timedOut, output: (p.timedOut ? "TIMEOUT\n" : "") + p.all.slice(-6000) };
       }
     } catch (e) {
