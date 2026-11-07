@@ -98,6 +98,7 @@ export interface ExecutionResult {
     rawResponsePath?: string;
     tracePath?: string;
     localModelLifecyclePath?: string;
+    responseRepairCaseLogPath?: string;
   };
   usage?: {
     inputTokens?: number;

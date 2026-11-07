@@ -13,7 +13,7 @@ import type { ExecutionRequest, ExecutionResult, ModelCandidate } from "../domai
 import { ModelCatalog } from "../providers/catalog.js";
 import { withLmStudioModel, type LocalModelDiagnostic } from "../providers/lmstudio.js";
 import { redact } from "../security/redaction.js";
-import { nowUtc, safeError, writeJson } from "../utils/core.js";
+import { createId, nowUtc, safeError, writeJson } from "../utils/core.js";
 import { colorTerminal, terminalLog, terminalTimestamp } from "../utils/terminal.js";
 import type { Executor } from "./types.js";
 
@@ -44,6 +44,8 @@ export type ResultRepairDiagnostic = {
   reason: string;
   responseChars: number;
   detail?: string;
+  responseText?: string;
+  parserOutput?: unknown;
 };
 
 type ResultRepairObserver = (diagnostic: ResultRepairDiagnostic) => void;
@@ -325,13 +327,13 @@ export function extractResult(
     repairReason = "JSON inválido ou resposta com texto fora do objeto";
     observeRepair?.({
       status: "started", reason: repairReason, responseChars: text.length,
-      detail: safeError(error),
+      detail: safeError(error), responseText: text,
     });
     try {
       parsed = parseFromLLM(text, { mode: "repair" });
     } catch (repairError) {
       const detail = `JSON original: ${safeError(initialParseError)}; parser: ${safeError(repairError)}`;
-      observeRepair?.({ status: "unresolved", reason: repairReason, responseChars: text.length, detail });
+      observeRepair?.({ status: "unresolved", reason: repairReason, responseChars: text.length, detail, responseText: text });
       throw new Error(`json-llm-repair não conseguiu extrair/reparar o JSON. ${detail}`);
     }
   }
@@ -366,7 +368,7 @@ export function extractResult(
   try {
     const result = validate(parsed);
     if (repairReason) {
-      observeRepair?.({ status: "resolved", reason: repairReason, responseChars: text.length });
+      observeRepair?.({ status: "resolved", reason: repairReason, responseChars: text.length, responseText: text, parserOutput: parsed });
     }
     return result;
   } catch (validationError) {
@@ -374,24 +376,25 @@ export function extractResult(
       repairReason = "JSON válido, mas incompatível com o contrato do harness";
       observeRepair?.({
         status: "started", reason: repairReason, responseChars: text.length,
-        detail: safeError(validationError),
+        detail: safeError(validationError), responseText: text,
       });
       try {
         parsed = parseFromLLM(text, { mode: "repair" });
       } catch (repairError) {
         const detail = `Contrato: ${safeError(validationError)}; parser: ${safeError(repairError)}`;
-        observeRepair?.({ status: "unresolved", reason: repairReason, responseChars: text.length, detail });
+        observeRepair?.({ status: "unresolved", reason: repairReason, responseChars: text.length, detail, responseText: text });
         throw new Error(`json-llm-repair não resolveu a resposta incompatível com o contrato. ${detail}`);
       }
     }
     try {
       const result = validate(parsed);
-      observeRepair?.({ status: "resolved", reason: repairReason, responseChars: text.length });
+      observeRepair?.({ status: "resolved", reason: repairReason, responseChars: text.length, responseText: text, parserOutput: parsed });
       return result;
     } catch (finalValidationError) {
       const detail = safeError(finalValidationError);
       observeRepair?.({
         status: "unresolved", reason: repairReason, responseChars: text.length, detail,
+        responseText: text, parserOutput: parsed,
       });
       throw new Error(`json-llm-repair foi executado, mas não resolveu o contrato: ${detail}`);
     }
@@ -497,6 +500,7 @@ export class PiExecutor implements Executor {
           ...(["response_parse", "timeout"].includes(failure.phase) ? { rawResponsePath } : {}),
           ...(enteredSession ? { tracePath } : {}),
           ...(failure.phase === "response_parse" ? { responseRepairLogPath: path.join(request.outputDirectory, "response-repair.jsonl") } : {}),
+          ...(failure.phase === "response_parse" ? { responseRepairCaseLogPath: path.join(request.outputDirectory, "response-repair-cases.jsonl") } : {}),
           ...(request.candidate.modality === "local" ? { localModelLifecyclePath: path.join(request.outputDirectory, "local-model-lifecycle.json") } : {}),
         },
         ...(failure.usage ? { usage: failure.usage } : {}),
@@ -529,6 +533,7 @@ export class PiExecutor implements Executor {
     const { session } = created;
     const tracePath = path.join(request.outputDirectory, "session-trace.jsonl");
     const responseRepairLogPath = path.join(request.outputDirectory, "response-repair.jsonl");
+    const responseRepairCaseLogPath = path.join(request.outputDirectory, "response-repair-cases.jsonl");
     const exchangePath = path.join(request.outputDirectory, "model-exchange.jsonl");
     const recordExchange = (stage: string, direction: "request" | "response" | "error" | "event", content: string, model = request.candidate, tool?: string): void => {
       if (!request.captureModelExchange) return;
@@ -546,13 +551,42 @@ export class PiExecutor implements Executor {
       runId: request.runId, attemptId: request.attemptId, timeoutMs: request.timeoutMs,
     })}\n`, { encoding: "utf8", mode: 0o600 });
     const progress = startLiveProgress(request, tracePath, this.config.security.redactPatterns);
+    let activeRepairCaseId: string | undefined;
     const observeResponseRepair: ResultRepairObserver = (diagnostic) => {
+      const { responseText, parserOutput, ...diagnosticSummary } = diagnostic;
       const safeDiagnostic = {
         at: nowUtc(),
-        ...diagnostic,
-        ...(diagnostic.detail ? { detail: redact(diagnostic.detail, this.config.security.redactPatterns) } : {}),
+        ...diagnosticSummary,
+        ...(diagnosticSummary.detail ? { detail: redact(diagnosticSummary.detail, this.config.security.redactPatterns) } : {}),
       };
       appendFileSync(responseRepairLogPath, `${JSON.stringify(safeDiagnostic)}\n`, { encoding: "utf8", mode: 0o600 });
+      if (diagnostic.status === "started") {
+        activeRepairCaseId = createId("repair-case");
+        const safeInput = redact(responseText ?? "", this.config.security.redactPatterns);
+        appendFileSync(responseRepairCaseLogPath, `${JSON.stringify({
+          at: safeDiagnostic.at, caseId: activeRepairCaseId, type: "input", reason: diagnostic.reason,
+          responseChars: diagnostic.responseChars, responseText: safeInput.slice(0, MAX_RAW_RESPONSE_CHARS),
+          truncated: safeInput.length > MAX_RAW_RESPONSE_CHARS,
+        })}\n`, { encoding: "utf8", mode: 0o600 });
+      } else if (diagnostic.status === "resolved" || diagnostic.status === "unresolved") {
+        const serializedOutput = parserOutput === undefined ? undefined : JSON.stringify(parserOutput);
+        const safeOutput = serializedOutput == null ? undefined : redact(serializedOutput, this.config.security.redactPatterns);
+        appendFileSync(responseRepairCaseLogPath, `${JSON.stringify({
+          at: safeDiagnostic.at, caseId: activeRepairCaseId ?? createId("repair-case"), type: "result",
+          status: diagnostic.status, reason: diagnostic.reason,
+          ...(safeOutput == null ? {} : {
+            parserOutput: safeOutput.slice(0, MAX_RAW_RESPONSE_CHARS),
+            outputTruncated: safeOutput.length > MAX_RAW_RESPONSE_CHARS,
+          }),
+          ...(safeDiagnostic.detail ? { detail: safeDiagnostic.detail } : {}),
+        })}\n`, { encoding: "utf8", mode: 0o600 });
+        activeRepairCaseId = undefined;
+      } else {
+        appendFileSync(responseRepairCaseLogPath, `${JSON.stringify({
+          at: safeDiagnostic.at, caseId: createId("repair-case"), type: "skipped", reason: diagnostic.reason,
+          responseChars: diagnostic.responseChars,
+        })}\n`, { encoding: "utf8", mode: 0o600 });
+      }
       const status = {
         started: "acionado",
         resolved: "recuperou resposta válida",
@@ -562,7 +596,7 @@ export class PiExecutor implements Executor {
       progress.log(`json-llm-repair · ${status} · ${diagnostic.reason}`, safeDiagnostic.at);
       if (diagnostic.status === "unresolved" || diagnostic.status === "skipped") {
         const detail = safeDiagnostic.detail ? ` · ${safeDiagnostic.detail.replace(/\s+/g, " ").slice(0, 400)}` : "";
-        progress.log(`  ↳ ${diagnostic.responseChars} caracteres · log ${responseRepairLogPath}${detail}`, safeDiagnostic.at);
+        progress.log(`  ↳ ${diagnostic.responseChars} caracteres · diagnóstico ${responseRepairLogPath} · caso mascarado ${responseRepairCaseLogPath}${detail}`, safeDiagnostic.at);
       }
     };
     const unsubscribe = session.subscribe((event) => {

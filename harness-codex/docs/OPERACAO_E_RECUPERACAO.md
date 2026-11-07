@@ -3,7 +3,7 @@
 ## Acompanhar uma execução
 
 - O terminal mostra timestamp, etapa/tarefa, tentativa, modelo, tokens, custo e duração.
-- Respostas não vazias que o parser local não consegue validar podem passar por uma sessão Pi separada, sem ferramentas; o pool `responseFormatter` tem teto estimado de custo, limite de tokens/tempo e chamadas registradas separadamente na performance.
+- Respostas não vazias que o parser local não consegue validar podem passar por uma sessão Pi separada, sem ferramentas; o pool `responseFormatter` tem teto estimado de custo, limite de tokens/tempo e chamadas registradas separadamente na performance. Cada ativação do `json-llm-repair` também grava entrada mascarada e resultado/erro do parser em `response-repair-cases.jsonl`, ao lado do log resumido `response-repair.jsonl`; cada campo tem limite de 64 mil caracteres e não é impresso integralmente no terminal.
 - Para inspecionar o prompt enviado pelo harness, chamadas de ferramenta e textos recebidos do Pi em um probe remoto, use `yarn harness models probe --config harness.config.yaml --alias <alias> --inference --show-exchange`. O intercâmbio mascarado fica em `.harness/model-probes/<alias>/<probe-id>/model-exchange.jsonl`; esta opção não contorna bloqueios de preço nem exibe o payload HTTP interno completo do Pi.
 - Resposta vazia não dispara chamada de reparo: fica registrada como falha técnica para o roteador tentar o próximo modelo.
 - O SQLite continua sendo a fonte de verdade em `.harness/state.sqlite`. Para consulta manual, cada execução também tem um espelho legível em `.harness/runs/<id>/state.json` e seu histórico em `events.jsonl`; o snapshot contém versão de schema e hash de integridade.

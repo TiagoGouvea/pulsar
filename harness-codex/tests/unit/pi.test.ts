@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import type { ModelCandidate } from "../../src/domain/types.js";
-import { extractResult, lastAssistantOutput, localApiFor, prepareResponseDiagnostic, recoverResultWithFormatter, supportsPiReasoningEffort } from "../../src/executors/pi.js";
+import { extractResult, lastAssistantOutput, localApiFor, prepareResponseDiagnostic, recoverResultWithFormatter, supportsPiReasoningEffort, type ResultRepairDiagnostic } from "../../src/executors/pi.js";
 
 const result = {
   taskId: "task-001",
@@ -75,24 +75,29 @@ describe("contrato estruturado do Pi", () => {
   });
 
   test("usa json-llm-repair para corrigir sintaxe e registra a recuperação", () => {
-    const diagnostics: Array<{ status: string; reason: string }> = [];
+    const diagnostics: ResultRepairDiagnostic[] = [];
     const malformed = `{taskId: 'task-001', outcome: 'ready_for_verification', summary: 'ok', changedFiles: [], claimedChecks: [], decisions: [], blockers: [], suggestedFollowUps: [],}`;
     const parsed = extractResult(malformed, "task-001", ["task-001"], (diagnostic) => diagnostics.push(diagnostic));
 
     expect(parsed.summary).toBe("ok");
     expect(diagnostics.map(({ status }) => status)).toEqual(["started", "resolved"]);
     expect(diagnostics[0]?.reason).toMatch(/JSON inválido/);
+    expect(diagnostics[0]?.responseText).toBe(malformed);
+    expect(diagnostics[1]?.parserOutput).toMatchObject({ taskId: "task-001", summary: "ok" });
   });
 
   test("registra quando json-llm-repair não resolve tipos inválidos do contrato", () => {
-    const diagnostics: Array<{ status: string; reason: string; detail?: string }> = [];
+    const diagnostics: ResultRepairDiagnostic[] = [];
+    const malformed = JSON.stringify({ ...result, claimedChecks: [42] });
 
     expect(() => extractResult(
-      JSON.stringify({ ...result, claimedChecks: [42] }), "task-001", ["task-001"],
+      malformed, "task-001", ["task-001"],
       (diagnostic) => diagnostics.push(diagnostic),
     )).toThrow(/json-llm-repair foi executado, mas não resolveu o contrato/);
     expect(diagnostics.map(({ status }) => status)).toEqual(["started", "unresolved"]);
     expect(diagnostics[1]?.detail).toMatch(/claimedChecks inválido/);
+    expect(diagnostics[0]?.responseText).toBe(malformed);
+    expect(diagnostics[1]?.parserOutput).toMatchObject({ claimedChecks: [42] });
   });
 
   test("registra resposta vazia como caso não reparável", () => {
