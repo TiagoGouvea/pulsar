@@ -427,10 +427,14 @@ describe('indicator schema and limits', () => {
   it.each([
     ['boolean / single', booleanIndicator()],
     ['boolean / single with null aggregation', { ...booleanIndicator(), dailyAggregation: null }],
+    ['boolean / multiple with presence', { ...booleanIndicator(), frequency: 'multiple_per_day', dailyAggregation: 'any' }],
+    ['boolean / multiple with last', { ...booleanIndicator(), frequency: 'multiple_per_day', dailyAggregation: 'last' }],
     ['numeric / multiple with sum', numericIndicator()],
+    ['numeric / multiple without unit', { ...numericIndicator(), numeric: { unit: '', min: 0, max: null, step: 0.5 } }],
     ['scale / single with direction', scaleIndicator()],
     ['scale / single with target range', targetRangeIndicator()],
-    ['ordinal / single with options', ordinalIndicator()]
+    ['ordinal / single with options', ordinalIndicator()],
+    ['empty abbreviation fallback', { ...booleanIndicator(), abbreviation: '' }]
   ])('accepts a valid %s indicator', async (_name, indicator) => {
     await assertSucceeds(setDoc(indicatorPath(OWNER), indicator))
   })
@@ -600,6 +604,32 @@ describe('indicator schema and limits', () => {
       }
     ],
     ['target range on a factor', { ...targetRangeIndicator(), group: 'factor' }],
+    [
+      'boolean with mean',
+      {
+        ...booleanIndicator(),
+        frequency: 'multiple_per_day',
+        dailyAggregation: 'mean'
+      }
+    ],
+    [
+      'target range on a boolean result',
+      {
+        ...booleanIndicator(),
+        group: 'result',
+        desiredDirection: 'target_range',
+        idealRange: { min: 0, max: 1 }
+      }
+    ],
+    [
+      'target range on an ordinal result',
+      {
+        ...ordinalIndicator(),
+        group: 'result',
+        desiredDirection: 'target_range',
+        idealRange: { min: 0, max: 1 }
+      }
+    ],
     ['desired direction on a factor', { ...scaleIndicator(), group: 'factor' }],
     [
       'ideal range on a factor',
@@ -702,6 +732,178 @@ function targetRangeWithoutIdealRange() {
   const { idealRange: _idealRange, ...withoutIdealRange } = targetRangeIndicator()
   return withoutIdealRange
 }
+
+describe('indicator structural freeze after the first entry', () => {
+  const frozenId = 'frozen-indicator'
+  const firstEntry = new Date(0)
+
+  async function seedFrozen(indicator: DocumentData = booleanIndicator()) {
+    await seed(['users', OWNER, 'indicators', frozenId], {
+      ...indicator,
+      firstEntryAt: firstEntry,
+      createdAt: firstEntry,
+      updatedAt: firstEntry
+    })
+  }
+
+  it('rejects a creation that claims a first entry', async () => {
+    await assertFails(
+      setDoc(indicatorPath(OWNER), { ...booleanIndicator(), firstEntryAt: serverTimestamp() })
+    )
+    await assertSucceeds(setDoc(indicatorPath(OWNER), { ...booleanIndicator(), firstEntryAt: null }))
+  })
+
+  it('lets the first entry be marked once with the request time', async () => {
+    await seed(['users', OWNER, 'indicators', frozenId], booleanIndicator())
+    await assertSucceeds(
+      updateDoc(indicatorPath(OWNER, frozenId), {
+        firstEntryAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      })
+    )
+  })
+
+  it('rejects a first entry marked with an arbitrary time', async () => {
+    await seed(['users', OWNER, 'indicators', frozenId], booleanIndicator())
+    await assertFails(
+      updateDoc(indicatorPath(OWNER, frozenId), {
+        firstEntryAt: new Date(0),
+        updatedAt: serverTimestamp()
+      })
+    )
+  })
+
+  it('never removes or rewinds the first-entry timestamp', async () => {
+    await seedFrozen()
+    await assertFails(
+      updateDoc(indicatorPath(OWNER, frozenId), {
+        firstEntryAt: null,
+        updatedAt: serverTimestamp()
+      })
+    )
+    await assertFails(
+      updateDoc(indicatorPath(OWNER, frozenId), {
+        firstEntryAt: deleteField(),
+        updatedAt: serverTimestamp()
+      })
+    )
+    await assertFails(
+      updateDoc(indicatorPath(OWNER, frozenId), {
+        firstEntryAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      })
+    )
+    await assertSucceeds(
+      updateDoc(indicatorPath(OWNER, frozenId), {
+        firstEntryAt: firstEntry,
+        updatedAt: serverTimestamp()
+      })
+    )
+  })
+
+  it('keeps structural fields editable while there is no first entry', async () => {
+    await seed(['users', OWNER, 'indicators', frozenId], booleanIndicator())
+    await assertSucceeds(
+      updateDoc(indicatorPath(OWNER, frozenId), {
+        group: 'result',
+        valueType: 'numeric',
+        numeric: { unit: 'mg', min: 0, max: null, step: 1 },
+        frequency: 'multiple_per_day',
+        dailyAggregation: 'sum',
+        updatedAt: serverTimestamp()
+      })
+    )
+  })
+
+  it('freezes group, value type, frequency, aggregation and value configuration', async () => {
+    await seedFrozen(numericIndicator())
+    const path = indicatorPath(OWNER, frozenId)
+
+    await assertSucceeds(
+      updateDoc(path, { name: 'Café da tarde', updatedAt: serverTimestamp() })
+    )
+    await assertFails(
+      updateDoc(path, { group: 'result', updatedAt: serverTimestamp() })
+    )
+    await assertFails(
+      updateDoc(path, {
+        valueType: 'boolean',
+        numeric: deleteField(),
+        frequency: 'single_per_day',
+        dailyAggregation: deleteField(),
+        updatedAt: serverTimestamp()
+      })
+    )
+    await assertFails(
+      updateDoc(path, {
+        frequency: 'single_per_day',
+        dailyAggregation: deleteField(),
+        updatedAt: serverTimestamp()
+      })
+    )
+    await assertFails(
+      updateDoc(path, { dailyAggregation: 'mean', updatedAt: serverTimestamp() })
+    )
+    await assertFails(
+      updateDoc(path, {
+        numeric: { unit: 'xícaras', min: 0, max: null, step: 1 },
+        updatedAt: serverTimestamp()
+      })
+    )
+  })
+
+  it('freezes the ordinal options after the first entry', async () => {
+    await seedFrozen(ordinalIndicator())
+    await assertFails(
+      updateDoc(indicatorPath(OWNER, frozenId), {
+        options: [
+          { id: 'low', label: 'Baixo', order: 0 },
+          { id: 'medium', label: 'Médio', order: 1 },
+          { id: 'high', label: 'Top', order: 2 }
+        ],
+        updatedAt: serverTimestamp()
+      })
+    )
+    await assertSucceeds(
+      updateDoc(indicatorPath(OWNER, frozenId), {
+        options: [
+          { id: 'low', label: 'Baixo', order: 0 },
+          { id: 'medium', label: 'Médio', order: 1 },
+          { id: 'high', label: 'Alto', order: 2 }
+        ],
+        updatedAt: serverTimestamp()
+      })
+    )
+  })
+
+  it('keeps direction, ideal range, order and archive status editable after the freeze', async () => {
+    await seedFrozen(scaleIndicator())
+    const path = indicatorPath(OWNER, frozenId)
+
+    await assertSucceeds(
+      updateDoc(path, {
+        desiredDirection: 'target_range',
+        idealRange: { min: 6, max: 9 },
+        sortOrder: 500,
+        emoji: '🔋',
+        updatedAt: serverTimestamp()
+      })
+    )
+    await assertSucceeds(
+      updateDoc(path, { archivedAt: serverTimestamp(), updatedAt: serverTimestamp() })
+    )
+    await assertSucceeds(
+      updateDoc(path, { archivedAt: null, updatedAt: serverTimestamp() })
+    )
+    await assertSucceeds(
+      updateDoc(path, {
+        desiredDirection: 'higher',
+        idealRange: deleteField(),
+        updatedAt: serverTimestamp()
+      })
+    )
+  })
+})
 
 describe('account deletion lock', () => {
   it('retains protection against stale tokens after data and Auth deletion', async () => {

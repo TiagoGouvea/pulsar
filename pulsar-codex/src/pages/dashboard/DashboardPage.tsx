@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useFirebase } from '@lib/firebase/context';
 import { useAccountSaveInvite } from '@features/account/useAccountSaveInvite';
+import { valueTypeSummary } from '@features/indicators/model';
 import { createIndicator } from '@features/indicators/repository';
 import { INITIAL_INDICATOR_SUGGESTIONS } from '@features/indicators/suggestions';
 import type { Indicator, IndicatorSuggestion } from '@features/indicators/types';
@@ -38,13 +39,6 @@ function mergeIndicators(remote: Indicator[], optimistic: Indicator[]): Indicato
     if (!byId.has(indicator.id)) byId.set(indicator.id, indicator);
   }
   return [...byId.values()].sort((left, right) => left.sortOrder - right.sortOrder);
-}
-
-function valueTypeSummary(indicator: Indicator): string {
-  if (indicator.valueType === 'boolean') return 'Booleano (Sim / Não)';
-  if (indicator.valueType === 'scale') return `Escala ${indicator.scale?.min ?? 0} a ${indicator.scale?.max ?? 10}`;
-  if (indicator.valueType === 'numeric') return `Numérico${indicator.numeric?.unit ? ` (${indicator.numeric.unit})` : ''}`;
-  return 'Opções';
 }
 
 export const DashboardPage: React.FC = () => {

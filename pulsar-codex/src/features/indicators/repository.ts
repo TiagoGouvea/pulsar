@@ -1,12 +1,17 @@
 import {
   collection,
+  deleteField,
   doc,
   onSnapshot,
   serverTimestamp,
-  setDoc
+  setDoc,
+  updateDoc,
+  writeBatch,
+  type DocumentData,
+  type UpdateData
 } from 'firebase/firestore';
 import { db } from '@lib/firebase/config';
-import type { Indicator, IndicatorInput } from './types';
+import type { Indicator, IndicatorInput, IndicatorPatch } from './types';
 
 const CACHE_KEY_PREFIX = 'pulsar.indicators.cache.';
 
@@ -88,6 +93,59 @@ function toFirestoreInput(input: IndicatorInput): Record<string, unknown> {
 }
 
 /**
+ * Converts a validated patch into Firestore fields. `null` marks fields that
+ * must be removed from the stored document (for example a numeric config
+ * after the value type changes to boolean before the first entry).
+ */
+function toFirestorePatch(patch: IndicatorPatch): UpdateData<DocumentData> {
+  const data: UpdateData<DocumentData> = {};
+  for (const [key, value] of Object.entries(patch)) {
+    if (value === null) {
+      data[key] = deleteField();
+    } else {
+      data[key] = value as DocumentData;
+    }
+  }
+  data.updatedAt = serverTimestamp();
+  return data;
+}
+
+function indicatorReference(uid: string, id: string) {
+  return doc(db, 'users', uid, 'indicators', id);
+}
+
+function cachePatch(uid: string, id: string, patch: IndicatorPatch): void {
+  const current = readCache(uid);
+  const updated = current.map((indicator) =>
+    indicator.id === id ? applyPatch(indicator, patch) : indicator
+  );
+  if (updated.length === current.length) writeCache(uid, updated);
+}
+
+function cacheArchivedAt(uid: string, id: string, archivedAt: string | null): void {
+  const current = readCache(uid);
+  const updated = current.map((indicator) =>
+    indicator.id === id
+      ? { ...indicator, archivedAt, updatedAt: new Date().toISOString() }
+      : indicator
+  );
+  if (updated.length === current.length) writeCache(uid, updated);
+}
+
+function applyPatch(indicator: Indicator, patch: IndicatorPatch): Indicator {
+  const next: Indicator = { ...indicator };
+  for (const [key, value] of Object.entries(patch)) {
+    if (value === null) {
+      delete next[key as keyof Indicator];
+    } else {
+      (next as unknown as Record<string, unknown>)[key] = value;
+    }
+  }
+  next.updatedAt = new Date().toISOString();
+  return next;
+}
+
+/**
  * Subscribes to the user's indicators with a local cache first. The cache keeps
  * the initial dashboard usable when Firestore is offline or rules are not
  * available yet; remote documents always win when both contain the same ID.
@@ -107,8 +165,11 @@ export function subscribeIndicators(
       remote = snapshot.docs.map((document) => {
         const data = document.data();
         return {
-          ...(data as Omit<Indicator, 'id' | 'createdAt' | 'updatedAt' | 'archivedAt'>),
+          ...(data as Omit<Indicator, 'id' | 'firstEntryAt' | 'createdAt' | 'updatedAt' | 'archivedAt'>),
           id: document.id,
+          firstEntryAt: data.firstEntryAt
+            ? timestampToIso(data.firstEntryAt)
+            : null,
           archivedAt: (data.archivedAt as string | null | undefined) ?? null,
           createdAt: timestampToIso(data.createdAt),
           updatedAt: timestampToIso(data.updatedAt)
@@ -127,9 +188,10 @@ export function subscribeIndicators(
 }
 
 /**
- * Creates an indicator only when the person explicitly selects a suggestion.
- * The local copy is written first; the Firestore write is attempted in place
- * and may be retried by the regular subscription when it becomes available.
+ * Creates an indicator only when the person explicitly submits the form or
+ * selects a suggestion. The local copy is written first; the Firestore write
+ * is attempted in place and may be retried by the regular subscription when
+ * it becomes available.
  */
 export async function createIndicator(uid: string, input: IndicatorInput): Promise<Indicator> {
   if (!uid) throw new Error('indicators/no-session');
@@ -139,6 +201,7 @@ export async function createIndicator(uid: string, input: IndicatorInput): Promi
   const indicator: Indicator = {
     ...input,
     id: reference.id,
+    firstEntryAt: null,
     archivedAt: null,
     createdAt: now,
     updatedAt: now
@@ -149,6 +212,7 @@ export async function createIndicator(uid: string, input: IndicatorInput): Promi
   try {
     await setDoc(reference, {
       ...toFirestoreInput(input),
+      firstEntryAt: null,
       archivedAt: null,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
@@ -158,6 +222,65 @@ export async function createIndicator(uid: string, input: IndicatorInput): Promi
   }
 
   return indicator;
+}
+
+/**
+ * Applies an editable patch to an existing indicator. The Firestore write
+ * happens first: the caller only sees success after persistence is accepted
+ * and errors are surfaced, never presented as success.
+ */
+export async function updateIndicator(
+  uid: string,
+  id: string,
+  patch: IndicatorPatch
+): Promise<void> {
+  if (!uid) throw new Error('indicators/no-session');
+  if (Object.keys(patch).length === 0) return;
+
+  await updateDoc(indicatorReference(uid, id), toFirestorePatch(patch));
+  cachePatch(uid, id, patch);
+}
+
+export async function archiveIndicator(uid: string, id: string): Promise<void> {
+  if (!uid) throw new Error('indicators/no-session');
+  await updateDoc(indicatorReference(uid, id), {
+    archivedAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  });
+  cacheArchivedAt(uid, id, new Date().toISOString());
+}
+
+export async function restoreIndicator(uid: string, id: string): Promise<void> {
+  if (!uid) throw new Error('indicators/no-session');
+  await updateDoc(indicatorReference(uid, id), {
+    archivedAt: null,
+    updatedAt: serverTimestamp()
+  });
+  cacheArchivedAt(uid, id, null);
+}
+
+/**
+ * Persists a new order for one group. Only the indicators whose sort order
+ * actually changes are written, each with its own `updatedAt`.
+ */
+export async function reorderIndicators(
+  uid: string,
+  changes: Array<{ id: string; sortOrder: number }>
+): Promise<void> {
+  if (!uid) throw new Error('indicators/no-session');
+  if (changes.length === 0) return;
+
+  const batch = writeBatch(db);
+  for (const change of changes) {
+    batch.update(indicatorReference(uid, change.id), {
+      sortOrder: change.sortOrder,
+      updatedAt: serverTimestamp()
+    });
+  }
+  await batch.commit();
+  for (const change of changes) {
+    cachePatch(uid, change.id, { sortOrder: change.sortOrder });
+  }
 }
 
 export function clearCachedIndicators(uid: string): void {

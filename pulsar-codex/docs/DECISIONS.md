@@ -329,8 +329,32 @@ VITE_FIREBASE_MEASUREMENT_ID=...
 - Suítes reais de regras, Auth/Firestore/Functions e callable emulada fazem parte de `yarn test`; E2E usa portas isoladas. Nenhuma aprovação ou deploy é feito pelo implementador.
 - Contrato detalhado e limites: [`SECURITY.md`](SECURITY.md). Relato das verificações: [`IMPLEMENTATION-STATUS-TASK-004.md`](IMPLEMENTATION-STATUS-TASK-004.md).
 
+## 15. Task-005 — Cadastro e gestão de indicadores (07/11/2026)
+
+### Congelamento estrutural (`firstEntryAt`)
+
+- O congelamento “após o primeiro registro” precisa de um sinal consultável pelas Rules (as Rules não consultam coleções de entradas). Cada indicador ganhou o campo `firstEntryAt` (timestamp): nulo enquanto não há registros, gravado uma única vez com o relógio do servidor no mesmo batch que cria a primeira entrada.
+- O campo é um “trava de catraca” nas Rules: pode sair de nulo para `request.time`, mas nunca é removido nem regravado. Assim o congelamento é permanente a partir do primeiro registro, mesmo que as entradas sejam excluídas depois, e nenhum dado de dia anterior vira migração.
+- Enquanto `firstEntryAt` for nulo, todos os campos estruturais continuam editáveis; depois dele, grupo, tipo de resposta, unidade, configuração de escala/opções, frequência e agregação só podem repetir os valores já armazenados (comparação profunda de mapas/listas das Rules). Nome, sigla, emoji, ordem, status e direção/faixa ideal permanecem editáveis, como manda a especificação.
+- O contrato para a task-006 (REQ-2-002): a criação da primeira entrada de um indicador deve, no mesmo batch, gravar `firstEntryAt: serverTimestamp()` no documento do indicador quando o campo ainda for nulo. Sem isso o congelamento nunca ativa; com isso, Rules, UI e histórico ficam consistentes sem job de migração.
+
+### Compatibilidade de agregações e validações
+
+- Especificação 4.1.1: booleano com múltiplos registros aceita `Presença` e `Último`; ordinal aceita `Último`; escala e número aceitam `Soma`, `Média` e `Último`. As Rules anteriores só aceitavam `Presença` para booleano e foram corrigidas.
+- A sugestão determinística é derivada só da configuração estruturada (fator numérico → soma; resultado numérico → último; escala → média; booleano → presença; ordinal → último), nunca do nome. A UI marca a sugerida e troca automaticamente para uma válida quando o tipo muda.
+- Sigla e unidade passaram a aceitar vazio nas Rules (especificação 4.1 e 4.2.D): sigla vazia exibe as três primeiras letras do nome + `...`; unidade vazia significa “sem unidade”. A sigla é armazenada como digitada (especificação 4.4); o estilo visual em maiúsculas vem do design.
+- Faixa ideal (`target_range`) passou a ser exclusiva de Resultados de escala ou número nas Rules, conforme a especificação 4.3; a UI desabilita a opção para booleano/ordinal.
+- Limites de tamanho validam bytes UTF-8 no cliente (`byteLength` via `TextEncoder`) e espelham os limites das Rules, para nunca deixar o formulário aceitar algo que o servidor recusaria.
+
+### Gestão na tela Meus Indicadores
+
+- A lista segue `design/meus_indicadores`: seções Fatores e Resultados com rótulo/cor próprios, chips de tipo, frequência, agregação e direção, pílulas de filtro com contadores, seção Arquivados recolhível com Restaurar e o aviso de integridade. O botão informativo do cabeçalho do mock não foi incluído porque seria decorativo; o cartão de integridade já cumpre o papel.
+- Reordenação: botões “mover para cima/baixo” por cartão (alvos ≥ 44 px, testáveis por teclado e leitor de tela) trocam posições dentro do grupo e gravam `sortOrder = índice × 10` em batch; o handle de arraste do design permanece como indicador visual. A ordem é editável na lista, sem campo de posição no formulário.
+- Arquivar/Restaurar ficam no menu de opções do cartão e também no formulário de edição (linha de status). Erros de persistência são exibidos como erro; sucesso gera aviso discreto, nunca antes da confirmação do Firestore.
+- O formulário de criação/edição segue `design/novo_indicador_modal` como página (`/indicators/new`, `/indicators/:id/edit`), com as seções numeradas 1–5, avisos de imutabilidade e trava de integridade.
+
 ---
 
-**Status anterior à task-004:** ✅ Task-001 concluída; task-002 (entrada anônima e conversão) e task-003 (onboarding e estado inicial) prontas para verificação
+**Status anterior à task-004:** ✅ Task-001 concluída; task-002 (entrada anônima e conversão) e task-003 (onboarding e estado inicial) prontas para verificação  
 **Build:** ✅ Passando (app + functions)  
 **Testes:** ✅ 61 Vitest + 9 functions; E2E 60/60 nos cinco projetos

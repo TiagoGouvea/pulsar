@@ -1,5 +1,5 @@
 export type IndicatorGroup = 'factor' | 'result';
-export type IndicatorValueType = 'boolean' | 'scale' | 'ordinal' | 'numeric';
+export type IndicatorValueType = 'boolean' | 'scale' | 'numeric' | 'ordinal';
 export type IndicatorFrequency = 'single_per_day' | 'multiple_per_day';
 export type DailyAggregation = 'sum' | 'mean' | 'last' | 'any';
 export type DesiredDirection = 'neutral' | 'higher' | 'lower' | 'target_range';
@@ -17,6 +17,12 @@ export interface ScaleConfig {
   step: number;
 }
 
+export interface IndicatorOption {
+  id: string;
+  label: string;
+  order: number;
+}
+
 export interface IdealRange {
   min: number;
   max: number;
@@ -30,7 +36,7 @@ export interface IndicatorInput {
   valueType: IndicatorValueType;
   numeric?: NumericConfig;
   scale?: ScaleConfig;
-  options?: Array<{ id: string; label: string; order: number }>;
+  options?: IndicatorOption[];
   desiredDirection?: DesiredDirection;
   idealRange?: IdealRange;
   frequency: IndicatorFrequency;
@@ -38,8 +44,37 @@ export interface IndicatorInput {
   sortOrder: number;
 }
 
+/**
+ * Editable patch for an existing indicator. `null` means the field must be
+ * removed from the stored document (converted to `deleteField()` by the
+ * repository); structural keys are ignored by the patch builder once the
+ * indicator has its first entry (see `buildIndicatorPatch`).
+ */
+export interface IndicatorPatch {
+  group?: IndicatorGroup;
+  name?: string;
+  abbreviation?: string;
+  emoji?: string;
+  valueType?: IndicatorValueType;
+  numeric?: NumericConfig | null;
+  scale?: ScaleConfig | null;
+  options?: IndicatorOption[] | null;
+  frequency?: IndicatorFrequency;
+  dailyAggregation?: DailyAggregation | null;
+  desiredDirection?: DesiredDirection | null;
+  idealRange?: IdealRange | null;
+  sortOrder?: number;
+}
+
 export interface Indicator extends IndicatorInput {
   id: string;
+  /**
+   * UTC timestamp of the first entry ever recorded for this indicator. Once
+   * set it is never removed, and the structural fields (group, value type,
+   * unit/scale/options configuration, frequency and daily aggregation) stay
+   * frozen. Null while no entry exists.
+   */
+  firstEntryAt: string | null;
   archivedAt: string | null;
   createdAt: string;
   updatedAt: string;

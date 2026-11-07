@@ -187,16 +187,19 @@ service cloud.firestore {
     // ------------------------------------------------------------------
     // Resource layer: indicators `users/{uid}/indicators/{indicatorId}`
     // ------------------------------------------------------------------
-    // Structural fields are still editable here; REQ-2-001 adds the freeze
-    // after the first entry together with the entries resource. This rule
-    // already enforces the schema, types and size limits of the indicator.
+    // REQ-2-001 owns this schema: the four response types with their
+    // configuration, frequency and compatible aggregations, plus the
+    // structural freeze after the first entry. The first entry is marked by
+    // `firstEntryAt`, which the entries write path (REQ-2-002) sets with the
+    // server clock in the same batch as the first entry document; until then
+    // every structural field stays editable.
 
     function hasValidNumericConfig(data) {
       return data.keys().hasAny(['numeric'])
         && data.numeric is map
         && hasOnlyKeys(data.numeric, ['unit', 'min', 'max', 'step'])
         && hasAllKeys(data.numeric, ['unit', 'min', 'max', 'step'])
-        && isNonEmptyStringAtMost(data.numeric.unit, 24)
+        && isStringAtMost(data.numeric.unit, 24)
         && (data.numeric.min == null || isNumberIn(data.numeric.min, -1000000, 1000000))
         && (data.numeric.max == null || isNumberIn(data.numeric.max, -1000000, 1000000))
         && (data.numeric.min == null || data.numeric.max == null || data.numeric.min <= data.numeric.max)
@@ -255,11 +258,13 @@ service cloud.firestore {
             : !data.keys().hasAny(['numeric', 'scale', 'options'])));
     }
 
+    // Spec 4.1.1: number and scale accept sum, mean and last; boolean accepts
+    // presence and last; ordinal accepts only last.
     function hasValidAggregation(data) {
       return data.frequency == 'single_per_day'
         ? data.get('dailyAggregation', null) == null
         : data.get('dailyAggregation', null) in (data.valueType == 'boolean'
-          ? ['any']
+          ? ['any', 'last']
           : (data.valueType == 'ordinal' ? ['last'] : ['sum', 'mean', 'last']));
     }
 
@@ -281,14 +286,16 @@ service cloud.firestore {
     }
 
     function hasValidDirectionFields(data) {
-      // Factors have no desired direction and no ideal range (spec 4.3).
+      // Factors have no desired direction and no ideal range (spec 4.3). The
+      // ideal range exists only for scale or numeric results.
       return data.group == 'factor'
         ? !data.keys().hasAny(['desiredDirection', 'idealRange'])
         : (!data.keys().hasAny(['desiredDirection'])
           ? !data.keys().hasAny(['idealRange'])
           : (isStringIn(data.desiredDirection, ['neutral', 'higher', 'lower', 'target_range'])
             && (data.desiredDirection == 'target_range'
-              ? (data.keys().hasAny(['idealRange'])
+              ? ((data.valueType == 'scale' || data.valueType == 'numeric')
+                && data.keys().hasAny(['idealRange'])
                 && hasValidIdealRange(data))
               : !data.keys().hasAny(['idealRange']))));
     }
@@ -314,6 +321,7 @@ service cloud.firestore {
         'frequency',
         'dailyAggregation',
         'sortOrder',
+        'firstEntryAt',
         'archivedAt',
         'createdAt',
         'updatedAt'
@@ -326,7 +334,7 @@ service cloud.firestore {
       return hasOnlyKeys(data, indicatorKeys())
         && isStringIn(data.group, ['factor', 'result'])
         && isNonEmptyStringAtMost(data.name, 80)
-        && isNonEmptyStringAtMost(data.abbreviation, 8)
+        && isStringAtMost(data.abbreviation, 8)
         && (!data.keys().hasAny(['emoji']) || isStringAtMost(data.emoji, 8))
         && isStringIn(data.valueType, ['boolean', 'scale', 'ordinal', 'numeric'])
         && isStringIn(data.frequency, ['single_per_day', 'multiple_per_day'])
@@ -341,9 +349,34 @@ service cloud.firestore {
       return isValidIndicatorFields(data)
         && isServerTimestamp(data.createdAt)
         && isServerTimestamp(data.updatedAt)
+        && (!data.keys().hasAny(['firstEntryAt']) || data.firstEntryAt == null)
         && (!data.keys().hasAny(['archivedAt'])
           || data.archivedAt == null
           || data.archivedAt == request.time);
+    }
+
+    // Structural freeze (spec 4.1): after the first entry ever recorded the
+    // group, value type, unit/scale/options configuration, frequency and daily
+    // aggregation can no longer change. Name, abbreviation, emoji, sort
+    // order, archive status and the result direction/ideal range remain
+    // editable. Map and list comparisons are deep in the rules language.
+    function structuralFieldsUnchanged(data, existing) {
+      return data.group == existing.get('group', null)
+        && data.valueType == existing.get('valueType', null)
+        && data.frequency == existing.get('frequency', null)
+        && data.get('dailyAggregation', null) == existing.get('dailyAggregation', null)
+        && data.get('numeric', null) == existing.get('numeric', null)
+        && data.get('scale', null) == existing.get('scale', null)
+        && data.get('options', null) == existing.get('options', null);
+    }
+
+    // The first-entry timestamp is a ratchet: it can only be set once, with
+    // the commit time of the request, and is never removed or rewound.
+    function isFirstEntryAtRatchetValid(data, existing) {
+      return existing.get('firstEntryAt', null) == null
+        ? (data.get('firstEntryAt', null) == null
+          || data.get('firstEntryAt', null) == request.time)
+        : data.get('firstEntryAt', null) == existing.get('firstEntryAt', null);
     }
 
     // `createdAt` is immutable. `updatedAt` is always the commit time of the
@@ -354,6 +387,9 @@ service cloud.firestore {
         && hasOnlyKeys(existing, indicatorKeys())
         && data.createdAt == existing.createdAt
         && data.updatedAt == request.time
+        && isFirstEntryAtRatchetValid(data, existing)
+        && (existing.get('firstEntryAt', null) == null
+          || structuralFieldsUnchanged(data, existing))
         && (data.get('archivedAt', null) == null
           || data.get('archivedAt', null) == request.time
           || data.get('archivedAt', null) == existing.get('archivedAt', null));
