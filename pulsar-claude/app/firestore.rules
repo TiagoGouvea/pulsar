@@ -149,6 +149,52 @@ service cloud.firestore {
           || (data.saveAccountInviteDismissedDayCount is int && data.saveAccountInviteDismissedDayCount >= 0));
     }
 
+    function hasOrdinalOption(options, optionId) {
+      return options is list && (
+        (options.size() > 0 && options[0].id == optionId)
+        || (options.size() > 1 && options[1].id == optionId)
+        || (options.size() > 2 && options[2].id == optionId)
+        || (options.size() > 3 && options[3].id == optionId)
+        || (options.size() > 4 && options[4].id == optionId)
+        || (options.size() > 5 && options[5].id == optionId)
+        || (options.size() > 6 && options[6].id == optionId)
+      );
+    }
+
+    function validEntryValue(data, indicator) {
+      let value = data.value;
+      return value is map && data.valueType == indicator.valueType
+        && ((data.valueType == 'boolean'
+            && value.keys().hasOnly(['boolean']) && value.keys().hasAll(['boolean'])
+            && value.boolean is bool)
+          || (data.valueType == 'numeric'
+            && value.keys().hasOnly(['number']) && value.keys().hasAll(['number'])
+            && value.number is number
+            && (indicator.numeric.min == null || value.number >= indicator.numeric.min)
+            && (indicator.numeric.max == null || value.number <= indicator.numeric.max))
+          || (data.valueType == 'scale'
+            && value.keys().hasOnly(['number']) && value.keys().hasAll(['number'])
+            && value.number is number
+            && value.number >= indicator.scale.min && value.number <= indicator.scale.max)
+          || (data.valueType == 'ordinal'
+            && value.keys().hasOnly(['optionId']) && value.keys().hasAll(['optionId'])
+            && value.optionId is string && hasOrdinalOption(indicator.options, value.optionId)));
+    }
+
+    function validEntry(uid, data) {
+      let keys = data.keys();
+      return keys.hasOnly(['indicatorId', 'localDate', 'recordedAt', 'valueType', 'value', 'note'])
+        && keys.hasAll(['indicatorId', 'localDate', 'recordedAt', 'valueType', 'value'])
+        && data.indicatorId is string && data.indicatorId.size() > 0
+        && !data.indicatorId.matches('.*[/].*')
+        && data.localDate is string && data.localDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && data.recordedAt is timestamp
+        && (!('note' in keys) || (data.note is string && data.note.size() <= 500))
+        && exists(/databases/$(database)/documents/users/$(uid)/indicators/$(data.indicatorId))
+        && getAfter(/databases/$(database)/documents/users/$(uid)/indicators/$(data.indicatorId)).data.lockedAt is timestamp
+        && validEntryValue(data, get(/databases/$(database)/documents/users/$(uid)/indicators/$(data.indicatorId)).data);
+    }
+
     match /users/{uid} {
       // Fail closed: a document carrying a non-client field (misplaced admin data) is not readable by the owner.
       allow read: if isOwner(uid) && (resource == null || hasOnlyUserFields(resource.data.keys()));
@@ -169,10 +215,16 @@ service cloud.firestore {
         allow delete: if false;
       }
 
+      match /entries/{entryId} {
+        allow read, delete: if isOwner(uid);
+        allow create: if isOwner(uid) && validEntry(uid, request.resource.data);
+        allow update: if false;
+      }
+
       // {collection} forces at least one segment: in rules v2 a bare {document=**} would also match users/{uid}.
       // Collections with their own schema must be excluded here because matching allow expressions are ORed.
       match /{collection}/{document=**} {
-        allow read, write: if isOwner(uid) && collection != 'indicators';
+        allow read, write: if isOwner(uid) && collection != 'indicators' && collection != 'entries';
       }
     }
 
