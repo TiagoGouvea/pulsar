@@ -565,8 +565,7 @@ export class PiExecutor implements Executor {
         const safeInput = redact(responseText ?? "", this.config.security.redactPatterns);
         appendFileSync(responseRepairCaseLogPath, `${JSON.stringify({
           at: safeDiagnostic.at, caseId: activeRepairCaseId, type: "input", reason: diagnostic.reason,
-          responseChars: diagnostic.responseChars, responseText: safeInput.slice(0, MAX_RAW_RESPONSE_CHARS),
-          truncated: safeInput.length > MAX_RAW_RESPONSE_CHARS,
+          responseChars: diagnostic.responseChars, responseText: safeInput,
         })}\n`, { encoding: "utf8", mode: 0o600 });
       } else if (diagnostic.status === "resolved" || diagnostic.status === "unresolved") {
         const serializedOutput = parserOutput === undefined ? undefined : JSON.stringify(parserOutput);
@@ -574,10 +573,7 @@ export class PiExecutor implements Executor {
         appendFileSync(responseRepairCaseLogPath, `${JSON.stringify({
           at: safeDiagnostic.at, caseId: activeRepairCaseId ?? createId("repair-case"), type: "result",
           status: diagnostic.status, reason: diagnostic.reason,
-          ...(safeOutput == null ? {} : {
-            parserOutput: safeOutput.slice(0, MAX_RAW_RESPONSE_CHARS),
-            outputTruncated: safeOutput.length > MAX_RAW_RESPONSE_CHARS,
-          }),
+          ...(safeOutput == null ? {} : { parserOutput: safeOutput }),
           ...(safeDiagnostic.detail ? { detail: safeDiagnostic.detail } : {}),
         })}\n`, { encoding: "utf8", mode: 0o600 });
         activeRepairCaseId = undefined;
