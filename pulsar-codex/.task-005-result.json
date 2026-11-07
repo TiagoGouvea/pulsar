@@ -1,56 +1,33 @@
 {
   "taskId": "task-005",
   "outcome": "ready_for_verification",
-  "summary": "REQ-2-001 implementado: /indicators agora lista Fatores e Resultados ativos com chips de tipo/frequência/agregação/direção, filtros com contadores, menu de opções em bottom sheet (Editar parâmetros / Arquivar), seção Arquivados recolhível com Restaurar e aviso de integridade; /indicators/new e /indicators/:id/edit receberam o formulário completo da referência novo_indicador_modal com os quatro tipos de resposta (booleano, escala, número com unidade — inclusive sem unidade — e ordinal de 2–8 opções), frequência única/múltipla, agregação sugerida determinística e compatível por tipo, direção/faixa ideal para Resultados e validações cliente espelhando as Rules (bytes UTF-8). A reordenação é feita por botões mover para cima/baixo dentro de cada grupo, com persistência em sortOrder. O congelamento estrutural após o primeiro registro usa o novo campo firstEntryAt: Rules o tratam como catraca (gravado uma vez com o relógio do servidor, nunca removido) e, enquanto existir, grupo, tipo, unidade, escala/opções, frequência e agregação só podem repetir os valores armazenados; nome, sigla, emoji, ordem, status e direção/faixa ideal continuam editáveis, com a UI travando os campos congelados. Indicadores arquivados somem das seções ativas e do dashboard sem apagar histórico (delete continua negado nas Rules). Agregação booleana passou a aceitar Presença e Último (spec 4.1.1), sigla e unidade passaram a aceitar vazio e faixa ideal ficou restrita a Resultados de escala/número.",
+  "summary": "Correção do bloqueio apontado na revisão independente da task-005 (REQ-2-001): os inputs de faixa ideal (idealMin/idealMax) do formulário de indicador ainda usavam disabled={frozen} e ficavam inacessíveis depois do primeiro registro, contrariando o critério de que direção/faixa ideal permanecem editáveis. A desabilitação foi removida dos dois inputs; o congelamento estrutural continua bloqueando grupo, tipo de resposta, unidade, escala/opções, frequência e agregação via firstEntryAt, enquanto nome, sigla, emoji, ordem, status e direção/faixa ideal seguem editáveis. Foram adicionados dois testes de regressão em EditIndicatorPage.test.tsx: editar uma faixa existente de um Resultado congelado e escolher uma faixa nova quando não havia faixa prévia (incluindo o bloqueio de salvar sem os valores obrigatórios). As Rules já aceitavam idealRange com histórico; não foi necessário alterá-las. O restante da implementação da task-005 (quatro tipos de resposta, validações/frequência/agregações, congelamento após o primeiro registro, arquivamento/restauração e reordenação) permanece como estava e foi aprovado na revisão.",
   "changedFiles": [
-    "docs/DECISIONS.md",
     "docs/IMPLEMENTATION-STATUS-TASK-005.md",
-    "firestore.rules",
     "src/components/indicators/IndicatorForm.tsx",
-    "src/components/ui/BottomSheet.tsx",
-    "src/components/ui/MaterialIcon.tsx",
-    "src/components/ui/SegmentedControl.tsx",
-    "src/features/indicators/model.ts",
-    "src/features/indicators/model.spec.ts",
-    "src/features/indicators/repository.ts",
-    "src/features/indicators/types.ts",
-    "src/pages/dashboard/DashboardPage.tsx",
-    "src/pages/indicators/EditIndicatorPage.tsx",
     "src/pages/indicators/EditIndicatorPage.test.tsx",
-    "src/pages/indicators/IndicatorsPage.tsx",
-    "src/pages/indicators/IndicatorsPage.test.tsx",
-    "src/pages/indicators/NewIndicatorPage.tsx",
-    "src/pages/indicators/NewIndicatorPage.test.tsx",
-    "tests/e2e/indicator-management.spec.ts",
-    "tests/rules/firestore.rules.spec.ts",
     ".task-005-result.json"
   ],
   "claimedChecks": [
     "yarn lint: PASS (0 erros/avisos, --max-warnings 0)",
     "yarn typecheck: PASS (app + functions)",
-    "yarn test: PASS (106 Vitest + 15 functions + 103 Rules + 7 exclusão com emuladores)",
+    "yarn test: PASS (108 Vitest + 15 functions + 103 Rules + 7 exclusão com emuladores)",
     "yarn build: PASS (tsc + functions + vite build)",
     "E2E_PORT=3115 yarn test:e2e:emulators: PASS (85/85 em Chromium, Firefox, WebKit, Pixel 7 e iPhone 15, com Auth/Firestore emulados e reflow 390/430/1440 px)",
-    "git diff --check -- .: PASS (sem erros de whitespace)"
+    "git diff --check -- pulsar-codex: PASS (sem erros de whitespace)"
   ],
   "decisions": [
-    "O congelamento 'após o primeiro registro' usa o campo firstEntryAt no documento do indicador, porque as Rules não podem consultar a coleção de entradas; o campo é uma catraca que só pode sair de nulo para request.time e nunca é removido, garantindo que o congelamento persista mesmo se entradas forem excluídas depois (spec 4.1: sem rotina de migração na V1).",
-    "Contrato para a task-006 (REQ-2-002): a criação da primeira entrada de um indicador deve gravar firstEntryAt: serverTimestamp() no mesmo batch. Até lá nenhum indicador real tem registros, então todos os campos estruturais continuam editáveis — comportamento correto antes do primeiro registro; o mecanismo completo já é coberto pelos testes de Rules (edição travada e liberada) e Vitest (patch builder ignora chaves estruturais quando congelado).",
-    "Rules corrigidas para a especificação 4.1.1: booleano com múltiplos registros aceita Presença e Último (antes só Presença); a UI oferece apenas as agregações válidas por tipo e marca a sugerida determinística (fator numérico→soma, resultado numérico→último, escala→média, booleano→presença, ordinal→último), trocando automaticamente quando o tipo muda.",
-    "Sigla e unidade passaram a aceitar vazio nas Rules (spec 4.1 e 4.2.D): sigla vazia exibe as três primeiras letras do nome + '...' via displayAbbreviation; unidade vazia significa 'sem unidade'. A sigla é armazenada como digitada (spec 4.4) e o estilo em maiúsculas vem do design.",
-    "Faixa ideal (target_range) restrita a Resultados de escala ou número nas Rules e desabilitada na UI para booleano/ordinal, conforme a spec 4.3.",
-    "Validação do cliente usa bytes UTF-8 (TextEncoder) para espelhar string.size() das Rules, garantindo que nenhum formulário aceito seja recusado pelo servidor por tamanho de nome, sigla, emoji, unidade ou rótulos de opções.",
-    "Reordenação por botões mover para cima/baixo por cartão (alvos ≥44px, acessíveis por teclado/leitor de tela) em vez de arraste; o handle drag_indicator do design permanece como elemento visual. sortOrder é regravado como índice×10 dentro do grupo, em batch com updatedAt por documento; erros de gravação são exibidos e nunca apresentados como sucesso.",
-    "Arquivar/Restaurar ficam no menu de opções do cartão e também na linha de status do formulário de edição; indicadores arquivados não aparecem nas seções ativas nem na lista do dashboard e nenhum histórico é apagado (delete de indicadores segue negado).",
-    "O formulário de criação/edição foi implementado como página (/indicators/new, /indicators/:id/edit) seguindo o encaminhamento registrado na task-003, reaproveitando as seções numeradas do design novo_indicador_modal; o botão informativo do cabeçalho do mock meus_indicadores não foi incluído por ser puramente decorativo — o cartão de integridade cumpre o mesmo papel.",
-    "Sumários de exibição (tipo, frequência, agregação, direção, sigla) centralizados em src/features/indicators/model.ts e reutilizados pelo dashboard, que tinha cópia local.",
-    "Commits feitos somente em pulsar-codex no branch corrente; não houve push porque o branch 2-registro ainda não existe no remoto (o push criaria um branch remoto, o que as regras locais proíbem)."
+    "Os inputs de faixa ideal deixaram de ser desabilitados por frozen. A especificação 4.1 mantém direção/faixa ideal editáveis após o primeiro registro, e buildIndicatorPatch e as Rules já permitiam essa atualização; o bloqueio era apenas um erro de UI.",
+    "O congelamento estrutural permanece inalterado: firstEntryAt funciona como catraca nas Rules e buildIndicatorPatch ignora grupo, tipo, frequência, agregação e configuração de valor quando há histórico; o formulário segue desabilitando esses campos.",
+    "A correção não relaxou validações: faixa ideal continua restrita a Resultados de escala ou número, exige mínimo e máximo numéricos, mínimo <= máximo e respeito aos limites da escala/unidade.",
+    "Foram cobertos os dois cenários sugeridos pela revisão: edição de faixa já existente em Resultado congelado e criação de faixa nova a partir de direção sem faixa, com o erro de obrigatoriedade antes do preenchimento.",
+    "Nenhuma alteração em firestore.rules foi necessária; a suíte de Rules continua passando integralmente.",
+    "Permanece o contrato com a task-006 (REQ-2-002): gravar firstEntryAt com serverTimestamp() no mesmo batch da primeira entrada de cada indicador."
   ],
   "blockers": [],
   "suggestedFollowUps": [
-    "Task-006 (REQ-2-002): ao criar a primeira entrada de um indicador, gravar firstEntryAt: serverTimestamp() no mesmo batch do documento de entrada (contrato documentado em docs/DECISIONS.md §15) e consumir o filtro de arquivados no preenchimento diário.",
-    "Task-006: o botão global 'Siglas' do Header pode passar a alternar nomes/siglas usando displayAbbreviation e o estado global de privacidade visual.",
-    "Avaliar arraste nativo (pointer events) como reforço visual da reordenação, mantendo os botões acessíveis como mecanismo principal.",
-    "Migrar os ícones literais do Header (science/person/visibility) para o componente MaterialIcon tipado, concluindo a sugestão pendente da task-003."
+    "Task-006 (REQ-2-002): gravar firstEntryAt: serverTimestamp() no mesmo batch da primeira entrada de cada indicador, ativando o congelamento em produção.",
+    "Adicionar um cenário E2E de congelamento com faixa ideal quando a task-006 criar entradas reais, cobrindo o fluxo ponta a ponta com histórico.",
+    "O botão global de siglas do Header continua decorativo; a alternância global sigla/nome é REQ-2-002 (task-006)."
   ]
 }

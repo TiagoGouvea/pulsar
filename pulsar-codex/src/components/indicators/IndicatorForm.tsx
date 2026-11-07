@@ -638,7 +638,6 @@ export const IndicatorForm: React.FC<IndicatorFormProps> = ({
                     className={clsx(smallInputClass, errors.idealMin && 'focus:ring-error')}
                     value={state.idealMin}
                     aria-invalid={Boolean(errors.idealMin)}
-                    disabled={frozen}
                     onChange={(event) => update('idealMin', event.target.value)}
                   />
                 </label>
@@ -650,7 +649,6 @@ export const IndicatorForm: React.FC<IndicatorFormProps> = ({
                     className={clsx(smallInputClass, errors.idealMax && 'focus:ring-error')}
                     value={state.idealMax}
                     aria-invalid={Boolean(errors.idealMax)}
-                    disabled={frozen}
                     onChange={(event) => update('idealMax', event.target.value)}
                   />
                 </label>

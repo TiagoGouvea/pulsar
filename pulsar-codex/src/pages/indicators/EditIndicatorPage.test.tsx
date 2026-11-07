@@ -115,6 +115,62 @@ describe('edit indicator', () => {
     });
   });
 
+  it('keeps the ideal range editable after the first entry', async () => {
+    mocks.useIndicators.mockReturnValue([
+      buildIndicator({
+        firstEntryAt: '2026-11-02T08:00:00.000Z',
+        desiredDirection: 'target_range',
+        idealRange: { min: 7, max: 9 }
+      })
+    ]);
+    renderPage();
+
+    const idealMin = screen.getByLabelText('Mínimo ideal');
+    const idealMax = screen.getByLabelText('Máximo ideal');
+    expect(idealMin).toBeEnabled();
+    expect(idealMax).toBeEnabled();
+
+    fireEvent.change(idealMin, { target: { value: '8' } });
+    fireEvent.change(idealMax, { target: { value: '10' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }));
+
+    await waitFor(() => expect(mocks.updateIndicator).toHaveBeenCalledTimes(1));
+    expect(mocks.updateIndicator).toHaveBeenCalledWith('anon-edit', 'indicator-1', {
+      idealRange: { min: 8, max: 10 }
+    });
+  });
+
+  it('allows choosing an ideal range for a frozen result without a prior range', async () => {
+    mocks.useIndicators.mockReturnValue([
+      buildIndicator({
+        firstEntryAt: '2026-11-02T08:00:00.000Z',
+        desiredDirection: 'higher',
+        idealRange: null
+      })
+    ]);
+    renderPage();
+
+    fireEvent.click(screen.getByRole('button', { name: /Faixa ideal/ }));
+    const idealMin = screen.getByLabelText('Mínimo ideal');
+    const idealMax = screen.getByLabelText('Máximo ideal');
+    expect(idealMin).toBeEnabled();
+    expect(idealMax).toBeEnabled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }));
+    expect(await screen.findByText('Informe o mínimo ideal.')).toBeInTheDocument();
+    expect(mocks.updateIndicator).not.toHaveBeenCalled();
+
+    fireEvent.change(idealMin, { target: { value: '8' } });
+    fireEvent.change(idealMax, { target: { value: '9' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }));
+
+    await waitFor(() => expect(mocks.updateIndicator).toHaveBeenCalledTimes(1));
+    expect(mocks.updateIndicator).toHaveBeenCalledWith('anon-edit', 'indicator-1', {
+      desiredDirection: 'target_range',
+      idealRange: { min: 8, max: 9 }
+    });
+  });
+
   it('archives and restores the indicator from the status row', async () => {
     mocks.useIndicators.mockReturnValue([
       buildIndicator({ archivedAt: '2026-11-01T12:00:00.000Z' })

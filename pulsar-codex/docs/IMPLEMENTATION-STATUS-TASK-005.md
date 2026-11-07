@@ -24,7 +24,13 @@ E2E_PORT=3115 yarn test:e2e:emulators
 git diff --check -- .
 ```
 
-Na rodada final: lint e typecheck sem erros; 106 testes Vitest (41 novos entre modelo, formulário e páginas); 15 testes de functions; 103 testes de Rules (15 novos de congelamento/agregação/limites, incluindo criação, catraca, edição travada e liberada); 7 testes de exclusão; build do app e functions; 85 testes Playwright (65 anteriores + fluxo real de criar/ordenar/arquivar/restaurar/editar contra Auth/Firestore emulados e reflow em 390, 430 e 1440 px). Estes são resultados declarados, não evidência de aceite nem aprovação independente.
+Na rodada final (já incluindo a correção pós-revisão): lint e typecheck sem erros; 108 testes Vitest (43 novos entre modelo, formulário e páginas); 15 testes de functions; 103 testes de Rules (15 novos de congelamento/agregação/limites, incluindo criação, catraca, edição travada e liberada); 7 testes de exclusão; build do app e functions; 85 testes Playwright (65 anteriores + fluxo real de criar/ordenar/arquivar/restaurar/editar contra Auth/Firestore emulados e reflow em 390, 430 e 1440 px). Estes são resultados declarados, não evidência de aceite nem aprovação independente.
+
+## Correção pós-revisão
+
+- A revisão independente apontou que os inputs de faixa ideal (`idealMin`/`idealMax`) continuavam com `disabled={frozen}` no formulário. Direção e faixa ideal são justamente os campos que a especificação 4.1 mantém editáveis depois do primeiro registro, e tanto `buildIndicatorPatch` quanto as Rules já aceitavam a alteração.
+- A desabilitação foi removida dos dois inputs em `IndicatorForm.tsx`. Agora um Resultado congelado pode trocar de direção para “Faixa ideal” e editar os valores, enquanto os campos estruturais (grupo, tipo, unidade, escala/opções, frequência e agregação) continuam bloqueados.
+- Foram adicionados dois testes de regressão em `EditIndicatorPage.test.tsx`: editar uma faixa existente de um Resultado congelado e escolher uma faixa nova quando ainda não havia uma (incluindo o bloqueio de salvar sem os valores obrigatórios).
 
 ## Decisões e limites
 
