@@ -1,5 +1,5 @@
 // harness watch: one glyph per transcript event of the model calls in progress (pi, codex and claude stream formats).
-import { closeSync, existsSync, openSync, readdirSync, readSync, statSync } from "node:fs";
+import { closeSync, existsSync, openSync, readdirSync, readFileSync, readSync, statSync } from "node:fs";
 import { join } from "node:path";
 import type { Ctx } from "./config.js";
 import { fmtDur } from "./logger.js";
@@ -111,7 +111,11 @@ export function liveTicker(ctx: Ctx, out: (s: string) => void) {
       const running = ["INIT", "STAGE_RUNNING", "STAGE_GATES"].includes(loadState(ctx)?.phase ?? "");
       if (calls.size || !running) { idleSince = idleShown = 0; return; }
       idleSince ||= now;
-      if (now - idleSince >= 20_000 && now - idleShown >= 60_000) { idleShown = now; newline(); out(`⋯ sem chamada de modelo há ${fmtDur(now - idleSince)} (gates, autofix ou merge)\n`); }
+      if (now - idleSince >= 20_000 && now - idleShown >= 60_000) { idleShown = now; newline(); 
+        let gate = "";
+        try { const x = JSON.parse(readFileSync(hp(ctx, "live-gate.json"), "utf8")); gate = `gate ${x.id} ${x.name} (${x.featureId}) há ${fmtDur(now - x.start)}`; } catch { /* no gate running */ }
+        out(`⋯ sem chamada de modelo há ${fmtDur(now - idleSince)} · ${gate || "autofix, merge ou preparação"}\n`);
+      }
     },
   };
 }

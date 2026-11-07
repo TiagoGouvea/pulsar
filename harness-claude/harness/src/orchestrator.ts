@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { execa } from "execa";
 import { join } from "node:path";
@@ -15,6 +16,7 @@ import {
   type Feature, FeaturesFileSchema, loadFeatures, nextFeature, resetInProgress, saveFeatures, stageFeatures, stageSettled,
   uncovered, updateFeature,
 } from "./features.js";
+import { readRoutes } from "./gates/browser.js";
 import { captureScreens } from "./gates/visual.js";
 import { registerProtected, TEST_FILE } from "./gates/protected.js";
 import { type GateReport, runGates as realRunGates, type RunGates } from "./gates/run-gates.js";
@@ -23,13 +25,13 @@ import { BudgetError, type InvokeRes, NoWorkerError, QuotaError, Runtime } from 
 import { addLesson, applyRetro, PostmortemSchema, promotedLessons, recordLessonOutcome, RetroSchema, selectLessons } from "./learning.js";
 import { fmtDur, log, logEvent, readEvents } from "./logger.js";
 import { notify } from "./notify.js";
-import { acceptanceCriteria, featureVars, render } from "./prompts.js";
+import { acceptanceCriteria, featureVars, otherFeatures, render } from "./prompts.js";
 import { pick, recordStats } from "./router.js";
 import { appendJsonl, hp, loadState, mutex, newState, type Phase, readJsonl, saveState, type State, writeJson } from "./state.js";
 
 export interface Deps {
   runGates: RunGates;
-  capture: (ctx: Ctx, appAbs: string, outDir: string, filter?: (r: { tags?: string[] }) => boolean) => Promise<string[]>;
+  capture: (ctx: Ctx, appAbs: string, outDir: string, filter?: (r: { name: string; tags?: string[] }) => boolean) => Promise<string[]>;
   deployPreview: typeof deployPreview;
   confirm: (summary: string) => Promise<boolean>;
   doctor?: (ctx: Ctx) => Promise<boolean>;
@@ -39,6 +41,7 @@ export interface Deps {
 }
 
 const WorkerFinal = z.object({ summary: z.string() }).passthrough();
+const TestCheckSchema = z.object({ testeQuebrado: z.boolean(), motivo: z.string().default("") });
 const InitFinal = z.object({ summary: z.string() }).passthrough();
 const PAUSE_FILE = (ctx: Ctx) => hp(ctx, "PAUSE");
 
@@ -405,10 +408,48 @@ export class Orchestrator {
       const prot = declared.filter((p) => existsSync(join(wt, p)));
       const protectedTests = prot.length ? prot : written;
       if (!protectedTests.length) continue;
+      const broken = await this.brokenTests(f, wt, protectedTests);
+      if (broken) {
+        log(`↻ ${f.id} test_writer ${r.worker.id}: teste quebrado por si só (${broken.slice(0, 120)}), nova tentativa`);
+        retry = `\n\n## Tentativa anterior rejeitada\nSeus testes foram rodados uma vez e um deles nunca passaria, mesmo com a feature implementada:\n${broken}\nVerifique cada API do emulador/infra que os helpers usam (rode o teste) e compare dados normalizados (ex.: e-mail em minúsculas).`;
+        await g.resetHard(wt, base);
+        continue;
+      }
       registerProtected(this.ctx, wt, f.id, protectedTests);
       return updateFeature(this.ctx, f.id, (x) => { x.protectedTests = protectedTests; x.tests = [...new Set([...x.tests, ...written])]; });
     }
     throw new NoWorkerError("test_writer não produziu testes de aceite");
+  }
+
+  /** Screens for the visual review: routes whose name matches a changed file (SettingsPage.tsx → settings); else by tags. */
+  private async screensFor(f: Feature, wt: string) {
+    const flat = (s: string) => s.toLowerCase().replace(/[^a-z]/g, "");
+    const changed = (await g.changedFiles(wt, this.branch)).filter((p) => !TEST_FILE.test(p)).map((p) => flat(p.split("/").pop() ?? ""));
+    const byTag = (r: { tags?: string[] }) => !r.tags?.length || r.tags.some((t) => f.tags.includes(t));
+    const routes = (() => { try { return readRoutes(this.ctx, this.appAbs(wt)); } catch { return []; } })();
+    const hit = routes.filter((r) => flat(r.name).length > 2 && changed.some((c) => c.includes(flat(r.name))));
+    return hit.length ? (r: { name: string }) => hit.some((h) => h.name === r.name) : byTag;
+  }
+
+  /** New acceptance tests run once: failing is expected (no code yet), unless a cheap model sees the test itself is broken. */
+  private async brokenTests(f: Feature, wt: string, tests: string[]): Promise<string | undefined> {
+    const app = this.ctx.config.project.appDir.replace(/\/$/, "") + "/";
+    let output = "";
+    for (const d of this.ctx.config.project.dryRun) {
+      const files = tests.filter((p) => new RegExp(d.match).test(p)).map((p) => (p.startsWith(app) ? p.slice(app.length) : p));
+      if (!files.length) continue;
+      const p = await execa(d.cmd.replace("{files}", files.join(" ")), { shell: true, cwd: this.appAbs(wt), reject: false, all: true, timeout: 600_000 });
+      if (p.exitCode !== 0) output += `$ ${d.cmd.replace("{files}", files.join(" "))}\n${String(p.all).slice(-6000)}\n`;
+    }
+    if (!output) return undefined;
+    writeFileSync(hp(this.ctx, "runs", f.id, "test-dry-run.log"), output);
+    try {
+      const t = await this.rt.invoke({ role: "triage", taskId: f.id, featureId: f.id, stage: f.stage, attempt: 0, cwd: wt, prompt: render(this.ctx, "test_check", { feature: `${f.id} ${f.title}`, output: output.slice(-9000), otherFeatures: otherFeatures(this.ctx, f) }), schema: TestCheckSchema, tags: f.tags });
+      return t.data?.testeQuebrado ? t.data.motivo || "teste quebrado" : undefined;
+    } catch (e) {
+      if (e instanceof NoWorkerError) return undefined;
+      throw e;
+    }
   }
 
   private async featureLoop(f0: Feature, wt: string) {
@@ -467,7 +508,7 @@ export class Orchestrator {
         } else {
           verdicts.push(await reviewCode({ ctx, rt: this.rt, f, feature: f, cwd: wt, attempt, implementerFamily: res.worker.family, diff: await g.diff(wt, this.branch), gates }));
           if (verdicts[0].pass && f.tags.includes("ui")) {
-            const shots = await this.deps.capture(ctx, this.appAbs(wt), hp(ctx, "runs", f.id, `screens-${attempt}`), (r) => !r.tags?.length || r.tags.some((t) => f.tags.includes(t)));
+            const shots = await this.deps.capture(ctx, this.appAbs(wt), hp(ctx, "runs", f.id, `screens-${attempt}`), await this.screensFor(f, wt));
             if (shots.length) verdicts.push(await reviewUi({ ctx, rt: this.rt, f, feature: f, title: f.title, cwd: wt, attempt, implementerFamily: res.worker.family, screenshots: shots }));
           }
           writeJson(hp(ctx, "runs", f.id, `verdict-${attempt}.json`), verdicts);
@@ -667,16 +708,24 @@ export class Orchestrator {
     const dir = checkpointDir(ctx, s);
     const aprovacao = readFileSync(join(dir, "APROVACAO.md"), "utf8"), duvidas = existsSync(join(dir, "DUVIDAS.md")) ? readFileSync(join(dir, "DUVIDAS.md"), "utf8") : "";
     let a: Approval = parseApprovalFiles(aprovacao, duvidas);
-    try {
+    // same files as the last `approve` (e.g. confirmation answered "n"): reuse the parsed answer instead of paying a model again
+    const cacheFile = hp(ctx, "runs", `approve-${s}`, "parsed.json");
+    const key = createHash("sha256").update(aprovacao).update(duvidas).digest("hex");
+    const cached = existsSync(cacheFile) ? (JSON.parse(readFileSync(cacheFile, "utf8")) as { key: string; a: Approval }) : undefined;
+    if (cached?.key === key) a = cached.a;
+    else try {
       const r = await this.rt.invoke({ role: "approval_parser", taskId: `approve-${s}`, stage: s, attempt: 1, cwd: ctx.root, prompt: render(ctx, "approval_parser", { aprovacao, duvidas, features: stageFeatures(loadFeatures(ctx), s).filter((f) => f.authors).map((f) => `- ${f.id} ${f.title} (arquivos: ${f.authors!.files.slice(0, 15).join(", ")})`).join("\n") || "-" }), schema: ApprovalSchema });
-      if (r.data) a = { ...r.data, respostasDuvidas: r.data.respostasDuvidas.map((x) => ({ ...x, resposta: resolveAnswer(duvidas, x.id, x.resposta) })) };
+      if (r.data) {
+        a = { ...r.data, respostasDuvidas: r.data.respostasDuvidas.map((x) => ({ ...x, resposta: resolveAnswer(duvidas, x.id, x.resposta) })) };
+        writeJson(cacheFile, { key, a });
+      }
     } catch (e) {
       if (!(e instanceof NoWorkerError)) throw e;
     }
     const ajustes = a.ajustes.map((x) => (typeof x === "string" ? { titulo: x, descricao: x, criterios: [x], tags: [] as string[], features: [] as string[] } : x));
     if (!a.aprovado && !ajustes.length) return `✖ APROVACAO.md da etapa ${s} não está preenchido (Status: aprovado, ou ajustes + lista). Nada mudou.`;
     const summary = [`Etapa ${s}: ${a.aprovado && !ajustes.length ? "APROVADA" : "AJUSTES"}`, ...ajustes.map((x) => `  ajuste: ${x.titulo}`), ...a.respostasDuvidas.map((r) => `  ${r.id}: ${r.resposta}`)].join("\n");
-    const ok = await this.deps.confirm(summary);
+    const ok = await this.deps.confirm(`${summary}\n${ajustes.length ? `→ os ajustes viram features F-${s}.adj-* da MESMA etapa: o harness implementa, refaz os gates da etapa e gera um novo checkpoint (a etapa só fecha com "aprovado").` : `→ a etapa ${s} fecha; a próxima só começa com harness resume, depois que você criar/trocar para a branch dela.`}\nResponda y para confirmar.`);
     this.lastTick = Date.now();   // waiting for the human is not active time
     if (!ok) return "✖ aprovação cancelada: nada mudou";
 

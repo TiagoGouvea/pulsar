@@ -130,3 +130,31 @@ Branch `1-base`. **Custo final: US$ 32,94** da etapa (teto inicial de 18, aument
 
 16. **Tempo ativo sem contar a espera nos prompts** (teto, confirmação).
 17. **`watch`:** já tem a linha de caracteres. Falta mostrar a fase fora das chamadas (qual gate está rodando).
+
+## Melhorias aplicadas antes da etapa 2
+
+- **JSON das respostas:** o harness procura todos os objetos JSON da resposta e escolhe o que bate com o schema. Tolera vírgula sobrando e chaves em inglês. Se mesmo assim falhar, o papel `formatter` (gemini-lite, glm-flash ou haiku) só reescreve a resposta no formato, sem refazer o trabalho.
+- **Sem progresso, pausa:** 2 modelos diferentes com a mesma assinatura de falha bloqueiam a feature, com o motivo "provável problema no teste, na spec ou no ambiente", em vez de girar a fila inteira.
+- **Trabalho pago não se perde:**
+  - se a chamada ao modelo terminou e o harness parou (teto, Ctrl+C), a retomada avalia o código sem chamar o modelo de novo;
+  - a worktree fica guardada no bloqueio;
+  - os logs de tentativa não são sobrescritos.
+- **Testes de aceite rodam 1 vez antes de ficarem protegidos.** Uma triagem barata separa "falha porque o código ainda não existe" de "teste quebrado por si só" (API inexistente do emulador, dado normalizado, tela de feature futura). Quando o teste está quebrado, o test_writer refaz.
+- **Contra trapaça nos testes:**
+  - o G7 reprova linhas que mexem em `node_modules` ou usam patch-package;
+  - os testes de features entregues ficam protegidos em modo "só cresce";
+  - os prompts proíbem mexer em dependências, scripts e infraestrutura.
+- **Roteador pelo custo de um sucesso:** (custo + tempo × US$ 2/h) ÷ taxa de acerto.
+- **Filas:**
+  - test_writer: [codex-mid, glm-or]
+  - implement: [deepseek-flash, minimax, haiku, codex-mid]
+  - implement_easy: [deepseek-flash, minimax, glm-flash, haiku]
+  - implement_hard: [codex-mid, glm-or, kimi-pro], com o kimi-pro em timeout de 20 min.
+- **deepseek-flash com 2ª chance:** foi o craque do harness do Codex. Aqui teve 0/3, mas só em F-1.03 e F-1.10, na fase dos bugs do harness e do revisor sem escopo, e por US$ 0,01 a 0,11 por tentativa. O histórico de implement dele foi zerado.
+- **Ajustes do humano:** sem test_writer, na fila `implement_easy`. O `APROVACAO.md` e a confirmação explicam a rodada de ajustes da mesma etapa. A leitura do `APROVACAO.md` fica em cache (o approve não paga duas vezes).
+- **Revisão de UI** só com as telas tocadas pelo diff.
+- **Correções de gates da etapa** (Lighthouse etc.) rodam esses gates na própria feature de correção.
+- **IDs de fix e adj únicos.**
+- **RELATORIO.md** com tabela por feature, custo por modelo e próximos passos.
+- **Tempo ativo** não conta a espera nos prompts.
+- **`watch`:** um caractere por evento do modelo e, entre as chamadas, o gate que está rodando.

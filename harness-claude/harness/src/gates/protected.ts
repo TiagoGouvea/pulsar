@@ -49,6 +49,16 @@ export async function checkProtected(ctx: Ctx, cwd: string, featureId?: string):
     const now = new Set(testNames(c)), gone = (e.tests ?? []).filter((t) => !now.has(t));
     if (gone.length || countAsserts(c) < e.asserts) problems.push(`${f}: teste de feature entregue enfraquecido (asserts ${e.asserts} -> ${countAsserts(c)}${gone.length ? `; removidos/renomeados: ${gone.join(" | ")}` : ""})`);
   }
+  // patching third-party code (node_modules) to make a test pass is never allowed
+  const base = await git(cwd, "merge-base", "HEAD", ctx.config.project.mainBranch).catch(() => "");
+  if (base) {
+    const d = await git(cwd, "diff", base, "--", ".", ":(exclude).harness", ":(exclude)**/.gitignore").catch(() => "");
+    let file = "";
+    for (const l of d.split("\n")) {
+      if (l.startsWith("+++ ")) file = l.slice(6);
+      else if (l.startsWith("+") && /node_modules\/(?!\.bin\b)[\w@.-]+\/.*\.(c?js|mjs|ts|json)\b|patch-package/.test(l) && !TEST_FILE.test(file)) problems.push(`${file}: altera código de terceiros em node_modules (proibido): ${l.slice(1, 120).trim()}`);
+    }
+  }
   for (const p of walk(join(cwd, ctx.config.project.appDir))) {
     if (!TEST_FILE.test(p)) continue;
     const bad = readFileSync(p, "utf8").split("\n").findIndex((l) => FORBIDDEN.test(l));

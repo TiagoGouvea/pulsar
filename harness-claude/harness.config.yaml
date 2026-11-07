@@ -3,6 +3,9 @@ project:
   repo: ../pulsar-claude        # projeto (spec, design, DECISOES.md, app/); subpasta do monorepo Pulsar/. Worktrees detached em .worktrees/
   appDir: app
   autofixCmd: "yarn -s format && yarn -s lint --fix"   # antes dos gates da feature (G2 lint/format era a falha mais comum)
+  dryRun:                      # testes de aceite rodam 1x antes de ficarem protegidos (pega teste que nunca passaria)
+    - { match: "^app/e2e/.*\\.spec\\.ts$", cmd: "yarn -s test:e2e {files}" }
+    - { match: "^app/src/.*\\.test\\.tsx?$", cmd: "yarn -s vitest run {files}" }
   # alias -> arquivo. specRefs nas features usam o alias (ex.: "spec.md#4.4")
   specFiles:
     spec.md: docs/Pulsar_Especificacao_Completa.md
@@ -72,8 +75,8 @@ roles:
   # Etapa 1: só remotos (locais desligados); a ordem só desempata, quem escolhe é o roteador (histórico e preço).
   initializer:     { pool: [opus],                              note: "decompõe spec, scaffold, design system" }
   test_writer:     { pool: [codex-mid, glm-or],                 note: "escreve testes de aceite ANTES da implementação (sem sonnet: US$ 5 só de testes na etapa 1); glm-or só se o codex-mid faltar" }
-  implement:       { pool: [minimax, haiku, codex-mid],         note: "features comuns (sem qwen-coder/kimi/deepseek-flash: 0 sucessos; sem glm-or: 15 min por tentativa)" }
-  implement_easy:  { pool: [minimax, glm-flash, haiku],         note: "features difficulty=easy" }
+  implement:       { pool: [deepseek-flash, minimax, haiku, codex-mid], note: "features comuns. deepseek-flash: 2ª chance (craque no harness do Codex; aqui 0/3 só em F-1.03/F-1.10, na fase dos bugs do harness, histórico zerado). Sem qwen-coder/kimi; sem glm-or (15 min por tentativa)" }
+  implement_easy:  { pool: [deepseek-flash, minimax, glm-flash, haiku], note: "features difficulty=easy e ajustes do humano" }
   implement_hard:  { pool: [codex-mid, glm-or, kimi-pro],       note: "estatística, security rules e difficulty=hard (sem opus/sonnet: US$ 10,65 com 8/37 sucessos na etapa 1; como o harness do Codex)" }
   review_code:     { pool: [gemini, glm-or, gemini-argon, codex-mid, haiku, sonnet], rule: different_family_from_implementer }
   review_ui:       { pool: [gemini, gemini-argon, haiku, sonnet],                    rule: different_family_from_implementer, requires: vision }

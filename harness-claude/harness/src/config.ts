@@ -52,7 +52,9 @@ export const ConfigSchema = z.object({
     decisionsFile: z.string(),
     language: z.string(),
     mainBranch: z.string().default("main"),
-    autofixCmd: z.string().optional(),   // run in <appDir> before the feature gates; result committed
+    autofixCmd: z.string().optional(),
+    // acceptance tests are run once before being protected; {files} = paths relative to appDir (groups by regex on the repo path)
+    dryRun: z.array(z.object({ match: z.string(), cmd: z.string() })).default([]),   // run in <appDir> before the feature gates; result committed
   }),
   workers: z.record(z.string(), Worker),
   roles: z.record(z.string(), RoleCfg),

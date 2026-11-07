@@ -119,6 +119,9 @@ export function buildCheckpoint(ctx: Ctx, c: CheckpointInput) {
   writeFileSync(join(dir, "RELATORIO.md"), [
     `# Relatório — etapa ${c.stage} (${stageName})${c.partialReason ? ` — PARCIAL: ${c.partialReason}` : ""}`,
     `\n**Preview:** ${c.previewUrl ?? c.previewNote ?? "não publicado"}`,
+    `\n**Resumo:** ${passing.length} de ${fs.length} features entregues${blocked.length ? `, ${blocked.length} bloqueada(s)` : ""}${pending.length ? `, ${pending.length} pendente(s)` : ""} · US$ ${spent(ctx, { stage: c.stage }).toFixed(2)} · ${hours.toFixed(1)} h`,
+    `\n| Feature | Status | Feito por | Tentativas | US$ |\n|---|---|---|---|---|\n${fs.map((f) => `| ${f.id} ${f.title} | ${f.status === "passing" ? "✔" : f.status === "blocked" ? "⛔" : "…"} | ${f.authors?.implementer ?? "-"} | ${f.attempts} | ${f.costUsd.toFixed(2)} |`).join("\n")}`,
+    `\n## Próximos passos\n\n1. Testar seguindo \`COMO-TESTAR.md\`.\n2. Preencher \`APROVACAO.md\` (aprovado, ou ajustes: um por linha) e responder \`DUVIDAS.md\`.\n3. \`harness approve\` e responder y. Ajustes rodam na mesma etapa e geram um novo checkpoint.`,
     `\n## Features entregues (${passing.length}/${fs.length})\n`,
     ...passing.map((f) => `- **${f.id}** ${f.title} — ${f.attempts} tentativa(s), US$ ${f.costUsd.toFixed(2)}${f.covers.length ? ` — critérios: ${f.covers.join(", ")}` : ""}${authorsMd(f)}\n${f.acceptance.map((a) => `  - [x] ${a}`).join("\n")}`),
     `\n## Bloqueadas (${blocked.length})\n`, ...blocked.map((f) => `- **${f.id}** ${f.title}: ${f.blockedReason ?? "-"}`),
@@ -127,6 +130,7 @@ export function buildCheckpoint(ctx: Ctx, c: CheckpointInput) {
     `- Custo acumulado: US$ ${spent(ctx, {}, readLedger(ctx)).toFixed(2)} (teto US$ ${ctx.budget.caps.run})`,
     `- Tempo decorrido: ${hours.toFixed(1)} h · chamadas registradas: ${evs.length}`,
     `\n## Workers (implementação)\n\n| Worker | Tentativas | Sucesso |\n|---|---|---|\n${Object.entries(byWorker).map(([w, s]) => `| ${w} | ${s.n} | ${Math.round((100 * s.ok) / s.n)}% |`).join("\n")}`,
+    `\n## Custo por modelo\n\n| Modelo | Chamadas | US$ |\n|---|---|---|\n${Object.entries(readLedger(ctx).filter((r) => r.stage === c.stage).reduce<Record<string, { n: number; usd: number }>>((a, r) => { const m = (a[r.workerId] ??= { n: 0, usd: 0 }); m.n++; m.usd += r.costUsd; return a; }, {})).sort(([, x], [, y]) => y.usd - x.usd).map(([w, m]) => `| ${w} | ${m.n} | ${m.usd.toFixed(2)} |`).join("\n")}`,
     c.suiteNote ? `\n## Suíte completa\n\n${c.suiteNote}` : "",
     c.uiVerdict ? `\n## Avaliação visual completa\n\n${c.uiVerdict}` : "",
     `\n## Aprendizados\n\n${c.aprendizados || "-"}`,
@@ -135,7 +139,7 @@ export function buildCheckpoint(ctx: Ctx, c: CheckpointInput) {
   writeFileSync(join(dir, "DUVIDAS.md"), duvidasMd(ctx, c.stage));
   writeFileSync(join(dir, "RISCOS.md"), riscosMd(ctx, c.stage));
   if (!existsSync(join(dir, "APROVACAO.md")))
-    writeFileSync(join(dir, "APROVACAO.md"), `# Aprovação — etapa ${c.stage} (${stageName})\n\nStatus: (aprovado / ajustes)\n\n## Ajustes\n\n<!-- um ajuste por linha, ex.: "- O botão Registrar agora deve ficar fixo no rodapé no celular" -->\n- \n`);
+    writeFileSync(join(dir, "APROVACAO.md"), `# Aprovação — etapa ${c.stage} (${stageName})\n\n<!-- Como funciona:\n  - "aprovado": a etapa fecha. A próxima só começa com \`harness resume\`, depois que você criar/trocar para a branch dela.\n  - "ajustes": liste abaixo. Cada linha vira uma feature F-${c.stage}.adj-* da MESMA etapa (rodada final de ajustes,\n    sem teste de aceite novo). O harness implementa, refaz os gates da etapa e gera um novo checkpoint;\n    você testa de novo e aprova (ou pede mais ajustes).\n  Depois de preencher: \`harness approve\` e responda y. -->\n\nStatus: (aprovado / ajustes)\n\n## Ajustes\n\n<!-- um ajuste por linha, ex.: "- O botão Registrar agora deve ficar fixo no rodapé no celular" -->\n- \n`);
   return dir;
 }
 

@@ -103,6 +103,18 @@ describe("orquestrador (adapter fake)", () => {
     expect(f.status).toBe("passing");
   });
 
+  it("4c. patch em node_modules para passar nos testes → G7 reprova a tentativa", async () => {
+    const { ctx } = await makeProject();
+    let n = 0;
+    setFakeScript(script([{ id: "F-0.01", stage: 0 }], (run) => {
+      if (run.role.startsWith("implement") && ++n === 1) return { files: { "app/scripts/patchEmulator.ts": `const f = "node_modules/firebase-tools/lib/emulator/auth/server.js";\n` } };
+    }));
+    await orch(ctx, deps(() => true)).start();
+    const f = feature(ctx.root, "F-0.01");
+    expect(f.history[0].outcome).toBe("protected_violation");
+    expect(f.history[1].outcome).toBe("success");
+  });
+
   it("5. avaliador da mesma família nunca é escolhido", async () => {
     const { ctx } = await makeProject({ config: { routing: { explorationRate: 0.5, escalateAfterFailures: 2, maxAttemptsPerFeature: 5, hardTags: [], tournament: { enabled: false, tags: [], contenders: 2, judge: "review_code" } } } });
     setFakeScript(script(Array.from({ length: 6 }, (_, i) => ({ id: `F-0.0${i + 1}`, stage: 0, tags: ["ui"] }))));

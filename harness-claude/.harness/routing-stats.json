@@ -384,10 +384,10 @@
     "falhasPorGate": {}
   },
   "haiku|approval_parser|*": {
-    "tentativas": 2,
-    "sucessos": 2,
-    "custoMedio": 0.048336594999999996,
-    "duracaoMedia": 9900.5,
+    "tentativas": 4,
+    "sucessos": 4,
+    "custoMedio": 0.0667475975,
+    "duracaoMedia": 8023.5,
     "falhasPorGate": {}
   },
   "local-gptoss|smoke|*": {
@@ -600,20 +600,6 @@
     "sucessos": 3,
     "custoMedio": 0.06844721666666667,
     "duracaoMedia": 52065,
-    "falhasPorGate": {}
-  },
-  "deepseek-flash|implement|*": {
-    "tentativas": 3,
-    "sucessos": 0,
-    "custoMedio": 0.05336285933333333,
-    "duracaoMedia": 408785,
-    "falhasPorGate": {}
-  },
-  "deepseek-flash|implement|sync": {
-    "tentativas": 2,
-    "sucessos": 0,
-    "custoMedio": 0.075292909,
-    "duracaoMedia": 526782,
     "falhasPorGate": {}
   },
   "gemini-lite|triage|sync": {

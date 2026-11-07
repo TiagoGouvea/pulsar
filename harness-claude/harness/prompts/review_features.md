@@ -6,6 +6,7 @@ Verifique:
 - **Cobertura:** todos os critérios de aceite abaixo aparecem em `covers` de alguma feature e os critérios de cada feature são verificáveis.
 - **Granularidade:** cada feature cabe numa sessão de agente (até ~5 arquivos); nada genérico demais.
 - **Dependências:** `dependsOn` coerente, sem ciclos, sem depender de etapa futura; etapas na ordem fixa.
+- **Testável na etapa:** os critérios e testes de cada feature só usam telas e dados entregues até a etapa dela (ex.: uma guarda e2e que exige nomes de indicadores ou observações na tela não pode vir antes das telas que os mostram).
 - **Tags:** `ui` em telas; `statistics`, `security-rules`, `privacy-mode`, `sync` onde couber.
 
 ## Critérios de aceite

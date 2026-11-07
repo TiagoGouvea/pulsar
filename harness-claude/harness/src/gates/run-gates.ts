@@ -1,8 +1,9 @@
-import { existsSync } from "node:fs";
+import { existsSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { Ctx } from "../config.js";
 import { runProcess } from "../adapters/exec.js";
 import { git } from "../git.js";
+import { hp } from "../state.js";
 import { gateEnv, withPortLock } from "./browser.js";
 import { privacyGate } from "./privacy-leak.js";
 import { checkProtected } from "./protected.js";
@@ -47,6 +48,8 @@ export const runGates: RunGates = (ctx, cwd, o) => withPortLock(ctx, join(cwd, c
     const start = Date.now();
     if (skip) { results.push({ id, name: g.name, ok: true, required: g.required, skipped: skip, durationMs: 0, output: "" }); continue; }
     let r: { ok: boolean; output: string };
+    // harness watch shows which gate is running between model calls
+    try { writeFileSync(hp(ctx, "live-gate.json"), JSON.stringify({ id, name: g.name, featureId: o.featureId ?? `etapa ${o.stage}`, start }) + "\n"); } catch { /* best effort */ }
     try {
       if (g.builtin === "protected") r = await checkProtected(ctx, cwd, o.featureId);
       else if (g.builtin === "secrets") r = await scanSecrets(ctx, cwd, o.base);
@@ -64,6 +67,7 @@ export const runGates: RunGates = (ctx, cwd, o) => withPortLock(ctx, join(cwd, c
     }
     results.push({ id, name: g.name, required: g.required, durationMs: Date.now() - start, ...r });
   }
+  rmSync(hp(ctx, "live-gate.json"), { force: true });
   const failed = results.filter((r) => !r.ok && r.required).map((r) => r.id);
   return { ok: failed.length === 0, mode: o.mode, stage: o.stage, failed, results };
 });
