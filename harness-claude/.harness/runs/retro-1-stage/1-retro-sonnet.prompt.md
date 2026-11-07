@@ -27,90 +27,6 @@ Regras para lições:
 - `file: "harness"` só para lições que valem para qualquer projeto.
 
 ## Eventos recentes (id feature papel worker tentativa resultado)
-evt-44 F-0.05 review_code haiku t2 success $0.01
-evt-45 F-0.05 implement deepseek t2 review_rejected $0.06
-evt-46 F-0.05 review_code sonnet t3 success $0.03
-evt-47 F-0.05 implement_hard codex-top t3 success $0.81
-evt-48 F-0.06 review_code sonnet t2 success $0.03
-evt-49 F-0.06 review_ui sonnet t2 success $0.07
-evt-50 F-0.06 implement_hard codex-top t2 success $0.47
-evt-51 F-0.07 test_writer sonnet t0 success $0.11
-evt-52 F-0.07 triage deepseek t1 success $0.00
-evt-53 F-0.07 implement_hard codex-top t1 failure gates:G2,G4 $0.71
-evt-54 F-0.07 review_code deepseek t2 success $0.01
-evt-55 F-0.07 review_ui gemini-flash-or t2 success $0.03
-evt-56 F-0.07 implement_hard opus t2 success $0.23
-evt-57 F-0.fix-1 review_code codex-mid t1 success $0.03
-evt-58 F-0.fix-1 implement_hard sonnet t1 review_rejected $0.13
-evt-59 F-0.fix-1 review_code codex-mid t2 success $0.13
-evt-60 F-0.fix-1 implement_hard opus t2 success $1.43
-evt-61 stage-0 review_ui gemini-flash-or t1 success $0.03
-evt-62 retro-0-stage retro sonnet t1 success $0.05
-evt-63 approve-0 approval_parser haiku t1 success $0.00
-evt-64 smoke-local-gptoss smoke local-gptoss t1 success $0.00
-evt-65 smoke-local-small smoke local-small t1 success $0.00
-evt-66 smoke-local-gptoss smoke local-gptoss t1 success $0.00
-evt-67 smoke-local-small smoke local-small t1 success $0.00
-evt-68 smoke-codex-top smoke codex-top t1 success $0.04
-evt-69 smoke-codex-mid smoke codex-mid t1 success $0.02
-evt-70 smoke-deepseek-flash smoke deepseek-flash t1 success $0.00
-evt-71 smoke-qwen-coder smoke qwen-coder t1 success $0.00
-evt-72 smoke-minimax smoke minimax t1 success $0.00
-evt-73 smoke-kimi-pro smoke kimi-pro t1 failure $0.00
-evt-74 smoke-gptoss-or smoke gptoss-or t1 success $0.00
-evt-75 smoke-qwen-small-or smoke qwen-small-or t1 success $0.00
-evt-76 smoke-glm-or smoke glm-or t1 success $0.00
-evt-77 smoke-glm-flash smoke glm-flash t1 success $0.00
-evt-78 smoke-kimi-pro smoke kimi-pro t1 success $0.01
-evt-79 smoke-gemini-lite smoke gemini-lite t1 success $0.00
-evt-80 smoke-gemini smoke gemini t1 success $0.01
-evt-81 smoke-gemini-argon smoke gemini-argon t1 success $0.01
-evt-82 smoke-gemini smoke gemini t1 success $0.01
-evt-83 smoke-gemini-lite smoke gemini-lite t1 success $0.00
-evt-84 smoke-gemini-argon smoke gemini-argon t1 success $0.01
-evt-85 F-1.02 test_writer sonnet t0 success $0.14
-evt-86 F-1.01 test_writer gemini t0 success $0.44
-evt-87 F-1.02 triage deepseek t1 success $0.04
-evt-88 F-1.02 implement_easy glm-flash t1 failure gates:G8 $0.01
-evt-89 F-1.02 implement_easy minimax t2 failure $0.00
-evt-90 F-1.02 triage deepseek t3 success $0.30
-evt-91 F-1.02 implement_hard opus t3 failure gates:G8 $0.24
-evt-92 F-1.01 triage deepseek t1 success $0.19
-evt-93 F-1.01 implement kimi t1 failure gates:G8 $0.22
-evt-94 F-1.01 implement minimax t2 failure $0.00
-evt-95 F-1.02 triage deepseek t4 success $0.64
-evt-96 F-1.02 implement_hard opus t4 failure gates:G8 $0.21
-evt-97 F-1.01 triage deepseek t3 success $0.12
-evt-98 F-1.01 implement_hard opus t3 failure gates:G8 $0.45
-evt-99 F-1.02 triage deepseek t5 success $0.00
-evt-100 F-1.02 implement_hard opus t5 failure gates:G8 $0.20
-evt-101 F-1.08 test_writer codex-mid t0 success $0.06
-evt-102 F-1.01 triage deepseek t4 success $0.00
-evt-103 F-1.01 implement_hard sonnet t4 failure gates:G8 $0.09
-evt-104 F-1.08 test_writer sonnet t0 success $0.16
-evt-105 smoke-minimax smoke minimax t1 success $0.00
-evt-105 F-1.01 triage deepseek t5 success $0.00
-evt-106 F-1.01 implement_hard kimi-pro t5 failure gates:G8 $0.12
-evt-107 F-1.10 test_writer sonnet t0 success $0.09
-evt-108 F-1.10 implement minimax t1 failure $0.00
-evt-109 F-1.08 implement_hard opus t1 protected_violation gates:G3,G7,G8 $0.35
-evt-110 F-1.10 triage deepseek t2 success $0.00
-evt-111 F-1.10 implement haiku t2 failure gates:G2,G6,G8,G9,G10 $0.02
-evt-112 F-1.08 implement_hard sonnet t2 protected_violation gates:G3,G5,G7,G8 $0.09
-evt-113 F-1.10 implement_hard sonnet t3 protected_violation gates:G6,G7,G8,G9,G10 $0.09
-evt-114 F-1.08 implement_hard opus t3 protected_violation gates:G3,G5,G7,G8 $0.20
-evt-115 F-1.08 implement_hard kimi-pro t4 protected_violation gates:G3,G7,G8 $0.05
-evt-116 F-1.08 implement_hard opus t5 protected_violation gates:G3,G7,G8 $0.42
-evt-117 F-1.10 triage deepseek-flash t4 success $0.01
-evt-118 F-1.10 implement_hard kimi-pro t4 failure gates:G8 $0.23
-evt-119 F-1.10 triage deepseek t5 success $0.00
-evt-120 F-1.10 implement_hard opus t5 failure gates:G8 $0.28
-evt-121 F-1.fix-1 test_writer sonnet t0 success $0.10
-evt-122 F-1.fix-1 test_writer sonnet t0 success $0.02
-evt-124 F-1.02 test_writer sonnet t0 success $0.11
-evt-125 F-1.01 test_writer sonnet t0 success $0.15
-evt-126 F-1.02 test_writer sonnet t0 success $0.11
-evt-127 F-1.01 test_writer sonnet t0 success $0.15
 evt-128 F-1.08 test_writer sonnet t0 success $0.14
 evt-129 F-1.10 test_writer sonnet t0 success $0.09
 evt-130 F-1.02 test_writer sonnet t0 success $0.15
@@ -177,6 +93,90 @@ evt-190 F-1.03 implement deepseek-flash t1 review_rejected $0.11
 evt-191 F-1.03 review_code haiku t2 success $0.01
 evt-192 F-1.03 implement qwen-coder t2 review_rejected $0.29
 evt-193 stage-1 review_ui gemini t0 success $0.16
+evt-194 retro-1-stage retro sonnet t1 success $0.08
+evt-195 F-1.03 test_writer sonnet t0 success $0.19
+evt-196 stage-1 review_ui gemini-argon t0 success $0.16
+evt-197 F-1.03 test_writer sonnet t0 success $0.17
+evt-198 F-1.03 review_code codex-mid t1 success $0.07
+evt-199 F-1.03 implement_hard opus t1 review_rejected $0.81
+evt-200 F-1.03 triage gemini-lite t2 success $0.00
+evt-201 F-1.03 implement_hard opus t2 failure gates:G6,G8,G9,G10 $0.44
+evt-202 F-1.03 implement_hard kimi-pro t3 protected_violation gates:G7,G8,G9,G10 $0.09
+evt-203 F-1.03 review_code codex-mid t1 success $0.07
+evt-204 F-1.03 implement_hard sonnet t1 review_rejected $0.11
+evt-205 F-1.03 review_code haiku t2 success $0.00
+evt-206 F-1.03 implement_hard kimi-pro t2 success $0.15
+evt-207 F-1.04 test_writer sonnet t0 success $0.13
+evt-208 F-1.05 test_writer sonnet t0 success $0.15
+evt-209 F-1.04 review_code haiku t1 success $0.00
+evt-210 F-1.04 review_ui haiku t1 success $0.02
+evt-211 F-1.04 implement minimax t1 review_rejected $0.01
+evt-212 F-1.05 review_code haiku t1 success $0.00
+evt-213 F-1.05 implement minimax t1 success $0.08
+evt-214 F-1.04 review_code haiku t2 success $0.01
+evt-215 F-1.04 implement minimax t2 review_rejected $0.05
+evt-216 F-1.04 review_code haiku t3 success $0.00
+evt-217 F-1.04 review_ui haiku t3 success $0.01
+evt-218 F-1.04 implement_hard kimi-pro t3 review_rejected $0.10
+evt-219 F-1.04 review_code gemini-argon t4 success $0.05
+evt-220 F-1.04 review_ui gemini t4 success $0.05
+evt-221 F-1.04 implement_hard sonnet t4 success $0.26
+evt-222 F-1.06 test_writer sonnet t0 success $0.14
+evt-223 F-1.07 test_writer sonnet t0 success $0.23
+evt-224 F-1.07 review_code haiku t1 success $0.01
+evt-225 F-1.06 review_code haiku t1 success $0.01
+evt-226 F-1.06 implement minimax t1 review_rejected $0.06
+evt-227 F-1.07 review_ui haiku t1 success $0.02
+evt-228 F-1.07 implement_easy glm-flash t1 review_rejected $0.08
+evt-229 F-1.06 triage gemini-lite t2 success $0.00
+evt-230 F-1.06 implement haiku t2 failure gates:G6 $0.02
+evt-231 F-1.07 review_code haiku t2 success $0.01
+evt-232 F-1.06 triage gemini-lite t3 success $0.00
+evt-233 F-1.06 implement_hard sonnet t3 failure gates:G6 $0.09
+evt-234 F-1.07 review_ui haiku t2 success $0.02
+evt-235 F-1.07 implement_easy minimax t2 success $0.11
+evt-236 F-1.09 test_writer sonnet t0 success $0.35
+evt-237 F-1.06 triage deepseek-flash t4 success $0.01
+evt-238 F-1.06 implement_hard sonnet t4 failure gates:G6 $0.09
+evt-239 F-1.06 review_code codex-mid t5 success $0.07
+evt-240 F-1.06 implement_hard sonnet t5 review_rejected $0.20
+evt-241 F-1.09 triage gemini-lite t1 success $0.00
+evt-242 F-1.09 implement_hard kimi-pro t1 failure gates:G6 $0.99
+evt-243 F-1.09 review_code haiku t2 success $0.01
+evt-244 F-1.09 implement_hard kimi-pro t2 review_rejected $0.32
+evt-245 F-1.09 triage gemini-lite t3 success $0.01
+evt-246 F-1.09 implement_hard sonnet t3 failure gates:G6 $0.24
+evt-247 F-1.09 triage gemini-lite t4 success $0.00
+evt-248 F-1.09 implement_hard sonnet t4 failure gates:G6 $0.20
+evt-249 F-1.09 review_code haiku t5 success $0.01
+evt-250 F-1.09 implement_hard kimi-pro t5 review_rejected $0.40
+evt-251 F-1.09 triage gemini-lite t1 success $0.00
+evt-252 F-1.09 implement_hard codex-mid t1 failure gates:G6 $0.09
+evt-253 F-1.09 review_code haiku t2 success $0.01
+evt-254 F-1.09 review_ui haiku t2 success $0.02
+evt-255 F-1.09 implement_hard glm-or t2 review_rejected $0.70
+evt-256 F-1.09 triage gemini-lite t3 success $0.00
+evt-257 F-1.09 implement_hard codex-mid t3 failure gates:G6,G9 $0.21
+evt-258 F-1.09 review_code haiku t4 success $0.01
+evt-259 F-1.09 review_ui haiku t4 success $0.01
+evt-260 F-1.09 implement_hard codex-mid t4 review_rejected $0.10
+evt-261 F-1.09 implement_hard codex-mid t5 protected_violation gates:G7 $0.21
+evt-262 F-1.09 review_code haiku t1 success $0.01
+evt-263 F-1.09 review_ui haiku t1 success $0.01
+evt-264 F-1.09 implement_hard glm-or t1 success $0.66
+evt-265 F-1.12 test_writer codex-mid t0 success $0.27
+evt-266 F-1.12 triage deepseek-flash t1 success $0.00
+evt-267 F-1.12 implement haiku t1 failure gates:G6 $0.37
+evt-268 smoke-haiku smoke haiku t1 success $0.06
+evt-269 F-1.12 review_code codex-mid t2 success $0.07
+evt-270 F-1.12 implement haiku t2 review_rejected $0.15
+evt-271 F-1.12 review_code haiku t3 success $0.18
+evt-272 F-1.12 review_ui haiku t3 success $0.17
+evt-273 F-1.12 implement_hard glm-or t3 success $0.10
+evt-274 F-1.fix-1 implement_hard glm-or t1 timeout $0.50
+evt-275 F-1.fix-2 review_code haiku t1 success $0.12
+evt-276 F-1.fix-2 implement_hard codex-mid t1 success $0.13
+evt-277 stage-1 review_ui gemini t2 success $0.05
 
 ## Lições atuais
 # Lições do projeto (geradas pelo harness). Formato YAML.
@@ -193,10 +193,10 @@ evt-193 stage-1 review_ui gemini t0 success $0.16
   evidence:
     - evt-24
   added: 2026-10-25
-  hits: 36
-  helped: 12
-  helpedRate: 0.3333333333333333
-  status: active
+  hits: 54
+  helped: 16
+  helpedRate: 0.2962962962962963
+  status: retired
 - id: L-002
   scope:
     roles:
@@ -682,7 +682,7 @@ evt-193 stage-1 review_ui gemini t0 success $0.16
   hits: 0
   helped: 0
   helpedRate: null
-  status: active
+  status: promoted
 - id: L-034
   scope:
     roles:
@@ -705,7 +705,7 @@ evt-193 stage-1 review_ui gemini t0 success $0.16
   hits: 0
   helped: 0
   helpedRate: null
-  status: active
+  status: promoted
 - id: L-035
   scope:
     roles:
@@ -713,12 +713,12 @@ evt-193 stage-1 review_ui gemini t0 success $0.16
       - implement_hard
     tags:
       - review
-  rule: F-1.11 foi rejeitada em revisão 5 vezes seguidas (evt-174, evt-176,
-    evt-178, evt-180, evt-182) com opus, kimi-pro e sonnet. Antes de
-    implementar, leia o último parecer de revisão (verdict-N.json) e trate cada
-    ponto apontado explicitamente; confirme cada critério de aceite (ordem de
-    limpeza, requires-recent-login, isolamento entre UIDs) com um teste ou
-    trecho de código.
+  rule: "F-1.11 foi rejeitada na revisão 5 vezes seguidas (evt-174, evt-176,
+    evt-178, evt-180, evt-182) e passou depois (evt-188) com o mesmo opus,
+    depois de uma revisão feita pelo gemini (evt-187). Antes de implementar,
+    leia o último parecer de revisão (verdict-N.json) e trate cada ponto
+    apontado. Confirme cada critério de aceite com um teste ou trecho de código:
+    ordem de limpeza, requires-recent-login e isolamento entre UIDs."
   evidence:
     - evt-174
     - evt-176
@@ -752,6 +752,160 @@ evt-193 stage-1 review_ui gemini t0 success $0.16
   helped: 0
   helpedRate: null
   status: active
+- id: L-037
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - protected
+  rule: Se o gate G7 (protected_violation) falhar, não tente a mesma edição de
+    novo. Rode `git status` e `git diff --stat` e reverta qualquer alteração em
+    arquivos listados em .harness/protected.json antes de entregar. Corrija o
+    código de produção para satisfazer o teste existente. Se o teste parecer
+    errado, registre a dúvida em .harness/inbox/questions.jsonl.
+  evidence:
+    - evt-146
+    - evt-149
+    - evt-153
+    - evt-154
+    - evt-159
+  added: 2026-11-02
+  hits: 0
+  helped: 0
+  helpedRate: null
+  status: active
+- id: L-038
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - review
+  rule: F-1.03 foi rejeitada na revisão com deepseek-flash e qwen-coder (evt-165,
+    evt-190, evt-192), mesmo depois de a F-1.11 passar na revisão (evt-188) com
+    um revisor diferente (gemini). Antes de entregar, leia o último
+    verdict-N.json e responda a cada ponto apontado no código. Confira também se
+    o fluxo de erro de rede mostra mensagem em pt-BR e não indica sucesso.
+  evidence:
+    - evt-165
+    - evt-190
+    - evt-192
+  added: 2026-11-02
+  hits: 0
+  helped: 0
+  helpedRate: null
+  status: active
+- id: L-039
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - sync
+  rule: Substitua waitForLoadState('networkidle') por verificações de estado da
+    aplicação ou locator.waitFor() em elementos específicos, evitando depender
+    do estado ocioso da rede quando houver conexões de longa duração.
+  evidence:
+    - evt-200
+  added: 2026-11-02
+  hits: 8
+  helped: 1
+  helpedRate: 0.125
+  status: retired
+- id: L-040
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - privacy-mode
+      - ui
+  rule: O teste E2E não deve depender de dados reais não implementados; use mocks
+    ou aguarde a implementação do dashboard/indicadores antes de habilitar os
+    testes que validam o conteúdo dessas áreas.
+  evidence:
+    - evt-232
+  added: 2026-11-02
+  hits: 8
+  helped: 0
+  helpedRate: 0
+  status: retired
+- id: L-041
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - privacy-mode
+      - ui
+  rule: "Reative o que a tentativa 1 já entregou: importe `IndicatorsPage` e
+    `DashboardPage` em `src/App.tsx` (removendo `PlaceholderPage` dessas rotas),
+    devolva o `EyeToggle` ao header de `WelcomePage`, e volte a restringir
+    `watchUserProfile` (só enquanto `!profile.onboardingCompleted`) para o
+    `networkidle` fechar e o smoke test caber em 30s; rode `yarn e2e
+    --grep-invert @visual` (ou `yarn test:e2e`) e não reescreva/descarte o
+    trabalho de tentativas anteriores sem comparar com o HEAD."
+  evidence:
+    - evt-237
+  added: 2026-11-02
+  hits: 8
+  helped: 0
+  helpedRate: 0
+  status: retired
+- id: L-042
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - ui
+      - sync
+  rule: Aumente o timeout do `expect.poll` no teste G6 e garanta que o listener de
+    `onAuthStateChanged` esteja propagando corretamente a mudança de usuário
+    após o `linkWithCredential` para o estado da aplicação.
+  evidence:
+    - evt-245
+  added: 2026-11-02
+  hits: 8
+  helped: 1
+  helpedRate: 0.125
+  status: retired
+- id: L-043
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - ui
+      - sync
+  rule: Substitua 'page.waitForLoadState("networkidle")' por 'page.waitForURL()'
+    ou 'page.waitForSelector()' para aguardar um elemento específico da página
+    de destino, evitando a dependência de silêncio de rede.
+  evidence:
+    - evt-247
+  added: 2026-11-02
+  hits: 8
+  helped: 1
+  helpedRate: 0.125
+  status: retired
+- id: L-044
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - ui
+      - sync
+  rule: Ajuste a cor do texto ou do fundo no seletor `.break-all` na SettingsPage
+    para atender ao ratio de contraste mínimo exigido.
+  evidence:
+    - evt-256
+  added: 2026-11-05
+  hits: 6
+  helped: 2
+  helpedRate: 0.3333333333333333
+  status: active
 
 # Lições do harness — sobrevivem entre projetos. Formato YAML.
 - id: L-005
@@ -777,16 +931,17 @@ evt-193 stage-1 review_ui gemini t0 success $0.16
 ## Features da etapa
 F-1.01 [passing] Modelo de domínio de indicadores e registros (puro): suggestAggregation: Fator numérico=sum, Resultado numérico=last, escala=mean, booleano=any, ordinal=last; nunca usa o nome | allowedAggregations: numérico/escala {sum,mean,last}; booleano {any,last}; ordinal {last}; frequência única => null | Resultado aceita neutral (padrão), higher, lower, target_range; Fator não tem direção | target_range exige idealRange com min <= max; rejeita min > max | Valor {boolean}|{number}|{optionId} é validado contra o tipo do indicador e opções existentes
 F-1.02 [passing] Utilitários de tempo (UTC, localDate do navegador, dia de Brasília): localDate usa o fuso do navegador (testado com TZ diferentes) e muda à meia-noite local | Timestamps persistidos são UTC; exibição usa Intl pt-BR no fuso do navegador | brasiliaDateKey usa America/Sao_Paulo independentemente do fuso do navegador | Nenhuma correção por viagem/mudança de fuso
-F-1.03 [blocked] Acesso anônimo automático e documento do usuário: Primeira visita entra sem cadastro, sem e-mail e sem tela de login | Recarregar a página mantém o mesmo UID | users/{uid} é criado uma única vez com os defaults | Erro de rede mostra mensagem em pt-BR, sem indicar sucesso
-F-1.04 [failing] AppShell: cabeçalho com olho, navegação inferior e layout esticável: Olho global presente em todas as telas autenticadas (data-testid=eye-toggle) | Navegação inferior com rótulos e ícones; item ativo com aria-current=page | Sem overflow horizontal em 375x812 e 1280x800; sem breakpoints específicos de desktop | Alvos de toque >= 44px
-F-1.05 [failing] Fixtures de e2e: usuário do seed e usuários novos: Fixture seedPage abre o app autenticado como o usuário do seed | Fixture freshUserPage cria um UID novo por teste | Build de produção não contém o helper (verificado por busca no dist/)
-F-1.06 [failing] Guarda e2e do modo privado (sentinelas): Olho fechado: nenhuma sentinela de nome de indicador visível fora de [data-privacy-allow] | Observações (ZQX_OBS_NOTA_5T1) só aparecem onde a pessoa abre a nota explicitamente e marcadas com data-privacy-allow | Olho aberto: nomes e emojis aparecem | Reload reinicia em siglas
-F-1.07 [failing] Tutorial de três telas: Três telas com Próximo/Voltar/Pular | Concluir ou pular grava onboardingCompleted=true e não reaparece | Tela 3 explica que correlação não é causalidade, o modo de siglas e a conta anônima
+F-1.03 [passing] Acesso anônimo automático e documento do usuário: Primeira visita entra sem cadastro, sem e-mail e sem tela de login | Recarregar a página mantém o mesmo UID | users/{uid} é criado uma única vez com os defaults | Erro de rede mostra mensagem em pt-BR, sem indicar sucesso
+F-1.04 [passing] AppShell: cabeçalho com olho, navegação inferior e layout esticável: Olho global presente em todas as telas autenticadas (data-testid=eye-toggle) | Navegação inferior com rótulos e ícones; item ativo com aria-current=page | Sem overflow horizontal em 375x812 e 1280x800; sem breakpoints específicos de desktop | Alvos de toque >= 44px
+F-1.05 [passing] Fixtures de e2e: usuário do seed e usuários novos: Fixture seedPage abre o app autenticado como o usuário do seed | Fixture freshUserPage cria um UID novo por teste | Build de produção não contém o helper (verificado por busca no dist/)
+F-1.07 [passing] Tutorial de três telas: Três telas com Próximo/Voltar/Pular | Concluir ou pular grava onboardingCompleted=true e não reaparece | Tela 3 explica que correlação não é causalidade, o modo de siglas e a conta anônima
 F-1.08 [passing] Regras: documento do usuário e campos protegidos: UID A não lê nem escreve nada sob users/B (anônimo e permanente) | Campos desconhecidos ou de tipo errado em users/{uid} são rejeitados | Dono pode gravar saveAccountInviteDismissedAt (timestamp ou null) e saveAccountInviteDismissedDayCount (inteiro >= 0 ou null); string, negativo ou decimal são rejeitados | internal/** inacessível a clientes
-F-1.09 [failing] Conversão da conta: Google e link mágico preservando UID: Após vincular Google ou link mágico o UID é o mesmo e os registros continuam acessíveis | credential-already-in-use / email-already-in-use abre resolução explícita; nada é mesclado ou apagado | Nenhum campo de senha ou telefone em toda a UI | Conta anônima mostra aviso de que perder o navegador pode significar perder os dados
+F-1.09 [passing] Conversão da conta: Google e link mágico preservando UID: Após vincular Google ou link mágico o UID é o mesmo e os registros continuam acessíveis | credential-already-in-use / email-already-in-use abre resolução explícita; nada é mesclado ou apagado | Nenhum campo de senha ou telefone em toda a UI | Conta anônima mostra aviso de que perder o navegador pode significar perder os dados
 F-1.10 [passing] Workspace de Cloud Functions com emulador: yarn --cwd app test:functions roda testes de functions contra emuladores | Região padrão southamerica-east1 | Build das functions em functions/lib ignorado pelo lint/format
 F-1.11 [passing] Function deleteAccount: exclusão integral: Após a chamada não resta documento sob users/{uid} nem em internal/ para o UID | Usuário removido do Auth somente depois da limpeza | Conta Google/e-mail sem login recente recebe erro requires-recent-login | Um UID não consegue excluir outro
-F-1.12 [failing] Tela de conta: sair e excluir conta: Botão excluir só habilita após digitar EXCLUIR | Conta não anônima pede reautenticação antes | Após excluir, o app volta ao início sem dados do usuário anterior | Sair de conta anônima exige confirmação explícita
+F-1.12 [passing] Tela de conta: sair e excluir conta: Botão excluir só habilita após digitar EXCLUIR | Conta não anônima pede reautenticação antes | Após excluir, o app volta ao início sem dados do usuário anterior | Sair de conta anônima exige confirmação explícita
+F-1.fix-1 [passing] Suíte completa da etapa falhou nos gates G12: Todos os gates obrigatórios da etapa passam na suíte completa | Nenhum teste protegido é alterado
+F-1.fix-2 [passing] Suíte completa da etapa falhou nos gates G2, G6: Todos os gates obrigatórios da etapa passam na suíte completa | Nenhum teste protegido é alterado
 
 Responda SOMENTE com o bloco ```json:
 {"create": [{"scope": {"roles": ["implement"], "tags": ["security-rules"]}, "rule": "…", "evidence": ["evt-12"], "file": "project|harness"}],

@@ -57,3 +57,8 @@
 {"ts":"2026-11-05T10:26:28.147Z","stage":1,"featureId":"F-1.09","kind":"ui","workerId":"haiku","pass":false,"score":7.3}
 {"ts":"2026-11-06T23:41:46.597Z","stage":1,"featureId":"F-1.09","kind":"code","workerId":"haiku","pass":true,"score":7}
 {"ts":"2026-11-06T23:42:44.156Z","stage":1,"featureId":"F-1.09","kind":"ui","workerId":"haiku","pass":true,"score":8}
+{"ts":"2026-11-07T00:23:45.642Z","stage":1,"featureId":"F-1.12","kind":"code","workerId":"codex-mid","pass":false,"score":6}
+{"ts":"2026-11-07T00:33:07.403Z","stage":1,"featureId":"F-1.12","kind":"code","workerId":"haiku","pass":true,"score":8}
+{"ts":"2026-11-07T00:34:00.320Z","stage":1,"featureId":"F-1.12","kind":"ui","workerId":"haiku","pass":true,"score":8.1}
+{"ts":"2026-11-07T11:35:40.641Z","stage":1,"featureId":"F-1.fix-2","kind":"code","workerId":"haiku","pass":true,"score":8}
+{"ts":"2026-11-07T11:40:58.045Z","stage":1,"featureId":"stage-1","kind":"ui","workerId":"gemini","pass":true,"score":9.6}

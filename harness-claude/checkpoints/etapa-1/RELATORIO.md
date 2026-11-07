@@ -2,7 +2,7 @@
 
 **Preview:** deploy do preview falhou: /bin/sh: firebase: command not found
 
-## Features entregues (5/12)
+## Features entregues (13/13)
 
 - **F-1.01** Modelo de domínio de indicadores e registros (puro) — 2 tentativa(s), US$ 3.00 — critérios: AC-05, AC-06, AC-08
   - Feito por **haiku** · tentativas: kimi ✖ review_rejected → haiku ✔ · testes: sonnet · revisão: code glm-flash 10
@@ -19,6 +19,32 @@
   - [x] Timestamps persistidos são UTC; exibição usa Intl pt-BR no fuso do navegador
   - [x] brasiliaDateKey usa America/Sao_Paulo independentemente do fuso do navegador
   - [x] Nenhuma correção por viagem/mudança de fuso
+- **F-1.03** Acesso anônimo automático e documento do usuário — 2 tentativa(s), US$ 7.00 — critérios: AC-01
+  - Feito por **kimi-pro** · tentativas: opus ✖ G6,G8,G9,G10 → sonnet ✖ review_rejected → kimi-pro ✔ · testes: sonnet · revisão: code haiku 8
+  - Arquivos: `app/e2e/anonymous-start.spec.ts`, `app/e2e/routes.json`, `app/src/App.tsx`, `app/src/auth/AuthProvider.tsx`, `app/src/auth/__tests__/AuthProvider.test.tsx`, `app/src/auth/userRepository.ts`, `app/src/pages/HomePlaceholder.tsx`
+  - [x] Primeira visita entra sem cadastro, sem e-mail e sem tela de login
+  - [x] Recarregar a página mantém o mesmo UID
+  - [x] users/{uid} é criado uma única vez com os defaults
+  - [x] Erro de rede mostra mensagem em pt-BR, sem indicar sucesso
+- **F-1.04** AppShell: cabeçalho com olho, navegação inferior e layout esticável — 4 tentativa(s), US$ 0.69 — critérios: AC-16, AC-17
+  - Feito por **sonnet** · tentativas: minimax ✖ review_rejected → minimax ✖ review_rejected → kimi-pro ✖ review_rejected → sonnet ✔ · testes: sonnet · revisão: code gemini-argon 9, ui gemini 9.5
+  - Arquivos: `app/e2e/app-shell.spec.ts`, `app/e2e/routes.json`, `app/scripts/icons.ts`, `app/src/App.tsx`, `app/src/app/AppShell.tsx`, `app/src/app/__tests__/AppShell.test.tsx`, `app/src/design/BrandMark.tsx`, `app/src/design/EmptyState.tsx` +5
+  - [x] Olho global presente em todas as telas autenticadas (data-testid=eye-toggle)
+  - [x] Navegação inferior com rótulos e ícones; item ativo com aria-current=page
+  - [x] Sem overflow horizontal em 375x812 e 1280x800; sem breakpoints específicos de desktop
+  - [x] Alvos de toque >= 44px
+- **F-1.05** Fixtures de e2e: usuário do seed e usuários novos — 1 tentativa(s), US$ 0.23 — critérios: AC-21
+  - Feito por **minimax** · tentativas: minimax ✔ · testes: sonnet · revisão: code haiku 7
+  - Arquivos: `app/AGENTS.md`, `app/e2e/fixtures.spec.ts`, `app/e2e/fixtures.ts`, `app/src/lib/__tests__/testHelper.test.ts`, `app/src/lib/testHelper.ts`, `app/src/main.tsx`, `app/src/vite-env.d.ts`, `app/vite.config.ts`
+  - [x] Fixture seedPage abre o app autenticado como o usuário do seed
+  - [x] Fixture freshUserPage cria um UID novo por teste
+  - [x] Build de produção não contém o helper (verificado por busca no dist/)
+- **F-1.07** Tutorial de três telas — 2 tentativa(s), US$ 0.47 — critérios: AC-01
+  - Feito por **minimax** · tentativas: glm-flash ✖ review_rejected → minimax ✔ · testes: sonnet · revisão: code haiku 7, ui haiku 7.5
+  - Arquivos: `app/e2e/onboarding.spec.ts`, `app/scripts/icons.ts`, `app/src/App.tsx`, `app/src/auth/__tests__/userRepository.test.ts`, `app/src/auth/userRepository.ts`, `app/src/design/Button.tsx`, `app/src/design/EyeToggle.tsx`, `app/src/design/icons.ts` +2
+  - [x] Três telas com Próximo/Voltar/Pular
+  - [x] Concluir ou pular grava onboardingCompleted=true e não reaparece
+  - [x] Tela 3 explica que correlação não é causalidade, o modo de siglas e a conta anônima
 - **F-1.08** Regras: documento do usuário e campos protegidos — 2 tentativa(s), US$ 2.42 — critérios: AC-04
   - Feito por **opus** · tentativas: opus ✖ review_rejected → opus ✔ · testes: sonnet · revisão: code codex-mid 10
   - Arquivos: `app/firestore.rules`, `app/tests/rules/users.test.ts`, `app/tests/rules/usersAdminFields.test.ts`
@@ -26,6 +52,13 @@
   - [x] Campos desconhecidos ou de tipo errado em users/{uid} são rejeitados
   - [x] Dono pode gravar saveAccountInviteDismissedAt (timestamp ou null) e saveAccountInviteDismissedDayCount (inteiro >= 0 ou null); string, negativo ou decimal são rejeitados
   - [x] internal/** inacessível a clientes
+- **F-1.09** Conversão da conta: Google e link mágico preservando UID — 1 tentativa(s), US$ 6.47 — critérios: AC-02, AC-03
+  - Feito por **glm-or** · tentativas: kimi-pro ✖ G6 → kimi-pro ✖ review_rejected → sonnet ✖ G6 → sonnet ✖ G6 → kimi-pro ✖ review_rejected → - ✖ review_rejected → codex-mid ✖ G6 → glm-or ✖ review_rejected → codex-mid ✖ G6,G9 → codex-mid ✖ review_rejected → codex-mid ✖ G7 → - ✖ review_rejected → glm-or ✔ · testes: sonnet · revisão: code haiku 7, ui haiku 8
+  - Arquivos: `app/e2e/account-link-visual.spec.ts`, `app/e2e/account-link.spec.ts`, `app/e2e/fixtures.ts`, `app/src/App.tsx`, `app/src/auth/AuthProvider.tsx`, `app/src/auth/__tests__/AuthProvider.test.tsx`, `app/src/auth/__tests__/linkAccount.test.ts`, `app/src/auth/linkAccount.ts` +3
+  - [x] Após vincular Google ou link mágico o UID é o mesmo e os registros continuam acessíveis
+  - [x] credential-already-in-use / email-already-in-use abre resolução explícita; nada é mesclado ou apagado
+  - [x] Nenhum campo de senha ou telefone em toda a UI
+  - [x] Conta anônima mostra aviso de que perder o navegador pode significar perder os dados
 - **F-1.10** Workspace de Cloud Functions com emulador — 3 tentativa(s), US$ 1.61
   - Feito por **opus** · tentativas: haiku ✖ G6,G8,G9,G10 → deepseek-flash ✖ review_rejected → opus ✔ · testes: codex-mid · revisão: code codex-mid 8
   - Arquivos: `.gitignore`, `app/CLAUDE.md`, `app/firebase.json`, `app/functions/package.json`, `app/functions/src/__tests__/setup.test.ts`, `app/functions/src/index.ts`, `app/functions/tsconfig.json`, `app/functions/vitest.config.ts` +2
@@ -39,39 +72,49 @@
   - [x] Usuário removido do Auth somente depois da limpeza
   - [x] Conta Google/e-mail sem login recente recebe erro requires-recent-login
   - [x] Um UID não consegue excluir outro
+- **F-1.12** Tela de conta: sair e excluir conta — 3 tentativa(s), US$ 1.30 — critérios: AC-04
+  - Feito por **glm-or** · tentativas: haiku ✖ G6 → - ✖ G6 → haiku ✖ review_rejected → glm-or ✔ · testes: codex-mid · revisão: code haiku 8, ui haiku 8.1
+  - Arquivos: `app/e2e/account-delete-reauth.spec.ts`, `app/e2e/account-delete.spec.ts`, `app/src/auth/accountSession.ts`, `app/src/auth/linkAccount.ts`, `app/src/lib/firebase.ts`, `app/src/pages/SettingsPage.tsx`
+  - [x] Botão excluir só habilita após digitar EXCLUIR
+  - [x] Conta não anônima pede reautenticação antes
+  - [x] Após excluir, o app volta ao início sem dados do usuário anterior
+  - [x] Sair de conta anônima exige confirmação explícita
+- **F-1.fix-1** Suíte completa da etapa falhou nos gates G12 — 1 tentativa(s), US$ 1.04
+  - Feito por **glm-or** · tentativas: glm-or ✖ timeout (aceita manualmente) · testes: - · revisão: -
+  - Arquivos: `app/src/auth/accountSession.ts`, `app/src/lib/firebase.ts`, `app/src/lib/functions.ts`
+  - [x] Todos os gates obrigatórios da etapa passam na suíte completa
+  - [x] Nenhum teste protegido é alterado
+- **F-1.fix-2** Suíte completa da etapa falhou nos gates G2, G6 — 1 tentativa(s), US$ 0.24
+  - Feito por **codex-mid** · tentativas: codex-mid ✔ · testes: - · revisão: code haiku 8
+  - Arquivos: `app/src/auth/__tests__/linkAccount.test.ts`, `app/src/auth/linkAccount.ts`, `app/src/lib/functions.ts`
+  - [x] Todos os gates obrigatórios da etapa passam na suíte completa
+  - [x] Nenhum teste protegido é alterado
 
-## Bloqueadas (1)
+## Bloqueadas (0)
 
-- **F-1.03** Acesso anônimo automático e documento do usuário: teto de custo da feature atingido
 
-## Pendentes (6)
-
-- F-1.04 AppShell: cabeçalho com olho, navegação inferior e layout esticável [failing]
-- F-1.05 Fixtures de e2e: usuário do seed e usuários novos [failing]
-- F-1.06 Guarda e2e do modo privado (sentinelas) [failing]
-- F-1.07 Tutorial de três telas [failing]
-- F-1.09 Conversão da conta: Google e link mágico preservando UID [failing]
-- F-1.12 Tela de conta: sair e excluir conta [failing]
 
 ## Custo e tempo
 
-- Custo da etapa: US$ 16.98 (teto US$ 18)
-- Custo acumulado: US$ 33.37 (teto US$ 68)
-- Tempo decorrido: 20.7 h · chamadas registradas: 109
+- Custo da etapa: US$ 31.44 (teto US$ 32)
+- Custo acumulado: US$ 47.89 (teto US$ 68)
+- Tempo decorrido: 137.5 h · chamadas registradas: 192
 
 ## Workers (implementação)
 
 | Worker | Tentativas | Sucesso |
 |---|---|---|
-| glm-flash | 2 | 50% |
-| minimax | 4 | 0% |
-| opus | 17 | 18% |
+| glm-flash | 3 | 33% |
+| minimax | 9 | 22% |
+| opus | 19 | 16% |
 | kimi | 2 | 0% |
-| sonnet | 5 | 0% |
-| kimi-pro | 4 | 0% |
-| haiku | 5 | 20% |
+| sonnet | 12 | 8% |
+| kimi-pro | 10 | 10% |
+| haiku | 8 | 13% |
 | deepseek-flash | 3 | 0% |
 | qwen-coder | 2 | 0% |
+| codex-mid | 5 | 20% |
+| glm-or | 4 | 50% |
 
 ## Suíte completa
 
@@ -79,13 +122,15 @@ Todos os gates obrigatórios passaram em 1-base.
 
 ## Avaliação visual completa
 
-Nota 9 — aprovado
+Nota 9.6 — aprovado
 
 
 ## Aprendizados
 
-- **Violações de arquivos protegidos (G7)** consumiram todas as tentativas de F-1.03, F-1.08 e F-1.10, inclusive com opus. F-1.08 e F-1.10 só fecharam depois de novos testes do test_writer.
-- **G8** falhou em F-1.01, F-1.02 e F-1.10 em várias tentativas com modelos fortes. A causa provável foi o ambiente (Node e `yarn install` em `functions/`), não o código.
-- **Revisão:** os rejeitos repetidos em F-1.11 pararam quando o revisor mudou para gemini (evt-187/188). F-1.03 continua bloqueada, com rejeições de deepseek-flash e qwen-coder (evt-165, evt-190, evt-192).
-- **Modelos baratos** (minimax, haiku) falharam em infraestrutura de functions. Para essas features, vale ir direto a implement_hard.
-- **Lições de decisão do humano (L-006 a L-029)** têm helpedRate baixo e já estão refletidas nas specs, por isso foram aposentadas.
+### Etapa 1: aprendizados
+- **G6 (e2e) foi o gargalo.** F-1.09 levou 14 tentativas (kimi-pro, sonnet, codex-mid, glm-or) até passar com glm-or (evt-264). F-1.06 e F-1.12 também travaram no G6. Criamos uma lição para reproduzir localmente o spec exato que falhou e esperar o estado de auth pela UI em vez de usar networkidle ou aumentar timeouts.
+- **Rejeições na revisão continuam caras.** A F-1.11 teve 5 rejeições seguidas (evt-174..182). Ela só passou quando a implementação tratou ponto a ponto o parecer anterior (evt-188). Juntamos L-035 e L-038 em L-004, como regra geral de ler o verdict anterior.
+- **G7 (arquivos protegidos) voltou a aparecer** com codex-mid (evt-261), mesmo com L-033 já promovida. Reforçamos L-037 com a conferência por `git diff --stat` antes de entregar.
+- **Roteamento:** modelos baratos (minimax, glm-flash, deepseek-flash, haiku) foram rejeitados ou falharam no G6 em features de UI com auth. Nesses casos, implement_hard compensou desde a primeira tentativa. glm-or resolveu F-1.09 e F-1.12, mas estourou o tempo na fix-1 (evt-274).
+- **Revisor haiku** saiu barato (~$0,01) e os pareceres dele levaram a aprovações (evt-205/206, evt-262/264).
+- As dicas pontuais do triage (L-039..L-043) tiveram helpedRate baixo e já estavam aposentadas. Retiramos também L-044, que era específica demais e ficou obsoleta.

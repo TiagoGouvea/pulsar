@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-07T01:09:32.154Z",
+  "workerId": "glm-or",
+  "role": "implement_hard",
+  "featureId": "F-1.fix-1",
+  "stage": 1,
+  "attempt": 1,
+  "outcome": "timeout",
+  "costUsd": 0.5005734250000002,
+  "durationMs": 1800182,
+  "usage": {
+    "inputTokens": 327495,
+    "outputTokens": 61149,
+    "cachedTokens": 5690464,
+    "costUsd": 0.5005734250000002
+  },
+  "exitCode": 143,
+  "timedOut": true,
+  "finalTail": ""
+}

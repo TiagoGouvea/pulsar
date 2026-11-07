@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-07T00:34:00.318Z",
+  "workerId": "haiku",
+  "role": "review_ui",
+  "featureId": "F-1.12",
+  "stage": 1,
+  "attempt": 3,
+  "outcome": "success",
+  "costUsd": 0.16718899999999998,
+  "durationMs": 19874,
+  "usage": {
+    "inputTokens": 22901,
+    "outputTokens": 1864,
+    "cachedTokens": 77060,
+    "costUsd": 0.16718899999999998
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "ss\": true, \"score\": 8.1, \"porCriterio\": {\"c1\": 7.5, \"c2\": 8, \"c3\": 8.5, \"c4\": 8, \"c5\": 8.5, \"c6\": 7.5, \"c7\": 9, \"c8\": 8, \"c9\": 8.5, \"c10\": 8.5}, \"issues\": [{\"severidade\": \"minor\", \"tela\": \"settings (mobile e desktop)\", \"descricao\": \"O botão 'Excluir conta' usa vermelho sólido (variante de erro do design system). No mockup, a ação de exclusão fica num botão suave (fundo error-container com texto on-error-container), dentro do bloco 'Zona de Dados & Soberania'. Do jeito atual, o vermelho sólido tem mais peso visual que o CTA principal 'Vincular com Google' e domina o card.\", \"sugestao\": \"Trocar para fundo error-container (#ffdad6) com texto/ícone on-error-container (#93000a) e incluir um ícone de lixeira, como no mockup.\"}, {\"severidade\": \"minor\", \"tela\": \"settings (mobile e desktop)\", \"descricao\": \"O card de sair/excluir não tem título nem texto explicativo. No mockup há um título de seção e um aviso em vermelho embaixo do botão: 'A exclusão de conta remove permanentemente os dados... irreversível'.\", \"sugestao\": \"Adicionar um título curto à seção (ex.: 'Sessão e dados') e uma legenda body-sm em error dizendo que a exclusão é permanente e irreversível.\"}, {\"severidade\": \"minor\", \"tela\": \"settings (mobile e desktop)\", \"descricao\": \"O UID completo aparece em fonte monoespaçada tracked. No mobile ele vai para uma linha própria, sem alinhamento à direita como no mockup ('UID #PLS-9482'). Funciona, mas fica menos limpo.\", \"sugestao\": \"Abreviar o UID (ex.: os primeiros 8 caracteres) para caber na mesma linha do selo 'Conta anônima ativa'.\"}, {\"severidade\": \"minor\", \"tela\": \"settings\", \"descricao\": \"Os diálogos de confirmação (aviso extra ao sair de conta anônima, campo para digitar EXCLUIR e reautenticação) não aparecem nas capturas de rota parada, então não dá para conferir o visual deles.\", \"sugestao\": \"Garantir que os diálogos usem a superfície Level 2 do design system, com o botão de exclusão desabilitado no estilo 'Desativado' até que o usuário digite EXCLUIR.\"}]}\n```"
+}

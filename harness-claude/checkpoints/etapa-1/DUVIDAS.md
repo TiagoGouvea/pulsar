@@ -136,3 +136,134 @@ A) HttpsError('failed-precondition', 'requires-recent-login'); the test asserts 
 B) unauthenticated with the same message
 C) permission-denied with the same message
 Resposta: 
+
+## F-1.fix-1
+
+### Q-43
+**Pergunta:** O blocker 1 (App Shell + rotas /onboarding, /dashboard, /register, /indicators, /settings) é escopo de F-1.04, F-1.07, F-1.12 e de etapas seguintes, que o prompt manda NÃO implementar. Implemento aqui?
+**Impacto:** A revisão visual da etapa vai reprovar de novo até F-1.04/F-1.07/F-1.12 serem entregues; reavaliar a UI só depois delas
+A) Não implementado nesta fix; corrigidos só o overflow do Slider e o badge do IndicatorLabel (padrão)
+B) Implementar AppShell e as telas aqui (conflita com F-1.04/F-1.07/F-1.12)
+C) Criar placeholders das rotas
+Resposta: 
+
+## F-1.04
+
+### Q-44
+**Pergunta:** A rota /onboarding (placeholder do tutorial,feature F-1.07) deve ficar dentro do AppShell?
+**Impacto:** Baixo. F-1.07 substitui o placeholder pelo tutorial do design e pode remover o shell se preferir.
+A) Sim: o app abre com sessão anônima automática (F-1.03), logo a tela é autenticada e deve ter o olho global, o cabeçalho e a navegação inferior (critério de aceite). (padrão)
+B) Não: manter /onboarding sem shell e deixar a navegação só a partir de /dashboard
+Resposta: 
+
+## F-1.06
+
+### Q-45
+**Pergunta:** O guard e2e privacy-mode.spec.ts exige /indicators com nomes de indicadores e /dashboard com observação aberta, mas essas telas pertencem às features de indicadores e registros. Implementar aqui violaria o escopo; mantive os placeholders.
+**Impacto:** Os testes 'open eye: names', 'observation note' e 'closed eye: seeded indicators' falham até essas features existirem.
+A) Manter placeholders em /dashboard e /indicators; F-1.06 fica dependente das features de indicadores e dashboard para passar. (padrão)
+B) Implementar as telas de indicadores e dashboard nesta feature (escopo estourado, review reprovou)
+C) Alterar o teste protegido (proibido)
+Resposta: 
+
+### Q-47
+**Pergunta:** A feature F-1.06 (Guarda e2e do modo privado (sentinelas)) foi bloqueada: limite de 5 tentativas atingido. Como devemos seguir?
+**Impacto:** a feature não está no preview
+A) seguir com as demais features (padrão)
+B) ajustar a spec/critérios
+C) simplificar a feature
+D) aceitar sem ela nesta etapa
+Resposta: 
+
+## F-1.07
+
+### Q-46
+**Pergunta:** O tutorial de onboarding também deve alternar entre siglas e nomes completos conforme o olho global?
+**Impacto:** Evita expor nomes de indicadores no tutorial privado e permite revisar os dois modos em cada passo.
+A) Sim; o tutorial respeita o modo global e oferece o botão compacto do olho no cabeçalho. (padrão)
+B) Manter siglas fixas durante toda a introdução
+Resposta: 
+
+## F-1.09
+
+### Q-48
+**Pergunta:** O teste protegido de cancelamento exige users/{existingUid}, mas o fixture cria somente users/{existingUid}/indicators/e2e-existing; como esse documento pai deve existir sem autenticar ou escrever na outra conta?
+**Impacto:** O fluxo de cancelamento preserva os dados, mas a asserção adicional do documento pai retorna 404.
+A) Não trocar de UID nem criar dados na conta conflitante; manter o cancelamento estritamente sem efeitos. (padrão)
+B) Corrigir o fixture para criar o documento pai; provisionar o perfil por um fluxo de servidor explicitamente aprovado.
+Resposta: 
+
+### Q-49
+**Pergunta:** O teste protegido percorre todas as rotas usando waitForLoadState(networkidle), enquanto o perfil usa onSnapshot com conexão longa; qual verificação de prontidão deve substituí-lo?
+**Impacto:** O teste de ausência dos métodos proibidos atinge timeout antes de concluir a varredura, embora a UI não contenha esses campos ou termos.
+A) Manter o listener entregue em F-1.03 e não alterar o teste protegido. (padrão)
+B) Usar locator.waitFor em um elemento da rota, conforme L-039; substituir o listener por polling, com custo e mudança fora do escopo.
+Resposta: 
+
+### Q-50
+**Pergunta:** O E2E protegido exige users/{existingUid} após Cancelar, mas a fixture cria apenas o usuário no Auth e uma subcoleção; como esse documento deve existir sem login ou escrita no UID alheio?
+**Impacto:** O cenário de Cancelar continua falhando somente na checagem do documento-pai inexistente; registros e UID permanecem intactos.
+A) Manter Cancelar sem trocar de usuário e sem escrever na conta existente, conforme a spec e as Security Rules; o documento é criado somente se a pessoa confirmar a entrada. (padrão)
+B) Criar o documento na fixture ao criar a conta existente; ou remover da asserção comum a exigência do documento-pai nesse cenário.
+Resposta: 
+
+### Q-51
+**Pergunta:** A feature F-1.09 (Conversão da conta: Google e link mágico preservando UID) foi bloqueada: limite de 5 tentativas atingido. Como devemos seguir?
+**Impacto:** a feature não está no preview
+A) seguir com as demais features (padrão)
+B) ajustar a spec/critérios
+C) simplificar a feature
+D) aceitar sem ela nesta etapa
+Resposta: 
+
+### Q-52
+**Pergunta:** A lição L-041 manda restringir watchUserProfile apenas a !profile.onboardingCompleted, mas o gate G5 (freshUserPage anônimo, onboarding incompleto) espera waitForLoadState('networkidle') e um listener aberto para o anônimo bloquearia o silêncio de rede (timeout de 30s). Restringir também contas anônimas?
+**Impacto:** medium: propagação ao vivo do profile só para contas convertidas com onboarding pendente; anônimas atualizam via completeOnboarding local e releitura no reload
+A) Sim: listener só para contas convertidas (isAnonymous !== true) com onboarding incompleto, com auto-stop ao concluir (versão da tentativa 1 do ciclo anterior); validado empiricamente: 94 e2e passando, G5 em 5,2s e G6 em 0,7s (padrão)
+B) só !onboardingCompleted (quebraria G5)
+C) remover o listener por completo (versão da tentativa 5)
+Resposta: 
+
+### Q-54
+**Pergunta:** A revisão pede remover a pré-checagem fetchSignInMethodsForEmail e detectar o conflito só pelo erro do link, mas o teste protegido app/e2e/account-link.spec.ts (caso 'entering the existing account') exige que o conflito seja detectado SEM consumir o oobCode: verifiquei no código e empiricamente que, no Auth Emulator, um linkWithCredential que falha com EMAIL_EXISTS consome o código de uso único (operations.js chama state.deleteOobCode antes do assert EMAIL_EXISTS), e o signInWithCredential posterior falha com auth/invalid-action-code (reproduzi: 13/14 passando com a pré-checagem removida, o caso do 'Confirmar' falhando com 'Este link já foi usado ou expirou'). Manter a pré-checagem?
+**Impacto:** Teste protegido continua passando; em produção com proteção de enumeração o fluxo 'entrar na conta existente' agora funciona via reenvio de link; a revisão pode rejeitar a manutenção da pré-checagem — decisão do orquestrador necessária
+A) Mantive a pré-checagem como fast path NÃO-consumidor (nunca é tratada como ausência de conflito; a detecção autoritativa continua sendo o erro auth/email-already-in-use/auth/credential-already-in-use do linkWithCredential) e tratei o caso apontado pela revisão: quando o código foi consumido pela detecção (produção com email enumeration protection, em que a pré-checagem devolve lista vazia), signInToExistingAccount reenvia um link de acesso (enterExisting=1) que o app completa como sign-in explícito na conta existente, em vez de falhar com erro genérico (padrão)
+B) remover a pré-checagem literalmente e deixar o teste protegido falhar (verificado: quebra o gate)
+C) alterar o teste protegido (proibído)
+D) remover a pré-checagem e entrar na conta existente por função Cloud com Admin SDK (Admin não valida oobCode; criaria vetor de enumeração de e-mails)
+Resposta: 
+
+## F-1.12
+
+### Q-55
+**Pergunta:** Como deve funcionar a confirmação de exclusão e em que momento solicitar a reautenticação?
+**Impacto:** Define a interação e os testes de confirmação sem alterar a exclusão definitiva.
+A) Diálogo acessível; apenas EXCLUIR exatamente habilita a exclusão; para conta vinculada, solicitar reautenticação após essa confirmação e antes de apagar. (padrão)
+B) Reautenticar antes da digitação
+C) Aceitar variações de caixa ou espaços na confirmação
+Resposta: 
+
+### Q-56
+**Pergunta:** app/e2e/account-delete.spec.ts (protegido) não pode passar com o emulador atual: authUserIds() faz GET em /emulator/v1/projects/{p}/accounts, mas firebase-tools 15.34.1 só implementa DELETE nessa rota (retorna 404). Os testes 'deletion removes the old account...' falham antes de chegar à exclusão. Corrigir exige alterar o teste protegido.
+**Impacto:** Dois testes protegidos (linha 177 e 200) ficam vermelhos neste ambiente independentemente da implementação. Precisa de decisão do orquestrador/usuário sobre o spec.
+A) Não alterei o teste protegido. Validei o fluxo com um spec temporário (app/e2e/tmp-verify-delete.spec.ts) que só troca essas duas chamadas; ele passa em mobile e desktop. (padrão)
+B) Trocar authUserIds por checagem via Firestore/Admin no spec protegido
+C) Usar DELETE em vez de GET (apenas limpa contas, não lista)
+D) Pular o teste (proibido)
+Resposta: 
+
+### Q-57
+**Pergunta:** app/e2e/account-delete.spec.ts (protegido): linkEmail() monta o e-mail com o UID em caixa mista (delete-${uid}@example.com), mas o Auth emulator normaliza e-mails para minúsculas (auth/utils.js), então o filtro de oobCodes nunca encontra o link e o teste dá timeout em latestEmailLink.
+**Impacto:** Teste 'a linked account must reauthenticate before it can be deleted' falha no mobile neste ambiente. Sugestão: corrigir o spec protegido em nova rodada.
+A) Não alterei o teste protegido. Com e-mail em minúsculas o fluxo de reautenticação passa (verificado com o spec temporário). (padrão)
+B) Lowercase do UID no spec protegido
+C) Lowercase do e-mail no filtro de latestEmailLink
+Resposta: 
+
+### Q-58
+**Pergunta:** A revisão pede para estender o teste da conta vinculada (abrir o link de reautenticação e concluir a exclusão), mas app/e2e/account-delete.spec.ts é um teste protegido que não pode ser alterado. Como cobrir o fluxo completo?
+**Impacto:** O fluxo completo de exclusão com reautenticação por e-mail passa a ter cobertura e2e; o teste protegido permanece intacto.
+A) Criado o arquivo complementar app/e2e/account-delete-reauth.spec.ts com o mesmo fluxo, sem tocar no teste protegido. (padrão)
+B) editar o teste protegido (proibido)
+C) deixar o fluxo sem cobertura adicional
+Resposta: 

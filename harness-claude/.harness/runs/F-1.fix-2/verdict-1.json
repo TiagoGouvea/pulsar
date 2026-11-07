@@ -1,0 +1,22 @@
+[
+  {
+    "kind": "code",
+    "pass": true,
+    "score": 8,
+    "issues": [
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/auth/__tests__/linkAccount.test.ts",
+        "descricao": "The diff edits an existing test file. The only change is a new assert checking that the resolver is passed to linkWithPopup, so the test is stronger, not weaker. G7 (protected-tests) passed, so the file is not protected.",
+        "sugestao": "No change needed. If the harness tracks test changes, record that this one only adds coverage."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/auth/linkAccount.ts",
+        "descricao": "The resolver is passed only at the linkWithPopup call. If auth is built with initializeAuth and no popupRedirectResolver, any future popup or redirect call (signInWithPopup, linkWithRedirect) will hit the same error.",
+        "sugestao": "Consider setting popupRedirectResolver once where initializeAuth is called, so call sites don't each need it. This is optional; the fix is correct and limited to this feature."
+      }
+    ],
+    "workerId": "haiku"
+  }
+]

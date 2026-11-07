@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-07T11:40:58.043Z",
+  "workerId": "gemini",
+  "role": "review_ui",
+  "stage": 1,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.0545295,
+  "durationMs": 30287,
+  "usage": {
+    "inputTokens": 53686,
+    "outputTokens": 3804,
+    "cachedTokens": 0,
+    "costUsd": 0.0545295
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"pass\": true,\n  \"score\": 9.6,\n  \"porCriterio\": {\n    \"c1\": 9,\n    \"c2\": 10,\n    \"c3\": 10,\n    \"c4\": 10,\n    \"c5\": 10,\n    \"c6\": 9,\n    \"c7\": 10,\n    \"c8\": 9,\n    \"c9\": 10,\n    \"c10\": 9\n  },\n  \"issues\": []\n}\n```"
+}

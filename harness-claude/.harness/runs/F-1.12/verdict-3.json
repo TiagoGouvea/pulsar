@@ -1,0 +1,78 @@
+[
+  {
+    "kind": "code",
+    "pass": true,
+    "score": 8,
+    "issues": [
+      {
+        "severidade": "minor",
+        "arquivo": "app/e2e/account-delete-reauth.spec.ts",
+        "descricao": "Os helpers documentStatus, authUserIds, latestSignInLink/latestEmailLink e openDeletion são copiados quase iguais de account-delete.spec.ts, com constantes PROJECT/AUTH/FIRESTORE/OWNER repetidas.",
+        "sugestao": "Mover esses helpers para e2e/support.ts (ou fixtures) e importar nos dois specs. O spec protegido continua igual."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/auth/accountSession.ts",
+        "descricao": "A janela de reautenticação no cliente (5 min, sessionStorage) repete RECENT_LOGIN_SECONDS do servidor sem fonte única. Se o marcador ainda for válido mas o auth_time do token tiver passado do limite do servidor (por exemplo, relógio defasado), o servidor rejeita e a UI mostra o erro de 'resultado incerto', embora nada tenha sido apagado.",
+        "sugestao": "Tratar o erro de login antigo do callable (failed-precondition/unauthenticated) como 'precisa reautenticar': limpar o marcador e reenviar o fluxo, sem mostrar a mensagem de resultado incerto."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/pages/SettingsPage.tsx",
+        "descricao": "confirmDelete marca deletionStarted antes do callable. Qualquer erro do callable, inclusive rejeição de autenticação antes de apagar qualquer coisa, mostra a mensagem alarmante de exclusão parcial.",
+        "sugestao": "Separar pelo código de erro do HttpsError: erros de pré-condição ou permissão indicam que nada foi apagado e devem usar actionError."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/pages/SettingsPage.tsx",
+        "descricao": "O input de confirmação e os avisos usam classes Tailwind diretas em vez de um componente de campo do design system, se existir um. As classes de aviso (error-container) também se repetem várias vezes no arquivo.",
+        "sugestao": "Reutilizar o componente de input/alerta de app/src/design/, se existir, ou extrair um pequeno componente Notice."
+      }
+    ],
+    "workerId": "haiku"
+  },
+  {
+    "kind": "ui",
+    "pass": true,
+    "score": 8.1,
+    "issues": [
+      {
+        "severidade": "minor",
+        "tela": "settings (mobile e desktop)",
+        "descricao": "O botão 'Excluir conta' usa vermelho sólido (variante de erro do design system). No mockup, a ação de exclusão fica num botão suave (fundo error-container com texto on-error-container), dentro do bloco 'Zona de Dados & Soberania'. Do jeito atual, o vermelho sólido tem mais peso visual que o CTA principal 'Vincular com Google' e domina o card.",
+        "sugestao": "Trocar para fundo error-container (#ffdad6) com texto/ícone on-error-container (#93000a) e incluir um ícone de lixeira, como no mockup."
+      },
+      {
+        "severidade": "minor",
+        "tela": "settings (mobile e desktop)",
+        "descricao": "O card de sair/excluir não tem título nem texto explicativo. No mockup há um título de seção e um aviso em vermelho embaixo do botão: 'A exclusão de conta remove permanentemente os dados... irreversível'.",
+        "sugestao": "Adicionar um título curto à seção (ex.: 'Sessão e dados') e uma legenda body-sm em error dizendo que a exclusão é permanente e irreversível."
+      },
+      {
+        "severidade": "minor",
+        "tela": "settings (mobile e desktop)",
+        "descricao": "O UID completo aparece em fonte monoespaçada tracked. No mobile ele vai para uma linha própria, sem alinhamento à direita como no mockup ('UID #PLS-9482'). Funciona, mas fica menos limpo.",
+        "sugestao": "Abreviar o UID (ex.: os primeiros 8 caracteres) para caber na mesma linha do selo 'Conta anônima ativa'."
+      },
+      {
+        "severidade": "minor",
+        "tela": "settings",
+        "descricao": "Os diálogos de confirmação (aviso extra ao sair de conta anônima, campo para digitar EXCLUIR e reautenticação) não aparecem nas capturas de rota parada, então não dá para conferir o visual deles.",
+        "sugestao": "Garantir que os diálogos usem a superfície Level 2 do design system, com o botão de exclusão desabilitado no estilo 'Desativado' até que o usuário digite EXCLUIR."
+      }
+    ],
+    "porCriterio": {
+      "c1": 7.5,
+      "c2": 8,
+      "c3": 8.5,
+      "c4": 8,
+      "c5": 8.5,
+      "c6": 7.5,
+      "c7": 9,
+      "c8": 8,
+      "c9": 8.5,
+      "c10": 8.5
+    },
+    "workerId": "haiku"
+  }
+]

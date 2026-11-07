@@ -1,0 +1,28 @@
+[
+  {
+    "kind": "code",
+    "pass": false,
+    "score": 6,
+    "issues": [
+      {
+        "severidade": "major",
+        "arquivo": "app/src/auth/accountSession.ts:22",
+        "descricao": "A reautenticação fica registrada sem vínculo ao UID e permanece após sair. Uma segunda conta pode ser excluída sem nova reautenticação se o login dela for recente.",
+        "sugestao": "Vincule a confirmação ao UID e à sessão atuais e invalide-a ao trocar de usuário."
+      },
+      {
+        "severidade": "major",
+        "arquivo": "app/src/pages/SettingsPage.tsx:263",
+        "descricao": "Uma falha durante ou após a exclusão informa que nenhum dado foi alterado, embora a função possa já ter apagado parte ou todos os dados.",
+        "sugestao": "Informe que o resultado é incerto e trate separadamente falhas após a exclusão."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/e2e/account-delete.spec.ts:184",
+        "descricao": "O teste da conta vinculada para antes de abrir o link de reautenticação; não verifica a exclusão completa desse tipo de conta.",
+        "sugestao": "Teste a abertura do link, a conclusão da exclusão e a nova sessão anônima."
+      }
+    ],
+    "workerId": "codex-mid"
+  }
+]

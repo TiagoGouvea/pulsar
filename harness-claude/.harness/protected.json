@@ -192,9 +192,9 @@
     ]
   },
   "app/src/auth/__tests__/linkAccount.test.ts": {
-    "sha256": "01997a907b2fa8838eae2140098d33a7a7e95151630061aa10c72fe9a376403f",
-    "asserts": 53,
-    "featureId": "F-1.09",
+    "sha256": "4b2388ab59d3ca7caa2bbbfe93b20b2c322886f40ca915b66a0701b7b1638d24",
+    "asserts": 54,
+    "featureId": "F-1.fix-2",
     "additive": true,
     "tests": [
       "links Google to the current anonymous user and keeps the same UID",
@@ -222,5 +222,14 @@
     "sha256": "3f487b4035f1ad7625d89bcddb274d89f0b5d774ac355da6c92ceea1ac882689",
     "asserts": 47,
     "featureId": "F-1.12"
+  },
+  "app/e2e/account-delete-reauth.spec.ts": {
+    "sha256": "7c32ee67c89c16a8392c26fb099a3d7cd57ffc6d8aa742289af066dda3e05614",
+    "asserts": 17,
+    "featureId": "F-1.12",
+    "additive": true,
+    "tests": [
+      "a linked account finishes deletion after opening the reauthentication link"
+    ]
   }
 }

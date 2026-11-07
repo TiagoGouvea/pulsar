@@ -1,19 +1,19 @@
 {
-  "ts": "2026-11-02T14:55:20.936Z",
+  "ts": "2026-11-07T11:41:50.460Z",
   "workerId": "sonnet",
   "role": "retro",
   "stage": 1,
   "attempt": 1,
   "outcome": "success",
-  "costUsd": 0.0785922,
-  "durationMs": 19559,
+  "costUsd": 0.2506,
+  "durationMs": 52393,
   "usage": {
-    "inputTokens": 23173,
-    "outputTokens": 1951,
-    "cachedTokens": 11507,
-    "costUsd": 0.0785922
+    "inputTokens": 25577,
+    "outputTokens": 5288,
+    "cachedTokens": 84805,
+    "costUsd": 0.2506
   },
   "exitCode": 0,
   "timedOut": false,
-  "finalTail": "e functions. Para essas features, vale ir direto a implement_hard.\\n- **Lições de decisão do humano (L-006 a L-029)** têm helpedRate baixo e já estão refletidas nas specs, por isso foram aposentadas.\",\n  \"comoTestar\": \"**O que dá para testar nesta etapa:** só a base técnica: modelo de domínio de indicadores, utilitários de tempo, regras do Firestore para `users/{uid}`, workspace de Cloud Functions com emulador e a function `deleteAccount`. Quase tudo isso é verificado por testes automatizados. Quase nada aparece na interface.\\n\\n**O que ainda não existe:** acesso anônimo automático (F-1.03, bloqueada), AppShell com olho e navegação inferior (F-1.04), fixtures de e2e (F-1.05), guarda do modo privado (F-1.06), tutorial de três telas (F-1.07), conversão de conta com Google ou link mágico (F-1.09) e tela de conta com sair e excluir (F-1.12). Não espere ver essas telas no celular.\\n\\n**Roteiro de 10–15 min:**\\n1. Em `app/`, rode `yarn install`. Rode também `yarn install` em `app/functions`.\\n2. Rode `yarn test:unit` e confira que os testes de domínio (F-1.01) e de tempo (F-1.02) passam.\\n3. Rode `yarn test:functions` e confira que as regras (F-1.08), o workspace (F-1.10) e `deleteAccount` (F-1.11) passam contra os emuladores. Em `deleteAccount`, confira a ordem da limpeza, o erro `requires-recent-login` e o isolamento entre UIDs.\\n4. Rode `yarn e2e:serve` (emuladores + seed) e abra http://localhost:4792. No celular, use http://IP-DA-MAQUINA:4792 na mesma rede. Espere uma tela básica ou vazia, sem tutorial, sem navegação inferior e sem login anônimo garantido, porque F-1.03 está bloqueada.\\n5. No computador, confira só que a página estica e não quebra.\\n\\n**Preview de produção:** rotas e helpers só de dev/emulador, como o login por custom token do seed, não aparecem.\\n\\n**O que observar:** nenhum erro vermelho no console no carregamento. Os testes de functions devem rodar na região southamerica-east1 e o build em `functions/lib` deve ficar fora do lint e do format.\"\n}\n```"
+  "finalTail": "92. No celular, use http://IP-DA-MAQUINA:4792 na mesma rede Wi-Fi.\\n- O preview de produção não traz o login do usuário do seed (custom token, só dev/emulador) nem os dados do seed. Lá, Google e link mágico usam o Firebase real. No emulador, o login Google abre a tela falsa do Auth Emulator e o link mágico não chega por e-mail: ele aparece no log ou na UI do emulador.\\n\\n**Roteiro (10–15 min, no celular)**\\n1. Abra o app numa aba anônima. Ele deve entrar direto no tutorial, sem pedir login.\\n2. Passe pelas 3 telas com Próximo e volte uma com Voltar. Na tela 3, confira o texto sobre correlação ≠ causalidade, o modo de siglas e a conta anônima. Conclua.\\n3. Recarregue a página. O tutorial não deve voltar e você continua no app.\\n4. Toque no olho do cabeçalho e veja o modo alternar. Navegue pelos itens da barra inferior: o item ativo fica destacado, e os botões devem ser fáceis de tocar (≥ 44px).\\n5. Vá em Conta/Configurações e confira o aviso de que perder o navegador pode significar perder os dados.\\n6. Toque em Sair. Deve aparecer uma confirmação explícita. Cancele.\\n7. Em Excluir conta, o botão fica desabilitado até você digitar EXCLUIR. Digite, confirme e veja o app voltar ao início como um usuário novo (o tutorial aparece de novo).\\n8. Salve a conta com Google (no emulador, crie uma conta fake). Ela deixa de ser anônima e o aviso some.\\n9. Com a conta salva, tente excluir. O app deve pedir reautenticação antes.\\n10. Opcional: numa segunda aba anônima, tente vincular o mesmo Google. Deve abrir a resolução com 'Cancelar' / 'Entrar na conta existente', e nada é mesclado nem apagado.\\n11. Procure em toda a UI campos de senha ou telefone. Não deve haver nenhum.\\n\\n**No computador:** só confira que o layout estica e não tem rolagem horizontal (ex.: 1280×800).\\n\\n**O que observar:** textos em pt-BR, nenhuma mensagem de sucesso quando a rede falha (teste em modo avião), nenhum overflow horizontal a 375px e nenhum dado do usuário anterior depois de excluir ou sair.\"\n}\n```"
 }

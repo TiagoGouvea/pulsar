@@ -1469,9 +1469,10 @@
         "F-1.09",
         "F-1.11"
       ],
-      "status": "in_progress",
-      "attempts": 1,
-      "costUsd": 0.636201185,
+      "status": "passing",
+      "attempts": 3,
+      "costUsd": 1.3017508709999999,
+      "spendSince": "2026-11-07T00:16:41.495Z",
       "history": [
         {
           "attempt": 1,
@@ -1494,10 +1495,49 @@
           ],
           "ts": "2026-11-07T00:16:41.495Z",
           "note": "As 2 falhas de G6 eram do teste de aceite, não do código: ele listava contas por uma rota que o emulador não tem (405) e comparava e-mail com maiúsculas. O operador corrigiu o teste (commit 85fe29a) e, com o código atual, os 10 casos de e2e/account-delete.spec.ts passam (mobile e desktop). A tentativa 2 (minimax) foi descartada: ela alterava firebase-tools dentro de node_modules — nunca faça isso. Não reescreva o que já existe: rode yarn lint, yarn typecheck, yarn test:unit e o e2e account-delete; se tudo passar, termine sem mudanças; só corrija o que falhar."
+        },
+        {
+          "attempt": 2,
+          "role": "implement",
+          "workerId": "haiku",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "eventId": "evt-270",
+          "ts": "2026-11-07T00:23:45.664Z"
+        },
+        {
+          "attempt": 3,
+          "role": "implement_hard",
+          "workerId": "glm-or",
+          "outcome": "success",
+          "failedGates": [],
+          "eventId": "evt-273",
+          "ts": "2026-11-07T00:34:00.344Z"
         }
       ],
-      "origin": [],
-      "spendSince": "2026-11-07T00:16:41.495Z"
+      "authors": {
+        "implementer": "glm-or",
+        "attempts": [
+          "haiku ✖ G6",
+          "- ✖ G6",
+          "haiku ✖ review_rejected",
+          "glm-or ✔"
+        ],
+        "testWriter": "codex-mid",
+        "reviewers": [
+          "code haiku 8",
+          "ui haiku 8.1"
+        ],
+        "files": [
+          "app/e2e/account-delete-reauth.spec.ts",
+          "app/e2e/account-delete.spec.ts",
+          "app/src/auth/accountSession.ts",
+          "app/src/auth/linkAccount.ts",
+          "app/src/lib/firebase.ts",
+          "app/src/pages/SettingsPage.tsx"
+        ]
+      },
+      "origin": []
     },
     {
       "id": "F-2.01",
@@ -3308,6 +3348,133 @@
         }
       ],
       "origin": []
+    },
+    {
+      "id": "F-1.fix-1",
+      "stage": 1,
+      "title": "Suíte completa da etapa falhou nos gates G12",
+      "description": "G12: onboarding: performance 84 < 85\ndashboard: performance 84 < 85",
+      "specRefs": [],
+      "covers": [],
+      "acceptance": [
+        "Todos os gates obrigatórios da etapa passam na suíte completa",
+        "Nenhum teste protegido é alterado"
+      ],
+      "tests": [],
+      "protectedTests": [
+        "app/src/domain/__tests__/indicator.test.ts",
+        "app/src/lib/__tests__/time.test.ts",
+        "app/e2e/anonymous-start.spec.ts",
+        "app/e2e/app-shell.spec.ts",
+        "app/e2e/fixtures.spec.ts",
+        "app/e2e/onboarding.spec.ts",
+        "app/tests/rules/users.test.ts",
+        "app/e2e/account-link.spec.ts",
+        "app/functions/src/__tests__/setup.test.ts",
+        "app/functions/src/__tests__/deleteAccount.test.ts",
+        "app/e2e/account-delete.spec.ts"
+      ],
+      "tags": [
+        "regression"
+      ],
+      "difficulty": "hard",
+      "dependsOn": [],
+      "status": "passing",
+      "attempts": 1,
+      "costUsd": 1.0424973250000003,
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement_hard",
+          "workerId": "glm-or",
+          "outcome": "timeout",
+          "failedGates": [],
+          "eventId": "evt-274",
+          "ts": "2026-11-07T01:09:32.293Z"
+        },
+        {
+          "attempt": 1,
+          "role": "manual",
+          "workerId": "-",
+          "outcome": "success",
+          "failedGates": [],
+          "ts": "2026-11-07T11:25:11.993Z",
+          "note": "aceita pelo humano; G12 é medido nos gates da etapa"
+        }
+      ],
+      "authors": {
+        "implementer": "glm-or",
+        "attempts": [
+          "glm-or ✖ timeout (aceita manualmente)"
+        ],
+        "reviewers": [],
+        "files": [
+          "app/src/auth/accountSession.ts",
+          "app/src/lib/firebase.ts",
+          "app/src/lib/functions.ts"
+        ]
+      },
+      "origin": []
+    },
+    {
+      "id": "F-1.fix-2",
+      "stage": 1,
+      "title": "Suíte completa da etapa falhou nos gates G2, G6",
+      "description": "G2: yarn run v1.23.0-20220130.1630\n$ eslint . --max-warnings=0\nDone in 0.93s.\nyarn run v1.23.0-20220130.1630\n$ prettier --check .\nChecking formatting...\n[\u001b[33mwarn\u001b[39m] src/lib/functions.ts\n[\u001b[33mwarn\u001b[39m] Code style issues found in the above file. Run Prettier with --write to fix.\nerror Command failed with exit code 1.\ninfo Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.\n\nG6: getByRole('dialog')\n\n\n      205 |\n      206 |     const dialog = page.getByRole('dialog');\n    > 207 |     await expect(dialog).toBeVisible({ timeout: 15_000 });\n          |                          ^\n      208 |     await dialog.getByRole('button', { name: /entrar na conta existente/i }).click();\n      209 |\n      210 |     // Still the anonymous user until the person explicitly confirms.\n        at /Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/stage-1/pulsar-claude/app/e2e/account-link.spec.ts:207:26\n\n    Error Context: test-results/account-link-account-link--e55fe-and-never-merges-or-deletes-mobile/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/account-link-account-link--e55fe-and-never-merges-or-deletes-mobile/trace.zip\n    Usage:\n\n        yarn playwright show-trace test-results/account-link-account-link--e55fe-and-never-merges-or-deletes-mobile/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n  1 failed\n    [mobile] › e2e/account-link.spec.ts:145:3 › account link › Google keeps the UID and the records \n  1 flaky\n    [mobile] › e2e/account-link.spec.ts:192:3 › account link › entering the existing account needs a second confirmation and never merges or deletes \n  104 passed (1.3m)\nerror Command failed with exit code 1.\ninfo Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.",
+      "specRefs": [],
+      "covers": [],
+      "acceptance": [
+        "Todos os gates obrigatórios da etapa passam na suíte completa",
+        "Nenhum teste protegido é alterado"
+      ],
+      "tests": [],
+      "protectedTests": [
+        "app/src/domain/__tests__/indicator.test.ts",
+        "app/src/lib/__tests__/time.test.ts",
+        "app/e2e/anonymous-start.spec.ts",
+        "app/e2e/app-shell.spec.ts",
+        "app/e2e/fixtures.spec.ts",
+        "app/e2e/onboarding.spec.ts",
+        "app/tests/rules/users.test.ts",
+        "app/e2e/account-link.spec.ts",
+        "app/functions/src/__tests__/setup.test.ts",
+        "app/functions/src/__tests__/deleteAccount.test.ts",
+        "app/e2e/account-delete.spec.ts"
+      ],
+      "tags": [
+        "regression"
+      ],
+      "difficulty": "hard",
+      "dependsOn": [],
+      "status": "passing",
+      "attempts": 1,
+      "costUsd": 0.24419835,
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement_hard",
+          "workerId": "codex-mid",
+          "outcome": "success",
+          "failedGates": [],
+          "eventId": "evt-276",
+          "ts": "2026-11-07T11:35:40.644Z"
+        }
+      ],
+      "origin": [],
+      "authors": {
+        "implementer": "codex-mid",
+        "attempts": [
+          "codex-mid ✔"
+        ],
+        "reviewers": [
+          "code haiku 8"
+        ],
+        "files": [
+          "app/src/auth/__tests__/linkAccount.test.ts",
+          "app/src/auth/linkAccount.ts",
+          "app/src/lib/functions.ts"
+        ]
+      }
     }
   ]
 }

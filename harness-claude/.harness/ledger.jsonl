@@ -325,3 +325,14 @@
 {"ts":"2026-11-06T23:45:21.247Z","workerId":"codex-mid","provider":"openai","role":"test_writer","featureId":"F-1.12","stage":1,"tokensIn":86578,"tokensOut":16207,"costUsd":0.26537835,"billing":"api"}
 {"ts":"2026-11-06T23:54:47.640Z","workerId":"haiku","provider":"anthropic","role":"implement","featureId":"F-1.12","stage":1,"tokensIn":137547,"tokensOut":54473,"costUsd":0.369812495,"billing":"api"}
 {"ts":"2026-11-06T23:58:15.458Z","workerId":"deepseek-flash","provider":"openrouter","role":"triage","featureId":"F-1.12","stage":1,"tokensIn":4181,"tokensOut":358,"costUsd":0.00101034,"billing":"api"}
+{"ts":"2026-11-07T00:17:52.015Z","workerId":"haiku","provider":"anthropic","role":"smoke","stage":-1,"tokensIn":7660,"tokensOut":804,"costUsd":0.06400800000000001,"billing":"api"}
+{"ts":"2026-11-07T00:20:05.710Z","workerId":"haiku","provider":"anthropic","role":"implement","featureId":"F-1.12","stage":1,"tokensIn":18027,"tokensOut":1400,"costUsd":0.1535152,"billing":"api"}
+{"ts":"2026-11-07T00:23:45.633Z","workerId":"codex-mid","provider":"openai","role":"review_code","featureId":"F-1.12","stage":1,"tokensIn":54391,"tokensOut":2913,"costUsd":0.07404375,"billing":"api"}
+{"ts":"2026-11-07T00:29:31.244Z","workerId":"glm-or","provider":"openrouter","role":"implement_hard","featureId":"F-1.12","stage":1,"tokensIn":26715,"tokensOut":13178,"costUsd":0.09553793599999999,"billing":"api"}
+{"ts":"2026-11-07T00:33:07.397Z","workerId":"haiku","provider":"anthropic","role":"review_code","featureId":"F-1.12","stage":1,"tokensIn":23068,"tokensOut":1875,"costUsd":0.1752638,"billing":"api"}
+{"ts":"2026-11-07T00:34:00.316Z","workerId":"haiku","provider":"anthropic","role":"review_ui","featureId":"F-1.12","stage":1,"tokensIn":22901,"tokensOut":1864,"costUsd":0.16718899999999998,"billing":"api"}
+{"ts":"2026-11-07T01:09:32.148Z","workerId":"glm-or","provider":"openrouter","role":"implement_hard","featureId":"F-1.fix-1","stage":1,"tokensIn":327495,"tokensOut":61149,"costUsd":0.5005734250000002,"billing":"api"}
+{"ts":"2026-11-07T11:32:49.424Z","workerId":"codex-mid","provider":"openai","role":"implement_hard","featureId":"F-1.fix-2","stage":1,"tokensIn":66015,"tokensOut":3984,"costUsd":0.12730035,"billing":"api"}
+{"ts":"2026-11-07T11:35:40.628Z","workerId":"haiku","provider":"anthropic","role":"review_code","featureId":"F-1.fix-2","stage":1,"tokensIn":21068,"tokensOut":578,"costUsd":0.116898,"billing":"api"}
+{"ts":"2026-11-07T11:40:58.041Z","workerId":"gemini","provider":"google","role":"review_ui","stage":1,"tokensIn":53686,"tokensOut":3804,"costUsd":0.0545295,"billing":"api"}
+{"ts":"2026-11-07T11:41:50.453Z","workerId":"sonnet","provider":"anthropic","role":"retro","stage":1,"tokensIn":25577,"tokensOut":5288,"costUsd":0.2506,"billing":"api"}
