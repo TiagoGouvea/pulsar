@@ -989,5 +989,12 @@
     "custoMedio": 0.12730035,
     "duracaoMedia": 60673,
     "falhasPorGate": {}
+  },
+  "glm-flash|approval_parser|*": {
+    "tentativas": 1,
+    "sucessos": 1,
+    "custoMedio": 0.00103104,
+    "duracaoMedia": 1821,
+    "falhasPorGate": {}
   }
 }

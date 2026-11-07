@@ -23,11 +23,7 @@ Converta o que o humano escreveu em JSON. Não invente ajustes nem respostas; n�
 ## APROVACAO.md
 # Aprovação — etapa 1 (Base)
 
-Status: ajustes
-
-## Ajustes
-
-- Durante a carga pisca um "Preparando seu espaço" talvez seja melhor não ter nada, pra não piscar
+Status: aprovado
 
 
 ## DUVIDAS.md
@@ -316,6 +312,7 @@ Resposta:
 - F-1.12 Tela de conta: sair e excluir conta (arquivos: app/e2e/account-delete-reauth.spec.ts, app/e2e/account-delete.spec.ts, app/src/auth/accountSession.ts, app/src/auth/linkAccount.ts, app/src/lib/firebase.ts, app/src/pages/SettingsPage.tsx)
 - F-1.fix-1 Suíte completa da etapa falhou nos gates G12 (arquivos: app/src/auth/accountSession.ts, app/src/lib/firebase.ts, app/src/lib/functions.ts)
 - F-1.fix-2 Suíte completa da etapa falhou nos gates G2, G6 (arquivos: app/src/auth/__tests__/linkAccount.test.ts, app/src/auth/linkAccount.ts, app/src/lib/functions.ts)
+- F-1.adj-01 Remover o texto "Preparando seu espaço" durante a carga inicial (arquivos: app/e2e/initial-session-loading.spec.ts, app/src/App.tsx, app/src/__tests__/initial-session-loading.test.tsx)
 
 Responda SOMENTE com o bloco ```json:
 {"aprovado": true|false,

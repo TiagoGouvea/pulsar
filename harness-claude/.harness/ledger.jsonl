@@ -345,3 +345,6 @@
 {"ts":"2026-11-07T13:11:14.567Z","workerId":"haiku","provider":"anthropic","role":"review_ui","featureId":"F-1.adj-01","stage":1,"tokensIn":26083,"tokensOut":1895,"costUsd":0.19911320000000002,"billing":"api"}
 {"ts":"2026-11-07T13:16:25.205Z","workerId":"gemini","provider":"google","role":"review_ui","stage":1,"tokensIn":53686,"tokensOut":3228,"costUsd":0.0523695,"billing":"api"}
 {"ts":"2026-11-07T13:16:57.786Z","workerId":"sonnet","provider":"anthropic","role":"retro","stage":1,"tokensIn":27228,"tokensOut":3490,"costUsd":0.2156326,"billing":"api"}
+{"ts":"2026-11-07T13:18:33.229Z","workerId":"haiku","provider":"anthropic","role":"approval_parser","stage":1,"tokensIn":15350,"tokensOut":534,"costUsd":0.0900436,"billing":"api"}
+{"ts":"2026-11-07T13:18:50.574Z","workerId":"haiku","provider":"anthropic","role":"approval_parser","stage":1,"tokensIn":15372,"tokensOut":40,"costUsd":0.0802736,"billing":"api"}
+{"ts":"2026-11-07T14:24:30.344Z","workerId":"glm-flash","provider":"openrouter","role":"approval_parser","stage":1,"tokensIn":8345,"tokensOut":78,"costUsd":0.00103104,"billing":"api"}

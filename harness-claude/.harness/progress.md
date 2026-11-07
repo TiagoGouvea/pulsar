@@ -75,3 +75,4 @@
 - 2026-11-07T13:06 teto da etapa 1 aumentado para US$ 33 (budget.yaml)
 - 2026-11-07T13:06 ▶ etapa 1 (Base) │ features 13/14 │ 0 bloqueadas │ US$ 32.22/33 │ branch 1-base
 - 2026-11-07T13:11 ✔ F-1.adj-01 passing — Remover o texto "Preparando seu espaço" durante a carga inicial (worker minimax, 1 tentativa(s), US$ 0.97) │ features 14/14
+- 2026-11-07T14:24 ✔ etapa 1 aprovada · commits em 1-base

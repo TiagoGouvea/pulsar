@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-07T14:24:30.349Z",
+  "workerId": "glm-flash",
+  "role": "approval_parser",
+  "stage": 1,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.00103104,
+  "durationMs": 1821,
+  "usage": {
+    "inputTokens": 8345,
+    "outputTokens": 78,
+    "cachedTokens": 0,
+    "costUsd": 0.00103104
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\"aprovado\": true, \"ajustes\": [], \"respostasDuvidas\": []}\n```"
+}
