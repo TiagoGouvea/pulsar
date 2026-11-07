@@ -3,7 +3,7 @@
   "stage": 1,
   "pausedFrom": "STAGE_RUNNING",
   "featuresSinceRetro": 0,
-  "stageFixRounds": 2,
+  "stageFixRounds": 0,
   "budgetAlerts": [
     0.5,
     0.8
@@ -13,9 +13,9 @@
   "stageTimes": {
     "1": {
       "startedAt": "2026-11-01T18:53:23.876Z",
-      "finishedAt": "2026-11-07T11:41:52.076Z",
-      "activeMs": 76488401
+      "finishedAt": "2026-11-07T13:16:59.625Z",
+      "activeMs": 77577022
     }
   },
-  "updatedAt": "2026-11-07T11:41:52.076Z"
+  "updatedAt": "2026-11-07T13:16:59.625Z"
 }

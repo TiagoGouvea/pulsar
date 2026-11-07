@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-07T13:03:08.143Z",
+  "workerId": "codex-mid",
+  "role": "test_writer",
+  "featureId": "F-1.adj-01",
+  "stage": 1,
+  "attempt": 0,
+  "outcome": "success",
+  "costUsd": 0.1885854,
+  "durationMs": 114195,
+  "usage": {
+    "inputTokens": 74703,
+    "outputTokens": 10287,
+    "cachedTokens": 1248948
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"summary\": \"Testes de aceite criados; a implementação não foi alterada.\",\n  \"filesChanged\": [\n    \"app/e2e/initial-session-loading.spec.ts\",\n    \"app/src/__tests__/initial-session-loading.test.tsx\"\n  ],\n  \"testsRun\": \"Lint, typecheck e formatação passaram. O novo teste unitário falha como esperado. A suíte anterior passou.\",\n  \"confidence\": \"med\",\n  \"notes\": \"O Playwright não executou: o ambiente bloqueou as portas dos emuladores (EPERM).\"\n}\n```"
+}

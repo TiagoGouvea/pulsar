@@ -336,3 +336,12 @@
 {"ts":"2026-11-07T11:35:40.628Z","workerId":"haiku","provider":"anthropic","role":"review_code","featureId":"F-1.fix-2","stage":1,"tokensIn":21068,"tokensOut":578,"costUsd":0.116898,"billing":"api"}
 {"ts":"2026-11-07T11:40:58.041Z","workerId":"gemini","provider":"google","role":"review_ui","stage":1,"tokensIn":53686,"tokensOut":3804,"costUsd":0.0545295,"billing":"api"}
 {"ts":"2026-11-07T11:41:50.453Z","workerId":"sonnet","provider":"anthropic","role":"retro","stage":1,"tokensIn":25577,"tokensOut":5288,"costUsd":0.2506,"billing":"api"}
+{"ts":"2026-11-07T12:58:56.402Z","workerId":"haiku","provider":"anthropic","role":"approval_parser","stage":1,"tokensIn":17043,"tokensOut":305,"costUsd":0.0936144,"billing":"api"}
+{"ts":"2026-11-07T13:01:01.381Z","workerId":"codex-mid","provider":"openai","role":"test_writer","featureId":"F-1.adj-01","stage":1,"tokensIn":70074,"tokensOut":11932,"costUsd":0.18835435,"billing":"api"}
+{"ts":"2026-11-07T13:03:08.139Z","workerId":"codex-mid","provider":"openai","role":"test_writer","featureId":"F-1.adj-01","stage":1,"tokensIn":74703,"tokensOut":10287,"costUsd":0.1885854,"billing":"api"}
+{"ts":"2026-11-07T13:04:10.061Z","workerId":"haiku","provider":"anthropic","role":"implement","featureId":"F-1.adj-01","stage":1,"tokensIn":29115,"tokensOut":3788,"costUsd":0.3172942000000001,"billing":"api"}
+{"ts":"2026-11-07T13:07:50.658Z","workerId":"minimax","provider":"openrouter","role":"implement","featureId":"F-1.adj-01","stage":1,"tokensIn":20296,"tokensOut":4925,"costUsd":0.01111812,"billing":"api"}
+{"ts":"2026-11-07T13:10:25.904Z","workerId":"haiku","provider":"anthropic","role":"review_code","featureId":"F-1.adj-01","stage":1,"tokensIn":10498,"tokensOut":527,"costUsd":0.0653294,"billing":"api"}
+{"ts":"2026-11-07T13:11:14.567Z","workerId":"haiku","provider":"anthropic","role":"review_ui","featureId":"F-1.adj-01","stage":1,"tokensIn":26083,"tokensOut":1895,"costUsd":0.19911320000000002,"billing":"api"}
+{"ts":"2026-11-07T13:16:25.205Z","workerId":"gemini","provider":"google","role":"review_ui","stage":1,"tokensIn":53686,"tokensOut":3228,"costUsd":0.0523695,"billing":"api"}
+{"ts":"2026-11-07T13:16:57.786Z","workerId":"sonnet","provider":"anthropic","role":"retro","stage":1,"tokensIn":27228,"tokensOut":3490,"costUsd":0.2156326,"billing":"api"}

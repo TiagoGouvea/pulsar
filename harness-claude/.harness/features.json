@@ -3460,7 +3460,6 @@
           "ts": "2026-11-07T11:35:40.644Z"
         }
       ],
-      "origin": [],
       "authors": {
         "implementer": "codex-mid",
         "attempts": [
@@ -3473,6 +3472,65 @@
           "app/src/auth/__tests__/linkAccount.test.ts",
           "app/src/auth/linkAccount.ts",
           "app/src/lib/functions.ts"
+        ]
+      },
+      "origin": []
+    },
+    {
+      "id": "F-1.adj-01",
+      "stage": 1,
+      "title": "Remover o texto \"Preparando seu espaço\" durante a carga inicial",
+      "description": "Durante a carga inicial (bootstrap da sessão anônima) aparece por um instante o texto \"Preparando seu espaço\" e a tela pisca. O humano prefere não mostrar nada durante a carga, para evitar o piscar.",
+      "specRefs": [],
+      "covers": [],
+      "acceptance": [
+        "Durante a carga inicial da sessão, o texto \"Preparando seu espaço\" não aparece em momento algum",
+        "Enquanto a sessão carrega, nenhum texto ou indicador visível é mostrado; a tela fica vazia, só com o fundo, até o conteúdo final aparecer"
+      ],
+      "tests": [
+        "app/e2e/initial-session-loading.spec.ts",
+        "app/src/__tests__/initial-session-loading.test.tsx"
+      ],
+      "protectedTests": [
+        "app/e2e/initial-session-loading.spec.ts",
+        "app/src/__tests__/initial-session-loading.test.tsx"
+      ],
+      "tags": [
+        "ui"
+      ],
+      "difficulty": "normal",
+      "dependsOn": [],
+      "status": "passing",
+      "attempts": 1,
+      "costUsd": 0.9697946700000001,
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement",
+          "workerId": "minimax",
+          "outcome": "success",
+          "failedGates": [],
+          "eventId": "evt-284",
+          "ts": "2026-11-07T13:11:14.578Z"
+        }
+      ],
+      "origin": [
+        "F-1.03"
+      ],
+      "authors": {
+        "implementer": "minimax",
+        "attempts": [
+          "minimax ✔"
+        ],
+        "testWriter": "codex-mid",
+        "reviewers": [
+          "code haiku 9",
+          "ui haiku 8.4"
+        ],
+        "files": [
+          "app/e2e/initial-session-loading.spec.ts",
+          "app/src/App.tsx",
+          "app/src/__tests__/initial-session-loading.test.tsx"
         ]
       }
     }

@@ -62,3 +62,6 @@
 {"ts":"2026-11-07T00:34:00.320Z","stage":1,"featureId":"F-1.12","kind":"ui","workerId":"haiku","pass":true,"score":8.1}
 {"ts":"2026-11-07T11:35:40.641Z","stage":1,"featureId":"F-1.fix-2","kind":"code","workerId":"haiku","pass":true,"score":8}
 {"ts":"2026-11-07T11:40:58.045Z","stage":1,"featureId":"stage-1","kind":"ui","workerId":"gemini","pass":true,"score":9.6}
+{"ts":"2026-11-07T13:10:25.912Z","stage":1,"featureId":"F-1.adj-01","kind":"code","workerId":"haiku","pass":true,"score":9}
+{"ts":"2026-11-07T13:11:14.575Z","stage":1,"featureId":"F-1.adj-01","kind":"ui","workerId":"haiku","pass":true,"score":8.4}
+{"ts":"2026-11-07T13:16:25.211Z","stage":1,"featureId":"stage-1","kind":"ui","workerId":"gemini","pass":true,"score":9.7}

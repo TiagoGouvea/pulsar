@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-07T13:07:50.662Z",
+  "workerId": "minimax",
+  "role": "implement",
+  "featureId": "F-1.adj-01",
+  "stage": 1,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.01111812,
+  "durationMs": 75914,
+  "usage": {
+    "inputTokens": 20296,
+    "outputTokens": 4925,
+    "cachedTokens": 341248,
+    "costUsd": 0.01111812
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "mplementação já estava presente no commit wip da tentativa e verifiquei que ela está correta — o e2e falhava por um **preview/emulador antigo de outro worktree** ocupando a porta 4792 (servindo um build obsoleto com o texto), não por falha de código. After derrubar o servidor órfão, os dois testes passam.\n\n**Estado final:**\n\n- `app/src/App.tsx`: o `AuthGate`, enquanto `loading`, retorna `null` (nada renderizado — só o fundo do body). O texto `\"Preparando seu espaço…\"` e o `HomePlaceholder` de loading foram removidos; o `HomePlaceholder` continua sendo usado apenas para o estado de erro (que nunca deve parecer sucesso).\n- Sem rota nova, sem alteração em testes protegidos.\n- Risco registrado em `.harness/inbox/risks.jsonl` sobre servidores órfãos na porta 4792 causando falhas e2e falsas.\n\nVerificações executadas:\n- `yarn lint`, `yarn typecheck`, `yarn format:check` → OK\n- `yarn test:unit` → 130 testes passando (inclui `initial-session-loading.test.tsx`)\n- `yarn test:e2e e2e/initial-session-loading.spec.ts` → 2 passando (mobile + desktop)\n\n```json\n{\n  \"summary\": \"Removido o texto \\\"Preparando seu espaço\\\" durante a carga inicial: o AuthGate agora renderiza null enquanto a sessão anônima carrega, deixando a tela apenas com o fundo, sem texto nem indicador visível. A falha anterior do e2e era causada por um preview/emulador órfão de outro worktree servindo um build antigo na porta 4792; após limpá-lo, ambos os testes (unitário e e2e) passam.\",\n  \"filesChanged\": [\n    \"app/src/App.tsx\",\n    \".harness/inbox/risks.jsonl\"\n  ],\n  \"testsRun\": [\n    \"yarn vitest run src/__tests__/initial-session-loading.test.tsx\",\n    \"yarn test:unit\",\n    \"yarn test:e2e e2e/initial-session-loading.spec.ts\",\n    \"yarn lint\",\n    \"yarn typecheck\",\n    \"yarn format:check\"\n  ],\n  \"confidence\": \"high\",\n  \"notes\": \"Nenhum teste protegido foi alterado. O commit wip 7abbcf1 já continha a mudança em App.tsx; confirmei o comportamento pelos testes. Nenhum servidor/emulador ficou rodando ao final.\"\n}\n```"
+}

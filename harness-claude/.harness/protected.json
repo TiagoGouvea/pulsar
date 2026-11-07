@@ -231,5 +231,15 @@
     "tests": [
       "a linked account finishes deletion after opening the reauthentication link"
     ]
+  },
+  "app/e2e/initial-session-loading.spec.ts": {
+    "sha256": "3b3a8c5c3d49acc6c63107259808e7334d8eeddff3cdeb6c14f0727272bcf942",
+    "asserts": 5,
+    "featureId": "F-1.adj-01"
+  },
+  "app/src/__tests__/initial-session-loading.test.tsx": {
+    "sha256": "7b0d19e91eb308072e5b8c1778c100f3a954d565e413b9d79402657f3de17cb5",
+    "asserts": 1,
+    "featureId": "F-1.adj-01"
   }
 }

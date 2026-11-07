@@ -60,15 +60,15 @@
       - implement_hard
     tags:
       - review
-  rule: "Revisões rejeitadas foram a principal causa de retrabalho: F-1.03,
-    F-1.04, F-1.06, F-1.09, F-1.11 e F-1.12 tiveram 2 a 5 rejeições seguidas,
-    inclusive com opus. Antes de implementar, leia o último verdict-N.json da
-    feature e trate cada ponto apontado. Antes de entregar, confira item por
-    item os critérios de aceite, cada um com um teste ou trecho de código que o
-    comprove. Exemplos: a ordem de limpeza antes da remoção no Auth,
-    requires-recent-login, o isolamento entre UIDs e a mensagem de erro de rede
-    em pt-BR que não indica sucesso. Não descarte o trabalho de tentativas
-    anteriores sem comparar com o HEAD."
+  rule: "As revisões rejeitadas causaram a maior parte do retrabalho da etapa 1.
+    F-1.03, F-1.04, F-1.06, F-1.09, F-1.11 e F-1.12 tiveram de 2 a 5 rejeições
+    seguidas, inclusive com opus. Antes de implementar, leia o último
+    verdict-N.json da feature e trate cada ponto apontado. Antes de entregar,
+    confira cada critério de aceite e aponte o teste ou o trecho de código que o
+    comprova. Exemplos: ordem de limpeza antes de remover do Auth,
+    requires-recent-login, isolamento entre UIDs, e erro de rede com mensagem em
+    pt-BR sem indicar sucesso. Não descarte o trabalho de tentativas anteriores
+    sem comparar com o HEAD."
   evidence:
     - evt-40
     - evt-42
@@ -780,6 +780,28 @@
   evidence:
     - evt-274
     - evt-276
+  added: 2026-11-07
+  hits: 0
+  helped: 0
+  helpedRate: null
+  status: active
+- id: L-047
+  scope:
+    roles:
+      - implement
+      - implement_easy
+      - implement_hard
+    tags:
+      - adj
+  rule: Em features F-N.adj-* (ajustes pedidos pelo humano na aprovação), faça só
+    a mudança pedida pelos critérios de aceite. Não refatore nem mexa em telas
+    vizinhas. Rode apenas o teste novo do test_writer e os gates rápidos
+    (format:check, lint, typecheck, test:unit). A F-1.adj-01 passou de primeira
+    com um modelo barato (evt-284) porque o teste era focado (evt-280) e o diff
+    era mínimo.
+  evidence:
+    - evt-280
+    - evt-284
   added: 2026-11-07
   hits: 0
   helped: 0

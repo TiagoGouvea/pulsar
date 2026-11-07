@@ -20,13 +20,97 @@ LIÇÕES RELEVANTES:
 
 Avalie as telas de stage-1 — Revisão visual completa da etapa 1 comparando os screenshots (mobile é o alvo; desktop só confirma que o layout mobile estica/desempilha sem quebrar; com e sem modo privado) com os mockups de referência e os tokens. Não edite arquivos. Abra cada imagem anexada.
 
+## O que esta feature entrega
+```json
+(revisão da etapa inteira: todas as telas entregues)
+```
+
+## Escopo
+- Julgue só o que esta feature entrega (critérios acima). Os mockups mostram o app completo: elementos, cards, seções e telas que pertencem às features abaixo (ainda não feitas, desta etapa ou das próximas) **não** reprovam nem viram issue:
+- F-1.06 (etapa 2) Guarda e2e do modo privado (sentinelas)
+- F-2.01 (etapa 2) Repositório de indicadores
+- F-2.02 (etapa 2) Regras: schema e trava de indicadores
+- F-2.03 (etapa 2) Editor de indicador (parte 1): grupo, identificação e tipo
+- F-2.04 (etapa 2) Editor de indicador (parte 2): frequência, agregação, direção e trava
+- F-2.05 (etapa 2) Tela Meus indicadores
+- F-2.06 (etapa 2) Repositório de registros
+- F-2.07 (etapa 2) Regras: registros
+- F-2.08 (etapa 2) Preenchimento rápido
+- F-2.09 (etapa 2) Histórico de registros e exclusão retroativa
+- F-2.10 (etapa 2) Dashboard vazio com sugestões
+- F-2.11 (etapa 2) Convite discreto para salvar a conta
+- F-3.01 (etapa 3) Estatística: agregação diária e séries da janela
+- F-3.02 (etapa 3) Estatística: retrato do dia, comparação entre dias e distribuições ordinais
+- F-3.03 (etapa 3) Estatística: tendências de Resultados
+- F-3.04 (etapa 3) Estatística: associações com fator booleano
+- F-3.05 (etapa 3) Estatística: Spearman fator numérico x resultado numérico
+- F-3.06 (etapa 3) Seleção de insights (até 5 cartões) e versões de evidência
+- F-3.07 (etapa 3) Textos determinísticos dos insights (templates pt-BR)
+- F-3.08 (etapa 3) Motor de recálculo no cliente
+- F-3.09 (etapa 3) Dashboard com insights
+- F-3.10 (etapa 3) Cartão de insight e mini gráficos
+- F-3.11 (etapa 3) Detalhes do insight (Entender análise)
+- F-3.12 (etapa 3) Regra de evidência nova material após dislike
+- F-4.01 (etapa 4) Dados de curadoria: like, dislike e snapshots
+- F-4.02 (etapa 4) Regras: snapshots e feedback
+- F-4.03 (etapa 4) Dislikes no recálculo: ocultar e permitir retorno com evidência nova
+- F-4.04 (etapa 4) Like e dislike nos cartões
+- F-4.05 (etapa 4) Conclusões salvas (timeline)
+- F-5.01 (etapa 5) PWA instalável sem offline
+- F-5.02 (etapa 5) Convite interno para instalar
+- F-5.03 (etapa 5) Opt-in do lembrete e token FCM
+- F-5.04 (etapa 5) Function agendada do lembrete das 20h
+- F-5.05 (etapa 5) Roteiro de testes manuais Chrome/Android e Safari/iPhone
+- F-6.01 (etapa 6) Consentimento da IA
+- F-6.02 (etapa 6) Function generateInsightTexts com quota diária
+- F-6.03 (etapa 6) Integração da IA no dashboard com cache e fallback
+- F-6.04 (etapa 6) Validação de saída da IA
+- F-6.05 (etapa 6) Regras: cache de textos da IA
+- F-7.01 (etapa 7) Guardas de escopo
+- F-7.02 (etapa 7) Auditoria de layout mobile e esticado no desktop
+- F-7.03 (etapa 7) Roteiro de validação humana do design
+- F-7.04 (etapa 7) Jornadas ponta a ponta com seed e usuários novos
+- F-7.05 (etapa 7) Endurecimento de regras e hosting
+- F-7.06 (etapa 7) Orçamento de bundle e fonte de ícones
+- Telas de outras features entregues aparecem só para checar regressão: reprove apenas se esta feature as quebrou visualmente.
+- As capturas são de rotas paradas: estados transitórios (carregando, enviando, sucesso, erro, diálogos e sheets abertos) não aparecem e **não** reprovam; no máximo um `minor` se o código visivelmente não os trata.
+- Não peça novos testes, capturas ou mudanças em arquivos de teste: isso não é ajustável pelo implementador.
+
 ## Screenshots
 /Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/home-mobile-privado.png
 /Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/home-mobile-nomes.png
+/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/onboarding-mobile-privado.png
+/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/onboarding-mobile-nomes.png
+/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/dashboard-mobile-privado.png
+/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/dashboard-mobile-nomes.png
+/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/register-mobile-privado.png
+/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/register-mobile-nomes.png
+/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/indicators-mobile-privado.png
+/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/indicators-mobile-nomes.png
+/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/indicators-new-mobile-privado.png
+/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/indicators-new-mobile-nomes.png
+/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/saved-insights-mobile-privado.png
+/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/saved-insights-mobile-nomes.png
+/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/settings-mobile-privado.png
+/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/settings-mobile-nomes.png
 /Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/design-mobile-privado.png
 /Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/design-mobile-nomes.png
 /Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/home-desktop-privado.png
 /Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/home-desktop-nomes.png
+/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/onboarding-desktop-privado.png
+/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/onboarding-desktop-nomes.png
+/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/dashboard-desktop-privado.png
+/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/dashboard-desktop-nomes.png
+/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/register-desktop-privado.png
+/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/register-desktop-nomes.png
+/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/indicators-desktop-privado.png
+/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/indicators-desktop-nomes.png
+/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/indicators-new-desktop-privado.png
+/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/indicators-new-desktop-nomes.png
+/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/saved-insights-desktop-privado.png
+/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/saved-insights-desktop-nomes.png
+/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/settings-desktop-privado.png
+/Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/settings-desktop-nomes.png
 /Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/design-desktop-privado.png
 /Users/tiagogouvea/www/treinamento/Pulsar/harness-claude/checkpoints/etapa-1/screenshots/design-desktop-nomes.png
 

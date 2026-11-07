@@ -27,14 +27,6 @@ Regras para lições:
 - `file: "harness"` só para lições que valem para qualquer projeto.
 
 ## Eventos recentes (id feature papel worker tentativa resultado)
-evt-128 F-1.08 test_writer sonnet t0 success $0.14
-evt-129 F-1.10 test_writer sonnet t0 success $0.09
-evt-130 F-1.02 test_writer sonnet t0 success $0.15
-evt-131 F-1.01 test_writer sonnet t0 success $0.22
-evt-132 F-1.02 test_writer sonnet t0 success $0.10
-evt-133 F-1.02 test_writer sonnet t0 success $0.11
-evt-134 F-1.01 test_writer sonnet t0 success $0.17
-evt-135 F-1.01 test_writer sonnet t0 success $0.15
 evt-136 F-1.02 review_code codex-mid t1 success $0.04
 evt-137 F-1.02 implement_easy glm-flash t1 success $0.00
 evt-138 F-1.01 test_writer sonnet t0 success $0.15
@@ -177,6 +169,14 @@ evt-274 F-1.fix-1 implement_hard glm-or t1 timeout $0.50
 evt-275 F-1.fix-2 review_code haiku t1 success $0.12
 evt-276 F-1.fix-2 implement_hard codex-mid t1 success $0.13
 evt-277 stage-1 review_ui gemini t2 success $0.05
+evt-278 retro-1-stage retro sonnet t1 success $0.25
+evt-279 approve-1 approval_parser haiku t1 success $0.09
+evt-280 F-1.adj-01 test_writer codex-mid t0 success $0.19
+evt-281 F-1.adj-01 test_writer codex-mid t0 success $0.19
+evt-282 F-1.adj-01 review_code haiku t1 success $0.07
+evt-283 F-1.adj-01 review_ui haiku t1 success $0.20
+evt-284 F-1.adj-01 implement minimax t1 success $0.01
+evt-285 stage-1 review_ui gemini t0 success $0.05
 
 ## Lições atuais
 # Lições do projeto (geradas pelo harness). Formato YAML.
@@ -241,10 +241,15 @@ evt-277 stage-1 review_ui gemini t2 success $0.05
       - implement_hard
     tags:
       - review
-  rule: Implementações com deepseek e sonnet foram rejeitadas na revisão de código
-    em várias tentativas (evt-40, evt-45, evt-42, evt-58). Releia os critérios
-    de aceite da feature item por item e confira cada um no código antes de
-    entregar. Isso vale em especial para features de UI e de modo privado.
+  rule: "Revisões rejeitadas foram a principal causa de retrabalho: F-1.03,
+    F-1.04, F-1.06, F-1.09, F-1.11 e F-1.12 tiveram 2 a 5 rejeições seguidas,
+    inclusive com opus. Antes de implementar, leia o último verdict-N.json da
+    feature e trate cada ponto apontado. Antes de entregar, confira item por
+    item os critérios de aceite, cada um com um teste ou trecho de código que o
+    comprove. Exemplos: a ordem de limpeza antes da remoção no Auth,
+    requires-recent-login, o isolamento entre UIDs e a mensagem de erro de rede
+    em pt-BR que não indica sucesso. Não descarte o trabalho de tentativas
+    anteriores sem comparar com o HEAD."
   evidence:
     - evt-40
     - evt-42
@@ -729,7 +734,7 @@ evt-277 stage-1 review_ui gemini t2 success $0.05
   hits: 0
   helped: 0
   helpedRate: null
-  status: active
+  status: retired
 - id: L-036
   scope:
     roles:
@@ -760,10 +765,12 @@ evt-277 stage-1 review_ui gemini t2 success $0.05
     tags:
       - protected
   rule: Se o gate G7 (protected_violation) falhar, não tente a mesma edição de
-    novo. Rode `git status` e `git diff --stat` e reverta qualquer alteração em
-    arquivos listados em .harness/protected.json antes de entregar. Corrija o
-    código de produção para satisfazer o teste existente. Se o teste parecer
-    errado, registre a dúvida em .harness/inbox/questions.jsonl.
+    novo. A violação se repetiu até com modelos fortes (opus em evt-153/evt-159,
+    codex-mid em evt-261). Antes de entregar, rode `git status` e `git diff
+    --stat` e reverta toda alteração em arquivos listados em
+    .harness/protected.json, inclusive mudanças de formatação ou de import.
+    Corrija o código de produção para satisfazer o teste existente. Se o teste
+    parecer errado, registre a dúvida em .harness/inbox/questions.jsonl.
   evidence:
     - evt-146
     - evt-149
@@ -795,7 +802,7 @@ evt-277 stage-1 review_ui gemini t2 success $0.05
   hits: 0
   helped: 0
   helpedRate: null
-  status: active
+  status: retired
 - id: L-039
   scope:
     roles:
@@ -905,6 +912,59 @@ evt-277 stage-1 review_ui gemini t2 success $0.05
   hits: 6
   helped: 2
   helpedRate: 0.3333333333333333
+  status: retired
+- id: L-045
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - e2e
+      - gates
+  rule: O G6 (e2e) foi o gate que mais falhou na etapa 1. Ele derrubou F-1.06,
+    F-1.09 e F-1.12 com haiku, sonnet, kimi-pro e codex-mid, e só a F-1.09
+    consumiu 14 tentativas. Antes de alterar código, abra o gate-report e anote
+    o nome exato do teste que falhou e a mensagem de erro. Depois rode só esse
+    spec contra os emuladores (yarn e2e --grep "<título>") e entregue só quando
+    ele passar. Em fluxos de auth (vincular, sair, excluir), espere um elemento
+    de UI que dependa do novo estado de onAuthStateChanged com locator.waitFor
+    ou waitForURL. Não use networkidle e não aumente timeouts.
+  evidence:
+    - evt-230
+    - evt-233
+    - evt-238
+    - evt-242
+    - evt-246
+    - evt-248
+    - evt-252
+    - evt-257
+    - evt-267
+  added: 2026-11-07
+  hits: 0
+  helped: 0
+  helpedRate: null
+  status: active
+- id: L-046
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - gates
+      - fix
+  rule: "Em features F-N.fix-* (suíte da etapa falhou), leia o gate-report da
+    etapa e reproduza só os gates que falharam, por exemplo yarn format:check
+    para G2 ou o spec e2e citado para G6. Faça a correção mínima. Não rode a
+    suíte e2e completa várias vezes: a F-1.fix-1 estourou o tempo assim
+    (evt-274), e a F-1.fix-2 passou de primeira com uma correção focada
+    (evt-276)."
+  evidence:
+    - evt-274
+    - evt-276
+  added: 2026-11-07
+  hits: 0
+  helped: 0
+  helpedRate: null
   status: active
 
 # Lições do harness — sobrevivem entre projetos. Formato YAML.
@@ -942,6 +1002,7 @@ F-1.11 [passing] Function deleteAccount: exclusão integral: Após a chamada nã
 F-1.12 [passing] Tela de conta: sair e excluir conta: Botão excluir só habilita após digitar EXCLUIR | Conta não anônima pede reautenticação antes | Após excluir, o app volta ao início sem dados do usuário anterior | Sair de conta anônima exige confirmação explícita
 F-1.fix-1 [passing] Suíte completa da etapa falhou nos gates G12: Todos os gates obrigatórios da etapa passam na suíte completa | Nenhum teste protegido é alterado
 F-1.fix-2 [passing] Suíte completa da etapa falhou nos gates G2, G6: Todos os gates obrigatórios da etapa passam na suíte completa | Nenhum teste protegido é alterado
+F-1.adj-01 [passing] Remover o texto "Preparando seu espaço" durante a carga inicial: Durante a carga inicial da sessão, o texto "Preparando seu espaço" não aparece em momento algum | Enquanto a sessão carrega, nenhum texto ou indicador visível é mostrado; a tela fica vazia, só com o fundo, até o conteúdo final aparecer
 
 Responda SOMENTE com o bloco ```json:
 {"create": [{"scope": {"roles": ["implement"], "tags": ["security-rules"]}, "rule": "…", "evidence": ["evt-12"], "file": "project|harness"}],

@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-07T13:11:14.570Z",
+  "workerId": "haiku",
+  "role": "review_ui",
+  "featureId": "F-1.adj-01",
+  "stage": 1,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.19911320000000002,
+  "durationMs": 21228,
+  "usage": {
+    "inputTokens": 26083,
+    "outputTokens": 1895,
+    "cachedTokens": 154041,
+    "costUsd": 0.19911320000000002
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\"pass\": true, \"score\": 8.4, \"porCriterio\": {\"c1\": 8, \"c2\": 8, \"c3\": 9, \"c4\": 8, \"c5\": 9, \"c6\": 8, \"c7\": 9, \"c8\": 8, \"c9\": 9, \"c10\": 9}, \"issues\": [{\"severidade\": \"minor\", \"tela\": \"carga inicial (AuthGate)\", \"descricao\": \"Os dois critérios de aceite são atendidos: o texto \\\"Preparando seu espaço…\\\" e o HomePlaceholder foram removidos, e durante a carga o AuthGate não renderiza nada (`return null`), então só aparece o fundo do body. O estado de erro continua tratado. Leitores de tela não recebem nenhum aviso enquanto a sessão carrega, mas isso foi uma escolha explícita do humano.\", \"sugestao\": \"Opcional: pôr um elemento sr-only com aria-busy só para tecnologias assistivas, sem nada visível, para não reintroduzir o piscar.\"}, {\"severidade\": \"minor\", \"tela\": \"onboarding / dashboard / registrar / configurações (regressão)\", \"descricao\": \"Nenhuma regressão visual causada por esta feature. Onboarding, Dashboard vazio, Registrar e Configurações aparecem iguais, com e sem modo privado (siglas e nomes), no mobile e no desktop. No desktop o layout mobile só estica, dentro de uma largura máxima, sem cortes nem overflow.\", \"sugestao\": \"Nenhuma ação necessária.\"}]}\n```"
+}

@@ -1,19 +1,19 @@
 {
-  "ts": "2026-11-07T11:41:50.460Z",
+  "ts": "2026-11-07T13:16:57.791Z",
   "workerId": "sonnet",
   "role": "retro",
   "stage": 1,
   "attempt": 1,
   "outcome": "success",
-  "costUsd": 0.2506,
-  "durationMs": 52393,
+  "costUsd": 0.2156326,
+  "durationMs": 32562,
   "usage": {
-    "inputTokens": 25577,
-    "outputTokens": 5288,
-    "cachedTokens": 84805,
-    "costUsd": 0.2506
+    "inputTokens": 27228,
+    "outputTokens": 3490,
+    "cachedTokens": 48483,
+    "costUsd": 0.2156326
   },
   "exitCode": 0,
   "timedOut": false,
-  "finalTail": "92. No celular, use http://IP-DA-MAQUINA:4792 na mesma rede Wi-Fi.\\n- O preview de produção não traz o login do usuário do seed (custom token, só dev/emulador) nem os dados do seed. Lá, Google e link mágico usam o Firebase real. No emulador, o login Google abre a tela falsa do Auth Emulator e o link mágico não chega por e-mail: ele aparece no log ou na UI do emulador.\\n\\n**Roteiro (10–15 min, no celular)**\\n1. Abra o app numa aba anônima. Ele deve entrar direto no tutorial, sem pedir login.\\n2. Passe pelas 3 telas com Próximo e volte uma com Voltar. Na tela 3, confira o texto sobre correlação ≠ causalidade, o modo de siglas e a conta anônima. Conclua.\\n3. Recarregue a página. O tutorial não deve voltar e você continua no app.\\n4. Toque no olho do cabeçalho e veja o modo alternar. Navegue pelos itens da barra inferior: o item ativo fica destacado, e os botões devem ser fáceis de tocar (≥ 44px).\\n5. Vá em Conta/Configurações e confira o aviso de que perder o navegador pode significar perder os dados.\\n6. Toque em Sair. Deve aparecer uma confirmação explícita. Cancele.\\n7. Em Excluir conta, o botão fica desabilitado até você digitar EXCLUIR. Digite, confirme e veja o app voltar ao início como um usuário novo (o tutorial aparece de novo).\\n8. Salve a conta com Google (no emulador, crie uma conta fake). Ela deixa de ser anônima e o aviso some.\\n9. Com a conta salva, tente excluir. O app deve pedir reautenticação antes.\\n10. Opcional: numa segunda aba anônima, tente vincular o mesmo Google. Deve abrir a resolução com 'Cancelar' / 'Entrar na conta existente', e nada é mesclado nem apagado.\\n11. Procure em toda a UI campos de senha ou telefone. Não deve haver nenhum.\\n\\n**No computador:** só confira que o layout estica e não tem rolagem horizontal (ex.: 1280×800).\\n\\n**O que observar:** textos em pt-BR, nenhuma mensagem de sucesso quando a rede falha (teste em modo avião), nenhum overflow horizontal a 375px e nenhum dado do usuário anterior depois de excluir ou sair.\"\n}\n```"
+  "finalTail": ". Lá, Google e link mágico usam o Firebase real. No emulador, o login Google abre a tela falsa do Auth Emulator, e o link mágico não chega por e-mail: ele aparece no log ou na UI do emulador.\\n\\n**Roteiro (10–15 min, no celular)**\\n\\n1. Abra o app numa aba anônima. Durante a carga, a tela deve ficar só com o fundo, sem nenhum texto como \\\"Preparando seu espaço\\\". Em seguida, o app entra direto no tutorial, sem pedir login.\\n2. Passe pelas 3 telas com Próximo e volte uma com Voltar. Na tela 3, confira o texto sobre correlação ≠ causalidade, o modo de siglas e a conta anônima. Conclua.\\n3. Recarregue a página. A carga continua sem texto, o tutorial não volta e você segue no app.\\n4. Toque no olho do cabeçalho e veja o modo alternar. Navegue pelos itens da barra inferior: o item ativo fica destacado, e os botões devem ser fáceis de tocar (≥ 44px).\\n5. Vá em Conta/Configurações e confira o aviso de que perder o navegador pode significar perder os dados.\\n6. Toque em Sair. Deve aparecer uma confirmação explícita. Cancele.\\n7. Em Excluir conta, o botão fica desabilitado até você digitar EXCLUIR. Digite, confirme e veja o app voltar ao início como um usuário novo (o tutorial aparece de novo).\\n8. Salve a conta com Google (no emulador, crie uma conta fake). Ela deixa de ser anônima e o aviso some.\\n9. Com a conta salva, tente excluir. O app deve pedir reautenticação antes.\\n10. Opcional: numa segunda aba anônima, tente vincular o mesmo Google. Deve abrir a resolução com 'Cancelar' / 'Entrar na conta existente', e nada é mesclado nem apagado.\\n11. Procure em toda a UI campos de senha ou telefone. Não deve haver nenhum.\\n\\n**No computador:** só confira que o layout estica e não tem rolagem horizontal (ex.: 1280×800).\\n\\n**O que observar:** textos em pt-BR; nenhum texto ou indicador durante a carga inicial; nenhuma mensagem de sucesso quando a rede falha (teste em modo avião); nenhum overflow horizontal a 375px; nenhum dado do usuário anterior depois de excluir ou sair.\"\n}\n```"
 }

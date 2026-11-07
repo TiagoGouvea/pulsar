@@ -2,7 +2,7 @@
 
 **Preview:** deploy do preview falhou: /bin/sh: firebase: command not found
 
-## Features entregues (13/13)
+## Features entregues (14/14)
 
 - **F-1.01** Modelo de domínio de indicadores e registros (puro) — 2 tentativa(s), US$ 3.00 — critérios: AC-05, AC-06, AC-08
   - Feito por **haiku** · tentativas: kimi ✖ review_rejected → haiku ✔ · testes: sonnet · revisão: code glm-flash 10
@@ -89,6 +89,11 @@
   - Arquivos: `app/src/auth/__tests__/linkAccount.test.ts`, `app/src/auth/linkAccount.ts`, `app/src/lib/functions.ts`
   - [x] Todos os gates obrigatórios da etapa passam na suíte completa
   - [x] Nenhum teste protegido é alterado
+- **F-1.adj-01** Remover o texto "Preparando seu espaço" durante a carga inicial — 1 tentativa(s), US$ 0.97
+  - Feito por **minimax** · tentativas: minimax ✔ · testes: codex-mid · revisão: code haiku 9, ui haiku 8.4
+  - Arquivos: `app/e2e/initial-session-loading.spec.ts`, `app/src/App.tsx`, `app/src/__tests__/initial-session-loading.test.tsx`
+  - [x] Durante a carga inicial da sessão, o texto "Preparando seu espaço" não aparece em momento algum
+  - [x] Enquanto a sessão carrega, nenhum texto ou indicador visível é mostrado; a tela fica vazia, só com o fundo, até o conteúdo final aparecer
 
 ## Bloqueadas (0)
 
@@ -96,16 +101,16 @@
 
 ## Custo e tempo
 
-- Custo da etapa: US$ 31.44 (teto US$ 32)
-- Custo acumulado: US$ 47.89 (teto US$ 68)
-- Tempo decorrido: 137.5 h · chamadas registradas: 192
+- Custo da etapa: US$ 32.77 (teto US$ 33)
+- Custo acumulado: US$ 49.22 (teto US$ 68)
+- Tempo decorrido: 139.0 h · chamadas registradas: 200
 
 ## Workers (implementação)
 
 | Worker | Tentativas | Sucesso |
 |---|---|---|
 | glm-flash | 3 | 33% |
-| minimax | 9 | 22% |
+| minimax | 10 | 30% |
 | opus | 19 | 16% |
 | kimi | 2 | 0% |
 | sonnet | 12 | 8% |
@@ -122,15 +127,14 @@ Todos os gates obrigatórios passaram em 1-base.
 
 ## Avaliação visual completa
 
-Nota 9.6 — aprovado
+Nota 9.7 — aprovado
 
 
 ## Aprendizados
 
-### Etapa 1: aprendizados
-- **G6 (e2e) foi o gargalo.** F-1.09 levou 14 tentativas (kimi-pro, sonnet, codex-mid, glm-or) até passar com glm-or (evt-264). F-1.06 e F-1.12 também travaram no G6. Criamos uma lição para reproduzir localmente o spec exato que falhou e esperar o estado de auth pela UI em vez de usar networkidle ou aumentar timeouts.
-- **Rejeições na revisão continuam caras.** A F-1.11 teve 5 rejeições seguidas (evt-174..182). Ela só passou quando a implementação tratou ponto a ponto o parecer anterior (evt-188). Juntamos L-035 e L-038 em L-004, como regra geral de ler o verdict anterior.
-- **G7 (arquivos protegidos) voltou a aparecer** com codex-mid (evt-261), mesmo com L-033 já promovida. Reforçamos L-037 com a conferência por `git diff --stat` antes de entregar.
-- **Roteamento:** modelos baratos (minimax, glm-flash, deepseek-flash, haiku) foram rejeitados ou falharam no G6 em features de UI com auth. Nesses casos, implement_hard compensou desde a primeira tentativa. glm-or resolveu F-1.09 e F-1.12, mas estourou o tempo na fix-1 (evt-274).
-- **Revisor haiku** saiu barato (~$0,01) e os pareceres dele levaram a aprovações (evt-205/206, evt-262/264).
-- As dicas pontuais do triage (L-039..L-043) tiveram helpedRate baixo e já estavam aposentadas. Retiramos também L-044, que era específica demais e ficou obsoleta.
+### Retrospectiva da etapa 1 (pós-aprovação)
+
+- **O ajuste do humano entrou de primeira.** A F-1.adj-01, que remove o texto "Preparando seu espaço", passou com o minimax na tentativa 1 (evt-284) e custou cerca de US$ 0,66 no total. Escopo pequeno e teste focado funcionam bem com modelo barato. Registrei a lição para features `adj`.
+- **test_writer em duplicidade.** A F-1.adj-01 teve dois test_writer idênticos (evt-280 e evt-281, US$ 0,19 cada). Vale verificar no orquestrador se há disparo duplicado.
+- **Lições mantidas.** L-045 (G6/e2e), L-046 (fix focado), L-037 (G7) e L-036 (infra de functions) foram criadas há pouco e ainda não têm hits. Elas ficam ativas para avaliar a eficácia nas próximas etapas, que voltam a usar functions e e2e.
+- **Custo da etapa.** O retrabalho se concentrou em F-1.03 (G7 repetido e rejeições), F-1.09 (14 tentativas, G6) e F-1.11 (5 rejeições). Nas três, o padrão foi não ler o verdict ou o gate-report anterior antes de tentar de novo.

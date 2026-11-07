@@ -224,10 +224,10 @@
     "falhasPorGate": {}
   },
   "haiku|review_code|*": {
-    "tentativas": 19,
-    "sucessos": 19,
-    "custoMedio": 0.02080372342105263,
-    "duracaoMedia": 22737.210526315786,
+    "tentativas": 20,
+    "sucessos": 20,
+    "custoMedio": 0.023030007249999998,
+    "duracaoMedia": 21992.699999999997,
     "falhasPorGate": {}
   },
   "sonnet|review_code|*": {
@@ -377,17 +377,17 @@
     "falhasPorGate": {}
   },
   "sonnet|retro|*": {
-    "tentativas": 4,
-    "sucessos": 4,
-    "custoMedio": 0.1137648,
-    "duracaoMedia": 27241.5,
+    "tentativas": 5,
+    "sucessos": 5,
+    "custoMedio": 0.13413836,
+    "duracaoMedia": 28305.6,
     "falhasPorGate": {}
   },
   "haiku|approval_parser|*": {
-    "tentativas": 1,
-    "sucessos": 1,
-    "custoMedio": 0.00305879,
-    "duracaoMedia": 14436,
+    "tentativas": 2,
+    "sucessos": 2,
+    "custoMedio": 0.048336594999999996,
+    "duracaoMedia": 9900.5,
     "falhasPorGate": {}
   },
   "local-gptoss|smoke|*": {
@@ -496,10 +496,10 @@
     "falhasPorGate": {}
   },
   "codex-mid|test_writer|*": {
-    "tentativas": 4,
-    "sucessos": 4,
-    "custoMedio": 0.1455047625,
-    "duracaoMedia": 138314,
+    "tentativas": 6,
+    "sucessos": 6,
+    "custoMedio": 0.15982646666666667,
+    "duracaoMedia": 131334,
     "falhasPorGate": {}
   },
   "codex-mid|test_writer|security-rules": {
@@ -517,10 +517,10 @@
     "falhasPorGate": {}
   },
   "minimax|implement|*": {
-    "tentativas": 5,
-    "sucessos": 1,
-    "custoMedio": 0.046259062600000005,
-    "duracaoMedia": 464071.8,
+    "tentativas": 6,
+    "sucessos": 2,
+    "custoMedio": 0.04040223883333334,
+    "duracaoMedia": 399378.8333333333,
     "falhasPorGate": {
       "G7": 1
     }
@@ -669,17 +669,17 @@
     "falhasPorGate": {}
   },
   "gemini|review_ui|*": {
-    "tentativas": 4,
-    "sucessos": 4,
-    "custoMedio": 0.09937606875000002,
-    "duracaoMedia": 97506.25,
+    "tentativas": 5,
+    "sucessos": 5,
+    "custoMedio": 0.08997475500000002,
+    "duracaoMedia": 83352.8,
     "falhasPorGate": {}
   },
   "gemini|review_ui|ui": {
-    "tentativas": 4,
-    "sucessos": 4,
-    "custoMedio": 0.09937606875000002,
-    "duracaoMedia": 97506.25,
+    "tentativas": 5,
+    "sucessos": 5,
+    "custoMedio": 0.08997475500000002,
+    "duracaoMedia": 83352.8,
     "falhasPorGate": {}
   },
   "gemini|review_code|*": {
@@ -731,10 +731,10 @@
     }
   },
   "haiku|review_code|ui": {
-    "tentativas": 12,
-    "sucessos": 12,
-    "custoMedio": 0.020575990833333332,
-    "duracaoMedia": 24750.166666666668,
+    "tentativas": 13,
+    "sucessos": 13,
+    "custoMedio": 0.024018560769230767,
+    "duracaoMedia": 23449.923076923078,
     "falhasPorGate": {}
   },
   "haiku|review_code|privacy-mode": {
@@ -745,17 +745,17 @@
     "falhasPorGate": {}
   },
   "haiku|review_ui|*": {
-    "tentativas": 8,
-    "sucessos": 8,
-    "custoMedio": 0.0334810075,
-    "duracaoMedia": 48560.00000000001,
+    "tentativas": 9,
+    "sucessos": 9,
+    "custoMedio": 0.05188458444444445,
+    "duracaoMedia": 45523.11111111112,
     "falhasPorGate": {}
   },
   "haiku|review_ui|ui": {
-    "tentativas": 8,
-    "sucessos": 8,
-    "custoMedio": 0.0334810075,
-    "duracaoMedia": 48560.00000000001,
+    "tentativas": 9,
+    "sucessos": 9,
+    "custoMedio": 0.05188458444444445,
+    "duracaoMedia": 45523.11111111112,
     "falhasPorGate": {}
   },
   "haiku|review_ui|privacy-mode": {
@@ -766,10 +766,10 @@
     "falhasPorGate": {}
   },
   "minimax|implement|ui": {
-    "tentativas": 3,
-    "sucessos": 0,
-    "custoMedio": 0.042278798666666687,
-    "duracaoMedia": 456511.3333333333,
+    "tentativas": 4,
+    "sucessos": 1,
+    "custoMedio": 0.034488629000000014,
+    "duracaoMedia": 361362,
     "falhasPorGate": {}
   },
   "minimax|implement|privacy-mode": {
@@ -977,10 +977,10 @@
     "falhasPorGate": {}
   },
   "codex-mid|test_writer|ui": {
-    "tentativas": 1,
-    "sucessos": 1,
-    "custoMedio": 0.26537835,
-    "duracaoMedia": 153365,
+    "tentativas": 3,
+    "sucessos": 3,
+    "custoMedio": 0.21410603333333333,
+    "duracaoMedia": 129371,
     "falhasPorGate": {}
   },
   "glm-or|implement_hard|regression": {
