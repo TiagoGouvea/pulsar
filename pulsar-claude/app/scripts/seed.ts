@@ -53,6 +53,7 @@ async function main() {
   await db.recursiveDelete(userRef);
 
   const createdAt = Timestamp.fromDate(new Date(`${data.firstDate}T09:00:00-03:00`));
+  const recordedIndicatorIds = new Set(data.entries.map((entry) => entry.indicatorId));
   const writes: [FirebaseFirestore.DocumentReference, FirebaseFirestore.DocumentData][] = [
     [
       userRef,
@@ -74,6 +75,7 @@ async function main() {
         {
           ...indicator,
           archivedAt: archived ? Timestamp.now() : null,
+          lockedAt: recordedIndicatorIds.has(id) ? createdAt : null,
           createdAt,
           updatedAt: FieldValue.serverTimestamp(),
         },

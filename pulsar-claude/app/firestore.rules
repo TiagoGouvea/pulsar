@@ -8,6 +8,123 @@ service cloud.firestore {
       return request.auth != null && request.auth.uid == uid;
     }
 
+    function validNullableTimestamp(value) {
+      return value == null || value is timestamp;
+    }
+
+    function validNullableNumber(value) {
+      return value == null || value is number;
+    }
+
+    function validNumericConfig(config) {
+      return config is map
+        && config.keys().hasOnly(['unit', 'min', 'max', 'step'])
+        && config.keys().hasAll(['unit', 'min', 'max', 'step'])
+        && config.unit is string && config.unit.size() <= 20
+        && validNullableNumber(config.min) && validNullableNumber(config.max)
+        && (config.min == null || config.max == null || config.min <= config.max)
+        && config.step is number && config.step > 0;
+    }
+
+    function validScaleConfig(config) {
+      return config is map
+        && config.keys().hasOnly(['min', 'max', 'step'])
+        && config.keys().hasAll(['min', 'max', 'step'])
+        && config.min is number && config.max is number && config.min < config.max
+        && config.step is number && config.step > 0;
+    }
+
+    function validOrdinalOption(option) {
+      return option is map
+        && option.keys().hasOnly(['id', 'label'])
+        && option.keys().hasAll(['id', 'label'])
+        && option.id is string && option.id.size() > 0 && option.id.size() <= 40
+        && option.label is string && option.label.size() > 0 && option.label.size() <= 60;
+    }
+
+    function validOrdinalOptions(options) {
+      return options is list && options.size() >= 2 && options.size() <= 7
+        && validOrdinalOption(options[0]) && validOrdinalOption(options[1])
+        && (options.size() < 3 || validOrdinalOption(options[2]))
+        && (options.size() < 4 || validOrdinalOption(options[3]))
+        && (options.size() < 5 || validOrdinalOption(options[4]))
+        && (options.size() < 6 || validOrdinalOption(options[5]))
+        && (options.size() < 7 || validOrdinalOption(options[6]));
+    }
+
+    function validDirectionAndRange(data) {
+      return (data.group == 'factor'
+          && data.desiredDirection == null && data.idealRange == null)
+        || (data.group == 'result'
+          && data.desiredDirection in ['neutral', 'higher', 'lower', 'target_range']
+          && (data.desiredDirection == 'target_range'
+            ? (data.valueType in ['numeric', 'scale']
+              && data.idealRange is map
+              && data.idealRange.keys().hasOnly(['min', 'max'])
+              && data.idealRange.keys().hasAll(['min', 'max'])
+              && data.idealRange.min is number && data.idealRange.max is number
+              && data.idealRange.min <= data.idealRange.max)
+            : data.idealRange == null));
+    }
+
+    function validAggregation(data) {
+      return data.frequency == 'single_per_day'
+        ? data.dailyAggregation == null
+        : (data.dailyAggregation != null
+          && ((data.valueType in ['numeric', 'scale']
+              && data.dailyAggregation in ['sum', 'mean', 'last'])
+            || (data.valueType == 'boolean' && data.dailyAggregation in ['any', 'last'])
+            || (data.valueType == 'ordinal' && data.dailyAggregation == 'last')));
+    }
+
+    function validIndicator(data) {
+      let keys = data.keys();
+      return keys.hasOnly([
+          'group', 'name', 'abbreviation', 'emoji', 'valueType', 'numeric', 'scale', 'options',
+          'desiredDirection', 'idealRange', 'frequency', 'dailyAggregation', 'sortOrder',
+          'archivedAt', 'lockedAt', 'createdAt', 'updatedAt'
+        ])
+        && keys.hasAll([
+          'group', 'name', 'abbreviation', 'emoji', 'valueType', 'numeric', 'scale', 'options',
+          'desiredDirection', 'idealRange', 'frequency', 'dailyAggregation', 'sortOrder',
+          'archivedAt', 'lockedAt', 'createdAt', 'updatedAt'
+        ])
+        && data.group in ['factor', 'result']
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 60
+        && (data.abbreviation == null
+          || (data.abbreviation is string && data.abbreviation.size() <= 4))
+        && (data.emoji == null || (data.emoji is string && data.emoji.size() <= 32))
+        && data.valueType in ['boolean', 'scale', 'ordinal', 'numeric']
+        && (data.valueType == 'numeric' ? validNumericConfig(data.numeric) : data.numeric == null)
+        && (data.valueType == 'scale' ? validScaleConfig(data.scale) : data.scale == null)
+        && (data.valueType == 'ordinal' ? validOrdinalOptions(data.options) : data.options == null)
+        && validDirectionAndRange(data)
+        && data.frequency in ['single_per_day', 'multiple_per_day']
+        && validAggregation(data)
+        && data.sortOrder is number && data.sortOrder >= 0
+        && validNullableTimestamp(data.archivedAt)
+        && validNullableTimestamp(data.lockedAt)
+        && data.createdAt is timestamp && data.updatedAt is timestamp;
+    }
+
+    function isLocked(data) {
+      return 'lockedAt' in data.keys() && data.lockedAt != null;
+    }
+
+    function validIndicatorUpdate() {
+      return request.resource.data.createdAt == resource.data.createdAt
+        && (!isLocked(resource.data)
+          || request.resource.data.lockedAt == resource.data.lockedAt)
+        && (!(isLocked(resource.data) || isLocked(request.resource.data))
+          || (request.resource.data.group == resource.data.group
+            && request.resource.data.valueType == resource.data.valueType
+            && request.resource.data.numeric == resource.data.numeric
+            && request.resource.data.scale == resource.data.scale
+            && request.resource.data.options == resource.data.options
+            && request.resource.data.frequency == resource.data.frequency
+            && request.resource.data.dailyAggregation == resource.data.dailyAggregation));
+    }
+
     // users/{uid} holds only client fields. Administrative fields (e.g. lastNotificationSentAt) live under
     // internal/** (e.g. internal/userAdmin/users/{uid}), written by the Admin SDK and never readable by clients.
     function hasOnlyUserFields(keys) {
@@ -42,9 +159,20 @@ service cloud.firestore {
       // Account deletion runs in a Cloud Function (Admin SDK) that also cleans subcollections and Auth.
       allow delete: if false;
 
+      match /indicators/{indicatorId} {
+        allow read: if isOwner(uid);
+        allow create: if isOwner(uid) && validIndicator(request.resource.data);
+        allow update: if isOwner(uid)
+          && validIndicator(request.resource.data)
+          && validIndicatorUpdate();
+        // Indicators are archived, never deleted by clients; their entries remain untouched.
+        allow delete: if false;
+      }
+
       // {collection} forces at least one segment: in rules v2 a bare {document=**} would also match users/{uid}.
+      // Collections with their own schema must be excluded here because matching allow expressions are ORed.
       match /{collection}/{document=**} {
-        allow read, write: if isOwner(uid);
+        allow read, write: if isOwner(uid) && collection != 'indicators';
       }
     }
 
