@@ -92,7 +92,9 @@ test.describe('indicator management', () => {
 
     // 6. Edit the result: the name stays editable.
     await page.getByRole('button', { name: 'Opções para Foco' }).click();
-    await page.getByRole('button', { name: 'Editar parâmetros' }).click();
+    const options = page.getByRole('dialog', { name: 'Opções do Indicador' });
+    await expect(options).toBeVisible();
+    await options.getByRole('button', { name: 'Editar parâmetros' }).click();
     await expect(page.getByRole('heading', { name: 'Foco' })).toBeVisible();
     await page.getByLabel(/Nome do Indicador/i).fill('Foco Profundo');
     await page.getByRole('button', { name: 'Salvar alterações' }).click();
