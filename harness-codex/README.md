@@ -40,9 +40,9 @@ yarn harness hosting snapshot --config harness.config.yaml --run <runId> --miles
 
 Logs, recuperação após crash, limites interativos e checagens Firebase: [Operação e recuperação](docs/OPERACAO_E_RECUPERACAO.md).
 
-## Preparação da etapa `2-registro`
+## Próxima etapa: `3-insights`
 
-A política de modelos, fluxo de correções humanas, revisão visual e saída de terminal preparados para a próxima etapa estão descritos em [Preparação 2-registro](docs/PREPARACAO-2-REGISTRO.md). Modelos locais ficam cadastrados, mas desabilitados e fora de todos os pools; Claude não é usado.
+As conclusões, modelos por papel e mudanças aplicadas após `2-registro` estão em [Retrospectiva 2-registro](docs/retrospectiva-2-registro.md). Antes de iniciar `3-insights`, execute os preflights e probes indicados no relatório. `openai-terra` e `gemini-lite` foram adicionados; chamadas pela rota OpenRouter para Terra, Kimi e MiniMax permanecem fora dos pools até passar um probe. Modelos locais ficam desabilitados e Claude não é usado.
 
 Após cada gate humano, o terminal imprime o comando exato para aprovar ou importar correções, o estado, progresso da etapa/projeto, custos, relatório, snapshot e etapa seguinte. O harness não troca de branch: a seleção continua manual.
 

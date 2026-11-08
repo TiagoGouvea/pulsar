@@ -84,8 +84,8 @@ localInference:
   memoryPressureAction: unload_and_route_or_pause
 responseFormatting:
   enabled: true
-  maxInputChars: 64000
-  maxOutputTokens: 2048
+  maxInputChars: 32000
+  maxOutputTokens: 1024
   maxCostUsd: "0.005"
   timeoutSeconds: 60
 review:
@@ -96,16 +96,16 @@ review:
     - 430
 routing:
   pools:
-    planner: [terra-review, gemini-mid, glm-5, sol-top]
-    testAuthor: [terra-review, glm-5, deepseek-code, qwen-code, gemini-mid, minimax-flash]
-    implementer: [deepseek-code, glm-5, minimax-flash, kimi-pro, qwen-code, terra-review]
-    hardImplementer: [terra-review, kimi-pro, sol-top, openai-sol]
-    functionalReviewer: [gemini-mid, glm-5, glm-cheap, terra-review, kimi-pro]
-    visualReviewer: [gemini-mid, gemini-argon, terra-review]
-    securityReviewer: [gemini-argon, terra-review, sol-top, openai-sol, glm-5]
-    diagnostic: [glm-5, deepseek-code, minimax-flash, gemini-mid, luna-cheap]
-    learningAnalyst: [gemini-mid, terra-review, glm-5]
-    responseFormatter: [glm-cheap, luna-cheap, deepseek-code]
+    planner: [openai-terra, gemini-mid, glm-5, sol-top]
+    testAuthor: [openai-terra, glm-5, qwen-code, deepseek-code, gemini-mid]
+    implementer: [glm-5, openai-terra, qwen-code, deepseek-code]
+    hardImplementer: [openai-terra, sol-top, openai-sol, glm-5]
+    functionalReviewer: [gemini-mid, glm-5, glm-cheap, openai-terra]
+    visualReviewer: [gemini-mid, gemini-argon]
+    securityReviewer: [gemini-argon, openai-terra, sol-top, openai-sol, glm-5]
+    diagnostic: [gemini-lite, glm-5, deepseek-code, gemini-mid, luna-cheap]
+    learningAnalyst: [gemini-mid, openai-terra, glm-5]
+    responseFormatter: [gemini-lite, glm-cheap, luna-cheap, deepseek-code]
   hardTaskPatterns:
     - firestore|security rules|auth|privacidade|exclusão de conta
     - estatística|correlação|significância|insight
@@ -161,6 +161,20 @@ models:
     inputUsdPerMillion: "2"
     outputUsdPerMillion: "10"
     credentialEnv: OPENAI_API_KEY
+  - alias: openai-terra
+    executor: pi
+    provider: openai
+    modelId: gpt-6.1-terra
+    family: openai-gpt-6.1
+    modality: metered_api
+    capabilities: [text, vision, tools, reasoning]
+    roles: [planner, implementer, testAuthor, functionalReviewer, securityReviewer, learningAnalyst]
+    enabled: true
+    contextTokens: 1050000
+    maxOutputTokens: 8192
+    inputUsdPerMillion: "1"
+    outputUsdPerMillion: "5"
+    credentialEnv: OPENAI_API_KEY
   - alias: terra-review
     executor: pi
     provider: openrouter
@@ -169,7 +183,7 @@ models:
     modality: metered_api
     capabilities: [text, vision, tools, reasoning]
     roles: [planner, implementer, testAuthor, functionalReviewer, visualReviewer, securityReviewer, learningAnalyst]
-    enabled: true
+    enabled: false
     contextTokens: 1050000
     maxOutputTokens: 8192
     inputUsdPerMillion: "1"
@@ -188,6 +202,20 @@ models:
     maxOutputTokens: 8192
     inputUsdPerMillion: "0.75"
     outputUsdPerMillion: "3.75"
+    credentialEnv: OPENROUTER_API_KEY
+  - alias: gemini-lite
+    executor: pi
+    provider: openrouter
+    modelId: google/gemini-3.1-flash-lite
+    family: google-gemini
+    modality: metered_api
+    capabilities: [text, vision, tools, reasoning]
+    roles: [diagnostic, responseFormatter]
+    enabled: true
+    contextTokens: 1000000
+    maxOutputTokens: 1024
+    inputUsdPerMillion: "0.25"
+    outputUsdPerMillion: "1.50"
     credentialEnv: OPENROUTER_API_KEY
   - alias: gemini-argon
     executor: pi
@@ -225,7 +253,7 @@ models:
     modality: metered_api
     capabilities: [text, vision, tools, reasoning]
     roles: [implementer, testAuthor, functionalReviewer, visualReviewer, securityReviewer]
-    enabled: true
+    enabled: false
     contextTokens: 1000000
     maxOutputTokens: 8192
     inputUsdPerMillion: "2"
@@ -253,7 +281,7 @@ models:
     modality: metered_api
     capabilities: [text, vision, tools, reasoning]
     roles: [implementer, diagnostic]
-    enabled: true
+    enabled: false
     contextTokens: 1000000
     maxOutputTokens: 8192
     inputUsdPerMillion: "0.15"

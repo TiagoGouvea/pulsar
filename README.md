@@ -61,6 +61,7 @@ Para registrar a evolução cronológica do projeto e permitir comparação prec
 | **1** | Harness | Claude | [`harness-claude/observacoes/etapa-1.md`](harness-claude/observacoes/etapa-1.md) |
 | **1** | Harness | Codex | [`harness-codex/docs/retrospectiva-1-base.md`](harness-codex/docs/retrospectiva-1-base.md) |
 | **1** | Observer | Agy | [`observer-agy/d-etapa-1-base.md`](observer-agy/d-etapa-1-base.md) |
+| **2** | Harness | Codex | [`harness-codex/docs/retrospectiva-2-registro.md`](harness-codex/docs/retrospectiva-2-registro.md) |
 
 ---
 
