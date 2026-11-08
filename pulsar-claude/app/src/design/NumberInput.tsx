@@ -41,6 +41,10 @@ export function NumberInput({ label, value, onChange, unit, step = 1, min, max }
           onChange={(e) => setText(e.target.value)}
           onBlur={() => {
             const n = parseDecimal(text);
+            if (n === null && text.trim() !== '') {
+              setText(format(value));
+              return;
+            }
             onChange(n === null ? null : clamp(n));
           }}
           className="h-11 w-full bg-transparent text-center font-stat-display text-stat-display text-on-surface focus:outline-none"

@@ -67,6 +67,9 @@ export function Slider({
           step={step}
           value={value ?? min}
           onChange={(e) => onChange(Number(e.target.value))}
+          onPointerUp={(e) => {
+            if (value === null) onChange(Number(e.currentTarget.value));
+          }}
           className={`h-11 w-full ${tone === 'factor' ? 'accent-secondary' : 'accent-primary-container'}`}
         />
       )}

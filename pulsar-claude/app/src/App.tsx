@@ -10,6 +10,7 @@ import { IndicatorEditorPage } from './pages/IndicatorEditorPage';
 import { IndicatorsPage } from './pages/IndicatorsPage';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { PlaceholderPage } from './pages/PlaceholderPage';
+import { QuickEntryPage } from './pages/QuickEntryPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { PrivacyProvider } from './privacy/PrivacyContext';
 
@@ -61,12 +62,7 @@ const routes: RouteObject[] = [
         path: '/register',
         element: (
           <AppShell>
-            <PlaceholderPage
-              title="Registrar"
-              icon="edit_note"
-              emptyTitle="Preenchimento rápido"
-              description="Escolha os fatores e os resultados do dia e registre em poucos segundos."
-            />
+            <QuickEntryPage />
           </AppShell>
         ),
       },
