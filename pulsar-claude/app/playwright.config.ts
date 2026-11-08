@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 const baseURL = process.env.E2E_BASE_URL ?? 'http://localhost:4792';
 
-// `mobile` is the real target. `desktop` is only a smoke check: the mobile layout must stretch without breaking.
+// Mobile-only app: `mobile` is the only project.
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
@@ -25,10 +25,6 @@ export default defineConfig({
         isMobile: true,
         hasTouch: true,
       },
-    },
-    {
-      name: 'desktop',
-      use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 } },
     },
   ],
   webServer: {

@@ -51,7 +51,7 @@ functions/     (etapa 1+) Cloud Functions v2 em southamerica-east1.
 
 - Unitários (Vitest + Testing Library, jsdom): `src/**/__tests__/*.test.ts(x)` e `scripts/__tests__/`. Estatística exige testes de borda abaixo/igual/acima de cada limiar da spec 6.5.1.
 - Rules: `tests/rules/*.test.ts`, rodam dentro do emulador do Firestore.
-- E2E: `e2e/*.spec.ts`, projeto `mobile` (375×812) é o alvo; `desktop` (1280×800) só smoke de layout. Testes visuais marcados com `@visual` no título.
+- E2E: `e2e/*.spec.ts`, projeto `mobile` (375×812) é o único (sem projeto `desktop`). Testes visuais marcados com `@visual` no título.
 - Fixtures de e2e: `e2e/fixtures.ts` expõe `seedPage` (entra como `seed-user-0001` por custom token do Auth Emulator) e `freshUserPage` (anônimo novo por teste). O app só expõe `window.__pulsarTest` em builds de dev/emulador (flag de build `__PULSAR_TEST_HELPER__`); o bundle de produção nunca o contém.
 - Sentinelas do seed (`ZQX_ENERGIA_7F3`, `ZQX_SONO_9K2`, `ZQX_FOCO_4M8`, `ZQX_OBS_NOTA_5T1`) nunca podem aparecer com o olho fechado fora de `[data-privacy-allow]`.
 - Usuário do seed: `seed-user-0001`; usuários novos são criados pelos próprios testes (anônimos no Auth Emulator).
