@@ -323,6 +323,12 @@ function NoRecordsCard() {
         <Icon name="schedule" className="text-[14px] text-primary" />
         Aguardando primeiros dados de registro
       </span>
+      <Link
+        to="/register"
+        className="inline-flex min-h-11 items-center justify-center rounded-full bg-surface-container-highest px-4 font-label-lg text-label-lg text-primary"
+      >
+        Registrar agora
+      </Link>
     </Card>
   );
 }
