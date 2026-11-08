@@ -7,6 +7,7 @@ import { emulatorsEnabled } from './lib/env';
 import { DashboardPage } from './pages/DashboardPage';
 import { HomePlaceholder } from './pages/HomePlaceholder';
 import { IndicatorEditorPage } from './pages/IndicatorEditorPage';
+import { IndicatorsPage } from './pages/IndicatorsPage';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { PlaceholderPage } from './pages/PlaceholderPage';
 import { SettingsPage } from './pages/SettingsPage';
@@ -73,13 +74,7 @@ const routes: RouteObject[] = [
         path: '/indicators',
         element: (
           <AppShell>
-            <PlaceholderPage
-              title="Meus indicadores"
-              icon="tune"
-              emptyTitle="Nenhum indicador ainda"
-              description="Crie seus indicadores para acompanhar fatores e resultados ao longo do tempo."
-              headerAction={{ label: 'Novo Indicador', to: '/indicators/new' }}
-            />
+            <IndicatorsPage />
           </AppShell>
         ),
       },

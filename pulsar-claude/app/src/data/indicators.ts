@@ -207,8 +207,16 @@ async function setArchived(uid: string, id: string, archived: boolean): Promise<
   });
 }
 
-export async function reorderIndicators(uid: string, group: IndicatorGroup, ids: string[]): Promise<void> {
+export async function reorderIndicators(
+  uid: string,
+  group: IndicatorGroup,
+  ids: string[],
+  expectedOrder?: ReadonlyMap<string, number>,
+): Promise<void> {
   if (new Set(ids).size !== ids.length) throw new Error('Indicator IDs must be unique.');
+  if (expectedOrder && (expectedOrder.size !== ids.length || ids.some((id) => !expectedOrder.has(id)))) {
+    throw new Error('Expected indicator order does not match the requested group.');
+  }
 
   await runTransaction(db, async (transaction) => {
     const references = ids.map((id) => indicatorRef(uid, id));
@@ -217,6 +225,12 @@ export async function reorderIndicators(uid: string, group: IndicatorGroup, ids:
       if (!snapshot.exists()) throw new Error('Indicator not found.');
       if (snapshot.data().group !== group) {
         throw new Error('Indicators can only be reordered within their own group.');
+      }
+      if (
+        expectedOrder &&
+        (snapshot.data().archivedAt != null || snapshot.data().sortOrder !== expectedOrder.get(snapshot.id))
+      ) {
+        throw new Error('Indicator order changed.');
       }
     });
     references.forEach((reference, index) => {

@@ -350,6 +350,26 @@ describe('indicator repository', () => {
     expect(store.writes).toHaveLength(0);
   });
 
+  it('rejects a stale reorder when another device changes the order during the transaction', async () => {
+    store.documents.set(path('factor-a'), saved({ sortOrder: 1000 }));
+    store.documents.set(path('factor-b'), saved({ sortOrder: 2000 }));
+    store.conflict = () => store.documents.set(path('factor-a'), saved({ sortOrder: 3000 }));
+    const { reorderIndicators } = await import('../indicators');
+    await expect(
+      reorderIndicators(
+        'alice',
+        'factor',
+        ['factor-b', 'factor-a'],
+        new Map([
+          ['factor-a', 1000],
+          ['factor-b', 2000],
+        ]),
+      ),
+    ).rejects.toThrow('Indicator order changed.');
+    expect(store.writes).toHaveLength(0);
+    expect(store.documents.get(path('factor-a'))?.sortOrder).toBe(3000);
+  });
+
   it('clears the previous account immediately when the subscribed user changes', async () => {
     store.documents.set(path('coffee'), saved());
     const { useIndicators } = await repository();
