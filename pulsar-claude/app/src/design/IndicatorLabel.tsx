@@ -8,6 +8,8 @@ interface IndicatorLabelProps {
   variant?: 'text' | 'badge';
   group?: IndicatorGroup;
   className?: string;
+  /** Always show the acronym (never the name/emoji), e.g. the code chip above a title. */
+  abbreviationOnly?: boolean;
 }
 
 const badgeTone: Record<IndicatorGroup, string> = {
@@ -19,9 +21,15 @@ const badgeTone: Record<IndicatorGroup, string> = {
  * The ONLY way to render an indicator name/abbreviation/emoji. Honors the global eye toggle:
  * closed -> abbreviation, no emoji; open -> full name + emoji. Never use indicator.name directly in JSX.
  */
-export function IndicatorLabel({ indicator, variant = 'text', group, className = '' }: IndicatorLabelProps) {
+export function IndicatorLabel({
+  indicator,
+  variant = 'text',
+  group,
+  className = '',
+  abbreviationOnly = false,
+}: IndicatorLabelProps) {
   const { isNameRevealed } = usePrivacy();
-  const { text, emoji } = indicatorLabel(indicator, isNameRevealed);
+  const { text, emoji } = indicatorLabel(indicator, isNameRevealed && !abbreviationOnly);
   const style =
     variant === 'badge'
       ? `rounded-md px-2 py-0.5 font-label-code text-label-code ${group ? badgeTone[group] : 'bg-surface-container text-on-surface'}`

@@ -3,14 +3,17 @@ import {
   addDoc,
   collection,
   doc,
+  getCountFromServer,
   onSnapshot,
   orderBy,
   query,
   runTransaction,
   serverTimestamp,
+  where,
   type Timestamp,
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { listDocuments } from './firestoreRest';
 import {
   suggestAggregation,
   validateIndicator,
@@ -94,6 +97,23 @@ function assertValidSortOrder(sortOrder: number): void {
   }
 }
 
+/** One-shot count for screens that must not keep a realtime channel open. */
+export async function countActiveIndicators(uid: string): Promise<number> {
+  const snapshot = await getCountFromServer(
+    query(indicatorsCollection(uid), where('archivedAt', '==', null)),
+  );
+  return snapshot.data().count;
+}
+
+/** Load IDs and archive status without opening a realtime listener. */
+export async function listIndicatorIdentities(uid: string): Promise<{ id: string; active: boolean }[]> {
+  const documents = await listDocuments(['users', uid, 'indicators']);
+  return documents.map((document) => ({
+    id: document.id,
+    active: document.fields.archivedAt == null,
+  }));
+}
+
 function storedIndicatorFrom(document: {
   id: string;
   data: () => Record<string, unknown> | undefined;
@@ -156,6 +176,38 @@ export async function createIndicator(uid: string, input: CreateIndicatorInput):
     updatedAt: serverTimestamp(),
   });
   return reference.id;
+}
+
+/** A stable ID makes creation of the same quick-start suggestion safe across devices. */
+export async function createSuggestedIndicator(
+  uid: string,
+  suggestionId: string,
+  input: CreateIndicatorInput,
+): Promise<boolean> {
+  assertValidSortOrder(input.sortOrder);
+  const dailyAggregation =
+    input.dailyAggregation === undefined
+      ? input.frequency === 'single_per_day'
+        ? null
+        : suggestAggregation({ group: input.group, valueType: input.valueType })
+      : input.dailyAggregation;
+  const indicator = indicatorInputFrom({ ...input, dailyAggregation });
+  assertValidIndicator(indicator);
+
+  const reference = indicatorRef(uid, suggestionId);
+  return runTransaction(db, async (transaction) => {
+    const snapshot = await transaction.get(reference);
+    if (snapshot.exists()) return snapshot.data().archivedAt == null;
+    transaction.set(reference, {
+      ...indicator,
+      sortOrder: input.sortOrder,
+      archivedAt: null,
+      lockedAt: null,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+    return true;
+  });
 }
 
 export async function updateIndicator(uid: string, id: string, patch: UpdateIndicatorInput): Promise<void> {

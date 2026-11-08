@@ -40,6 +40,7 @@ const names = [
   'remove',
   'restore',
   'science',
+  'schedule',
   'ssid_chart',
   'touch_app',
   'tune',

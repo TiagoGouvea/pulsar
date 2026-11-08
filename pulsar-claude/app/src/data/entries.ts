@@ -2,6 +2,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  getCountFromServer,
   getDoc,
   getDocs,
   query,
@@ -13,11 +14,28 @@ import { validateEntryValue, type EntryValue } from '../domain/entry';
 import type { IndicatorInput } from '../domain/indicator';
 import { db } from '../lib/firebase';
 import { localDate } from '../lib/time';
+import { listDocuments } from './firestoreRest';
 
 export interface SaveEntryInput {
   indicatorId: string;
   value: EntryValue;
   note?: string;
+}
+
+/** One-shot count for screens that must not keep a realtime channel open. */
+export async function countEntries(uid: string): Promise<number> {
+  const snapshot = await getCountFromServer(collection(db, 'users', uid, 'entries'));
+  return snapshot.data().count;
+}
+
+/** Extract the fields needed to determine the dashboard state. */
+export async function listEntryDates(uid: string): Promise<{ indicatorId: string; localDate: string }[]> {
+  const documents = await listDocuments(['users', uid, 'entries']);
+  return documents.flatMap(({ fields }) =>
+    typeof fields.indicatorId === 'string' && typeof fields.localDate === 'string'
+      ? [{ indicatorId: fields.indicatorId, localDate: fields.localDate }]
+      : [],
+  );
 }
 
 export async function saveEntry(uid: string, input: SaveEntryInput): Promise<string> {
