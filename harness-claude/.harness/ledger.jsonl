@@ -447,3 +447,4 @@
 {"ts":"2026-11-08T13:49:15.601Z","workerId":"haiku","provider":"anthropic","role":"review_code","featureId":"F-2.fix-3","stage":2,"tokensIn":10406,"tokensOut":769,"tokensCached":54700,"costUsd":0.07834400000000001,"billing":"api","modality":"remote"}
 {"ts":"2026-11-08T13:58:21.294Z","workerId":"haiku","provider":"anthropic","role":"review_ui","stage":2,"tokensIn":39833,"tokensOut":5528,"tokensCached":116875,"costUsd":0.33309,"billing":"api","modality":"remote"}
 {"ts":"2026-11-08T13:59:19.260Z","workerId":"sonnet","provider":"anthropic","role":"retro","stage":2,"tokensIn":44625,"tokensOut":6003,"tokensCached":148154,"costUsd":0.3728078,"billing":"api","modality":"remote"}
+{"ts":"2026-11-08T14:18:07.304Z","workerId":"glm-flash","provider":"openrouter","role":"approval_parser","stage":2,"tokensIn":16638,"tokensOut":1712,"tokensCached":799,"costUsd":0.00143313,"billing":"api","modality":"remote"}

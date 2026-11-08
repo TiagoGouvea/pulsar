@@ -117,3 +117,4 @@
 - 2026-11-08T13:36 ⛔ F-2.fix-2 BLOQUEADA: limite de 5 tentativas atingido │ features 9/11
 - 2026-11-08T13:43 ▶ etapa 2 (Registro) │ features 9/12 │ 2 bloqueadas │ US$ 14.11/15 │ branch 2-registro
 - 2026-11-08T13:49 ✔ F-2.fix-3 passing — Suíte completa da etapa falhou nos gates G6, G11 (worker codex-mid, 2 tentativa(s), US$ 0.28) │ features 10/12
+- 2026-11-08T14:19 ✔ etapa 2 aprovada · commits em 2-registro

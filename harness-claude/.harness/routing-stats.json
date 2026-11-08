@@ -1020,10 +1020,10 @@
     }
   },
   "glm-flash|approval_parser|*": {
-    "tentativas": 1,
-    "sucessos": 1,
-    "custoMedio": 0.00103104,
-    "duracaoMedia": 1821,
+    "tentativas": 2,
+    "sucessos": 2,
+    "custoMedio": 0.001232085,
+    "duracaoMedia": 6366,
     "falhasPorGate": {}
   },
   "codex-mid|test_writer|sync": {
