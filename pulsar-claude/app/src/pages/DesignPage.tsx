@@ -12,6 +12,7 @@ import {
   Slider,
   Toggle,
 } from '../design';
+import { privacyAllowProps } from '../privacy/allow';
 
 // Dev-only catalog of the design system (route /_design, emulator builds only).
 const samples = {
@@ -241,7 +242,7 @@ export default function DesignPage() {
             <span className="px-1 font-label-md text-label-md">Nome do indicador</span>
             {/* Explicit editing shows the real name on purpose (spec 4.4). */}
             <input
-              data-privacy-allow
+              {...privacyAllowProps()}
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="h-12 rounded-full bg-surface-container-low px-4 font-body-lg text-body-lg focus:ring-2 focus:ring-primary-container focus:outline-none"

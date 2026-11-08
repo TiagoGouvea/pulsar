@@ -4,6 +4,7 @@ import { listIndicatorEntries, type HistoryEntry } from '../data/entryHistory';
 import type { StoredIndicator as Indicator } from '../data/indicators';
 import { Button, EmptyState, Icon, IndicatorLabel, Sheet } from '../design';
 import { formatDate, formatTime } from '../lib/time';
+import { privacyAllowProps } from '../privacy/allow';
 import { entryValueLabel } from './entryValue';
 
 interface EntryHistorySheetProps {
@@ -159,7 +160,7 @@ export function EntryHistorySheet({ indicator, uid, onClose }: EntryHistorySheet
                   </div>
                   {noteRevealed && entry.note && (
                     <p
-                      data-privacy-allow
+                      {...privacyAllowProps()}
                       className="rounded-md bg-surface-container px-3 py-2 font-body-sm text-body-sm text-on-surface-variant"
                     >
                       {entry.note}

@@ -27,6 +27,29 @@ export default tseslint.config(
     },
   },
   {
+    // Privacy guard (spec 4.4): the name/sigla/emoji of an indicator is rendered only by
+    // <IndicatorLabel> (or indicatorLabel()), which obeys the global eye. Rendering the raw name
+    // in JSX would leak it while the eye is closed, so the guard forbids it in the markup.
+    files: ['src/**/*.tsx'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            "JSXExpressionContainer MemberExpression[property.name='name'][object.name=/^(indicator|indicatorSource)$/]",
+          message:
+            'Renderize nome/sigla/emoji de indicador apenas com <IndicatorLabel> (ou indicatorLabel() de src/privacy/label.ts).',
+        },
+        {
+          selector:
+            "JSXExpressionContainer MemberExpression[property.name='name'][object.property.name='indicator']",
+          message:
+            'Renderize nome/sigla/emoji de indicador apenas com <IndicatorLabel> (ou indicatorLabel() de src/privacy/label.ts).',
+        },
+      ],
+    },
+  },
+  {
     files: ['scripts/**/*.ts', 'e2e/**/*.ts', 'tests/**/*.ts'],
     rules: { 'no-console': 'off', 'react-hooks/rules-of-hooks': 'off' },
   },

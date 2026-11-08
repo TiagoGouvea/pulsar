@@ -1,4 +1,6 @@
 import type { Page } from '@playwright/test';
+import { SENTINELS as SEED_SENTINELS } from '../scripts/seed-data';
+import { PRIVACY_ALLOW_ATTRIBUTE } from '../src/privacy/allow';
 import routes from './routes.json' with { type: 'json' };
 
 export interface AppRoute {
@@ -9,15 +11,27 @@ export interface AppRoute {
 
 export const appRoutes: AppRoute[] = routes;
 
-export const SENTINELS = ['ZQX_ENERGIA_7F3', 'ZQX_SONO_9K2', 'ZQX_FOCO_4M8', 'ZQX_OBS_NOTA_5T1'];
+/**
+ * Names planted in the seed dataset. They come from the seed itself (single source of truth), so
+ * the privacy guard can never check a sentinel the seed does not use.
+ */
+export const SENTINELS: string[] = [
+  SEED_SENTINELS.energy,
+  SEED_SENTINELS.sleep,
+  SEED_SENTINELS.focus,
+  SEED_SENTINELS.note,
+];
+
+/** Elements that show real indicator names on purpose (explicit editing, opened observation). */
+export const PRIVACY_ALLOW_SELECTOR = `[${PRIVACY_ALLOW_ATTRIBUTE}]`;
 
 // Visible text of the page, ignoring elements that show real names on purpose ([data-privacy-allow]).
 export function visibleTextOutsideAllowList(page: Page): Promise<string> {
-  return page.evaluate(() => {
+  return page.evaluate((allowSelector) => {
     const clone = document.body.cloneNode(true) as HTMLElement;
-    clone.querySelectorAll('[data-privacy-allow], script, style').forEach((el) => el.remove());
+    clone.querySelectorAll(`${allowSelector}, script, style`).forEach((el) => el.remove());
     return clone.textContent ?? '';
-  });
+  }, PRIVACY_ALLOW_SELECTOR);
 }
 
 export function hasHorizontalOverflow(page: Page): Promise<boolean> {

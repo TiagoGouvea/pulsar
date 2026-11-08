@@ -12,7 +12,7 @@ Leia antes de qualquer mudança: `../docs/Pulsar_Especificacao_Completa.md` (spe
 - **Timestamps em UTC** (`Timestamp`/ISO). O dia do registro (`localDate`, `YYYY-MM-DD`) é calculado no cliente pelo fuso do navegador. A quota da IA e o lembrete usam o dia de `America/Sao_Paulo`.
 - `src/stats/` contém **só lógica pura e determinística** (sem Firebase, React, DOM, `Date.now()` implícito: receba `today` por parâmetro). O ESLint bloqueia imports de `firebase`/`react` ali.
 - Nome/sigla/emoji de indicador **só** via `<IndicatorLabel>` (ou `indicatorLabel()` de `src/privacy/label.ts` para textos). Olho fechado = sigla e sem emoji. Gráficos não são mascarados.
-- Elementos que mostram nomes reais de propósito (ex.: editor aberto) recebem `data-privacy-allow`.
+- Elementos que mostram nomes reais de propósito (ex.: editor aberto) recebem `data-privacy-allow` (use `privacyAllowProps()` de `src/privacy/allow.ts`; é a fonte única do atributo). O ESLint bloqueia `indicator.name` renderizado direto no JSX.
 - Nunca leia/edite `.env`. Nunca rode seed fora do emulador. Não use `.skip`/`.only` nem enfraqueça asserts. Não edite testes protegidos listados em `../.harness/features.json`.
 - Prefira código mínimo; antes de criar função/componente, procure algo equivalente (`grep -r` em `src/`) e reutilize.
 

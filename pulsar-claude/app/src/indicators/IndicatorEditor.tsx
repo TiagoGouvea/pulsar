@@ -1,6 +1,7 @@
 import { useId, useState, type FormEvent, type ReactNode } from 'react';
 import type { IndicatorInput, OrdinalOption, ValueType } from '../domain/indicator';
 import { abbreviationOf } from '../privacy/label';
+import { privacyAllowProps } from '../privacy/allow';
 import { Button, Chip, Icon, type IconName } from '../design';
 import { AggregationControl } from './AggregationControl';
 import { suggestedAggregation } from './aggregation';
@@ -292,7 +293,7 @@ export function IndicatorEditor({
           {/* Explicit editing shows the real name on purpose (spec 4.4). */}
           <input
             id={nameId}
-            data-privacy-allow
+            {...privacyAllowProps()}
             type="text"
             value={draft.name}
             maxLength={60}

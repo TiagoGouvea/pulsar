@@ -29,6 +29,7 @@
 ## Outras
 - Região: Firestore e Functions em `southamerica-east1`.
 - Idioma único pt-BR; app somente mobile (desktop só estica/desempilha).
+- **Guarda do modo privado**: o atributo que marca conteúdo revelado de propósito é `data-privacy-allow` (fonte única: `app/src/privacy/allow.ts`); a guarda e2e percorre todas as rotas de `app/e2e/routes.json` com as sentinelas do seed (`ZQX_ENERGIA_7F3`, `ZQX_SONO_9K2`, `ZQX_FOCO_4M8`, `ZQX_OBS_NOTA_5T1`, vindas de `app/scripts/seed-data.ts`). Nome/sigla/emoji de indicador só pode ser renderizado por `<IndicatorLabel>` (ou `indicatorLabel()`): o ESLint bloqueia `indicator.name` direto no JSX. Justificativa: o nome de um indicador é informação pessoal e não pode vazar com o olho fechado; a guarda precisa de uma fonte única para não divergir do seed.
 
 ## Pendências completadas pelo inicializador (defaults conservadores — confirmar no checkpoint da etapa 0)
 - **Convite de instalar a PWA ("alguns usos")**: registros em ≥ 5 dias distintos **e** conta já convertida; se anônima, mostra a conversão. Justificativa: mais tarde que o convite de salvar conta (3 dias), nunca antes da conversão.
