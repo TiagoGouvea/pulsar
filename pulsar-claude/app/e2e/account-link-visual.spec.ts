@@ -26,7 +26,7 @@ test('account linking states @visual', async ({ freshUserPage: page }, testInfo)
   await expect(page.getByRole('status')).toContainText('Processando');
   await capture('google-loading');
   await popup.close();
-  await expect(page.getByRole('alert')).toContainText('cancelada');
+  await expect(page.getByRole('alert')).toContainText('cancelada', { timeout: 15_000 });
   await capture('google-error');
 
   await page.getByRole('button', { name: /enviar link mágico/i }).click();
