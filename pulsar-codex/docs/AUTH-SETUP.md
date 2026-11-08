@@ -62,7 +62,7 @@ yarn test:deletion:emulator
 yarn test:emulators
 ```
 
-Os testes exigem Java e usam `firebase.test.json` com Firestore em `8090`, Auth em `9199` e Functions em `5101`, sem alterar as portas do `firebase.json` padrão. `yarn test` executa as regras e a exclusão integral no emulador, além dos testes unitários. A suíte chama também a callable real emulada e usa o mesmo adapter Admin de produção para verificar falhas parciais. Consulte [`SECURITY.md`](SECURITY.md).
+Os testes exigem Java e usam `firebase.test.json` com projeto sintético `demo-pulsar-codex` e portas próprias: Hub `4423`, Logging `4523`, Auth `9124`, Firestore `8123`/WebSocket `9123`, Functions `5123`, Eventarc `9323` e Tasks `9523`. O Playwright usa `3123`; as portas do `firebase.json` padrão não são alteradas. `yarn test` executa as regras e a exclusão integral no emulador, além dos testes unitários. A suíte chama também a callable real emulada e usa o mesmo adapter Admin de produção para verificar falhas parciais. Consulte [`SECURITY.md`](SECURITY.md).
 
 ## Limites
 

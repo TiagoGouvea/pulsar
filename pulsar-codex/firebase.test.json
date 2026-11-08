@@ -11,14 +11,27 @@
     "indexes": "firestore.indexes.json"
   },
   "emulators": {
+    "hub": {
+      "port": 4423
+    },
+    "logging": {
+      "port": 4523
+    },
     "functions": {
-      "port": 5101
+      "port": 5123
     },
     "auth": {
-      "port": 9199
+      "port": 9124
     },
     "firestore": {
-      "port": 8090
+      "port": 8123,
+      "websocketPort": 9123
+    },
+    "eventarc": {
+      "port": 9323
+    },
+    "tasks": {
+      "port": 9523
     },
     "ui": {
       "enabled": false

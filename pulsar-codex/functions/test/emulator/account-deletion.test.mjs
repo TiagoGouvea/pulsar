@@ -6,7 +6,7 @@ import { getFirestore } from 'firebase-admin/firestore'
 import { deleteOwnAccount } from '../../lib/account-deletion.js'
 import { createDeletionDependencies } from '../../lib/account-deletion-store.js'
 
-const projectId = 'demo-pulsar'
+const projectId = 'demo-pulsar-codex'
 // Fail closed: this suite must never use production credentials or data.
 assert.match(process.env.FIRESTORE_EMULATOR_HOST ?? '', /^(127\.0\.0\.1|localhost):\d+$/)
 assert.match(process.env.FIREBASE_AUTH_EMULATOR_HOST ?? '', /^(127\.0\.0\.1|localhost):\d+$/)
@@ -22,7 +22,7 @@ const request = (uid = owner) => ({
 })
 const firestoreUrl = `http://${process.env.FIRESTORE_EMULATOR_HOST}`
 const authUrl = `http://${process.env.FIREBASE_AUTH_EMULATOR_HOST}`
-const callableUrl = `http://${process.env.FUNCTIONS_EMULATOR_HOST ?? '127.0.0.1:5101'}/${projectId}/southamerica-east1/deleteAccount`
+const callableUrl = `http://${process.env.FUNCTIONS_EMULATOR_HOST ?? '127.0.0.1:5123'}/${projectId}/southamerica-east1/deleteAccount`
 
 after(async () => {
   await deleteApp(app)

@@ -47,9 +47,9 @@ export default defineConfig({
     reuseExistingServer: false,
     env: {
       VITE_USE_FIREBASE_EMULATORS: 'true',
-      VITE_FIREBASE_PROJECT_ID: 'demo-pulsar',
+      VITE_FIREBASE_PROJECT_ID: 'demo-pulsar-codex',
       VITE_FIREBASE_API_KEY: 'demo-api-key',
-      VITE_FIREBASE_AUTH_DOMAIN: 'demo-pulsar.firebaseapp.com',
+      VITE_FIREBASE_AUTH_DOMAIN: 'demo-pulsar-codex.firebaseapp.com',
       VITE_FIREBASE_APP_ID: 'demo-app'
     }
   }

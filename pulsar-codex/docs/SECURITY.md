@@ -39,7 +39,7 @@ yarn build
 yarn test:e2e:emulators       # regressão do layout e fluxos existentes
 ```
 
-Requer Node e Java compatíveis com o Firebase CLI. Configuração isolada em `firebase.test.json`: projeto `demo-pulsar`, Firestore `8090`, Auth `9199`, Functions `5101`. A suíte de exclusão recusa execução sem hosts locais de emulador. O comando E2E usa as mesmas portas isoladas via `VITE_AUTH_EMULATOR_PORT`, `VITE_FIRESTORE_EMULATOR_PORT` e `VITE_FUNCTIONS_EMULATOR_PORT`; fora dele os padrões de desenvolvimento são preservados. Nenhum deploy ou acesso a dados reais é necessário.
+Requer Node e Java compatíveis com o Firebase CLI. Configuração isolada em `firebase.test.json`: projeto sintético `demo-pulsar-codex`, Hub `4423`, Logging `4523`, Auth `9124`, Firestore `8123`/WebSocket `9123`, Functions `5123`, Eventarc `9323` e Tasks `9523`; o Vite E2E usa `3123`. A suíte de exclusão recusa execução sem hosts locais de emulador. O comando E2E passa as portas de Auth, Firestore e Functions via `VITE_AUTH_EMULATOR_PORT`, `VITE_FIRESTORE_EMULATOR_PORT` e `VITE_FUNCTIONS_EMULATOR_PORT`; fora dele os padrões de desenvolvimento são preservados. Nenhum deploy ou acesso a dados reais é necessário.
 
 Cobertura: operações entre UIDs e sem autenticação, consultas de coleção/grupo e batch misto, schemas/limites, campos internos inclusive remoção, entradas diárias válidas/inválidas e compatibilidade com o indicador, recursos fechados e bloqueio de exclusão; remoção com mais de 500 registros, subcoleções desconhecidas/pais ausentes, todos os namespaces internos, preservação do outro UID, ordem antes de Auth, falhas parciais/retomada e token antigo após exclusão pela callable.
 

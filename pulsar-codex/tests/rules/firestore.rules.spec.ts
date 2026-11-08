@@ -38,7 +38,7 @@ beforeAll(async () => {
     )
   }
   testEnv = await initializeTestEnvironment({
-    projectId: 'demo-pulsar',
+    projectId: 'demo-pulsar-codex',
     firestore: {
       rules: RULES,
       host: emulatorHost,
