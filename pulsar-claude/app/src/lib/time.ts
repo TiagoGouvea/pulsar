@@ -62,6 +62,19 @@ export function formatDateTime(input: Date | string): string {
   return `${formatDate(date)} ${hours}:${minutes}`;
 }
 
+/** Formats a date (or ISO string) as "hh:mm" (24h) in the browser timezone. */
+export function formatTime(input: Date | string): string {
+  const date = typeof input === 'string' ? new Date(input) : input;
+  const parts = new Intl.DateTimeFormat('pt-BR', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(date);
+  const get = (type: Intl.DateTimeFormatPartTypes): string =>
+    parts.find((part) => part.type === type)?.value ?? '';
+  return `${get('hour')}:${get('minute')}`;
+}
+
 /**
  * Day key (YYYY-MM-DD) in America/Sao_Paulo, independent of the browser timezone.
  * Used for the AI quota and reminders.

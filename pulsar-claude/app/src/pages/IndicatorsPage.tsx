@@ -10,6 +10,7 @@ import {
 } from '../data/indicators';
 import { Button, EmptyState, Icon, Sheet } from '../design';
 import type { IndicatorGroup } from '../design';
+import { EntryHistorySheet } from '../indicators/EntryHistorySheet';
 import { ArchivedIndicatorCard, IndicatorCard } from '../indicators/IndicatorCard';
 
 /** Filters of the list: everything, only factors, only results or only archived ones. */
@@ -73,6 +74,7 @@ export function IndicatorsPage() {
   const [filter, setFilter] = useState<ListFilter>('all');
   const [archivedOpen, setArchivedOpen] = useState(true);
   const [optionsFor, setOptionsFor] = useState<Indicator | null>(null);
+  const [historyFor, setHistoryFor] = useState<Indicator | null>(null);
   const [infoOpen, setInfoOpen] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
@@ -122,6 +124,12 @@ export function IndicatorsPage() {
   function edit(indicator: Indicator) {
     setOptionsFor(null);
     navigate(`/indicators/${indicator.id}/edit`);
+  }
+
+  /** Opens the history of the records of an indicator (spec 5.2). */
+  function openHistory(indicator: Indicator) {
+    setOptionsFor(null);
+    setHistoryFor(indicator);
   }
 
   return (
@@ -315,6 +323,14 @@ export function IndicatorsPage() {
             Editar Parâmetros
           </Button>
           <Button
+            variant="neutral"
+            icon="history"
+            fullWidth
+            onClick={() => optionsFor && openHistory(optionsFor)}
+          >
+            Histórico de Registros
+          </Button>
+          <Button
             variant="danger"
             icon="inventory_2"
             fullWidth
@@ -324,6 +340,8 @@ export function IndicatorsPage() {
           </Button>
         </div>
       </Sheet>
+
+      <EntryHistorySheet indicator={historyFor} uid={uid} onClose={() => setHistoryFor(null)} />
 
       <Sheet
         open={infoOpen}
