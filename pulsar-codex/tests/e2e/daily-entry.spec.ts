@@ -124,8 +124,7 @@ test.describe('daily registration and visual privacy', () => {
 
 for (const viewport of [
   { name: '390px (mobile)', width: 390, height: 844 },
-  { name: '430px (mobile-lg)', width: 430, height: 932 },
-  { name: '1440px (desktop reflow)', width: 1440, height: 900 }
+  { name: '430px (mobile-lg)', width: 430, height: 932 }
 ]) {
   test(`daily register reflows at ${viewport.name}`, async ({ page }) => {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });

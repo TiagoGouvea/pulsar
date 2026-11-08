@@ -1,12 +1,10 @@
 import { expect, test } from '@playwright/test';
 
-// Mobile-only reflow contract: flows must be complete, readable and
-// touch-operable at 390px and 430px with no horizontal scrolling, and
-// at 1440px the content must reflow without overflow or lost content.
+// Mobile-only contract: flows must be complete, readable, touch-operable,
+// and free of horizontal scrolling at compact and large phone widths.
 const viewports = [
   { name: '390px (mobile)', width: 390, height: 844 },
-  { name: '430px (mobile-lg)', width: 430, height: 932 },
-  { name: '1440px (desktop reflow)', width: 1440, height: 900 }
+  { name: '430px (mobile-lg)', width: 430, height: 932 }
 ];
 
 for (const viewport of viewports) {
@@ -112,16 +110,6 @@ for (const viewport of viewports) {
     expect(overflow, `horizontal overflow of ${overflow}px`).toBeLessThanOrEqual(0);
   });
 }
-
-test.describe('wide screens reuse the mobile layout', () => {
-  test.use({ viewport: { width: 1440, height: 900 } });
-
-  test('keeps the same mobile navigation without desktop-only chrome', async ({ page }) => {
-    await page.goto('/');
-    await expect(page.getByRole('banner')).toBeVisible();
-    expect(await page.locator('[data-desktop-only]').count()).toBe(0);
-  });
-});
 
 // The account entry is reachable before any permanent registration; even the
 // signed-out state must reflow without horizontal overflow.

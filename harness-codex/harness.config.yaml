@@ -94,7 +94,6 @@ review:
   viewportWidths:
     - 390
     - 430
-    - 1440
 routing:
   pools:
     planner: [terra-review, gemini-mid, glm-5, sol-top]

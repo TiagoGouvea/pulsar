@@ -67,7 +67,7 @@ describe('AppShell', () => {
     expect(screen.getByText('Siglas')).toBeInTheDocument();
   });
 
-  it('keeps the same shell on wide screens (no desktop-only navigation)', () => {
+  it('keeps desktop-only chrome out of the mobile-first shell', () => {
     renderWithRouter(<AppShell />);
     // The shell has no hamburger/drawer or desktop-specific containers.
     expect(document.querySelector('[data-desktop-only]')).toBeNull();
