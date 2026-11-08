@@ -8,7 +8,7 @@ export function RootRedirect() {
   const { onboardingCompleted, isLoading: profileLoading } = useOnboardingStatus(user?.uid);
 
   if (isLoading || (user && profileLoading)) {
-    return <p role="status" className="px-gutter py-space-lg body-sm">Preparando seu laboratório…</p>;
+    return <h1 className="px-gutter py-space-lg body-sm">Preparando seu laboratório…</h1>;
   }
 
   const completed = onboardingCompleted || hasCompletedOnboardingLocally(user?.uid);
