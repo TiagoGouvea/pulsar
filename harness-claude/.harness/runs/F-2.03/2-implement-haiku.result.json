@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-07T20:03:36.866Z",
+  "workerId": "haiku",
+  "role": "implement",
+  "featureId": "F-2.03",
+  "stage": 2,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.8435497999999999,
+  "durationMs": 357982,
+  "usage": {
+    "inputTokens": 60970,
+    "outputTokens": 12446,
+    "cachedTokens": 1449179,
+    "costUsd": 0.8435497999999999
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "now()`), o que o coloca no fim da lista.\n   - **Edição:** troquei `listIndicators` por `getIndicator(uid, id)`, que lê um único documento numa transação só de leitura e não deixa conexão aberta.\n\n**Testes rodados:**\n- `yarn lint`, `typecheck` e `format:check`: ok.\n- `yarn test:unit`: 174/174.\n- e2e mobile da feature (`indicator-create`, `indicator-edit-lock`), mais `routes`, `account-link` e `app-shell`: 34/34.\n- `yarn test:e2e` completo: 120/120.\n\nRegistrei dois riscos em `.harness/inbox/risks.jsonl`:\n- **`account-link` deve quebrar na F-2.05:** o teste ainda espera rede ociosa em todas as rotas, e a lista de indicadores da F-2.05 vai precisar de uma conexão em tempo real. Lá vai ser preciso decidir se o teste fica mais tolerante, como já é o `routes.spec`.\n- **Ordem misturada:** os indicadores do seed usam números pequenos e os novos usam timestamp. A reordenação da F-2.05 precisa renumerar.\n\nA tentativa anterior também commitou os links `app/node_modules` e `app/functions/node_modules`; não mexi neles, porque o git fica com o orquestrador.\n\n```json\n{\"summary\":\"F-2.03 editor: reused attempt-1 code; restored protected account-link.spec.ts to its original text; editor no longer keeps Firestore's watch stream open (create reads nothing, sortOrder = Date.now(); edit reads one doc via a read-only transaction). All gates green.\",\"filesChanged\":[\"app/e2e/account-link.spec.ts\",\"app/src/data/indicators.ts\",\"app/src/pages/IndicatorEditorPage.tsx\",\".harness/inbox/risks.jsonl\"],\"testsRun\":[\"yarn lint\",\"yarn typecheck\",\"yarn format:check\",\"yarn test:unit (174/174)\",\"yarn test:e2e mobile: indicator-create, indicator-edit-lock, routes, account-link, app-shell (34/34)\",\"yarn test:e2e full (120/120)\"],\"confidence\":\"high\",\"notes\":\"Attempt 1 had weakened protected e2e/account-link.spec.ts; reverted. listIndicators replaced by getIndicator. Risks logged: strict networkidle in account-link will break once F-2.05 adds a live listener; mixed sortOrder values for F-2.05 reordering.\"}\n```"
+}

@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-08T11:32:55.215Z",
+  "workerId": "gemini-lite",
+  "role": "triage",
+  "featureId": "F-2.08",
+  "stage": 2,
+  "attempt": 5,
+  "outcome": "success",
+  "costUsd": 0.001084,
+  "durationMs": 1790,
+  "usage": {
+    "inputTokens": 3460,
+    "outputTokens": 146,
+    "cachedTokens": 0,
+    "costUsd": 0.001084
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\"causaRaiz\": \"O teste de E2E tenta realizar uma ação (`click`) após simular uma desconexão de rede (`setOffline(true)`), o que interrompe a execução do navegador ou causa timeout ao tentar interagir com a página offline, revelando uma instabilidade na gestão de estado ou na infraestrutura de testes em modo offline.\", \"categoria\": \"flaky\", \"padrao\": true, \"dica\": \"Verifique se a aplicação está tentando realizar alguma chamada de rede síncrona/bloqueante ao clicar no botão que falha ao entrar no modo offline e ajuste o teste para garantir que o contexto do navegador permanece estável.\"}\n```"
+}

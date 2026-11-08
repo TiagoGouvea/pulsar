@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-08T13:10:13.957Z",
+  "workerId": "codex-mid",
+  "role": "implement_hard",
+  "featureId": "F-2.fix-1",
+  "stage": 2,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.08425755,
+  "durationMs": 24011,
+  "usage": {
+    "inputTokens": 59770,
+    "outputTokens": 2059,
+    "cachedTokens": 283851
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "Bloqueado: as dependências não estão disponíveis no worktree. Registrei a pendência; nenhuma correção foi aplicada.\n\n```json\n{\n  \"summary\": \"Implementação bloqueada pela infraestrutura.\",\n  \"filesChanged\": [\".harness/inbox/questions.jsonl\"],\n  \"testsRun\": [\"E2E direcionado: falhou porque Playwright não está disponível.\"],\n  \"confidence\": \"low\",\n  \"notes\": \"Provisionar as dependências e retomar os gates. Nenhum teste protegido foi alterado.\"\n}\n```"
+}

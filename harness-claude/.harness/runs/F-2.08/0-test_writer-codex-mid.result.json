@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-07T20:15:35.842Z",
+  "workerId": "codex-mid",
+  "role": "test_writer",
+  "featureId": "F-2.08",
+  "stage": 2,
+  "attempt": 0,
+  "outcome": "success",
+  "costUsd": 0.0885402,
+  "durationMs": 24069,
+  "usage": {
+    "inputTokens": 59942,
+    "outputTokens": 2421,
+    "cachedTokens": 329864
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"summary\": \"Bloqueado pela infraestrutura; nenhum teste foi criado.\",\n  \"filesChanged\": [\".harness/inbox/questions.jsonl\"],\n  \"testsRun\": [],\n  \"confidence\": \"low\",\n  \"notes\": \"node_modules aponta para fora do worktree e sua resolução falha. É necessário corrigir o ambiente.\"\n}\n```"
+}

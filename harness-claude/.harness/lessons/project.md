@@ -40,10 +40,10 @@
       - implement_hard
     tags:
       - gates
-  rule: Antes de terminar, rode localmente os gates que costumam falhar
-    (format:check, lint, typecheck, test:unit, coverage). Falhas G2/G4 em
-    evt-25, evt-33 e evt-53 vieram de formatação ou configuração de coverage que
-    um yarn format:fix e um yarn test:unit teriam pego.
+  rule: "Antes de terminar, rode localmente os gates rápidos: `yarn format:fix`,
+    depois `yarn format:check`, lint, typecheck e test:unit com coverage. O G2
+    (formatação/lint) ainda derrubou a F-2.01 duas vezes, com kimi-pro e com
+    codex-mid. São falhas que um format:fix e um lint teriam pego em segundos."
   evidence:
     - evt-25
     - evt-33
@@ -60,15 +60,14 @@
       - implement_hard
     tags:
       - review
-  rule: "As revisões rejeitadas causaram a maior parte do retrabalho da etapa 1.
-    F-1.03, F-1.04, F-1.06, F-1.09, F-1.11 e F-1.12 tiveram de 2 a 5 rejeições
-    seguidas, inclusive com opus. Antes de implementar, leia o último
-    verdict-N.json da feature e trate cada ponto apontado. Antes de entregar,
-    confira cada critério de aceite e aponte o teste ou o trecho de código que o
-    comprova. Exemplos: ordem de limpeza antes de remover do Auth,
-    requires-recent-login, isolamento entre UIDs, e erro de rede com mensagem em
-    pt-BR sem indicar sucesso. Não descarte o trabalho de tentativas anteriores
-    sem comparar com o HEAD."
+  rule: "Revisões rejeitadas foram o maior retrabalho das etapas 1 e 2. F-2.10
+    teve 5 rejeições, e F-2.08 e F-1.09 também foram rejeitadas, com vários
+    modelos. Antes de implementar, leia o último verdict-N.json da feature e
+    trate cada ponto apontado. Antes de entregar, liste cada critério de aceite
+    e indique o teste ou o trecho de código que o comprova. Exemplos: o texto e
+    o estado em pt-BR, a configuração determinística da sugestão e o fato de
+    nada ser criado antes do toque. Não descarte o trabalho de tentativas
+    anteriores sem comparar com o HEAD."
   evidence:
     - evt-40
     - evt-42
@@ -740,14 +739,15 @@
     tags:
       - e2e
       - gates
-  rule: O G6 (e2e) foi o gate que mais falhou na etapa 1. Ele derrubou F-1.06,
-    F-1.09 e F-1.12 com haiku, sonnet, kimi-pro e codex-mid, e só a F-1.09
-    consumiu 14 tentativas. Antes de alterar código, abra o gate-report e anote
-    o nome exato do teste que falhou e a mensagem de erro. Depois rode só esse
-    spec contra os emuladores (yarn e2e --grep "<título>") e entregue só quando
-    ele passar. Em fluxos de auth (vincular, sair, excluir), espere um elemento
-    de UI que dependa do novo estado de onAuthStateChanged com locator.waitFor
-    ou waitForURL. Não use networkidle e não aumente timeouts.
+  rule: O G6 (e2e) foi o gate que mais falhou nas etapas 1 e 2 (F-1.06, F-1.09,
+    F-1.12, F-2.08). Antes de alterar código, abra o gate-report e anote o nome
+    exato do teste e a mensagem de erro. Rode só esse spec contra os emuladores
+    (`yarn e2e --grep "<título>"`) e entregue só quando ele passar. Em fluxos de
+    auth (vincular, sair, excluir), espere um elemento de UI que dependa do novo
+    estado de onAuthStateChanged, com locator.waitFor ou waitForURL. Não use
+    networkidle. Só aumente um timeout quando houver um atraso documentado do
+    SDK, como o popup-closed-by-user do Firebase (cerca de 8s), e explique o
+    motivo num comentário.
   evidence:
     - evt-230
     - evt-233
@@ -803,6 +803,188 @@
     - evt-280
     - evt-284
   added: 2026-11-07
+  hits: 0
+  helped: 0
+  helpedRate: null
+  status: active
+- id: L-048
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - ui
+      - privacy-mode
+  rule: Antes de terminar, rode em app/ `yarn build:emulator && yarn --cwd
+    functions build` e corrija qualquer erro (imports, ícones fora de
+    scripts/icons.ts, rota nova sem a página lazy correspondente). Depois rode
+    `yarn test:e2e` (ele sobe o e2e:serve sob port-lock) para confirmar que o
+    preview sobe na porta 4792. Não deixe emuladores nem preview rodando ao
+    sair. Se o build passar e a porta continuar ocupada ou travada, registre em
+    .harness/inbox/questions.jsonl como problema de infraestrutura.
+  evidence:
+    - evt-325
+  added: 2026-11-08
+  hits: 9
+  helped: 1
+  helpedRate: 0.1111111111111111
+  status: retired
+- id: L-049
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - ui
+      - sync
+      - privacy-mode
+  rule: Refine as asserções de teste unitário para excluir elementos de feedback
+    de sistema (como banners de status de salvamento) da verificação de texto
+    global, e aumente a resiliência dos testes E2E offline garantindo que o
+    estado de salvamento pendente seja renderizado antes da interação.
+  evidence:
+    - evt-327
+  added: 2026-11-08
+  hits: 9
+  helped: 2
+  helpedRate: 0.2222222222222222
+  status: retired
+- id: L-050
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - ui
+      - privacy-mode
+  rule: Aumente o tamanho do container ou aplique padding suficiente no botão para
+    garantir a área de toque mínima de 44px.
+  evidence:
+    - evt-329
+  added: 2026-11-08
+  hits: 8
+  helped: 2
+  helpedRate: 0.25
+  status: retired
+- id: L-051
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - ui
+      - sync
+      - privacy-mode
+  rule: Após mudar o estado da rede com setOffline(true), aguarde a confirmação de
+    que a página ainda está responsiva ou use um retry explícito com lógica de
+    espera para estabilização do navegador.
+  evidence:
+    - evt-331
+  added: 2026-11-08
+  hits: 8
+  helped: 1
+  helpedRate: 0.125
+  status: retired
+- id: L-052
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - ui
+      - sync
+      - privacy-mode
+  rule: Adicione um `await page.waitForLoadState('networkidle')` ou aguarde o
+    estado de prontidão da página/componente antes de ativar o modo offline e
+    realizar a interação.
+  evidence:
+    - evt-334
+  added: 2026-11-08
+  hits: 8
+  helped: 1
+  helpedRate: 0.125
+  status: retired
+- id: L-053
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - ui
+      - sync
+      - privacy-mode
+  rule: Verifique se a aplicação está tentando realizar alguma chamada de rede
+    síncrona/bloqueante ao clicar no botão que falha ao entrar no modo offline e
+    ajuste o teste para garantir que o contexto do navegador permanece estável.
+  evidence:
+    - evt-341
+  added: 2026-11-08
+  hits: 6
+  helped: 2
+  helpedRate: 0.3333333333333333
+  status: retired
+- id: L-054
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - ui
+      - sync
+      - privacy-mode
+  rule: Adicione `await page.waitForLoadState('networkidle')` ou espere um seletor
+    específico aparecer (como um dos cards) antes de realizar o clique no link,
+    garantindo a estabilidade da página.
+  evidence:
+    - evt-350
+  added: 2026-11-08
+  hits: 2
+  helped: 1
+  helpedRate: 0.5
+  status: retired
+- id: L-055
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - regression
+      - gate:G11
+  rule: "Não reimplemente nada: em app/e2e/account-link-visual.spec.ts, aumente só
+    a asserção de cancelamento para `await
+    expect(page.getByRole('alert')).toContainText('cancelada', { timeout: 15_000
+    })` (Firebase só rejeita popup-closed-by-user ~8s após o close) e depois
+    garanta as dependências instaladas (yarn install no app/) antes de rodar
+    lint + e2e."
+  evidence:
+    - evt-380
+  added: 2026-11-08
+  hits: 1
+  helped: 1
+  helpedRate: 1
+  status: retired
+- id: L-057
+  scope:
+    roles:
+      - implement
+      - implement_hard
+    tags:
+      - sync
+      - e2e
+  rule: "Em testes e2e offline (context.setOffline): antes de ficar offline,
+    espere um elemento concreto da tela pronta com locator.waitFor, sem usar
+    networkidle. Depois da interação, confira o estado 'pendente' na UI e nunca
+    'salvo'. Do lado do app, o clique não pode aguardar uma promise de rede
+    antes de atualizar a UI. Mostre o pendente na hora e só marque como salvo
+    quando a escrita for confirmada. A F-2.08 caiu no G6 por esse fluxo em 5
+    tentativas."
+  evidence:
+    - evt-328
+    - evt-332
+    - evt-335
+    - evt-342
+    - evt-351
+  added: 2026-11-08
   hits: 0
   helped: 0
   helpedRate: null

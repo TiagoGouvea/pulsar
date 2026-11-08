@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-07T20:59:14.521Z",
+  "workerId": "minimax",
+  "role": "implement",
+  "featureId": "F-2.11",
+  "stage": 2,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.21786186000000007,
+  "durationMs": 1588992,
+  "usage": {
+    "inputTokens": 83122,
+    "outputTokens": 66809,
+    "cachedTokens": 11020544,
+    "costUsd": 0.21786186000000007
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "hat breaks the protected `networkidle` gates).\n\n```json\n{\n  \"summary\": \"Implemented F-2.11: pure invite rule (src/account/invite.ts), Firestore access for the dismissal state and the distinct entry days, a dismissable dashboard banner in the design system (CTA to the account conversion in Settings), the dashboard page wiring, the cloud_sync icon, unit acceptance tests and an e2e acceptance spec. Verified that the SDK's getDoc/getDocs watch stream would break the protected networkidle e2e gates, so the entries are listed through the unary Firestore REST API and the user doc is read with a read-only transaction.\",\n  \"filesChanged\": [\n    \"app/src/account/invite.ts\",\n    \"app/src/account/inviteRepository.ts\",\n    \"app/src/account/SaveAccountInviteBanner.tsx\",\n    \"app/src/account/__tests__/invite.test.ts\",\n    \"app/src/pages/DashboardPage.tsx\",\n    \"app/src/App.tsx\",\n    \"app/scripts/icons.ts\",\n    \"app/src/design/icons.ts\",\n    \"app/e2e/save-account-banner.spec.ts\",\n    \".harness/inbox/questions.jsonl\",\n    \".harness/inbox/risks.jsonl\"\n  ],\n  \"testsRun\": [\n    \"yarn lint\",\n    \"yarn typecheck\",\n    \"yarn format:check\",\n    \"yarn test:unit (21 files, 179 tests)\",\n    \"yarn test:rules (7 files, 106 tests)\",\n    \"yarn test:e2e (126 passed; 3 flaky account-link retries, pre-existing)\",\n    \"yarn test:e2e save-account-banner.spec.ts (3 passed)\",\n    \"yarn test:visual (20 passed; account-link-visual fails identically on the base branch)\"\n  ],\n  \"confidence\": \"med\",\n  \"notes\": \"The committed app/node_modules and app/functions/node_modules symlinks pointed to a self-referencing (broken) path, so I reinstalled the locked dependencies locally with yarn; this shows as a deletion of those two symlinks in the worktree status. The design mockup shows two conversion buttons inside the banner and no dismiss button; I followed the feature (dispensable banner that leads to the conversion already delivered in F-1.09) and registered the deviation in .harness/inbox/questions.jsonl.\"\n}\n```"
+}

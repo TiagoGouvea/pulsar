@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-07T20:11:01.112Z",
+  "workerId": "gemini",
+  "role": "review_ui",
+  "featureId": "F-2.03",
+  "stage": 2,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.074586225,
+  "durationMs": 70884,
+  "usage": {
+    "inputTokens": 53282,
+    "outputTokens": 3492,
+    "cachedTokens": 287063,
+    "costUsd": 0.074586225
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"pass\": true,\n  \"score\": 9.4,\n  \"porCriterio\": {\n    \"c1\": 9.5,\n    \"c2\": 9.5,\n    \"c3\": 9.5,\n    \"c4\": 9.0,\n    \"c5\": 9.5,\n    \"c6\": 9.0,\n    \"c7\": 9.5,\n    \"c8\": 9.0,\n    \"c9\": 9.5,\n    \"c10\": 9.5\n  },\n  \"issues\": []\n}\n```"
+}

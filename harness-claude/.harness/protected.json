@@ -183,9 +183,9 @@
     ]
   },
   "app/e2e/account-link-visual.spec.ts": {
-    "sha256": "46e67908e9abb57b87708b175613b6c90d7ef39b96b78048f5399e9dbd0ec7d0",
+    "sha256": "2d019c8a9b820a56dc22a4b8bba3c2a18598d80b35b84ab588e3d7a94719a11d",
     "asserts": 7,
-    "featureId": "F-1.09",
+    "featureId": "F-2.fix-3",
     "additive": true,
     "tests": [
       "account linking states @visual"
@@ -241,5 +241,265 @@
     "sha256": "7b0d19e91eb308072e5b8c1778c100f3a954d565e413b9d79402657f3de17cb5",
     "asserts": 1,
     "featureId": "F-1.adj-01"
+  },
+  "app/tests/rules/indicators.test.ts": {
+    "sha256": "f8654293e0e3f38f8189a29c05cfb2dfb49af24cfaef9e6f3581728cabcc711b",
+    "asserts": 1,
+    "featureId": "F-2.01"
+  },
+  "app/src/data/__tests__/indicators.test.ts": {
+    "sha256": "e94d930306a72555fe1b06e5593214808e05029c7e9bd2f110234046200af1dd",
+    "asserts": 30,
+    "featureId": "F-2.05",
+    "additive": true,
+    "tests": [
+      "preserves an explicitly chosen compatible aggregation",
+      "archives and restores without removing entries and updates the active live list",
+      "does not rewrite timestamps when archive or restore is repeated",
+      "persists reordered factors separately from results across a fresh subscription",
+      "does not send locked configuration fields when editing a locked indicator",
+      "retries an edit against a concurrently locked indicator",
+      "does not reorder an indicator moved to another group during the transaction",
+      "rejects a stale reorder when another device changes the order during the transaction",
+      "clears the previous account immediately when the subscribed user changes"
+    ]
+  },
+  "app/tests/rules/indicator-lock-transition.test.ts": {
+    "sha256": "6fcb2332e21bf5e3cd64eaf574b59c1581a5f27ef90249b627585038fed3ae4f",
+    "asserts": 0,
+    "featureId": "F-2.01",
+    "additive": true,
+    "tests": [
+      "locks the existing configuration atomically and prevents later changes",
+      "archives without deleting entries and denies client deletion and cross-user changes"
+    ]
+  },
+  "app/src/data/__tests__/entries.test.ts": {
+    "sha256": "a048cec3ef9cec1ed18d340a890d703555d437bd07842ce2406d7de72534ff70",
+    "asserts": 30,
+    "featureId": "F-2.06"
+  },
+  "app/tests/rules/entries.test.ts": {
+    "sha256": "4edd05812c812368af1c431689a9e4b74d46560bc2bbdf7580288ad4cdea6b74",
+    "asserts": 8,
+    "featureId": "F-2.06"
+  },
+  "app/tests/rules/entry-validation-extra.test.ts": {
+    "sha256": "ad5dd2c1936dde567fe9d243bc1e7eb0506317ed882a869a4738132b58edb1d3",
+    "asserts": 0,
+    "featureId": "F-2.06",
+    "additive": true,
+    "tests": [
+      "enforces numeric bounds and the date-key shape",
+      "accepts all seven ordinal options and rejects an option outside the list"
+    ]
+  },
+  "app/src/indicators/__tests__/AggregationControl.test.tsx": {
+    "sha256": "45e48f0bc702f44bdab910c5923b3aed808c54752540800088e62731cf75f464",
+    "asserts": 19,
+    "featureId": "F-2.03",
+    "additive": true,
+    "tests": [
+      "renders nothing for single-per-day indicators",
+      "shows the deterministic suggestion for numbers (factor = sum, result = last)",
+      "lists only the valid aggregations for the type and explains the effect",
+      "offers presence and last for booleans, with an example of the day value",
+      "offers only last for ordinals",
+      "keeps the locked choice visible and disabled with an explanation"
+    ]
+  },
+  "app/src/indicators/__tests__/IndicatorEditor.test.tsx": {
+    "sha256": "ac44f7847a7b2765e57d65576e81b3cd2c39a6dcc83838c8005516c3479151ff",
+    "asserts": 67,
+    "featureId": "F-2.03",
+    "additive": true,
+    "tests": [
+      "creates a boolean factor",
+      "creates a scale result with a custom min/max/step",
+      "creates a numeric factor with a suggested unit",
+      "creates a numeric indicator with a custom unit and no unit",
+      "creates an ordinal factor with editable options and a limited set",
+      "requires a name and shows the validation message in pt-BR",
+      "previews the derived abbreviation when the abbreviation is empty",
+      "shows the real name in the field with the eye closed (data-privacy-allow)",
+      "limits the abbreviation to 4 characters",
+      "requires scale minimum smaller than maximum and a positive step",
+      "requires every ordinal option to have a label",
+      "requires an ideal range with minimum <= maximum",
+      "hides aggregation for single-per-day and shows it for multiple",
+      "advanced settings list only valid aggregations and show an example",
+      "offers only presence and last for booleans",
+      "defaults to \"Sem preferência\" and only offers the ideal range for numeric/scale",
+      "saves the chosen direction for results",
+      "disables type, group, unit, frequency and aggregation but keeps direction and range editable",
+      "shows a generic save error in pt-BR"
+    ]
+  },
+  "app/e2e/indicators-list.spec.ts": {
+    "sha256": "e5443bfb465c072d44ae61b5371fcf527228b6f515d1e55cc78a03dc60e391de",
+    "asserts": 50,
+    "featureId": "F-2.05"
+  },
+  "app/e2e/quick-entry.spec.ts": {
+    "sha256": "f7d0588e5ad06669c982dbd5915d5297ba937c56f182f4cda8a0a88ba8095ddb",
+    "asserts": 40,
+    "featureId": "F-2.08"
+  },
+  "app/e2e/save-account-banner.spec.ts": {
+    "sha256": "593565755200374c85d42c1bf04bc3d9c43b31e42a28d8c6f2852270fc1c4540",
+    "asserts": 14,
+    "featureId": "F-2.11",
+    "additive": true,
+    "tests": [
+      "stays hidden with fewer than three distinct days with entries",
+      "shows on the third day, can be dismissed and comes back after seven more days",
+      "never shows for an account that was already converted"
+    ]
+  },
+  "app/src/indicators/__tests__/IndicatorCard.test.tsx": {
+    "sha256": "c8203a884cec23ae1490d70ffeaa32de8c3631927f77468a85b3206cdf8d998e",
+    "asserts": 8,
+    "featureId": "F-2.05",
+    "additive": true,
+    "tests": [
+      "uses the global eye for labels and keeps names out of action attributes"
+    ]
+  },
+  "app/src/indicators/__tests__/summary.test.ts": {
+    "sha256": "c6498986a917e96992e168d36e7fc89cf4e5af23898e9069fd608b402e310ac4",
+    "asserts": 11,
+    "featureId": "F-2.05",
+    "additive": true,
+    "tests": [
+      "describes the response type in pt-BR",
+      "describes the daily frequency",
+      "shows the aggregation only when it applies",
+      "shows the direction and the ideal range of results"
+    ]
+  },
+  "app/e2e/entry-history.spec.ts": {
+    "sha256": "77660835087ec85c9437c176b7f5cfbff858322c1cec0f4ba43e3f32f293ff01",
+    "asserts": 40,
+    "featureId": "F-2.09"
+  },
+  "app/e2e/empty-dashboard-regressions.spec.ts": {
+    "sha256": "21ce2054cecad21a2f9b3ba2bfd1b7c3cb2f331e0f8397d7977ec7e7d5e85091",
+    "asserts": 24,
+    "featureId": "F-2.10",
+    "additive": true,
+    "tests": [
+      "all four suggestions persist their full deterministic configuration and survive reload",
+      "an unrelated duplicate abbreviation does not disable a suggestion",
+      "concurrent creation on two tabs does not duplicate or overwrite a suggestion",
+      "archived entries do not hide the empty states for active indicators",
+      "first filling with several indicators is acknowledged until a second day is recorded"
+    ]
+  },
+  "app/e2e/empty-dashboard.spec.ts": {
+    "sha256": "5b05cd149511f357fa0b745f0e8ee491e601e5945f3b428e61d904e51b782b7d",
+    "asserts": 26,
+    "featureId": "F-2.10",
+    "additive": true,
+    "tests": [
+      "a new account starts without indicators and offers quick suggestions",
+      "a suggestion creates exactly one indicator with the deterministic quick-start configuration",
+      "indicators without records explain the insights and the first record is acknowledged"
+    ]
+  },
+  "app/src/data/__tests__/suggestedIndicators.test.ts": {
+    "sha256": "440415620f0e20a594f8140c8197e8f25a5c729c9cfc9db215f719f6002844e9",
+    "asserts": 6,
+    "featureId": "F-2.10",
+    "additive": true,
+    "tests": [
+      "creates a suggestion once without overwriting a later edit",
+      "does not restore or replace an archived suggestion"
+    ]
+  },
+  "app/src/features/indicators/__tests__/suggestions.test.ts": {
+    "sha256": "c6b8606ceea02ba6da420b6f499c323e80dd22b8b5a893fbb2587f7eec87d474",
+    "asserts": 9,
+    "featureId": "F-2.10",
+    "additive": true,
+    "tests": [
+      "offers two Factors and two Results with valid, complete configurations",
+      "keeps the quick-start configurations deterministic"
+    ]
+  },
+  "app/e2e/quick-entry-connection.spec.ts": {
+    "sha256": "5a4ea001b7876ad394a08ed983ec9bcbc049c30d40f933d3ed4b51c1ffbbb9f8",
+    "asserts": 10,
+    "featureId": "F-2.08",
+    "additive": true,
+    "tests": [
+      "keeps a loaded answer pending offline until it is persisted"
+    ]
+  },
+  "app/src/data/__tests__/entries-concurrency.test.ts": {
+    "sha256": "729b4d56fa67dd48347f11c5b289e58fa390b82b0ca152c50e64e136bdfc46ac",
+    "asserts": 5,
+    "featureId": "F-2.08",
+    "additive": true,
+    "tests": [
+      "rejects an answer that appeared on another device without deleting it",
+      "replaces the entries the user saw in one batch"
+    ]
+  },
+  "app/src/entry/__tests__/QuickEntry.extra.test.tsx": {
+    "sha256": "106386bff8af6b739295488eaea8bbb4690580c78ad58f8e4fdfdf43aa0664fa",
+    "asserts": 11,
+    "featureId": "F-2.08",
+    "additive": true,
+    "tests": [
+      "passes only the visible entries when replacing an answer",
+      "does not modify the previous day after midnight",
+      "explains a concurrent change and retains the last confirmed value",
+      "keeps the confirmed value when a replacement fails",
+      "does not expose a name or emoji in visible text or accessible control labels"
+    ]
+  },
+  "app/src/entry/__tests__/QuickEntry.test.tsx": {
+    "sha256": "c103fa13981400d84cd09f80684c67c7f04533cbde63b0935b49a8cf131db0ba",
+    "asserts": 47,
+    "featureId": "F-2.08",
+    "additive": true,
+    "tests": [
+      "renders Fatores and Resultados sections with the active indicators in order",
+      "saves a single factor answer (Sim) without requiring any result",
+      "saves a single result answer from the scale pills",
+      "saves an explicit Não as boolean false (distinct from absence)",
+      "answers ordinal indicators with option chips",
+      "uses the decimal keyboard on numeric fields and accepts a comma separator",
+      "clearing a single-per-day answer deletes today record instead of saving Não/0",
+      "keeps the save pending (never \"saved\") until the write persists, then confirms",
+      "shows an error (never success) when the write fails",
+      "lists today events of multiple-per-day indicators and appends new ones",
+      "never alerts about missing answers; the optional note travels with the entry",
+      "returns to the dashboard in one touch"
+    ]
+  },
+  "app/e2e/privacy-mode.spec.ts": {
+    "sha256": "af5673a8a7739ca84bd02f7a9b8be80f14b1790e4d94f084f75603d7267df384",
+    "asserts": 34,
+    "featureId": "F-1.06"
+  },
+  "app/src/indicators/__tests__/EntryHistorySheet.test.tsx": {
+    "sha256": "ac2fb6b6c6a46e2b2938e23f9f5b50a98b879a5561b856f35eff4fc34245b74d",
+    "asserts": 8,
+    "featureId": "F-1.06",
+    "additive": true,
+    "tests": [
+      "keeps the observation out of the page until the person opens it explicitly",
+      "hides the observation again and keeps the indicator name in its acronym"
+    ]
+  },
+  "app/src/privacy/__tests__/allow.test.ts": {
+    "sha256": "ac658d0f68ec47089b49fbc753858791a19d3edbed2058cda801df3e360bf2cb",
+    "asserts": 2,
+    "featureId": "F-1.06",
+    "additive": true,
+    "tests": [
+      "marks intentionally revealed content with the attribute the e2e guard looks for"
+    ]
   }
 }

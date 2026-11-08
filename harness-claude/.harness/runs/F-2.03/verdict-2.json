@@ -1,0 +1,28 @@
+[
+  {
+    "kind": "code",
+    "pass": true,
+    "score": 9,
+    "issues": [],
+    "workerId": "gemini-argon"
+  },
+  {
+    "kind": "ui",
+    "pass": true,
+    "score": 9.4,
+    "issues": [],
+    "porCriterio": {
+      "c1": 9.5,
+      "c2": 9.5,
+      "c3": 9.5,
+      "c4": 9,
+      "c5": 9.5,
+      "c6": 9,
+      "c7": 9.5,
+      "c8": 9,
+      "c9": 9.5,
+      "c10": 9.5
+    },
+    "workerId": "gemini"
+  }
+]

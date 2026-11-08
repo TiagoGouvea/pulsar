@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-08T13:29:15.509Z",
+  "workerId": "codex-mid",
+  "role": "implement_hard",
+  "featureId": "F-2.fix-2",
+  "stage": 2,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.114492,
+  "durationMs": 33826,
+  "usage": {
+    "inputTokens": 73359,
+    "outputTokens": 2670,
+    "cachedTokens": 555660
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"summary\": \"Bloqueado: os emuladores não conseguem abrir portas locais (EPERM).\",\n  \"filesChanged\": [\".harness/inbox/questions.jsonl\"],\n  \"testsRun\": [\"yarn test:e2e: não iniciou\"],\n  \"confidence\": \"low\",\n  \"notes\": \"Nenhuma correção foi implementada. O bloqueio e a divergência de tempo do teste visual foram registrados.\"\n}\n```"
+}

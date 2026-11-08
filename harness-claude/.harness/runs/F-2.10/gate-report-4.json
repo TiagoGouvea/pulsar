@@ -1,0 +1,125 @@
+{
+  "ok": false,
+  "mode": "feature",
+  "stage": 2,
+  "failed": [
+    "G1",
+    "G2",
+    "G3",
+    "G4",
+    "G5",
+    "G6",
+    "G7",
+    "G8",
+    "G9",
+    "G10"
+  ],
+  "results": [
+    {
+      "id": "G1",
+      "name": "install-build",
+      "required": true,
+      "durationMs": 1045,
+      "ok": false,
+      "output": "module.\ninfo @rollup/rollup-linux-arm64-gnu@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-linux-arm64-gnu@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-linux-arm64-musl@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-linux-arm64-musl@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-linux-loong64-gnu@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-linux-loong64-gnu@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-linux-loong64-gnu@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-linux-loong64-musl@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-linux-loong64-musl@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-linux-loong64-musl@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-linux-ppc64-gnu@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-linux-ppc64-gnu@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-linux-ppc64-gnu@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-linux-ppc64-musl@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-linux-ppc64-musl@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-linux-ppc64-musl@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-linux-riscv64-gnu@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-linux-riscv64-gnu@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-linux-riscv64-gnu@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-linux-riscv64-musl@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-linux-riscv64-musl@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-linux-riscv64-musl@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-linux-s390x-gnu@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-linux-s390x-gnu@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-linux-s390x-gnu@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-linux-x64-gnu@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-linux-x64-gnu@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-linux-x64-gnu@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-linux-x64-musl@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-linux-x64-musl@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-linux-x64-musl@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-openbsd-x64@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-openbsd-x64@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-openbsd-x64@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-openharmony-arm64@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-openharmony-arm64@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-win32-arm64-msvc@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-win32-arm64-msvc@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-win32-ia32-msvc@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-win32-ia32-msvc@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-win32-ia32-msvc@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-win32-x64-gnu@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-win32-x64-gnu@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-win32-x64-gnu@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\ninfo @rollup/rollup-win32-x64-msvc@4.65.0: The platform \"darwin\" is incompatible with this module.\ninfo \"@rollup/rollup-win32-x64-msvc@4.65.0\" is an optional dependency and failed compatibility check. Excluding it from installation.\ninfo @rollup/rollup-win32-x64-msvc@4.65.0: The CPU architecture \"arm64\" is incompatible with this module.\n[4/5] Linking dependencies...\nwarning \" > @axe-core/playwright@4.14.0\" has unmet peer dependency \"playwright-core@>= 1.0.0\".\nerror An unexpected error occurred: \"EEXIST: file already exists, mkdir '/Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-2.10/pulsar-claude/app/node_modules'\".\ninfo If you think this is a bug, please open a bug report with the information provided in \"/Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-2.10/pulsar-claude/app/yarn-error.log\".\ninfo Visit https://yarnpkg.com/en/docs/cli/install for documentation about this command."
+    },
+    {
+      "id": "G2",
+      "name": "lint-format",
+      "required": true,
+      "durationMs": 266,
+      "ok": false,
+      "output": "yarn run v1.23.0-20220130.1630\n$ eslint . --max-warnings=0\n/bin/sh: eslint: command not found\nerror Command failed with exit code 127.\ninfo Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command."
+    },
+    {
+      "id": "G3",
+      "name": "typecheck",
+      "required": true,
+      "durationMs": 403,
+      "ok": false,
+      "output": "yarn run v1.23.0-20220130.1630\n$ tsc --noEmit -p tsconfig.json\n/bin/sh: tsc: command not found\nerror Command failed with exit code 127.\ninfo Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command."
+    },
+    {
+      "id": "G4",
+      "name": "unit",
+      "required": true,
+      "durationMs": 253,
+      "ok": false,
+      "output": "yarn run v1.23.0-20220130.1630\n$ vitest run --coverage\n/bin/sh: vitest: command not found\nerror Command failed with exit code 127.\ninfo Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command."
+    },
+    {
+      "id": "G5",
+      "name": "security-rules",
+      "required": true,
+      "durationMs": 382,
+      "ok": false,
+      "output": "yarn run v1.23.0-20220130.1630\n$ sh scripts/port-lock.sh firebase emulators:exec --project demo-pulsar --only firestore \"vitest run --config vitest.rules.config.ts\"\nscripts/port-lock.sh: line 4: exec: firebase: not found\nerror Command failed with exit code 127.\ninfo Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command."
+    },
+    {
+      "id": "G6",
+      "name": "e2e",
+      "required": true,
+      "durationMs": 287,
+      "ok": false,
+      "output": "yarn run v1.23.0-20220130.1630\n$ sh scripts/port-lock.sh playwright test --grep-invert @visual e2e/empty-dashboard.spec.ts\nscripts/port-lock.sh: line 4: exec: playwright: not found\nerror Command failed with exit code 127.\ninfo Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command."
+    },
+    {
+      "id": "G7",
+      "name": "protected-tests",
+      "required": true,
+      "durationMs": 374,
+      "ok": false,
+      "output": "app/src/data/__tests__/indicators.test.ts: teste de feature entregue enfraquecido (asserts 30 -> 27; removidos/renomeados: rejects a stale reorder when another device changes the order during the transaction)"
+    },
+    {
+      "id": "G8",
+      "name": "privacy-leak",
+      "required": true,
+      "durationMs": 1008,
+      "ok": false,
+      "output": "servidor não respondeu em http://localhost:4792 (yarn e2e:serve)"
+    },
+    {
+      "id": "G9",
+      "name": "a11y",
+      "required": true,
+      "durationMs": 1,
+      "ok": false,
+      "output": "Cannot find module '@axe-core/playwright'\nRequire stack:\n- /Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/F-2.10/pulsar-claude/app/package.json"
+    },
+    {
+      "id": "G10",
+      "name": "mobile-layout",
+      "required": true,
+      "durationMs": 1016,
+      "ok": false,
+      "output": "servidor não respondeu em http://localhost:4792 (yarn e2e:serve)"
+    },
+    {
+      "id": "G11",
+      "name": "visual-regression",
+      "ok": true,
+      "required": true,
+      "skipped": "só no fim de etapa",
+      "durationMs": 0,
+      "output": ""
+    },
+    {
+      "id": "G12",
+      "name": "lighthouse",
+      "ok": true,
+      "required": true,
+      "skipped": "só no fim de etapa",
+      "durationMs": 0,
+      "output": ""
+    },
+    {
+      "id": "G13",
+      "name": "secrets",
+      "required": true,
+      "durationMs": 88,
+      "ok": true,
+      "output": "nenhum segredo no diff"
+    }
+  ]
+}

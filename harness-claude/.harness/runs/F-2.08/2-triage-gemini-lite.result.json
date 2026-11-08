@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-08T11:13:59.668Z",
+  "workerId": "gemini-lite",
+  "role": "triage",
+  "featureId": "F-2.08",
+  "stage": 2,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.00108425,
+  "durationMs": 1892,
+  "usage": {
+    "inputTokens": 3401,
+    "outputTokens": 156,
+    "cachedTokens": 0,
+    "costUsd": 0.00108425
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "{\"causaRaiz\": \"O teste E2E `offline answers stay pending` dispara uma ação (clique) logo após forçar `page.context().setOffline(true)`. Em alguns ambientes de execução, essa mudança de estado de rede causa um fechamento abrupto ou reinicialização da página/contexto antes do clique ser processado, levando a erro de 'Target page, context or browser has been closed' e estouro de timeout.\", \"categoria\": \"flaky\", \"padrao\": true, \"dica\": \"Após mudar o estado da rede com setOffline(true), aguarde a confirmação de que a página ainda está responsiva ou use um retry explícito com lógica de espera para estabilização do navegador.\"}"
+}

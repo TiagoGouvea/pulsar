@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-08T11:41:22.360Z",
+  "workerId": "minimax",
+  "role": "implement",
+  "featureId": "F-2.09",
+  "stage": 2,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.043483589999999996,
+  "durationMs": 125275,
+  "usage": {
+    "inputTokens": 95705,
+    "outputTokens": 6348,
+    "cachedTokens": 1687936,
+    "costUsd": 0.043483589999999996
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "Implementação concluída para F-2.09.\n\n- Histórico disponível a partir das opções de cada indicador em “Meus indicadores”.\n- Registros exibem data e hora no fuso do navegador, valor e observação opcional protegida por privacidade.\n- Observações são reveladas somente sob demanda e dentro de `data-privacy-allow`.\n- Exclusão de registros antigos ou atuais exige confirmação e persiste após recarregar.\n- Não há controles de edição de valores históricos.\n- Componentes, tokens e alvos de toque seguem o design system.\n- Corrigida a formatação Prettier dos arquivos alterados.\n- Registrado risco de escalabilidade ao consultar e filtrar a coleção completa de registros.\n\n```json\n{\n  \"summary\": \"Implementado o histórico de registros por indicador, com horários locais, valores, observações privadas e exclusão retroativa confirmada, sem edição de registros antigos.\",\n  \"filesChanged\": [\n    \"app/src/data/entryHistory.ts\",\n    \"app/src/indicators/EntryHistorySheet.tsx\",\n    \"app/src/indicators/entryValue.ts\",\n    \"app/src/lib/time.ts\",\n    \"app/src/pages/IndicatorsPage.tsx\",\n    \"app/scripts/icons.ts\",\n    \"app/src/design/icons.ts\",\n    \".harness/inbox/risks.jsonl\"\n  ],\n  \"testsRun\": [\n    \"yarn lint\",\n    \"yarn typecheck\",\n    \"yarn format:check\",\n    \"yarn test:unit\",\n    \"yarn test:rules\",\n    \"yarn playwright test e2e/entry-history.spec.ts\"\n  ],\n  \"confidence\": \"high\",\n  \"notes\": \"Todos os comandos aprovados: 185 testes unitários, 106 testes de regras e 8 execuções E2E do entry-history nos projetos mobile e desktop. Nenhum teste protegido foi alterado.\"\n}\n```"
+}

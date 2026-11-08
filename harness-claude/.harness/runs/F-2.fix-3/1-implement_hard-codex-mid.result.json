@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-08T13:44:15.995Z",
+  "workerId": "codex-mid",
+  "role": "implement_hard",
+  "featureId": "F-2.fix-3",
+  "stage": 2,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.08380135000000001,
+  "durationMs": 22995,
+  "usage": {
+    "inputTokens": 61737,
+    "outputTokens": 1748,
+    "cachedTokens": 266487
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "Bloqueada: faltam dependências; `yarn lint` falhou com `eslint: command not found`. O bloqueio foi registrado para o orquestrador. Nenhum código ou teste protegido foi alterado.\n\n```json\n{\"summary\":\"Bloqueada por infraestrutura\",\"filesChanged\":[\".harness/inbox/questions.jsonl\"],\"testsRun\":[\"yarn lint: falhou\"],\"confidence\":\"low\",\"notes\":\"Dependências precisam ser preparadas antes de retomar.\"}\n```"
+}

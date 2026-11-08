@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-08T11:08:06.957Z",
+  "workerId": "codex-mid",
+  "role": "implement_hard",
+  "featureId": "F-2.08",
+  "stage": 2,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.19254915000000003,
+  "durationMs": 87648,
+  "usage": {
+    "inputTokens": 87887,
+    "outputTokens": 6645,
+    "cachedTokens": 1428743
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"summary\": \"Corrigida a asserção unitária e adicionado teste offline.\",\n  \"filesChanged\": [\n    \"app/src/entry/__tests__/QuickEntry.test.tsx\",\n    \"app/e2e/quick-entry-connection.spec.ts\",\n    \".harness/inbox/questions.jsonl\"\n  ],\n  \"testsRun\": \"Lint, typecheck, formatação, builds e 193 testes unitários passaram. E2E bloqueado por EPERM nas portas locais.\",\n  \"confidence\": \"low\",\n  \"notes\": \"O teste E2E protegido permanece intacto. Os testes unitários exigiram desativar o webstorage experimental do Node 26.\"\n}\n```"
+}

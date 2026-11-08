@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-07T20:10:12.588Z",
+  "workerId": "codex-mid",
+  "role": "review_code",
+  "featureId": "F-2.10",
+  "stage": 2,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.09379180000000001,
+  "durationMs": 38581,
+  "usage": {
+    "inputTokens": 64335,
+    "outputTokens": 3697,
+    "cachedTokens": 219436
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"pass\": false,\n  \"score\": 5,\n  \"issues\": [\n    {\n      \"severidade\": \"major\",\n      \"arquivo\": \"app/src/pages/DashboardPage.tsx\",\n      \"descricao\": \"Registros de indicadores arquivados impedem a exibição das sugestões e do estado sem registros, mesmo quando não há indicadores ativos com registros.\",\n      \"sugestao\": \"Determine o estado vazio considerando os indicadores ativos e seus registros.\"\n    },\n    {\n      \"severidade\": \"major\",\n      \"arquivo\": \"app/src/pages/DashboardPage.tsx\",\n      \"descricao\": \"O agradecimento depende de existir exatamente um registro. Se a pessoa registrar dois indicadores antes de voltar ao dashboard, ela nunca o verá.\",\n      \"sugestao\": \"Reconheça o primeiro preenchimento independentemente da quantidade de registros criados naquela interação.\"\n    },\n    {\n      \"severidade\": \"major\",\n      \"arquivo\": \"app/src/data/indicators.ts\",\n      \"descricao\": \"Uma sigla igual desabilita a sugestão correspondente, mesmo quando pertence a outro indicador. A especificação permite siglas duplicadas.\",\n      \"sugestao\": \"Identifique sugestões criadas por uma identidade própria, sem usar a sigla como chave única.\"\n    },\n    {\n      \"severidade\": \"major\",\n      \"arquivo\": \"app/e2e/empty-dashboard.spec.ts\",\n      \"descricao\": \"O teste de persistência verifica a configuração completa apenas de Exercício; Café e Concentração não são criados pelos testes, e os testes unitários verificam configurações parciais.\",\n      \"sugestao\": \"Teste a criação e a configuração persistida das quatro sugestões.\"\n    },\n    {\n      \"severidade\": \"minor\",\n      \"arquivo\": \"app/src/pages/DashboardPage.tsx\",\n      \"descricao\": \"O título da sugestão renderiza nome e emoji manualmente, contrariando a regra de uso exclusivo de IndicatorLabel.\",\n      \"sugestao\": \"Renderize o título com IndicatorLabel.\"\n    }\n  ]\n}\n```"
+}

@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-08T13:01:27.062Z",
+  "workerId": "haiku",
+  "role": "review_code",
+  "featureId": "F-1.06",
+  "stage": 2,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.1553026,
+  "durationMs": 15815,
+  "usage": {
+    "inputTokens": 22832,
+    "outputTokens": 1338,
+    "cachedTokens": 71953,
+    "costUsd": 0.1553026
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\"pass\": true, \"score\": 8, \"issues\": [\n  {\"severidade\": \"minor\", \"arquivo\": \"app/eslint.config.js\", \"descricao\": \"The new no-restricted-syntax rule only catches member expressions on objects named `indicator`/`indicatorSource` or `x.indicator.name`. Destructuring (`const { name } = indicator`), other variable names (`ind.name`, `item.name`) or template strings get past it. The AGENTS.md/DECISOES.md wording ('o ESLint bloqueia indicator.name') suggests more coverage than the rule gives.\", \"sugestao\": \"Make the documentation say it is a heuristic. The e2e guard remains the real line of defense.\"},\n  {\"severidade\": \"minor\", \"arquivo\": \"app/src/privacy/allow.ts\", \"descricao\": \"`privacyAllowProps()` plus the PRIVACY_ALLOW_ATTRIBUTE constant add an abstraction for a single static attribute. The unit test allow.test.ts only checks a constant against itself, so it adds almost no protection. This works against the project's 'código mínimo' rule.\", \"sugestao\": \"Keep only the exported constant (used by the e2e support) or drop the trivial test. Not blocking.\"},\n  {\"severidade\": \"minor\", \"arquivo\": \"app/e2e/privacy-mode.spec.ts\", \"descricao\": \"`waitForRoute` has a long if/else chain keyed on route paths. Its fallback assumes every other route shows the 'Registrar agora' link. A new route added to routes.json would fail for an unrelated reason or need this list edited, which makes the guard fragile.\", \"sugestao\": \"Move the readiness condition into routes.json (for example a `ready` field) or use a generic wait (networkidle plus main visible) as the fallback.\"}\n]}\n```"
+}

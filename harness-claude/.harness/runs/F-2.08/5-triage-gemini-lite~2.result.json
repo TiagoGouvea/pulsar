@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-08T12:11:51.385Z",
+  "workerId": "gemini-lite",
+  "role": "triage",
+  "featureId": "F-2.08",
+  "stage": 2,
+  "attempt": 5,
+  "outcome": "success",
+  "costUsd": 0.054841125,
+  "durationMs": 71423,
+  "usage": {
+    "inputTokens": 160232,
+    "outputTokens": 2446,
+    "cachedTokens": 444565,
+    "costUsd": 0.054841125
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\"causaRaiz\": \"A falha ocorre intermitentemente porque o teste tenta clicar no link 'Registrar agora' imediatamente após o `page.goto('/dashboard')`, sem garantir que a página terminou de carregar ou que o elemento é estável. O erro 'Target page, context or browser has been closed' sugere que a página pode estar sendo descartada ou navegada para outro estado antes do clique ser processado.\", \"categoria\": \"test\", \"padrao\": true, \"dica\": \"Adicione `await page.waitForLoadState('networkidle')` ou espere um seletor específico aparecer (como um dos cards) antes de realizar o clique no link, garantindo a estabilidade da página.\"}\n```"
+}

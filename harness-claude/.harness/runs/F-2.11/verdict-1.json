@@ -1,0 +1,90 @@
+[
+  {
+    "kind": "code",
+    "pass": true,
+    "score": 7,
+    "issues": [
+      {
+        "severidade": "major",
+        "arquivo": "app/src/account/inviteRepository.ts",
+        "descricao": "listEntryDays builds its own Firestore REST client instead of using the SDK. It hardcodes the host, builds the URL by hand and adds the token itself. The code comment says it does this so the browser gates see no network activity, which means the production code was shaped to fit the test infrastructure. It also differs from the existing repository src/data/entries.ts, which uses getDocs. Requests made this way skip the SDK's own handling, such as App Check and retries.",
+        "sugestao": "Put the read in src/data/entries.ts and use getDocs or getCountFromServer/aggregation. If the network-silence gate is the real blocker, record it in questions.jsonl or risks.jsonl rather than working around it in production code."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/account/inviteRepository.ts",
+        "descricao": "Every dashboard load downloads the localDate field of every entry the user has, page by page. The cost grows without limit as the history grows, even though the decision only needs to know whether the count has passed a threshold (3, or dismissedDayCount+7).",
+        "sugestao": "Stop paging once the needed threshold is reached, or keep a denormalized count of days. At least document the cost in risks.jsonl."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/account/invite.ts",
+        "descricao": "There are two functions named countDistinctEntryDays with different signatures, one in invite.ts (pure) and one in inviteRepository.ts (async). The repository does not use the pure one, so the pure one is only exercised by the unit test, and that test covers code that never runs in production.",
+        "sugestao": "Have the repository return the list of days and call the pure countDistinctEntryDays, or drop one of the two."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/account/SaveAccountInviteBanner.tsx",
+        "descricao": "The text 'Seus registros ficam salvos apenas neste navegador' is inaccurate. The data is stored in Firestore; what is tied to this browser is the anonymous session. The text could mislead the user.",
+        "sugestao": "Reword it, for example: 'Seus registros estão ligados a este navegador. Vincule sua conta…'."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/node_modules, app/functions/node_modules",
+        "descricao": "The diff deletes symlinks that were tracked in git (an artifact from the previous WIP commit). This change is outside the feature's scope.",
+        "sugestao": "Confirm with the orchestrator that removing them is intended. Otherwise, keep them out of this feature's diff."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/account/inviteRepository.ts",
+        "descricao": "Firestore access sits in src/account/ while the existing repositories are in src/data/. The convention is to group repositories by domain in one place.",
+        "sugestao": "Move the reads and writes to src/data/ (for example src/data/users.ts or entries.ts)."
+      }
+    ],
+    "workerId": "haiku"
+  },
+  {
+    "kind": "ui",
+    "pass": true,
+    "score": 8,
+    "issues": [
+      {
+        "severidade": "minor",
+        "tela": "dashboard (banner de convite)",
+        "descricao": "O banner não aparece em nenhum screenshot. Nas capturas a conta ainda não tem 3 dias com registro, então ele fica oculto, como a regra manda. Por isso só deu para avaliar o visual pelo código (SaveAccountInviteBanner.tsx). O Card usa tokens do design system (bg-secondary-fixed, label-lg, body-sm, rounded-full, min-h-11). O dashboard sem o banner não teve regressão nem no mobile nem no desktop, com e sem modo privado.",
+        "sugestao": "Nenhuma ação obrigatória."
+      },
+      {
+        "severidade": "minor",
+        "tela": "dashboard (banner de convite)",
+        "descricao": "O banner fica acima do título 'Seu painel' (DashboardPage coloca SaveAccountInviteBanner antes do PlaceholderPage). Isso quebra a hierarquia: o título da tela deixa de ser o primeiro elemento.",
+        "sugestao": "Mostrar o banner abaixo do cabeçalho 'Seu painel', por exemplo passando-o como slot para o PlaceholderPage ou movendo o título para o DashboardPage."
+      },
+      {
+        "severidade": "minor",
+        "tela": "dashboard (banner de convite)",
+        "descricao": "O banner deveria ser 'discreto', mas tem um botão primário violeta cheio ('Salvar minha conta') e um segundo botão de largura total ('Agora não'). Com o estado vazio, ficariam dois CTAs primários violeta na mesma tela, e isso compete com 'Registrar agora'.",
+        "sugestao": "Usar um CTA tonal/secundário ou um link de texto para 'Salvar minha conta', e trocar 'Agora não' por um ícone de fechar compacto no canto do card. Assim 'Registrar agora' continua sendo a ação principal."
+      },
+      {
+        "severidade": "minor",
+        "tela": "dashboard (banner de convite)",
+        "descricao": "O texto 'Seus registros ficam salvos apenas neste navegador' é tecnicamente impreciso: os dados estão no Firestore, mas ficam presos à credencial anônima deste navegador.",
+        "sugestao": "Trocar por algo como 'Sua conta anônima só funciona neste navegador. Vincule com Google ou e-mail para não perder seus registros.'"
+      }
+    ],
+    "porCriterio": {
+      "c1": 8,
+      "c2": 8,
+      "c3": 8,
+      "c4": 8,
+      "c5": 8,
+      "c6": 7,
+      "c7": 9,
+      "c8": 8,
+      "c9": 9,
+      "c10": 9
+    },
+    "workerId": "haiku"
+  }
+]

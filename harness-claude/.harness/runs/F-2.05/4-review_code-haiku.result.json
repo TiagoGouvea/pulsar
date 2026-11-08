@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-08T11:17:24.228Z",
+  "workerId": "haiku",
+  "role": "review_code",
+  "featureId": "F-2.05",
+  "stage": 2,
+  "attempt": 4,
+  "outcome": "success",
+  "costUsd": 0.28967560000000003,
+  "durationMs": 20980,
+  "usage": {
+    "inputTokens": 46584,
+    "outputTokens": 1733,
+    "cachedTokens": 110518,
+    "costUsd": 0.28967560000000003
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\"pass\": true, \"score\": 8, \"issues\": [\n{\"severidade\": \"minor\", \"arquivo\": \"app/src/data/firestoreRest.ts\", \"descricao\": \"Novo módulo de leitura via REST (listDocuments/decodeValue/decodeFields) que nenhum arquivo do diff importa: IndicatorsPage usa useIndicators (onSnapshot), e a única mudança em indicators.ts é em reorderIndicators. É infraestrutura que a feature não pede, monta uma URL de produção na mão e repete o decoder que já existe em e2e/indicators-list.spec.ts.\", \"sugestao\": \"Remover o arquivo. Se o problema de 'network idle' for real, registrar em risks.jsonl e tratar numa feature própria.\"},\n{\"severidade\": \"minor\", \"arquivo\": \"app/scripts/icons.ts\", \"descricao\": \"Os ícones 'drag_indicator' e 'info' foram gerados, mas nenhum componente do diff os usa. Isso aumenta o bundle de ícones sem necessidade.\", \"sugestao\": \"Remover os ícones não usados e rodar `yarn icons` de novo.\"},\n{\"severidade\": \"minor\", \"arquivo\": \"app/src/pages/IndicatorsPage.tsx\", \"descricao\": \"move() calcula expectedOrder a partir do estado da tela. Dois cliques rápidos antes do snapshot chegar fazem o segundo reorder falhar com 'Indicator order changed.', e o usuário vê um erro genérico. Os dados ficam consistentes, mas a experiência é ruim.\", \"sugestao\": \"Desabilitar os botões de reordenar enquanto há uma escrita pendente, ou serializar as escritas.\"},\n{\"severidade\": \"minor\", \"arquivo\": \"app/src/indicators/IndicatorCard.tsx\", \"descricao\": \"Os cards ativos não indicam o grupo por si só: o grupo vem só do cabeçalho da seção e da cor do chip de agregação. Isso atende o critério de aceite porque os cabeçalhos têm texto, mas fica inconsistente com o card arquivado, que mostra GroupBadge.\", \"sugestao\": \"Opcional: mostrar GroupBadge também no card ativo ou usar um ícone por grupo.\"}\n]}\n```"
+}

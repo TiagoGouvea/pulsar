@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-07T18:17:14.500Z",
+  "workerId": "gemini-lite",
+  "role": "triage",
+  "featureId": "F-2.01",
+  "stage": 2,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.0013310000000000002,
+  "durationMs": 2443,
+  "usage": {
+    "inputTokens": 2708,
+    "outputTokens": 436,
+    "cachedTokens": 0,
+    "costUsd": 0.0013310000000000002
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"causaRaiz\": \"A variável '_name' foi declarada e recebeu um valor, mas não foi utilizada no escopo do teste em app/tests/rules/indicators.test.ts, causando erro na regra @typescript-eslint/no-unused-vars.\",\n  \"categoria\": \"lint\",\n  \"padrao\": false,\n  \"dica\": \"Remova a atribuição da variável '_name' na linha 106 de app/tests/rules/indicators.test.ts, pois ela não é necessária para a execução do teste.\"\n}\n```"
+}

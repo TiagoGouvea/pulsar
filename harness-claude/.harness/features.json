@@ -838,7 +838,9 @@
       "tests": [
         "app/e2e/privacy-mode.spec.ts"
       ],
-      "protectedTests": [],
+      "protectedTests": [
+        "app/e2e/privacy-mode.spec.ts"
+      ],
       "tags": [
         "privacy-mode",
         "ui"
@@ -851,9 +853,9 @@
         "F-2.08",
         "F-2.09"
       ],
-      "status": "failing",
-      "attempts": 0,
-      "costUsd": 0.679299149,
+      "status": "passing",
+      "attempts": 1,
+      "costUsd": 1.161339399,
       "spendSince": "2026-11-05T09:49:45.283Z",
       "history": [
         {
@@ -915,8 +917,47 @@
           "failedGates": [],
           "ts": "2026-11-05T09:49:45.283Z",
           "note": "Movida da etapa 1 para a 2: o teste exige nomes de indicadores e o botão de abrir observação, telas que só existem depois de F-2.05/F-2.08/F-2.09. Na etapa 1 nenhum modelo tinha como passar."
+        },
+        {
+          "attempt": 1,
+          "role": "implement",
+          "workerId": "minimax",
+          "outcome": "success",
+          "failedGates": [],
+          "eventId": "evt-359",
+          "ts": "2026-11-08T13:01:54.099Z"
         }
       ],
+      "authors": {
+        "implementer": "minimax",
+        "attempts": [
+          "minimax ✖ review_rejected",
+          "haiku ✖ G6",
+          "sonnet ✖ G6",
+          "sonnet ✖ G6",
+          "sonnet ✖ review_rejected",
+          "- ✖ review_rejected",
+          "minimax ✔"
+        ],
+        "testWriter": "codex-mid",
+        "reviewers": [
+          "code haiku 8",
+          "ui haiku 8.1"
+        ],
+        "files": [
+          "DECISOES.md",
+          "app/AGENTS.md",
+          "app/e2e/privacy-mode.spec.ts",
+          "app/e2e/support.ts",
+          "app/eslint.config.js",
+          "app/src/indicators/EntryHistorySheet.tsx",
+          "app/src/indicators/IndicatorEditor.tsx",
+          "app/src/indicators/__tests__/EntryHistorySheet.test.tsx",
+          "app/src/pages/DesignPage.tsx",
+          "app/src/privacy/__tests__/allow.test.ts",
+          "app/src/privacy/allow.ts"
+        ]
+      },
       "origin": []
     },
     {
@@ -1582,10 +1623,65 @@
         "F-1.03",
         "F-1.08"
       ],
-      "status": "failing",
-      "attempts": 0,
-      "costUsd": 0,
-      "history": [],
+      "status": "passing",
+      "attempts": 3,
+      "costUsd": 1.770888352,
+      "spendSince": "2026-11-07T19:10:00.952159Z",
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement_hard",
+          "workerId": "kimi-pro",
+          "outcome": "failure",
+          "failedGates": [
+            "G2"
+          ],
+          "eventId": "evt-295",
+          "ts": "2026-11-07T18:15:13.686Z",
+          "sig": "G2:error Command failed with exit code 1."
+        },
+        {
+          "attempt": 2,
+          "role": "implement_hard",
+          "workerId": "codex-mid",
+          "outcome": "failure",
+          "failedGates": [
+            "G2"
+          ],
+          "eventId": "evt-297",
+          "ts": "2026-11-07T18:17:14.507Z",
+          "sig": "G2:error Command failed with exit code 1."
+        },
+        {
+          "attempt": 3,
+          "role": "implement_hard",
+          "workerId": "codex-mid",
+          "outcome": "success",
+          "failedGates": [],
+          "eventId": "evt-299",
+          "ts": "2026-11-07T19:27:26.989Z"
+        }
+      ],
+      "authors": {
+        "implementer": "codex-mid",
+        "attempts": [
+          "kimi-pro ✖ G2",
+          "codex-mid ✖ G2",
+          "codex-mid ✔"
+        ],
+        "testWriter": "codex-mid",
+        "reviewers": [
+          "code haiku 8"
+        ],
+        "files": [
+          "app/firestore.rules",
+          "app/scripts/seed.ts",
+          "app/src/data/__tests__/indicators.test.ts",
+          "app/src/data/indicators.ts",
+          "app/tests/rules/indicator-lock-transition.test.ts",
+          "app/tests/rules/indicators.test.ts"
+        ]
+      },
       "origin": []
     },
     {
@@ -1635,10 +1731,57 @@
         "F-2.01",
         "F-1.04"
       ],
-      "status": "failing",
-      "attempts": 0,
-      "costUsd": 0,
-      "history": [],
+      "status": "passing",
+      "attempts": 2,
+      "costUsd": 1.279327018,
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement",
+          "workerId": "deepseek-flash",
+          "outcome": "timeout",
+          "failedGates": [],
+          "eventId": "evt-305",
+          "ts": "2026-11-07T19:57:38.810Z"
+        },
+        {
+          "attempt": 2,
+          "role": "implement",
+          "workerId": "haiku",
+          "outcome": "success",
+          "failedGates": [],
+          "eventId": "evt-313",
+          "ts": "2026-11-07T20:11:01.116Z"
+        }
+      ],
+      "authors": {
+        "implementer": "haiku",
+        "attempts": [
+          "deepseek-flash ✖ timeout",
+          "haiku ✔"
+        ],
+        "reviewers": [
+          "code gemini-argon 9",
+          "ui gemini 9.4"
+        ],
+        "files": [
+          "app/e2e/indicator-create.spec.ts",
+          "app/e2e/indicator-edit-lock.spec.ts",
+          "app/e2e/routes.json",
+          "app/functions/node_modules",
+          "app/node_modules",
+          "app/src/App.tsx",
+          "app/src/data/indicators.ts",
+          "app/src/indicators/AggregationControl.tsx",
+          "app/src/indicators/IndicatorEditor.tsx",
+          "app/src/indicators/__tests__/AggregationControl.test.tsx",
+          "app/src/indicators/__tests__/IndicatorEditor.test.tsx",
+          "app/src/indicators/aggregation.ts",
+          "app/src/indicators/catalog.ts",
+          "app/src/indicators/draft.ts",
+          "app/src/pages/IndicatorEditorPage.tsx"
+        ]
+      },
       "origin": []
     },
     {
@@ -1673,10 +1816,81 @@
       "dependsOn": [
         "F-2.03"
       ],
-      "status": "failing",
-      "attempts": 0,
-      "costUsd": 0,
-      "history": [],
+      "status": "passing",
+      "attempts": 4,
+      "costUsd": 2.6551344139999995,
+      "spendSince": "2026-11-08T11:02:23.493964Z",
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement",
+          "workerId": "minimax",
+          "outcome": "timeout",
+          "failedGates": [],
+          "eventId": "evt-321",
+          "ts": "2026-11-07T20:48:38.939Z"
+        },
+        {
+          "attempt": 2,
+          "role": "implement",
+          "workerId": "haiku",
+          "outcome": "failure",
+          "failedGates": [
+            "G9",
+            "G10"
+          ],
+          "eventId": "evt-326",
+          "ts": "2026-11-08T11:04:47.920Z"
+        },
+        {
+          "attempt": 3,
+          "role": "implement_hard",
+          "workerId": "codex-mid",
+          "outcome": "failure",
+          "failedGates": [
+            "G10"
+          ],
+          "eventId": "evt-330",
+          "ts": "2026-11-08T11:09:55.250Z"
+        },
+        {
+          "attempt": 4,
+          "role": "implement_hard",
+          "workerId": "codex-mid",
+          "outcome": "success",
+          "failedGates": [],
+          "eventId": "evt-337",
+          "ts": "2026-11-08T11:21:50.847Z"
+        }
+      ],
+      "authors": {
+        "implementer": "codex-mid",
+        "attempts": [
+          "minimax ✖ timeout",
+          "haiku ✖ G9,G10",
+          "codex-mid ✖ G10",
+          "codex-mid ✔"
+        ],
+        "testWriter": "glm-or",
+        "reviewers": [
+          "code haiku 8",
+          "ui haiku 8"
+        ],
+        "files": [
+          "app/e2e/indicators-list.spec.ts",
+          "app/scripts/icons.ts",
+          "app/src/App.tsx",
+          "app/src/data/__tests__/indicators.test.ts",
+          "app/src/data/firestoreRest.ts",
+          "app/src/data/indicators.ts",
+          "app/src/design/icons.ts",
+          "app/src/indicators/IndicatorCard.tsx",
+          "app/src/indicators/__tests__/IndicatorCard.test.tsx",
+          "app/src/indicators/__tests__/summary.test.ts",
+          "app/src/indicators/summary.ts",
+          "app/src/pages/IndicatorsPage.tsx"
+        ]
+      },
       "origin": []
     },
     {
@@ -1729,10 +1943,37 @@
         "F-2.01",
         "F-1.02"
       ],
-      "status": "failing",
-      "attempts": 0,
-      "costUsd": 0,
-      "history": [],
+      "status": "passing",
+      "attempts": 1,
+      "costUsd": 0.56404515,
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement_hard",
+          "workerId": "codex-mid",
+          "outcome": "success",
+          "failedGates": [],
+          "eventId": "evt-304",
+          "ts": "2026-11-07T19:32:23.221Z"
+        }
+      ],
+      "authors": {
+        "implementer": "codex-mid",
+        "attempts": [
+          "codex-mid ✔"
+        ],
+        "testWriter": "codex-mid",
+        "reviewers": [
+          "code haiku 8"
+        ],
+        "files": [
+          "app/firestore.rules",
+          "app/src/data/__tests__/entries.test.ts",
+          "app/src/data/entries.ts",
+          "app/tests/rules/entries.test.ts",
+          "app/tests/rules/entry-validation-extra.test.ts"
+        ]
+      },
       "origin": []
     },
     {
@@ -1775,10 +2016,97 @@
         "F-2.06",
         "F-2.03"
       ],
-      "status": "failing",
-      "attempts": 0,
-      "costUsd": 0,
-      "history": [],
+      "status": "passing",
+      "attempts": 5,
+      "costUsd": 3.083755864999999,
+      "spendSince": "2026-11-08T12:19:20.110762Z",
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement_hard",
+          "workerId": "codex-mid",
+          "outcome": "failure",
+          "failedGates": [
+            "G4",
+            "G6",
+            "G8",
+            "G9",
+            "G10"
+          ],
+          "eventId": "evt-328",
+          "ts": "2026-11-08T11:06:39.221Z",
+          "sig": "G4:\u001b[31m⎯⎯⎯⎯⎯⎯⎯\u001b[39m\u001b[1m\u001b[41m Failed Tests 1 \u001b[49m\u001b[22m\u001b[31m⎯⎯⎯⎯⎯⎯⎯\u001b[39m|\u001b[41m\u001b[1m FAIL \u001b[22m\u001b[49m src/entry/__tests__/QuickEntry.test.tsx\u001b[2m > \u001b[22mF-2.08 QuickEntry (preenchimento rápido)\u001b[2m > \u001b[22mnever alerts about missing answers; the optional note travels with the entry|\u001b[31m\u001b[1mAssertionError\u001b[22m: expected 'Salvamento automático ativoPronto par…' not to match /faltando|preencha|obrigat/i\u001b[39m|\u001b[32m- Expected:\u001b[39m|\u001b[31m+ Received:\u001b[39m|\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[31m1 failed\u001b[39m\u001b[22m\u001b[2m | \u001b[22m\u001b[1m\u001b[32m22 passed\u001b[39m\u001b[22m\u001b[90m (23)\u001b[39m|\u001b[2m Tests \u001b[22m \u001b[1m\u001b[31m1 failed\u001b[39m\u001b[22m\u001b[2m | \u001b[22m\u001b[1m\u001b[32m192 passed\u001b[39m\u001b[22m\u001b[90m (193)\u001b[39m|error Command failed with exit code 1.\nG6:Error: locator.click: Target page, context or browser has been closed|2) [desktop] › e2e/quick-entry.spec.ts:365:3 › F-2.08 quick entry (/register) › offline answers stay pending (never \"saved\") until the write persists|2 failed|[mobile] › e2e/quick-entry.spec.ts:365:3 › F-2.08 quick entry (/register) › offline answers stay pending (never \"saved\") until the write persists|[desktop] › e2e/quick-entry.spec.ts:365:3 › F-2.08 quick entry (/register) › offline answers stay pending (never \"saved\") until the write persists|error Command failed with exit code 1."
+        },
+        {
+          "attempt": 2,
+          "role": "implement_hard",
+          "workerId": "codex-mid",
+          "outcome": "failure",
+          "failedGates": [
+            "G6"
+          ],
+          "eventId": "evt-332",
+          "ts": "2026-11-08T11:13:59.705Z",
+          "sig": "G6:Error: locator.click: Target page, context or browser has been closed|2) [desktop] › e2e/quick-entry.spec.ts:365:3 › F-2.08 quick entry (/register) › offline answers stay pending (never \"saved\") until the write persists|2 failed|[mobile] › e2e/quick-entry.spec.ts:365:3 › F-2.08 quick entry (/register) › offline answers stay pending (never \"saved\") until the write persists|[desktop] › e2e/quick-entry.spec.ts:365:3 › F-2.08 quick entry (/register) › offline answers stay pending (never \"saved\") until the write persists|error Command failed with exit code 1."
+        },
+        {
+          "attempt": 3,
+          "role": "implement_hard",
+          "workerId": "codex-mid",
+          "outcome": "failure",
+          "failedGates": [
+            "G6"
+          ],
+          "eventId": "evt-335",
+          "ts": "2026-11-08T11:21:05.439Z",
+          "sig": "G6:Error: locator.click: Target page, context or browser has been closed|2) [desktop] › e2e/quick-entry.spec.ts:365:3 › F-2.08 quick entry (/register) › offline answers stay pending (never \"saved\") until the write persists|2 failed|[mobile] › e2e/quick-entry.spec.ts:365:3 › F-2.08 quick entry (/register) › offline answers stay pending (never \"saved\") until the write persists|[desktop] › e2e/quick-entry.spec.ts:365:3 › F-2.08 quick entry (/register) › offline answers stay pending (never \"saved\") until the write persists|error Command failed with exit code 1."
+        },
+        {
+          "attempt": 4,
+          "role": "implement_hard",
+          "workerId": "codex-mid",
+          "outcome": "protected_violation",
+          "failedGates": [
+            "G6",
+            "G7"
+          ],
+          "eventId": "evt-339",
+          "ts": "2026-11-08T11:26:07.182Z"
+        },
+        {
+          "attempt": 5,
+          "role": "implement_hard",
+          "workerId": "codex-mid",
+          "outcome": "failure",
+          "failedGates": [
+            "G6"
+          ],
+          "eventId": "evt-342",
+          "ts": "2026-11-08T11:32:55.254Z",
+          "sig": "G6:Error: locator.click: Target page, context or browser has been closed|2) [desktop] › e2e/quick-entry.spec.ts:365:3 › F-2.08 quick entry (/register) › offline answers stay pending (never \"saved\") until the write persists|2 failed|[mobile] › e2e/quick-entry.spec.ts:365:3 › F-2.08 quick entry (/register) › offline answers stay pending (never \"saved\") until the write persists|[desktop] › e2e/quick-entry.spec.ts:365:3 › F-2.08 quick entry (/register) › offline answers stay pending (never \"saved\") until the write persists|error Command failed with exit code 1."
+        },
+        {
+          "attempt": 5,
+          "role": "implement_hard",
+          "workerId": "codex-mid",
+          "outcome": "failure",
+          "failedGates": [
+            "G6"
+          ],
+          "eventId": "evt-351",
+          "ts": "2026-11-08T12:11:51.487Z",
+          "sig": "G6:Error: locator.click: Target page, context or browser has been closed|2) [desktop] › e2e/quick-entry.spec.ts:196:3 › F-2.08 quick entry (/register) › groups the active indicators under Fatores/Resultados in order and hides archived|2 failed|[mobile] › e2e/quick-entry.spec.ts:196:3 › F-2.08 quick entry (/register) › groups the active indicators under Fatores/Resultados in order and hides archived|[desktop] › e2e/quick-entry.spec.ts:196:3 › F-2.08 quick entry (/register) › groups the active indicators under Fatores/Resultados in order and hides archived|error Command failed with exit code 1."
+        },
+        {
+          "attempt": 5,
+          "role": "implement_hard",
+          "workerId": "codex-mid",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "eventId": "evt-355",
+          "ts": "2026-11-08T12:37:01.944Z"
+        }
+      ],
       "origin": []
     },
     {
@@ -1815,10 +2143,51 @@
         "F-2.06",
         "F-2.05"
       ],
-      "status": "failing",
-      "attempts": 0,
-      "costUsd": 0,
-      "history": [],
+      "status": "passing",
+      "attempts": 2,
+      "costUsd": 0.6222670700000001,
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement",
+          "workerId": "minimax",
+          "outcome": "timeout",
+          "failedGates": [],
+          "eventId": "evt-344",
+          "ts": "2026-11-08T11:39:04.286Z"
+        },
+        {
+          "attempt": 2,
+          "role": "implement",
+          "workerId": "minimax",
+          "outcome": "success",
+          "failedGates": [],
+          "eventId": "evt-349",
+          "ts": "2026-11-08T11:45:37.062Z"
+        }
+      ],
+      "authors": {
+        "implementer": "minimax",
+        "attempts": [
+          "minimax ✖ timeout",
+          "minimax ✔"
+        ],
+        "testWriter": "codex-mid",
+        "reviewers": [
+          "code haiku 8",
+          "ui haiku 8"
+        ],
+        "files": [
+          "app/e2e/entry-history.spec.ts",
+          "app/scripts/icons.ts",
+          "app/src/data/entryHistory.ts",
+          "app/src/design/icons.ts",
+          "app/src/indicators/EntryHistorySheet.tsx",
+          "app/src/indicators/entryValue.ts",
+          "app/src/lib/time.ts",
+          "app/src/pages/IndicatorsPage.tsx"
+        ]
+      },
       "origin": []
     },
     {
@@ -1852,10 +2221,68 @@
         "F-2.01",
         "F-1.07"
       ],
-      "status": "failing",
-      "attempts": 0,
-      "costUsd": 0,
-      "history": [],
+      "status": "passing",
+      "attempts": 5,
+      "costUsd": 1.9981126660000001,
+      "spendSince": "2026-11-08T11:02:23.493964Z",
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement",
+          "workerId": "deepseek-flash",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "eventId": "evt-308",
+          "ts": "2026-11-07T20:01:48.491Z"
+        },
+        {
+          "attempt": 2,
+          "role": "implement",
+          "workerId": "haiku",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "eventId": "evt-311",
+          "ts": "2026-11-07T20:10:12.597Z"
+        },
+        {
+          "attempt": 3,
+          "role": "implement_hard",
+          "workerId": "codex-mid",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "eventId": "evt-315",
+          "ts": "2026-11-07T20:15:07.132Z"
+        },
+        {
+          "attempt": 4,
+          "role": "implement_hard",
+          "workerId": "codex-mid",
+          "outcome": "protected_violation",
+          "failedGates": [
+            "G1",
+            "G2",
+            "G3",
+            "G4",
+            "G5",
+            "G6",
+            "G7",
+            "G8",
+            "G9",
+            "G10"
+          ],
+          "eventId": "evt-343",
+          "ts": "2026-11-08T11:33:38.683Z"
+        },
+        {
+          "attempt": 5,
+          "role": "implement_hard",
+          "workerId": "codex-mid",
+          "outcome": "review_rejected",
+          "failedGates": [],
+          "eventId": "evt-346",
+          "ts": "2026-11-08T11:39:20.095Z"
+        }
+      ],
       "origin": []
     },
     {
@@ -1892,10 +2319,43 @@
         "F-1.09",
         "F-1.08"
       ],
-      "status": "failing",
-      "attempts": 0,
-      "costUsd": 0,
-      "history": [],
+      "status": "passing",
+      "attempts": 1,
+      "costUsd": 0.5964834600000001,
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement",
+          "workerId": "minimax",
+          "outcome": "success",
+          "failedGates": [],
+          "eventId": "evt-324",
+          "ts": "2026-11-07T21:02:39.780Z"
+        }
+      ],
+      "authors": {
+        "implementer": "minimax",
+        "attempts": [
+          "minimax ✔"
+        ],
+        "reviewers": [
+          "code haiku 7",
+          "ui haiku 8"
+        ],
+        "files": [
+          "app/e2e/save-account-banner.spec.ts",
+          "app/functions/node_modules",
+          "app/node_modules",
+          "app/scripts/icons.ts",
+          "app/src/App.tsx",
+          "app/src/account/SaveAccountInviteBanner.tsx",
+          "app/src/account/__tests__/invite.test.ts",
+          "app/src/account/invite.ts",
+          "app/src/account/inviteRepository.ts",
+          "app/src/design/icons.ts",
+          "app/src/pages/DashboardPage.tsx"
+        ]
+      },
       "origin": []
     },
     {
@@ -3418,9 +3878,6 @@
           "ts": "2026-11-07T13:11:14.578Z"
         }
       ],
-      "origin": [
-        "F-1.03"
-      ],
       "authors": {
         "implementer": "minimax",
         "attempts": [
@@ -3435,6 +3892,279 @@
           "app/e2e/initial-session-loading.spec.ts",
           "app/src/App.tsx",
           "app/src/__tests__/initial-session-loading.test.tsx"
+        ]
+      },
+      "origin": [
+        "F-1.03"
+      ]
+    },
+    {
+      "id": "F-2.fix-1",
+      "stage": 2,
+      "title": "Suíte completa da etapa falhou nos gates G6, G11",
+      "description": "G6: ecord-thanks')).toHaveCount(0);\n        at /Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/stage-2/pulsar-claude/app/e2e/empty-dashboard-regressions.spec.ts:221:57\n\n    Error Context: test-results/empty-dashboard-regression-63e06-il-a-second-day-is-recorded-mobile-retry1/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/empty-dashboard-regression-63e06-il-a-second-day-is-recorded-mobile-retry1/trace.zip\n    Usage:\n\n        yarn playwright show-trace test-results/empty-dashboard-regression-63e06-il-a-second-day-is-recorded-mobile-retry1/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n  4 failed\n    [mobile] › e2e/account-delete.spec.ts:207:3 › account deletion and sign-out › deletion removes the old account and starts a clean anonymous session \n    [mobile] › e2e/account-delete.spec.ts:244:3 › account deletion and sign-out › anonymous sign-out requires an explicit confirmation and warns about lost access \n    [mobile] › e2e/account-link.spec.ts:109:3 › account link › no password or phone field or wording anywhere in the UI \n    [mobile] › e2e/empty-dashboard-regressions.spec.ts:210:1 › first filling with several indicators is acknowledged until a second day is recorded \n  97 passed (1.3m)\nerror Command failed with exit code 1.\ninfo Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.\n\nG11: cted substring: \"cancelada\"\n    Timeout: 5000ms\n    Error: element(s) not found\n\n    Call log:\n      - Expect \"toContainText\" getByRole('alert') with timeout 5000ms\n      - waiting for getByRole('alert')\n\n\n      27 |   await capture('google-loading');\n      28 |   await popup.close();\n    > 29 |   await expect(page.getByRole('alert')).toContainText('cancelada');\n         |                                         ^\n      30 |   await capture('google-error');\n      31 |\n      32 |   await page.getByRole('button', { name: /enviar link mágico/i }).click();\n        at /Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/stage-2/pulsar-claude/app/e2e/account-link-visual.spec.ts:29:41\n\n    Error Context: test-results/account-link-visual-account-linking-states-visual-mobile-retry1/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/account-link-visual-account-linking-states-visual-mobile-retry1/trace.zip\n    Usage:\n\n        yarn playwright show-trace test-results/account-link-visual-account-linking-states-visual-mobile-retry1/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n  1 failed\n    [mobile] › e2e/account-link-visual.spec.ts:6:1 › account linking states @visual ────────────────\n  10 passed (27.4s)\nerror Command failed with exit code 1.\ninfo Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.",
+      "specRefs": [],
+      "covers": [],
+      "acceptance": [
+        "Todos os gates obrigatórios da etapa passam na suíte completa",
+        "Nenhum teste protegido é alterado"
+      ],
+      "tests": [],
+      "protectedTests": [
+        "app/e2e/privacy-mode.spec.ts",
+        "app/tests/rules/indicators.test.ts",
+        "app/e2e/indicator-create.spec.ts",
+        "app/e2e/indicator-edit-lock.spec.ts",
+        "app/e2e/indicators-list.spec.ts",
+        "app/src/data/__tests__/entries.test.ts",
+        "app/tests/rules/entries.test.ts",
+        "app/e2e/quick-entry.spec.ts",
+        "app/e2e/entry-history.spec.ts",
+        "app/e2e/empty-dashboard.spec.ts",
+        "app/src/account/__tests__/invite.test.ts"
+      ],
+      "tags": [
+        "regression",
+        "gate:G11"
+      ],
+      "difficulty": "hard",
+      "dependsOn": [],
+      "status": "blocked",
+      "attempts": 5,
+      "costUsd": 0.52917855,
+      "blockedReason": "limite de 5 tentativas atingido",
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement_hard",
+          "workerId": "codex-mid",
+          "outcome": "failure",
+          "failedGates": [
+            "G11"
+          ],
+          "eventId": "evt-361",
+          "ts": "2026-11-08T13:11:35.399Z",
+          "sig": "G11:✓ 2 [mobile] › e2e/visual.spec.ts:7:3 › visual home @visual|✓ 1 [mobile] › e2e/visual.spec.ts:7:3 › visual onboarding @visual|✓ 3 [mobile] › e2e/visual.spec.ts:7:3 › visual dashboard @visual|✓ 8 [mobile] › e2e/visual.spec.ts:7:3 › visual indicators-edit @visual|✓ 7 [mobile] › e2e/visual.spec.ts:7:3 › visual indicators-new @visual|✓ 9 [mobile] › e2e/visual.spec.ts:7:3 › visual saved-insights @visual|✓ 10 [mobile] › e2e/visual.spec.ts:7:3 › visual settings @visual|✓ 11 [mobile] › e2e/visual.spec.ts:7:3 › visual design @visual"
+        },
+        {
+          "attempt": 2,
+          "role": "implement_hard",
+          "workerId": "codex-mid",
+          "outcome": "failure",
+          "failedGates": [
+            "G11"
+          ],
+          "eventId": "evt-363",
+          "ts": "2026-11-08T13:13:22.069Z",
+          "sig": "G11:✓ 4 [mobile] › e2e/visual.spec.ts:7:3 › visual onboarding @visual|✓ 3 [mobile] › e2e/visual.spec.ts:7:3 › visual home @visual|✓ 1 [mobile] › e2e/visual.spec.ts:7:3 › visual dashboard @visual|✓ 7 [mobile] › e2e/visual.spec.ts:7:3 › visual indicators-new @visual|✓ 8 [mobile] › e2e/visual.spec.ts:7:3 › visual indicators-edit @visual|✓ 9 [mobile] › e2e/visual.spec.ts:7:3 › visual saved-insights @visual|✓ 10 [mobile] › e2e/visual.spec.ts:7:3 › visual settings @visual|✓ 11 [mobile] › e2e/visual.spec.ts:7:3 › visual design @visual"
+        },
+        {
+          "attempt": 3,
+          "role": "implement_hard",
+          "workerId": "codex-mid",
+          "outcome": "failure",
+          "failedGates": [
+            "G11"
+          ],
+          "eventId": "evt-365",
+          "ts": "2026-11-08T13:15:18.133Z",
+          "sig": "G11:✓ 4 [mobile] › e2e/visual.spec.ts:7:3 › visual home @visual|✓ 2 [mobile] › e2e/visual.spec.ts:7:3 › visual onboarding @visual|✓ 5 [mobile] › e2e/visual.spec.ts:7:3 › visual dashboard @visual|✓ 8 [mobile] › e2e/visual.spec.ts:7:3 › visual indicators-edit @visual|✓ 7 [mobile] › e2e/visual.spec.ts:7:3 › visual indicators-new @visual|✓ 9 [mobile] › e2e/visual.spec.ts:7:3 › visual saved-insights @visual|✓ 10 [mobile] › e2e/visual.spec.ts:7:3 › visual settings @visual|✓ 11 [mobile] › e2e/visual.spec.ts:7:3 › visual design @visual"
+        },
+        {
+          "attempt": 4,
+          "role": "implement_hard",
+          "workerId": "codex-mid",
+          "outcome": "failure",
+          "failedGates": [
+            "G11"
+          ],
+          "eventId": "evt-367",
+          "ts": "2026-11-08T13:17:07.382Z",
+          "sig": "G11:✓ 3 [mobile] › e2e/visual.spec.ts:7:3 › visual home @visual|✓ 4 [mobile] › e2e/visual.spec.ts:7:3 › visual onboarding @visual|✓ 1 [mobile] › e2e/visual.spec.ts:7:3 › visual dashboard @visual|✓ 8 [mobile] › e2e/visual.spec.ts:7:3 › visual indicators-edit @visual|✓ 7 [mobile] › e2e/visual.spec.ts:7:3 › visual indicators-new @visual|✓ 9 [mobile] › e2e/visual.spec.ts:7:3 › visual saved-insights @visual|✓ 10 [mobile] › e2e/visual.spec.ts:7:3 › visual settings @visual|✓ 11 [mobile] › e2e/visual.spec.ts:7:3 › visual design @visual"
+        },
+        {
+          "attempt": 5,
+          "role": "implement_hard",
+          "workerId": "codex-mid",
+          "outcome": "failure",
+          "failedGates": [
+            "G11"
+          ],
+          "eventId": "evt-369",
+          "ts": "2026-11-08T13:19:11.627Z",
+          "sig": "G11:✓ 1 [mobile] › e2e/visual.spec.ts:7:3 › visual onboarding @visual|✓ 4 [mobile] › e2e/visual.spec.ts:7:3 › visual home @visual|✓ 5 [mobile] › e2e/visual.spec.ts:7:3 › visual dashboard @visual|✓ 8 [mobile] › e2e/visual.spec.ts:7:3 › visual indicators-edit @visual|✓ 7 [mobile] › e2e/visual.spec.ts:7:3 › visual indicators-new @visual|✓ 9 [mobile] › e2e/visual.spec.ts:7:3 › visual saved-insights @visual|✓ 10 [mobile] › e2e/visual.spec.ts:7:3 › visual settings @visual|✓ 11 [mobile] › e2e/visual.spec.ts:7:3 › visual design @visual"
+        }
+      ],
+      "origin": []
+    },
+    {
+      "id": "F-2.fix-2",
+      "stage": 2,
+      "title": "Suíte completa da etapa falhou nos gates G6, G11",
+      "description": "G6: ecord-thanks')).toHaveCount(0);\n        at /Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/stage-2/pulsar-claude/app/e2e/empty-dashboard-regressions.spec.ts:221:57\n\n    Error Context: test-results/empty-dashboard-regression-63e06-il-a-second-day-is-recorded-mobile-retry1/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/empty-dashboard-regression-63e06-il-a-second-day-is-recorded-mobile-retry1/trace.zip\n    Usage:\n\n        yarn playwright show-trace test-results/empty-dashboard-regression-63e06-il-a-second-day-is-recorded-mobile-retry1/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n  4 failed\n    [mobile] › e2e/account-delete.spec.ts:207:3 › account deletion and sign-out › deletion removes the old account and starts a clean anonymous session \n    [mobile] › e2e/account-delete.spec.ts:244:3 › account deletion and sign-out › anonymous sign-out requires an explicit confirmation and warns about lost access \n    [mobile] › e2e/account-link.spec.ts:109:3 › account link › no password or phone field or wording anywhere in the UI \n    [mobile] › e2e/empty-dashboard-regressions.spec.ts:210:1 › first filling with several indicators is acknowledged until a second day is recorded \n  97 passed (1.3m)\nerror Command failed with exit code 1.\ninfo Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.\n\nG11: cted substring: \"cancelada\"\n    Timeout: 5000ms\n    Error: element(s) not found\n\n    Call log:\n      - Expect \"toContainText\" getByRole('alert') with timeout 5000ms\n      - waiting for getByRole('alert')\n\n\n      27 |   await capture('google-loading');\n      28 |   await popup.close();\n    > 29 |   await expect(page.getByRole('alert')).toContainText('cancelada');\n         |                                         ^\n      30 |   await capture('google-error');\n      31 |\n      32 |   await page.getByRole('button', { name: /enviar link mágico/i }).click();\n        at /Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/stage-2/pulsar-claude/app/e2e/account-link-visual.spec.ts:29:41\n\n    Error Context: test-results/account-link-visual-account-linking-states-visual-mobile-retry1/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/account-link-visual-account-linking-states-visual-mobile-retry1/trace.zip\n    Usage:\n\n        yarn playwright show-trace test-results/account-link-visual-account-linking-states-visual-mobile-retry1/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n  1 failed\n    [mobile] › e2e/account-link-visual.spec.ts:6:1 › account linking states @visual ────────────────\n  10 passed (27.6s)\nerror Command failed with exit code 1.\ninfo Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.",
+      "specRefs": [],
+      "covers": [],
+      "acceptance": [
+        "Todos os gates obrigatórios da etapa passam na suíte completa",
+        "Nenhum teste protegido é alterado"
+      ],
+      "tests": [],
+      "protectedTests": [
+        "app/e2e/privacy-mode.spec.ts",
+        "app/tests/rules/indicators.test.ts",
+        "app/e2e/indicator-create.spec.ts",
+        "app/e2e/indicator-edit-lock.spec.ts",
+        "app/e2e/indicators-list.spec.ts",
+        "app/src/data/__tests__/entries.test.ts",
+        "app/tests/rules/entries.test.ts",
+        "app/e2e/quick-entry.spec.ts",
+        "app/e2e/entry-history.spec.ts",
+        "app/e2e/empty-dashboard.spec.ts",
+        "app/src/account/__tests__/invite.test.ts"
+      ],
+      "tags": [
+        "regression",
+        "gate:G11"
+      ],
+      "difficulty": "hard",
+      "dependsOn": [],
+      "status": "blocked",
+      "attempts": 5,
+      "costUsd": 0.5323145000000001,
+      "blockedReason": "limite de 5 tentativas atingido",
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement_hard",
+          "workerId": "codex-mid",
+          "outcome": "failure",
+          "failedGates": [
+            "G11"
+          ],
+          "eventId": "evt-371",
+          "ts": "2026-11-08T13:28:41.621Z",
+          "sig": "G11:✓ 2 [mobile] › e2e/visual.spec.ts:7:3 › visual home @visual|✓ 3 [mobile] › e2e/visual.spec.ts:7:3 › visual onboarding @visual|✓ 5 [mobile] › e2e/visual.spec.ts:7:3 › visual dashboard @visual|✓ 7 [mobile] › e2e/visual.spec.ts:7:3 › visual indicators-new @visual|✓ 8 [mobile] › e2e/visual.spec.ts:7:3 › visual indicators-edit @visual|✓ 9 [mobile] › e2e/visual.spec.ts:7:3 › visual saved-insights @visual|✓ 10 [mobile] › e2e/visual.spec.ts:7:3 › visual settings @visual|✓ 11 [mobile] › e2e/visual.spec.ts:7:3 › visual design @visual"
+        },
+        {
+          "attempt": 2,
+          "role": "implement_hard",
+          "workerId": "codex-mid",
+          "outcome": "failure",
+          "failedGates": [
+            "G11"
+          ],
+          "eventId": "evt-373",
+          "ts": "2026-11-08T13:30:34.742Z",
+          "sig": "G11:✓ 4 [mobile] › e2e/visual.spec.ts:7:3 › visual onboarding @visual|✓ 2 [mobile] › e2e/visual.spec.ts:7:3 › visual home @visual|✓ 1 [mobile] › e2e/visual.spec.ts:7:3 › visual dashboard @visual|✓ 8 [mobile] › e2e/visual.spec.ts:7:3 › visual indicators-edit @visual|✓ 7 [mobile] › e2e/visual.spec.ts:7:3 › visual indicators-new @visual|✓ 9 [mobile] › e2e/visual.spec.ts:7:3 › visual saved-insights @visual|✓ 10 [mobile] › e2e/visual.spec.ts:7:3 › visual settings @visual|✓ 11 [mobile] › e2e/visual.spec.ts:7:3 › visual design @visual"
+        },
+        {
+          "attempt": 3,
+          "role": "implement_hard",
+          "workerId": "codex-mid",
+          "outcome": "failure",
+          "failedGates": [
+            "G11"
+          ],
+          "eventId": "evt-375",
+          "ts": "2026-11-08T13:32:30.584Z",
+          "sig": "G11:✓ 4 [mobile] › e2e/visual.spec.ts:7:3 › visual onboarding @visual|✓ 1 [mobile] › e2e/visual.spec.ts:7:3 › visual home @visual|✓ 3 [mobile] › e2e/visual.spec.ts:7:3 › visual dashboard @visual|✓ 8 [mobile] › e2e/visual.spec.ts:7:3 › visual indicators-edit @visual|✓ 7 [mobile] › e2e/visual.spec.ts:7:3 › visual indicators-new @visual|✓ 9 [mobile] › e2e/visual.spec.ts:7:3 › visual saved-insights @visual|✓ 10 [mobile] › e2e/visual.spec.ts:7:3 › visual settings @visual|✓ 11 [mobile] › e2e/visual.spec.ts:7:3 › visual design @visual"
+        },
+        {
+          "attempt": 4,
+          "role": "implement_hard",
+          "workerId": "codex-mid",
+          "outcome": "failure",
+          "failedGates": [
+            "G11"
+          ],
+          "eventId": "evt-377",
+          "ts": "2026-11-08T13:34:21.520Z",
+          "sig": "G11:✓ 1 [mobile] › e2e/visual.spec.ts:7:3 › visual home @visual|✓ 4 [mobile] › e2e/visual.spec.ts:7:3 › visual onboarding @visual|✓ 5 [mobile] › e2e/visual.spec.ts:7:3 › visual dashboard @visual|✓ 8 [mobile] › e2e/visual.spec.ts:7:3 › visual indicators-edit @visual|✓ 7 [mobile] › e2e/visual.spec.ts:7:3 › visual indicators-new @visual|✓ 9 [mobile] › e2e/visual.spec.ts:7:3 › visual saved-insights @visual|✓ 10 [mobile] › e2e/visual.spec.ts:7:3 › visual settings @visual|✓ 11 [mobile] › e2e/visual.spec.ts:7:3 › visual design @visual"
+        },
+        {
+          "attempt": 5,
+          "role": "implement_hard",
+          "workerId": "codex-mid",
+          "outcome": "failure",
+          "failedGates": [
+            "G11"
+          ],
+          "eventId": "evt-379",
+          "ts": "2026-11-08T13:36:15.305Z",
+          "sig": "G11:✓ 4 [mobile] › e2e/visual.spec.ts:7:3 › visual home @visual|✓ 3 [mobile] › e2e/visual.spec.ts:7:3 › visual onboarding @visual|✓ 5 [mobile] › e2e/visual.spec.ts:7:3 › visual dashboard @visual|✓ 8 [mobile] › e2e/visual.spec.ts:7:3 › visual indicators-edit @visual|✓ 7 [mobile] › e2e/visual.spec.ts:7:3 › visual indicators-new @visual|✓ 9 [mobile] › e2e/visual.spec.ts:7:3 › visual saved-insights @visual|✓ 10 [mobile] › e2e/visual.spec.ts:7:3 › visual settings @visual|✓ 11 [mobile] › e2e/visual.spec.ts:7:3 › visual design @visual"
+        }
+      ],
+      "origin": []
+    },
+    {
+      "id": "F-2.fix-3",
+      "stage": 2,
+      "title": "Suíte completa da etapa falhou nos gates G6, G11",
+      "description": "G6: ecord-thanks')).toHaveCount(0);\n        at /Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/stage-2/pulsar-claude/app/e2e/empty-dashboard-regressions.spec.ts:221:57\n\n    Error Context: test-results/empty-dashboard-regression-63e06-il-a-second-day-is-recorded-mobile-retry1/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/empty-dashboard-regression-63e06-il-a-second-day-is-recorded-mobile-retry1/trace.zip\n    Usage:\n\n        yarn playwright show-trace test-results/empty-dashboard-regression-63e06-il-a-second-day-is-recorded-mobile-retry1/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n  4 failed\n    [mobile] › e2e/account-delete.spec.ts:207:3 › account deletion and sign-out › deletion removes the old account and starts a clean anonymous session \n    [mobile] › e2e/account-delete.spec.ts:244:3 › account deletion and sign-out › anonymous sign-out requires an explicit confirmation and warns about lost access \n    [mobile] › e2e/account-link.spec.ts:109:3 › account link › no password or phone field or wording anywhere in the UI \n    [mobile] › e2e/empty-dashboard-regressions.spec.ts:210:1 › first filling with several indicators is acknowledged until a second day is recorded \n  97 passed (1.3m)\nerror Command failed with exit code 1.\ninfo Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.\n\nG11: cted substring: \"cancelada\"\n    Timeout: 5000ms\n    Error: element(s) not found\n\n    Call log:\n      - Expect \"toContainText\" getByRole('alert') with timeout 5000ms\n      - waiting for getByRole('alert')\n\n\n      27 |   await capture('google-loading');\n      28 |   await popup.close();\n    > 29 |   await expect(page.getByRole('alert')).toContainText('cancelada');\n         |                                         ^\n      30 |   await capture('google-error');\n      31 |\n      32 |   await page.getByRole('button', { name: /enviar link mágico/i }).click();\n        at /Users/tiagogouvea/www/treinamento/Pulsar/pulsar-claude/.worktrees/stage-2/pulsar-claude/app/e2e/account-link-visual.spec.ts:29:41\n\n    Error Context: test-results/account-link-visual-account-linking-states-visual-mobile-retry1/error-context.md\n\n    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results/account-link-visual-account-linking-states-visual-mobile-retry1/trace.zip\n    Usage:\n\n        yarn playwright show-trace test-results/account-link-visual-account-linking-states-visual-mobile-retry1/trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n  1 failed\n    [mobile] › e2e/account-link-visual.spec.ts:6:1 › account linking states @visual ────────────────\n  10 passed (27.6s)\nerror Command failed with exit code 1.\ninfo Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.",
+      "specRefs": [],
+      "covers": [],
+      "acceptance": [
+        "Todos os gates obrigatórios da etapa passam na suíte completa",
+        "Nenhum teste protegido é alterado"
+      ],
+      "tests": [],
+      "protectedTests": [
+        "app/e2e/privacy-mode.spec.ts",
+        "app/tests/rules/indicators.test.ts",
+        "app/e2e/indicator-create.spec.ts",
+        "app/e2e/indicator-edit-lock.spec.ts",
+        "app/e2e/indicators-list.spec.ts",
+        "app/src/data/__tests__/entries.test.ts",
+        "app/tests/rules/entries.test.ts",
+        "app/e2e/quick-entry.spec.ts",
+        "app/e2e/entry-history.spec.ts",
+        "app/e2e/empty-dashboard.spec.ts",
+        "app/src/account/__tests__/invite.test.ts"
+      ],
+      "tags": [
+        "regression",
+        "gate:G11"
+      ],
+      "difficulty": "hard",
+      "dependsOn": [],
+      "status": "passing",
+      "attempts": 2,
+      "costUsd": 0.27643119000000005,
+      "history": [
+        {
+          "attempt": 1,
+          "role": "implement_hard",
+          "workerId": "codex-mid",
+          "outcome": "failure",
+          "failedGates": [
+            "G11"
+          ],
+          "eventId": "evt-381",
+          "ts": "2026-11-08T13:46:46.138Z",
+          "sig": "G11:✓ 4 [mobile] › e2e/visual.spec.ts:7:3 › visual home @visual|✓ 3 [mobile] › e2e/visual.spec.ts:7:3 › visual onboarding @visual|✓ 2 [mobile] › e2e/visual.spec.ts:7:3 › visual dashboard @visual|✓ 8 [mobile] › e2e/visual.spec.ts:7:3 › visual indicators-edit @visual|✓ 7 [mobile] › e2e/visual.spec.ts:7:3 › visual indicators-new @visual|✓ 9 [mobile] › e2e/visual.spec.ts:7:3 › visual saved-insights @visual|✓ 10 [mobile] › e2e/visual.spec.ts:7:3 › visual settings @visual|✓ 11 [mobile] › e2e/visual.spec.ts:7:3 › visual design @visual"
+        },
+        {
+          "attempt": 2,
+          "role": "implement_hard",
+          "workerId": "codex-mid",
+          "outcome": "success",
+          "failedGates": [],
+          "eventId": "evt-383",
+          "ts": "2026-11-08T13:49:15.638Z"
+        }
+      ],
+      "origin": [],
+      "authors": {
+        "implementer": "codex-mid",
+        "attempts": [
+          "codex-mid ✖ G11",
+          "codex-mid ✔"
+        ],
+        "reviewers": [
+          "code haiku 7"
+        ],
+        "files": [
+          "app/e2e/account-link-visual.spec.ts"
         ]
       }
     }

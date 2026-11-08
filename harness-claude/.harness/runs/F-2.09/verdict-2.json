@@ -1,0 +1,72 @@
+[
+  {
+    "kind": "code",
+    "pass": true,
+    "score": 8,
+    "issues": [
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/lib/time.ts",
+        "descricao": "`formatTime` repete o bloco `Intl.DateTimeFormat`/`formatToParts`/`get` que já existe em `formatDateTime`. É duplicação, e as regras do projeto pedem para reaproveitar código.",
+        "sugestao": "Reescrever `formatDateTime` como `${formatDate(date)} ${formatTime(date)}`."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/data/entryHistory.ts",
+        "descricao": "`listIndicatorEntries` baixa todos os registros do usuário (todos os indicadores, com paginação) e só depois filtra por `indicatorId` no cliente. O custo de leitura e a latência crescem com o histórico total, não com o histórico do indicador.",
+        "sugestao": "Usar `runQuery` do REST com filtro `indicatorId == X` e ordenação por `recordedAt desc`, ou registrar como risco futuro."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/indicators/EntryHistorySheet.tsx",
+        "descricao": "Ao trocar de indicador, `entries` não é limpo antes do novo `load`, então os registros do indicador anterior aparecem por um instante. Também não há proteção contra corrida: uma resposta antiga pode sobrescrever a nova.",
+        "sugestao": "Fazer `setEntries([])` no efeito e ignorar respostas antigas com uma flag `cancelled` no cleanup do `useEffect`."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/indicators/entryValue.ts",
+        "descricao": "Faltam testes unitários para os helpers puros novos (`entryValueLabel` com boolean/ordinal/numeric com unidade/null, e `formatTime`). Os critérios de aceite estão cobertos pelo e2e, mas os ramos de tipo de valor não.",
+        "sugestao": "Adicionar testes em `src/indicators/__tests__/entryValue.test.ts` e em `lib/__tests__/time`."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/indicators/EntryHistorySheet.tsx",
+        "descricao": "No Sheet de confirmação, o botão Cancelar e o fechamento do sheet continuam ativos enquanto `deleting` é true. Se o usuário cancelar durante a exclusão, o registro é excluído mesmo assim, sem um retorno claro.",
+        "sugestao": "Desabilitar Cancelar e `onClose` enquanto `deleting` for true."
+      }
+    ],
+    "workerId": "haiku"
+  },
+  {
+    "kind": "ui",
+    "pass": true,
+    "score": 8,
+    "issues": [
+      {
+        "severidade": "minor",
+        "tela": "indicators-mobile-* / indicators-desktop-*",
+        "descricao": "Os screenshots só mostram Meus Indicadores no estado vazio (0 indicadores). Nenhum deles mostra o histórico de registros, o horário no fuso do navegador, a observação revelada com data-privacy-allow ou o botão de excluir. Por isso não deu para avaliar visualmente o que esta feature entrega. Também não li o código, porque o Bash foi negado. O que aparece não mostra regressão: cabeçalho, botão 'Novo Indicador', chips com contagem, estado vazio desenhado, cartão 'Regra de Integridade dos Dados' e barra inferior seguem o mockup meus_indicadores.",
+        "sugestao": "Garantir que a lista de registros siga os tokens: cartões nível 1 (#FFFFFF, borda 1px, raio md), números tabulares, hora em body-sm, botão de excluir com alvo ≥44px e cor de erro só no diálogo de confirmação. Usar a sigla (label-code) no título do histórico para manter o modo privado coerente."
+      },
+      {
+        "severidade": "minor",
+        "tela": "indicators-mobile-privado / indicators-mobile-nomes",
+        "descricao": "No celular, o chip 'Arquivados' fica cortado na borda direita. Faz sentido para uma linha de rolagem horizontal, e o mockup tem o mesmo corte, mas não há nenhum sinal de que dá para rolar além do próprio corte.",
+        "sugestao": "Opcional: deixar a última pílula parcialmente visível com padding no final da linha, para indicar a rolagem."
+      }
+    ],
+    "porCriterio": {
+      "c1": 8,
+      "c2": 7,
+      "c3": 8,
+      "c4": 8,
+      "c5": 8,
+      "c6": 8,
+      "c7": 9,
+      "c8": 7,
+      "c9": 8,
+      "c10": 8
+    },
+    "workerId": "haiku"
+  }
+]

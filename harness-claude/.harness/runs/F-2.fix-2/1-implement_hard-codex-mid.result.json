@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-08T13:27:15.869Z",
+  "workerId": "codex-mid",
+  "role": "implement_hard",
+  "featureId": "F-2.fix-2",
+  "stage": 2,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.07671755000000001,
+  "durationMs": 26232,
+  "usage": {
+    "inputTokens": 54987,
+    "outputTokens": 1800,
+    "cachedTokens": 254611
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"summary\": \"Bloqueado: dependências ausentes na worktree.\",\n  \"filesChanged\": [\".harness/inbox/questions.jsonl\"],\n  \"testsRun\": \"Lint, typecheck, format:check, unitários e e2e falharam por executáveis ausentes.\",\n  \"confidence\": \"low\",\n  \"notes\": \"Nenhuma correção implementada. O orquestrador precisa disponibilizar as dependências antes de retomar.\"\n}\n```"
+}

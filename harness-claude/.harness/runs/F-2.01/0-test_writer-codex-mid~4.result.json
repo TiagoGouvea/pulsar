@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-07T18:11:23.909Z",
+  "workerId": "codex-mid",
+  "role": "test_writer",
+  "featureId": "F-2.01",
+  "stage": 2,
+  "attempt": 0,
+  "outcome": "success",
+  "costUsd": 0.15242170000000002,
+  "durationMs": 91592,
+  "usage": {
+    "inputTokens": 62011,
+    "outputTokens": 11296,
+    "cachedTokens": 678614
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"summary\": \"Testes de aceite escritos; validação bloqueada pela infraestrutura.\",\n  \"filesChanged\": [\n    \"app/src/data/__tests__/indicators.test.ts\",\n    \"app/tests/rules/indicators.test.ts\",\n    \".harness/inbox/questions.jsonl\"\n  ],\n  \"testsRun\": \"Unitários: falham pelo repositório ausente. Rules: emulador não iniciou por EPERM nas portas locais.\",\n  \"confidence\": \"low\",\n  \"notes\": \"Execute yarn test:rules em ambiente que permita abrir portas locais antes de proteger os testes.\"\n}\n```"
+}

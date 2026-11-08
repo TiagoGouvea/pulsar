@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-07T20:32:37.386Z",
+  "workerId": "gemini-lite",
+  "role": "triage",
+  "featureId": "F-2.08",
+  "stage": 2,
+  "attempt": 0,
+  "outcome": "success",
+  "costUsd": 0.0013447499999999998,
+  "durationMs": 1471,
+  "usage": {
+    "inputTokens": 5277,
+    "outputTokens": 17,
+    "cachedTokens": 0,
+    "costUsd": 0.0013447499999999998
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\"testeQuebrado\": false, \"motivo\": \"\"}\n```"
+}

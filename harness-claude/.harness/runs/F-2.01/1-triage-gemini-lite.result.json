@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-07T18:15:13.679Z",
+  "workerId": "gemini-lite",
+  "role": "triage",
+  "featureId": "F-2.01",
+  "stage": 2,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.00089175,
+  "durationMs": 1836,
+  "usage": {
+    "inputTokens": 2763,
+    "outputTokens": 134,
+    "cachedTokens": 0,
+    "costUsd": 0.00089175
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"causaRaiz\": \"Variável '_name' declarada mas não utilizada no arquivo de teste 'app/tests/rules/indicators.test.ts' na linha 106, violando a regra '@typescript-eslint/no-unused-vars' do ESLint.\",\n  \"categoria\": \"lint\",\n  \"padrao\": false,\n  \"dica\": \"Remova o prefixo de sublinhado ou a declaração da variável '_name' no teste mencionado, ou prefixe com 'unused' se necessário pelo estilo, garantindo que o lint passe.\"\n}\n```"
+}

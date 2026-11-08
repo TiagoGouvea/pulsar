@@ -1,0 +1,40 @@
+[
+  {
+    "kind": "code",
+    "pass": false,
+    "score": 5,
+    "issues": [
+      {
+        "severidade": "major",
+        "arquivo": "app/src/pages/DashboardPage.tsx",
+        "descricao": "Registros de indicadores arquivados impedem a exibição das sugestões e do estado sem registros, mesmo quando não há indicadores ativos com registros.",
+        "sugestao": "Determine o estado vazio considerando os indicadores ativos e seus registros."
+      },
+      {
+        "severidade": "major",
+        "arquivo": "app/src/pages/DashboardPage.tsx",
+        "descricao": "O agradecimento depende de existir exatamente um registro. Se a pessoa registrar dois indicadores antes de voltar ao dashboard, ela nunca o verá.",
+        "sugestao": "Reconheça o primeiro preenchimento independentemente da quantidade de registros criados naquela interação."
+      },
+      {
+        "severidade": "major",
+        "arquivo": "app/src/data/indicators.ts",
+        "descricao": "Uma sigla igual desabilita a sugestão correspondente, mesmo quando pertence a outro indicador. A especificação permite siglas duplicadas.",
+        "sugestao": "Identifique sugestões criadas por uma identidade própria, sem usar a sigla como chave única."
+      },
+      {
+        "severidade": "major",
+        "arquivo": "app/e2e/empty-dashboard.spec.ts",
+        "descricao": "O teste de persistência verifica a configuração completa apenas de Exercício; Café e Concentração não são criados pelos testes, e os testes unitários verificam configurações parciais.",
+        "sugestao": "Teste a criação e a configuração persistida das quatro sugestões."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/pages/DashboardPage.tsx",
+        "descricao": "O título da sugestão renderiza nome e emoji manualmente, contrariando a regra de uso exclusivo de IndicatorLabel.",
+        "sugestao": "Renderize o título com IndicatorLabel."
+      }
+    ],
+    "workerId": "codex-mid"
+  }
+]

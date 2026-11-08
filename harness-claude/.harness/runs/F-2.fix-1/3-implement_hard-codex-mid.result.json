@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-08T13:14:03.946Z",
+  "workerId": "codex-mid",
+  "role": "implement_hard",
+  "featureId": "F-2.fix-1",
+  "stage": 2,
+  "attempt": 3,
+  "outcome": "success",
+  "costUsd": 0.1073703,
+  "durationMs": 41816,
+  "usage": {
+    "inputTokens": 64596,
+    "outputTokens": 3268,
+    "cachedTokens": 528686
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "Bloqueado: o sandbox impede os emuladores de abrir portas locais. Registrei também o conflito entre o timeout do teste visual e o atraso do Firebase.\n\n```json\n{\n  \"summary\": \"Feature não concluída por impedimento de infraestrutura.\",\n  \"filesChanged\": [\".harness/inbox/questions.jsonl\"],\n  \"testsRun\": [\"E2E relevantes: não iniciaram (EPERM)\"],\n  \"confidence\": \"high\",\n  \"notes\": \"Nenhum teste protegido foi alterado.\"\n}\n```"
+}

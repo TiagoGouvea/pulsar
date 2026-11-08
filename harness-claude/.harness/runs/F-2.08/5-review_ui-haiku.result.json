@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-08T12:37:01.917Z",
+  "workerId": "haiku",
+  "role": "review_ui",
+  "featureId": "F-2.08",
+  "stage": 2,
+  "attempt": 5,
+  "outcome": "success",
+  "costUsd": 0.17121,
+  "durationMs": 27014,
+  "usage": {
+    "inputTokens": 19742,
+    "outputTokens": 2580,
+    "cachedTokens": 104540,
+    "costUsd": 0.17121
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "não está desenhado.\", \"sugestao\": \"Quando uma seção não tiver indicadores ativos, mostrar um cartão de estado vazio com o mesmo visual do 'Nenhum indicador ainda' de /indicators, com texto em pt-BR (ex.: 'Nenhum fator ativo') e um botão/link para /indicators ou para o Novo Indicador. Usar azul (secondary) em Fatores e violeta (primary) em Resultados.\"},\n{\"severidade\": \"minor\", \"tela\": \"register\", \"descricao\": \"Os cabeçalhos das seções não têm os selos 'INPUTS' (azul) e 'OUTCOMES' (violeta) do mockup preenchimento_r_pido. Hoje a distinção vem só do ícone e do subtítulo, que já é bom, mas fica mais fraca que no design.\", \"sugestao\": \"Pôr no cabeçalho de cada seção um selo (Chip/Badge do design system) alinhado à direita, com a cor da seção.\"},\n{\"severidade\": \"minor\", \"tela\": \"register\", \"descricao\": \"No cartão do topo, o selo de status 'Pronto para registrar' quebra em duas linhas e fica apertado ao lado do rótulo 'SALVAMENTO AUTOMÁTICO ATIVO'. Também falta o ponto verde que aparece antes do rótulo no mockup.\", \"sugestao\": \"Usar um texto mais curto (ex.: 'Pronto') ou whitespace-nowrap no selo, e pôr o ponto tertiary antes do rótulo, como no mockup.\"},\n{\"severidade\": \"minor\", \"tela\": \"register\", \"descricao\": \"O cartão 'Observação do dia' está sem o ícone no título, sem o rótulo 'PRIVADO' à direita e sem o ícone de informação antes da nota de rodapé, que estão no mockup.\", \"sugestao\": \"Acrescentar o ícone no título, o rótulo 'PRIVADO' (label-code) e o ícone de info antes do texto explicativo.\"},\n{\"severidade\": \"minor\", \"tela\": \"register\", \"descricao\": \"Como a fixture não tem indicadores ativos, não dá para conferir na captura os controles que a feature entrega (Chip Sim/Não, Slider, Chips ordinais, NumberInput, eventos múltiplos). A avaliação deles fica limitada ao código.\", \"sugestao\": \"Garantir que os controles sigam o mockup: Sim/Não em pílulas cheias com a cor da seção, escala 0–10 com o valor em destaque, NumberInput com botões −/+ e 'Digitar valor exato'.\"}\n]}\n```"
+}

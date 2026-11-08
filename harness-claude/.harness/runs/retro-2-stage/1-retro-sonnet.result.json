@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-08T13:59:19.267Z",
+  "workerId": "sonnet",
+  "role": "retro",
+  "stage": 2,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.3728078,
+  "durationMs": 57917,
+  "usage": {
+    "inputTokens": 44625,
+    "outputTokens": 6003,
+    "cachedTokens": 148154,
+    "costUsd": 0.3728078
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "or** (Meus indicadores → novo): deixe o nome vazio e confira a mensagem em pt-BR; com a sigla vazia, a prévia deve ser 'Abc...'. Crie um número com unidade e faixa ideal, e depois um ordinal com frequência única (o campo agregação não deve aparecer).\\n3. **Olho fechado**: os nomes viram siglas na lista e no registro. No campo de nome do editor, o nome real continua aparecendo. Abra o olho e os nomes e emojis aparecem; recarregue a página e tudo volta para siglas.\\n4. **Registrar** (/register): salve só um fator. No campo numérico o teclado deve ser decimal: digite '7,5'. Toque de novo numa resposta Sim/Não para limpá-la. Ative o modo avião, salve e confira que aparece 'pendente', nunca 'salvo'. Desative e o estado deve mudar para salvo.\\n5. **Histórico**: abra o indicador em Meus indicadores e veja o histórico. Os horários devem estar no seu fuso. Exclua um registro antigo (com confirmação) e confirme que não há como editar o valor.\\n6. **Editar com histórico**: no indicador que já tem registro, tipo, grupo, unidade e frequência devem estar bloqueados, e direção e faixa continuam editáveis.\\n7. **Reordenar e arquivar**: mova um item com subir/descer, recarregue e confira que a ordem se manteve. Arquive um indicador: ele vai para a seção de arquivados e some do /register. Depois restaure.\\n8. **Convite para salvar a conta**: com menos de 3 dias distintos com registro, ele não aparece. Não dá para simular dias passados pela interface, então confie no teste e2e ou confira com uma conta anônima que tenha registros em 3 dias. O convite nunca deve bloquear o uso.\\n9. **Computador**: abra as mesmas telas numa janela larga e confira só que a coluna fica centralizada e nada quebra.\\n\\n## O que observar\\n- Todos os textos devem estar em pt-BR. Nunca deve aparecer 'salvo' antes de o registro ser gravado.\\n- Toques confortáveis, com alvos de pelo menos 44px.\\n- Nenhum nome real visível com o olho fechado, fora do campo de nome do editor e de notas abertas explicitamente.\"\n}\n```"
+}

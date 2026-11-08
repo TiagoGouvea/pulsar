@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-08T13:28:41.616Z",
+  "workerId": "gemini-lite",
+  "role": "triage",
+  "featureId": "F-2.fix-2",
+  "stage": 2,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.00105025,
+  "durationMs": 1593,
+  "usage": {
+    "inputTokens": 3259,
+    "outputTokens": 157,
+    "cachedTokens": 0,
+    "costUsd": 0.00105025
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"causaRaiz\": \"O teste espera encontrar um elemento com papel 'alert' contendo o texto 'cancelada' após fechar um popup do Google, mas o elemento (provavelmente um componente de feedback/toast) não é renderizado na tela no momento da asserção, causando falha por timeout.\",\n  \"categoria\": \"test\",\n  \"padrao\": false,\n  \"dica\": \"Investigue no código da funcionalidade se o estado de erro de cancelamento do link Google está disparando a exibição do alerta/toast correto e verifique se o timing da asserção está adequado ou se o seletor (getByRole('alert')) é o mais indicado.\"\n}\n```"
+}

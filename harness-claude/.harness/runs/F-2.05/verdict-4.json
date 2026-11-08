@@ -1,0 +1,72 @@
+[
+  {
+    "kind": "code",
+    "pass": true,
+    "score": 8,
+    "issues": [
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/data/firestoreRest.ts",
+        "descricao": "Novo módulo de leitura via REST (listDocuments/decodeValue/decodeFields) que nenhum arquivo do diff importa: IndicatorsPage usa useIndicators (onSnapshot), e a única mudança em indicators.ts é em reorderIndicators. É infraestrutura que a feature não pede, monta uma URL de produção na mão e repete o decoder que já existe em e2e/indicators-list.spec.ts.",
+        "sugestao": "Remover o arquivo. Se o problema de 'network idle' for real, registrar em risks.jsonl e tratar numa feature própria."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/scripts/icons.ts",
+        "descricao": "Os ícones 'drag_indicator' e 'info' foram gerados, mas nenhum componente do diff os usa. Isso aumenta o bundle de ícones sem necessidade.",
+        "sugestao": "Remover os ícones não usados e rodar `yarn icons` de novo."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/pages/IndicatorsPage.tsx",
+        "descricao": "move() calcula expectedOrder a partir do estado da tela. Dois cliques rápidos antes do snapshot chegar fazem o segundo reorder falhar com 'Indicator order changed.', e o usuário vê um erro genérico. Os dados ficam consistentes, mas a experiência é ruim.",
+        "sugestao": "Desabilitar os botões de reordenar enquanto há uma escrita pendente, ou serializar as escritas."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/indicators/IndicatorCard.tsx",
+        "descricao": "Os cards ativos não indicam o grupo por si só: o grupo vem só do cabeçalho da seção e da cor do chip de agregação. Isso atende o critério de aceite porque os cabeçalhos têm texto, mas fica inconsistente com o card arquivado, que mostra GroupBadge.",
+        "sugestao": "Opcional: mostrar GroupBadge também no card ativo ou usar um ícone por grupo."
+      }
+    ],
+    "workerId": "haiku"
+  },
+  {
+    "kind": "ui",
+    "pass": true,
+    "score": 8,
+    "issues": [
+      {
+        "severidade": "minor",
+        "tela": "indicators-mobile-nomes / indicators-mobile-privado",
+        "descricao": "Todas as capturas mostram só o estado vazio. Por isso não dá para conferir visualmente as listas de Fatores e Resultados, com IndicatorLabel, chips de tipo e agregação, os botões subir/descer, a seção Arquivados nem os nomes no modo privado. A nota de c2 vem só das abas com rótulo em texto e da estrutura do cabeçalho. O que aparece (cabeçalho, botão principal Novo Indicador, abas com contadores, cartão de Regra de Integridade, barra de navegação inferior) está fiel ao mockup.",
+        "sugestao": "Confira se as listas com dados seguem o mockup design/meus_indicadores. Cada grupo precisa de ícone, título, subtítulo em caixa alta e badge 'N Ativos', em azul para Fatores e violeta para Resultados. Os chips de sigla devem usar label-code. Arquivados fica num accordion com contador."
+      },
+      {
+        "severidade": "minor",
+        "tela": "indicators-mobile-*",
+        "descricao": "O cartão do estado vazio usa um fundo tingido (surface-container) e não tem borda. Nos tokens, cartões de nível 1 são brancos com borda de 1px #E2E8F0. Isso fica parecido demais com o cartão de Regra de Integridade logo abaixo.",
+        "sugestao": "Use o fundo surface-container-lowest com a borda outline-variant/slate no estado vazio. Assim ele se diferencia do aviso informativo."
+      },
+      {
+        "severidade": "minor",
+        "tela": "indicators-mobile-*",
+        "descricao": "Em 375px a aba 'Arquivados' aparece cortada na borda direita, e não há nada que indique rolagem além do corte. O mockup tem o mesmo comportamento, então não reprova.",
+        "sugestao": "Opcional: adicione um fade na borda direita do carrossel de abas."
+      }
+    ],
+    "porCriterio": {
+      "c1": 8,
+      "c2": 7,
+      "c3": 8,
+      "c4": 8,
+      "c5": 8,
+      "c6": 8,
+      "c7": 9,
+      "c8": 7,
+      "c9": 8,
+      "c10": 9
+    },
+    "workerId": "haiku"
+  }
+]

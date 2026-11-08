@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-08T12:58:09.833Z",
+  "workerId": "minimax",
+  "role": "implement",
+  "featureId": "F-1.06",
+  "stage": 2,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.07833014999999999,
+  "durationMs": 584871,
+  "usage": {
+    "inputTokens": 63681,
+    "outputTokens": 28182,
+    "cachedTokens": 3457920,
+    "costUsd": 0.07833014999999999
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "lista de sentinelas da guarda derivar do seed (fonte única), e adicionei uma regra de ESLint que impede renderizar indicator.name direto no JSX (vazamento com o olho fechado). Novos testes unitários cobrem o critério da observação (aparece só ao abrir, marcada com data-privacy-allow) e o contrato do marcador; DECISOES.md e AGENTS.md documentam a decisão.\",\n  \"filesChanged\": [\n    \"pulsar-claude/app/src/privacy/allow.ts\",\n    \"pulsar-claude/app/src/privacy/__tests__/allow.test.ts\",\n    \"pulsar-claude/app/src/indicators/__tests__/EntryHistorySheet.test.tsx\",\n    \"pulsar-claude/app/src/indicators/EntryHistorySheet.tsx\",\n    \"pulsar-claude/app/src/indicators/IndicatorEditor.tsx\",\n    \"pulsar-claude/app/src/pages/DesignPage.tsx\",\n    \"pulsar-claude/app/e2e/support.ts\",\n    \"pulsar-claude/app/eslint.config.js\",\n    \"pulsar-claude/app/AGENTS.md\",\n    \"pulsar-claude/DECISOES.md\",\n    \".harness/inbox/risks.jsonl\",\n    \".harness/inbox/questions.jsonl\"\n  ],\n  \"testsRun\": [\n    \"yarn lint (ok)\",\n    \"yarn typecheck (ok)\",\n    \"yarn format:check (ok)\",\n    \"yarn test:unit (30 files, 211 tests, all pass)\",\n    \"yarn playwright test e2e/privacy-mode.spec.ts --project=mobile (12 pass)\",\n    \"yarn playwright test e2e/privacy-mode.spec.ts e2e/routes.spec.ts e2e/quick-entry.spec.ts (29 pass)\",\n    \"yarn playwright test e2e/privacy-mode.spec.ts e2e/entry-history.spec.ts e2e/indicator-create.spec.ts e2e/indicators-list.spec.ts (25 pass)\",\n    \"yarn test:e2e (97 pass, 4 falhas pré-existentes na base e de outras features: account-delete x2, account-link, empty-dashboard-regressions)\"\n  ],\n  \"confidence\": \"med\",\n  \"notes\": \"Nenhum teste protegido foi alterado. As 4 falhas e2e pré-existentes (idênticas antes e depois do diff, verificadas na baseline) não foram corrigidas por serem de outras features; foram registradas em .harness/inbox/risks.jsonl e questions.jsonl. A regra de ESLint é restrita a JSXExpressionContainer em src/**/*.tsx, deixando livres snapshots/dados montados em .ts.\"\n}\n```"
+}

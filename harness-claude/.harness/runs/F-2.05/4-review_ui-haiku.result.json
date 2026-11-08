@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-08T11:21:50.830Z",
+  "workerId": "haiku",
+  "role": "review_ui",
+  "featureId": "F-2.05",
+  "stage": 2,
+  "attempt": 4,
+  "outcome": "success",
+  "costUsd": 0.148608,
+  "durationMs": 22324,
+  "usage": {
+    "inputTokens": 19054,
+    "outputTokens": 1954,
+    "cachedTokens": 71320,
+    "costUsd": 0.148608
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\"pass\": true, \"score\": 8.0, \"porCriterio\": {\"c1\": 8, \"c2\": 7, \"c3\": 8, \"c4\": 8, \"c5\": 8, \"c6\": 8, \"c7\": 9, \"c8\": 7, \"c9\": 8, \"c10\": 9}, \"issues\": [{\"severidade\": \"minor\", \"tela\": \"indicators-mobile-nomes / indicators-mobile-privado\", \"descricao\": \"Todas as capturas mostram só o estado vazio. Por isso não dá para conferir visualmente as listas de Fatores e Resultados, com IndicatorLabel, chips de tipo e agregação, os botões subir/descer, a seção Arquivados nem os nomes no modo privado. A nota de c2 vem só das abas com rótulo em texto e da estrutura do cabeçalho. O que aparece (cabeçalho, botão principal Novo Indicador, abas com contadores, cartão de Regra de Integridade, barra de navegação inferior) está fiel ao mockup.\", \"sugestao\": \"Confira se as listas com dados seguem o mockup design/meus_indicadores. Cada grupo precisa de ícone, título, subtítulo em caixa alta e badge 'N Ativos', em azul para Fatores e violeta para Resultados. Os chips de sigla devem usar label-code. Arquivados fica num accordion com contador.\"}, {\"severidade\": \"minor\", \"tela\": \"indicators-mobile-*\", \"descricao\": \"O cartão do estado vazio usa um fundo tingido (surface-container) e não tem borda. Nos tokens, cartões de nível 1 são brancos com borda de 1px #E2E8F0. Isso fica parecido demais com o cartão de Regra de Integridade logo abaixo.\", \"sugestao\": \"Use o fundo surface-container-lowest com a borda outline-variant/slate no estado vazio. Assim ele se diferencia do aviso informativo.\"}, {\"severidade\": \"minor\", \"tela\": \"indicators-mobile-*\", \"descricao\": \"Em 375px a aba 'Arquivados' aparece cortada na borda direita, e não há nada que indique rolagem além do corte. O mockup tem o mesmo comportamento, então não reprova.\", \"sugestao\": \"Opcional: adicione um fade na borda direita do carrossel de abas.\"}]}\n```"
+}

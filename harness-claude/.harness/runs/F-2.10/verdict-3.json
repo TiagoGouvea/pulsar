@@ -1,0 +1,46 @@
+[
+  {
+    "kind": "code",
+    "pass": false,
+    "score": 3,
+    "issues": [
+      {
+        "severidade": "blocker",
+        "arquivo": "app/src/indicators/IndicatorEditor.tsx, app/src/indicators/AggregationControl.tsx, app/src/App.tsx",
+        "descricao": "This diff deletes the indicator editor and the aggregation control that F-2.03 delivered (commit 67f352e, 'feat(F-2.03): Editor de indicador'). It also removes the '/indicators/:id/edit' route and turns '/indicators/new' into a placeholder that says 'Em breve'. Merging it would undo F-2.03. The likely cause is that the worktree was based on a commit that is not a descendant of 67f352e (git merge-base confirms 67f352e is not an ancestor of HEAD), so the diff against the integration branch shows the editor being removed. The 'Criar meu próprio indicador' button then links to a placeholder page.",
+        "sugestao": "Rebase or recreate the F-2.10 work on top of the branch that contains F-2.03. Keep IndicatorEditorPage, IndicatorEditor, AggregationControl, aggregation/catalog/draft and both routes as they are, and add only the dashboard on top."
+      },
+      {
+        "severidade": "blocker",
+        "arquivo": "app/e2e/indicator-create.spec.ts, app/e2e/indicator-edit-lock.spec.ts, app/e2e/routes.json",
+        "descricao": "Removes the e2e tests for F-2.03 (create indicator and edit-lock) and the 'indicators-edit' entry in routes.json. Tests for a feature that was already delivered are being deleted, so the gates passing here says nothing about whether F-2.03 still works.",
+        "sugestao": "Restore these specs and the route entry. They have to stay green alongside the new F-2.10 tests."
+      },
+      {
+        "severidade": "blocker",
+        "arquivo": "app/src/data/indicators.ts",
+        "descricao": "Removes getIndicator and storedIndicatorFrom, which the F-2.03 editor uses. useIndicators now builds StoredIndicator with an inline 'as StoredIndicator' cast and no longer normalizes createdAt/updatedAt, so they may come back undefined instead of null.",
+        "sugestao": "Keep storedIndicatorFrom and getIndicator, and keep using storedIndicatorFrom in useIndicators."
+      },
+      {
+        "severidade": "major",
+        "arquivo": "app/node_modules, app/functions/node_modules",
+        "descricao": "Deletes the node_modules symlinks from the repository. That is an infrastructure change the feature does not ask for, and the worker rules forbid it.",
+        "sugestao": "Revert the removal of the symlinks."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/data/indicators.ts",
+        "descricao": "createSuggestedIndicator copies the dailyAggregation calculation and the validation from createIndicator, which goes against the project's no-duplication rule. countActiveIndicators and countEntries also appear to be unused (listIndicatorIdentities and listEntryDates are what the code calls).",
+        "sugestao": "Move the shared preparation step into a helper (for example prepareIndicator(input)) used by both functions, and remove the unused exports."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/data/indicators.ts",
+        "descricao": "If the person archived the suggested indicator, createSuggestedIndicator returns false and does not reactivate it or tell the person. Tapping the suggestion again then does nothing they can see.",
+        "sugestao": "Either show the suggestion as unavailable or tell the person the indicator is archived, and record the decision in DECISOES.md or questions.jsonl."
+      }
+    ],
+    "workerId": "haiku"
+  }
+]

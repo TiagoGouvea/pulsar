@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-08T11:04:47.887Z",
+  "workerId": "haiku",
+  "role": "triage",
+  "featureId": "F-2.05",
+  "stage": 2,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.0967164,
+  "durationMs": 14477,
+  "usage": {
+    "inputTokens": 13279,
+    "outputTokens": 1005,
+    "cachedTokens": 51147,
+    "costUsd": 0.0967164
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\"causaRaiz\": \"Os gates G9 e G10 nunca rodaram os testes: o servidor de e2e não respondeu em localhost:4792. `yarn e2e:serve` executa uma cadeia de etapas (build:emulator → build de functions/ → firebase emulators:exec → seed → vite preview), e se qualquer uma falha ou demora, a porta 4792 nunca abre. Não pude rodar comandos nesta triagem, então a etapa exata não foi confirmada. As causas mais prováveis são duas. A primeira é o `vite build` ou o `functions build` falhando por algum import, módulo ou ícone faltando no código herdado das tentativas anteriores (minimax/haiku), já que o vite não faz typecheck mas quebra com import inválido. A segunda é a disputa pelas portas 8282/9299/4792 com outra worktree ou com um servidor que ficou rodando de uma execução anterior.\", \"categoria\": \"env\", \"padrao\": true, \"dica\": \"Antes de terminar, rode em app/ `yarn build:emulator && yarn --cwd functions build` e corrija qualquer erro (imports, ícones fora de scripts/icons.ts, rota nova sem a página lazy correspondente). Depois rode `yarn test:e2e` (ele sobe o e2e:serve sob port-lock) para confirmar que o preview sobe na porta 4792. Não deixe emuladores nem preview rodando ao sair. Se o build passar e a porta continuar ocupada ou travada, registre em .harness/inbox/questions.jsonl como problema de infraestrutura.\"}\n```"
+}

@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-08T11:06:39.190Z",
+  "workerId": "gemini-lite",
+  "role": "triage",
+  "featureId": "F-2.08",
+  "stage": 2,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.001529,
+  "durationMs": 2598,
+  "usage": {
+    "inputTokens": 4958,
+    "outputTokens": 193,
+    "cachedTokens": 0,
+    "costUsd": 0.001529
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"causaRaiz\": \"A falha unitária ocorre porque o texto 'Salvamento automático ativo' aparece na UI, disparando falsos positivos em regexes de validação (ex: /faltando|preencha|obrigat/i) que esperam ausência de alertas de completude. A falha E2E decorre de instabilidade na simulação offline, provavelmente causada pelo fechamento inesperado da página durante o teste de persistência.\",\n  \"categoria\": \"test\",\n  \"padrao\": true,\n  \"dica\": \"Refine as asserções de teste unitário para excluir elementos de feedback de sistema (como banners de status de salvamento) da verificação de texto global, e aumente a resiliência dos testes E2E offline garantindo que o estado de salvamento pendente seja renderizado antes da interação.\"\n}\n```"
+}

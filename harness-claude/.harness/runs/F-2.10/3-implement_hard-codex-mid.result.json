@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-07T20:11:50.330Z",
+  "workerId": "codex-mid",
+  "role": "implement_hard",
+  "featureId": "F-2.10",
+  "stage": 2,
+  "attempt": 3,
+  "outcome": "success",
+  "costUsd": 0.20525535,
+  "durationMs": 97660,
+  "usage": {
+    "inputTokens": 86063,
+    "outputTokens": 10769,
+    "cachedTokens": 1306947
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"summary\": \"Dashboard ajustado e testes de regressão acrescentados.\",\n  \"filesChanged\": [\"app/src/data/entries.ts\", \"app/src/data/indicators.ts\", \"app/src/features/indicators/suggestions.ts\", \"app/src/pages/DashboardPage.tsx\", \"app/e2e/empty-dashboard-regressions.spec.ts\", \".harness/inbox/questions.jsonl\", \".harness/inbox/risks.jsonl\"],\n  \"testsRun\": \"Lint, typecheck e formatação passaram. Unitários: 151 passaram com NODE_OPTIONS=--no-experimental-webstorage. E2e bloqueados por EPERM nas portas dos emuladores.\",\n  \"confidence\": \"low\",\n  \"notes\": \"O teste protegido foi preservado. O bloqueio dos e2e foi registrado no inbox.\"\n}\n```"
+}

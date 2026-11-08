@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-07T18:16:50.619Z",
+  "workerId": "codex-mid",
+  "role": "implement_hard",
+  "featureId": "F-2.01",
+  "stage": 2,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.20168979999999997,
+  "durationMs": 96845,
+  "usage": {
+    "inputTokens": 85325,
+    "outputTokens": 9906,
+    "cachedTokens": 1336696
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"summary\": \"Ajustada a sincronização e o bloqueio de indicadores; validação final permanece bloqueada.\",\n  \"filesChanged\": [\n    \"app/src/data/indicators.ts\",\n    \"app/src/data/__tests__/indicators.test.ts\",\n    \"app/firestore.rules\",\n    \"app/tests/rules/indicator-lock-transition.test.ts\",\n    \"app/scripts/seed.ts\",\n    \".harness/inbox/questions.jsonl\",\n    \".harness/inbox/risks.jsonl\"\n  ],\n  \"testsRun\": [\n    \"typecheck e format:check passaram\",\n    \"142 testes unitários passaram com NODE_OPTIONS=--no-experimental-webstorage\",\n    \"lint falhou no teste protegido\",\n    \"testes de regras bloqueados por EPERM; e2e não iniciou\"\n  ],\n  \"confidence\": \"low\",\n  \"notes\": \"Bloqueios e risco futuro registrados no inbox.\"\n}\n```"
+}

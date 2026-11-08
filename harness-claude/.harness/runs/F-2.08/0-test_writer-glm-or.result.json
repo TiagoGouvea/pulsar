@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-07T20:31:09.682Z",
+  "workerId": "glm-or",
+  "role": "test_writer",
+  "featureId": "F-2.08",
+  "stage": 2,
+  "attempt": 0,
+  "outcome": "success",
+  "costUsd": 1.38780824,
+  "durationMs": 926637,
+  "usage": {
+    "inputTokens": 168870,
+    "outputTokens": 70789,
+    "cachedTokens": 6903257,
+    "costUsd": 1.38780824
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "eed (ordem/privacidade/sentinelas) e usuários novos com fixtures REST no emulador (persistência com localDate, ausência no limpar, 7,5 com vírgula, múltiplos com novo evento, offline pendente→flush). Falhas de hoje vêm só da feature ausente; helpers de emulador validados ao vivo.\",\n  \"filesChanged\": [\n    \"app/src/entry/__tests__/QuickEntry.test.tsx\",\n    \"app/e2e/quick-entry.spec.ts\",\n    \".harness/inbox/questions.jsonl\",\n    \".harness/inbox/risks.jsonl\"\n  ],\n  \"testsRun\": [\n    \"yarn vitest run src/entry/__tests__/QuickEntry.test.tsx -> falha apenas por ausência de ../QuickEntry (esperado)\",\n    \"yarn test:unit -> 174 passam / 1 falha esperada (import do módulo da feature)\",\n    \"yarn test:e2e quick-entry.spec.ts --project=mobile -> 7 falhas, todas na espera da UI inexistente (placeholder); createIndicator/PATCH executou com sucesso nos testes\",\n    \"validação ao vivo dos helpers REST (PATCH/GET/decode/DELETE) contra o emulador Firestore: ok\",\n    \"yarn lint && yarn format:check -> ok; yarn typecheck -> único erro é o módulo ausente (esperado)\"\n  ],\n  \"confidence\": \"med\",\n  \"notes\": \"Contrato documentado nos cabeçalhos dos dois arquivos: data-testids quick-entry-card-{id}, quick-entry-factors/results, entry-event, save-feedback; textos de feedback por regex (/salvando|pendente/, /salvo|sincronizado/, alert em falha). Decisões registradas em questions.jsonl: (1) Observação anexada às entradas salvas enquanto preenchida; (2) múltiplos numéricos cometem novo evento via botão 'Adicionar' (sem commit no blur); (3) symlinks node_modules rastreados no git estavam quebrados (auto-referência) — removidos e substituídos por yarn install --frozen-lockfile no worktree (precedente F-2.05), git status mostra ' D node_modules'/' D functions/node_modules' para o orquestrador consolidar. Riscos registrados: flakiness do flush offline do Firestore SDK; virada de meia-noite no localDate. Emuladores órfãos de F-2.05 (portas 8282/9299) foram encerrados; nenhum servidor rodando.\"\n}\n```"
+}

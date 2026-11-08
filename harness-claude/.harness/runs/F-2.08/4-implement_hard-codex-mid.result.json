@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-08T11:21:40.328Z",
+  "workerId": "codex-mid",
+  "role": "implement_hard",
+  "featureId": "F-2.08",
+  "stage": 2,
+  "attempt": 4,
+  "outcome": "success",
+  "costUsd": 0.09910680000000001,
+  "durationMs": 34843,
+  "usage": {
+    "inputTokens": 66788,
+    "outputTokens": 2745,
+    "cachedTokens": 371876
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "Bloqueado pelas portas 4792, 8282 e 9299 ocupadas. Registrei o problema e a ressalva sobre o teste protegido.\n\n```json\n{\n  \"summary\": \"Feature não validada.\",\n  \"filesChanged\": [\".harness/inbox/questions.jsonl\"],\n  \"testsRun\": [\"build:emulator: passou\", \"functions build: passou\"],\n  \"confidence\": \"low\",\n  \"notes\": \"Lint, typecheck, testes unitários e E2E não executados.\"\n}\n```"
+}

@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-07T17:59:13.701Z",
+  "workerId": "codex-mid",
+  "role": "test_writer",
+  "featureId": "F-2.01",
+  "stage": 2,
+  "attempt": 0,
+  "outcome": "success",
+  "costUsd": 0.06647465,
+  "durationMs": 27169,
+  "usage": {
+    "inputTokens": 45480,
+    "outputTokens": 2150,
+    "cachedTokens": 204893
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "Bloqueado: faltam as dependências do app, e a instrução proíbe alterar `node_modules`. Registrei o bloqueio para o orquestrador; nenhum teste de aceite foi criado.\n\n```json\n{\n  \"summary\": \"Bloqueio de infraestrutura registrado.\",\n  \"filesChanged\": [\".harness/inbox/questions.jsonl\"],\n  \"testsRun\": [\"yarn test:unit: falhou porque vitest não está instalado\"],\n  \"confidence\": \"low\",\n  \"notes\": \"Retomar após o provisionamento das dependências.\"\n}\n```"
+}

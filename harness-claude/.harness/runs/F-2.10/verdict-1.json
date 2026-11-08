@@ -1,0 +1,90 @@
+[
+  {
+    "kind": "code",
+    "pass": true,
+    "score": 8,
+    "issues": [
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/pages/DashboardPage.tsx",
+        "descricao": "The first-record thank-you is driven only by `totalEntries === 1`. It appears whenever the account has exactly one entry, including when it gets back to one after deleting others, and it shows on every visit until a second entry exists. It is not a one-time acknowledgement of the first record.",
+        "sugestao": "Acceptable for the MVP, but tie it to the first record actually being saved (for example a flag or the timestamp of the first entry), or document the chosen behavior in DECISOES.md."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/pages/DashboardPage.tsx",
+        "descricao": "`PanelSummary` (\"N registros no seu histórico\") adds a dashboard state for more than one entry that F-2.10 does not ask for. It also removes the old placeholder's 'Registrar agora' CTA, so neither the no-records state nor the first-record state has a direct link to /register.",
+        "sugestao": "Keep a neutral placeholder for the populated dashboard (that belongs to another feature) and add a 'Registrar agora' CTA to the no-records card."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/pages/DashboardPage.tsx",
+        "descricao": "Finding which suggestions already exist runs 4 count queries, one per abbreviation, and matches on abbreviation only. If the user created their own indicator with the abbreviation 'ENE' or 'CON', the suggestion is wrongly marked 'Adicionado'.",
+        "sugestao": "Use a single read of the active indicators and match on name+group, or store a `suggestionKey` when the indicator is created."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/pages/DashboardPage.tsx",
+        "descricao": "The 'Aguardando primeiros dados de registro' pill (schedule icon plus text) is duplicated in `NoRecordsCard` and `InsightsExplanationCard`, and both cards show at the same time in the no-records state.",
+        "sugestao": "Extract a small shared component or show the pill in only one card."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/features/indicators/suggestions.ts",
+        "descricao": "The fixed `sortOrder` (1000/2000) can collide with indicators the user already created in the same group, which makes the order non-deterministic.",
+        "sugestao": "Compute the next sortOrder in the group when the indicator is created, or document that collisions are acceptable."
+      }
+    ],
+    "workerId": "sonnet"
+  },
+  {
+    "kind": "ui",
+    "pass": false,
+    "score": 7.2,
+    "issues": [
+      {
+        "severidade": "major",
+        "tela": "dashboard-mobile-nomes",
+        "descricao": "In names mode at 375px, the suggestion titles are cut off with no ellipsis ('🏃 Exercício Fís', '☕ Café Expres', 'Concentração ,'). The text runs under the 'Adicionar' button. The mockup ends long names with an ellipsis ('Concentração ...').",
+        "sugestao": "Give the text column min-w-0 and flex-1, and use truncate (text-ellipsis whitespace-nowrap overflow-hidden) on the title. Reserve the button's width with shrink-0."
+      },
+      {
+        "severidade": "major",
+        "tela": "dashboard-mobile-nomes / dashboard-desktop-nomes",
+        "descricao": "In names mode the acronym chip shows the full name with an emoji ('🏃 Exercício Físico'). This repeats the title right below it. In the mockup, the chip always holds the 3-letter acronym in label-code (EXE, CAF, ENE, CON) and the title shows the full name. The long chip also wraps ('Concentração / Foco' over 2 lines) and pushes 'Fator'/'Resultado' onto another line, so the cards end up different heights.",
+        "sugestao": "Keep the chip as the label-code acronym in both modes. Only the title should switch between acronym and name. Put the acronym chip and the type chip on the same row, as in the mockup."
+      },
+      {
+        "severidade": "minor",
+        "tela": "dashboard-mobile-privado",
+        "descricao": "In private mode the 'ENE' and 'CON' cards put the chip and 'Resultado' on separate lines, but the 'EXE' and 'CAF' cards put them on the same line. The cards end up with different heights and alignment.",
+        "sugestao": "Use a single chip row that wraps the same way on every card (flex-wrap gap-1), matching the mockup's '[ENE] [RESULTADO]'."
+      },
+      {
+        "severidade": "minor",
+        "tela": "dashboard-mobile-*",
+        "descricao": "The header leaves out the '#PLS-xxxx | Dia 1' code. The 'Seus dados estão protegidos localmente' card at the bottom of the mockup is also missing. That card may belong to F-2.11; if so, ignore this.",
+        "sugestao": "Check whether the badge belongs to this feature. If it does, add the badge in the 'Bem-vindo ao Pulsar' header row."
+      },
+      {
+        "severidade": "minor",
+        "tela": "dashboard-mobile-*",
+        "descricao": "The screenshots don't show the 'indicadores sem registros' state or the thanks after the first record. The visual criterion for those 2 acceptance states can't be checked here.",
+        "sugestao": "Make sure both states use the existing design-system components (EmptyState card / discreet toast) and pt-BR copy."
+      }
+    ],
+    "porCriterio": {
+      "c1": 6.5,
+      "c2": 8.5,
+      "c3": 6,
+      "c4": 7.5,
+      "c5": 6.5,
+      "c6": 8,
+      "c7": 8,
+      "c8": 7,
+      "c9": 7.5,
+      "c10": 8
+    },
+    "workerId": "haiku"
+  }
+]

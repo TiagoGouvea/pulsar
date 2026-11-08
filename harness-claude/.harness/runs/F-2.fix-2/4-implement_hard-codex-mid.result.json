@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-08T13:33:05.653Z",
+  "workerId": "codex-mid",
+  "role": "implement_hard",
+  "featureId": "F-2.fix-2",
+  "stage": 2,
+  "attempt": 4,
+  "outcome": "success",
+  "costUsd": 0.1036222,
+  "durationMs": 35008,
+  "usage": {
+    "inputTokens": 67598,
+    "outputTokens": 2606,
+    "cachedTokens": 459884
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"summary\": \"Bloqueado pela infraestrutura; nenhuma correção implementada.\",\n  \"filesChanged\": [\".harness/inbox/questions.jsonl\"],\n  \"testsRun\": [\"E2E direcionados: não iniciaram (EPERM nas portas dos emuladores).\"],\n  \"confidence\": \"low\",\n  \"notes\": \"Execute em ambiente que permita abrir portas localhost.\"\n}\n```"
+}

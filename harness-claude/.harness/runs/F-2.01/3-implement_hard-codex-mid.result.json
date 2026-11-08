@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-07T19:26:37.972Z",
+  "workerId": "codex-mid",
+  "role": "implement_hard",
+  "featureId": "F-2.01",
+  "stage": 2,
+  "attempt": 3,
+  "outcome": "success",
+  "costUsd": 0.1232563,
+  "durationMs": 51207,
+  "usage": {
+    "inputTokens": 65014,
+    "outputTokens": 4035,
+    "cachedTokens": 761346
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"summary\": \"Arquivamento e restauração tornados idempotentes.\",\n  \"filesChanged\": [\"app/src/data/indicators.ts\", \"app/src/data/__tests__/indicators.test.ts\", \".harness/inbox/questions.jsonl\"],\n  \"testsRun\": \"Lint, typecheck e formatação passaram. Unitários: 143 passaram com opção de compatibilidade do Node.\",\n  \"confidence\": \"low\",\n  \"notes\": \"Regras e e2e bloqueados: o ambiente impede a abertura das portas locais do emulador.\"\n}\n```"
+}

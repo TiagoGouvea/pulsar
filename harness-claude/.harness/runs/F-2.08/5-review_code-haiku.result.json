@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-08T12:35:56.041Z",
+  "workerId": "haiku",
+  "role": "review_code",
+  "featureId": "F-2.08",
+  "stage": 2,
+  "attempt": 5,
+  "outcome": "success",
+  "costUsd": 0.225368,
+  "durationMs": 22224,
+  "usage": {
+    "inputTokens": 35996,
+    "outputTokens": 1696,
+    "cachedTokens": 57360,
+    "costUsd": 0.225368
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\"pass\": true, \"score\": 8, \"issues\": [\n{\"severidade\": \"minor\", \"arquivo\": \"app/src/data/entries.ts\", \"descricao\": \"watchEntriesForDay skips every snapshot with fromCache or hasPendingWrites. If /register is opened offline, or the server snapshot is slow, the page stays on 'Carregando registros…' with no timeout or error. The rule also hides the user's own pending writes until the server confirms them. The local state in QuickEntry partly makes up for this.\", \"sugestao\": \"Show cached data as read-only or as pending, or add a timeout with a message. Keep the 'Salvo' feedback tied to the awaited commit, as it is now.\"},\n{\"severidade\": \"minor\", \"arquivo\": \"app/src/entry/QuickEntry.tsx\", \"descricao\": \"Clearing deletes the records one by one in a loop (`for ... await deleteEntry`). If it fails partway, some of today's records may already be gone while the UI shows an error. The date in the header uses new Date() and not the `day` prop.\", \"sugestao\": \"Delete with a single writeBatch, the same way saveEntry does, and format the header date from `day`.\"},\n{\"severidade\": \"minor\", \"arquivo\": \"app/src/data/entries.ts\", \"descricao\": \"Inline types such as `import('../domain/entry').Entry` and `import('../domain/indicator').ValueType` are used instead of imports at the top of the file. The Firestore→Entry mapping in watchEntriesForDay may duplicate a converter that already exists in the data layer.\", \"sugestao\": \"Import the types at the top and reuse or extract a shared docToEntry converter.\"},\n{\"severidade\": \"minor\", \"arquivo\": \"app/src/design/Slider.tsx\", \"descricao\": \"The new onPointerUp in the shared design-system component can call onChange a second time with a stale value === null right after onChange. Here busyRef stops the duplicate save, but other consumers of Slider are not protected.\", \"sugestao\": \"Document the behavior or fire it only when no change event happened during that interaction.\"}\n]}\n```"
+}

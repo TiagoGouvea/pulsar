@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-08T13:17:53.614Z",
+  "workerId": "codex-mid",
+  "role": "implement_hard",
+  "featureId": "F-2.fix-1",
+  "stage": 2,
+  "attempt": 5,
+  "outcome": "success",
+  "costUsd": 0.1147002,
+  "durationMs": 46176,
+  "usage": {
+    "inputTokens": 68533,
+    "outputTokens": 3133,
+    "cachedTokens": 610044
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"summary\": \"Implementação interrompida por bloqueio de infraestrutura.\",\n  \"filesChanged\": [\".harness/inbox/questions.jsonl\"],\n  \"testsRun\": [\"E2E relevantes: não iniciaram; portas dos emuladores bloqueadas por EPERM.\"],\n  \"confidence\": \"low\",\n  \"notes\": \"Nenhum código ou teste protegido foi alterado.\"\n}\n```"
+}

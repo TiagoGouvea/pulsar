@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-07T17:50:43.066Z",
+  "workerId": "kimi",
+  "role": "doctor",
+  "stage": -1,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.00106108,
+  "durationMs": 2631,
+  "usage": {
+    "inputTokens": 884,
+    "outputTokens": 31,
+    "cachedTokens": 512,
+    "costUsd": 0.00106108
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "OK"
+}

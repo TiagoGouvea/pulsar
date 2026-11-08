@@ -1,0 +1,84 @@
+[
+  {
+    "kind": "code",
+    "pass": true,
+    "score": 8,
+    "issues": [
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/data/entries.ts",
+        "descricao": "watchEntriesForDay skips every snapshot with fromCache or hasPendingWrites. If /register is opened offline, or the server snapshot is slow, the page stays on 'Carregando registros…' with no timeout or error. The rule also hides the user's own pending writes until the server confirms them. The local state in QuickEntry partly makes up for this.",
+        "sugestao": "Show cached data as read-only or as pending, or add a timeout with a message. Keep the 'Salvo' feedback tied to the awaited commit, as it is now."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/entry/QuickEntry.tsx",
+        "descricao": "Clearing deletes the records one by one in a loop (`for ... await deleteEntry`). If it fails partway, some of today's records may already be gone while the UI shows an error. The date in the header uses new Date() and not the `day` prop.",
+        "sugestao": "Delete with a single writeBatch, the same way saveEntry does, and format the header date from `day`."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/data/entries.ts",
+        "descricao": "Inline types such as `import('../domain/entry').Entry` and `import('../domain/indicator').ValueType` are used instead of imports at the top of the file. The Firestore→Entry mapping in watchEntriesForDay may duplicate a converter that already exists in the data layer.",
+        "sugestao": "Import the types at the top and reuse or extract a shared docToEntry converter."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/design/Slider.tsx",
+        "descricao": "The new onPointerUp in the shared design-system component can call onChange a second time with a stale value === null right after onChange. Here busyRef stops the duplicate save, but other consumers of Slider are not protected.",
+        "sugestao": "Document the behavior or fire it only when no change event happened during that interaction."
+      }
+    ],
+    "workerId": "haiku"
+  },
+  {
+    "kind": "ui",
+    "pass": false,
+    "score": 7.2,
+    "issues": [
+      {
+        "severidade": "major",
+        "tela": "register (nomes e privado)",
+        "descricao": "Sem indicadores ativos (é o estado da captura: Meus Indicadores mostra 0), as seções Fatores e Resultados aparecem só com o cabeçalho e nada embaixo. Não há texto de estado vazio nem atalho para criar indicadores. Quem chega aqui fica sem saber o que fazer, e a tela parece quebrada. Esse estado não está desenhado.",
+        "sugestao": "Quando uma seção não tiver indicadores ativos, mostrar um cartão de estado vazio com o mesmo visual do 'Nenhum indicador ainda' de /indicators, com texto em pt-BR (ex.: 'Nenhum fator ativo') e um botão/link para /indicators ou para o Novo Indicador. Usar azul (secondary) em Fatores e violeta (primary) em Resultados."
+      },
+      {
+        "severidade": "minor",
+        "tela": "register",
+        "descricao": "Os cabeçalhos das seções não têm os selos 'INPUTS' (azul) e 'OUTCOMES' (violeta) do mockup preenchimento_r_pido. Hoje a distinção vem só do ícone e do subtítulo, que já é bom, mas fica mais fraca que no design.",
+        "sugestao": "Pôr no cabeçalho de cada seção um selo (Chip/Badge do design system) alinhado à direita, com a cor da seção."
+      },
+      {
+        "severidade": "minor",
+        "tela": "register",
+        "descricao": "No cartão do topo, o selo de status 'Pronto para registrar' quebra em duas linhas e fica apertado ao lado do rótulo 'SALVAMENTO AUTOMÁTICO ATIVO'. Também falta o ponto verde que aparece antes do rótulo no mockup.",
+        "sugestao": "Usar um texto mais curto (ex.: 'Pronto') ou whitespace-nowrap no selo, e pôr o ponto tertiary antes do rótulo, como no mockup."
+      },
+      {
+        "severidade": "minor",
+        "tela": "register",
+        "descricao": "O cartão 'Observação do dia' está sem o ícone no título, sem o rótulo 'PRIVADO' à direita e sem o ícone de informação antes da nota de rodapé, que estão no mockup.",
+        "sugestao": "Acrescentar o ícone no título, o rótulo 'PRIVADO' (label-code) e o ícone de info antes do texto explicativo."
+      },
+      {
+        "severidade": "minor",
+        "tela": "register",
+        "descricao": "Como a fixture não tem indicadores ativos, não dá para conferir na captura os controles que a feature entrega (Chip Sim/Não, Slider, Chips ordinais, NumberInput, eventos múltiplos). A avaliação deles fica limitada ao código.",
+        "sugestao": "Garantir que os controles sigam o mockup: Sim/Não em pílulas cheias com a cor da seção, escala 0–10 com o valor em destaque, NumberInput com botões −/+ e 'Digitar valor exato'."
+      }
+    ],
+    "porCriterio": {
+      "c1": 7,
+      "c2": 7,
+      "c3": 8,
+      "c4": 6,
+      "c5": 8,
+      "c6": 5,
+      "c7": 9,
+      "c8": 7,
+      "c9": 9,
+      "c10": 8
+    },
+    "workerId": "haiku"
+  }
+]

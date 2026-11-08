@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-08T11:45:37.037Z",
+  "workerId": "haiku",
+  "role": "review_ui",
+  "featureId": "F-2.09",
+  "stage": 2,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.13941920000000002,
+  "durationMs": 17060,
+  "usage": {
+    "inputTokens": 18986,
+    "outputTokens": 1513,
+    "cachedTokens": 71176,
+    "costUsd": 0.13941920000000002
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\"pass\": true, \"score\": 8.0, \"porCriterio\": {\"c1\": 8, \"c2\": 7, \"c3\": 8, \"c4\": 8, \"c5\": 8, \"c6\": 8, \"c7\": 9, \"c8\": 7, \"c9\": 8, \"c10\": 8}, \"issues\": [{\"severidade\": \"minor\", \"tela\": \"indicators-mobile-* / indicators-desktop-*\", \"descricao\": \"Os screenshots só mostram Meus Indicadores no estado vazio (0 indicadores). Nenhum deles mostra o histórico de registros, o horário no fuso do navegador, a observação revelada com data-privacy-allow ou o botão de excluir. Por isso não deu para avaliar visualmente o que esta feature entrega. Também não li o código, porque o Bash foi negado. O que aparece não mostra regressão: cabeçalho, botão 'Novo Indicador', chips com contagem, estado vazio desenhado, cartão 'Regra de Integridade dos Dados' e barra inferior seguem o mockup meus_indicadores.\", \"sugestao\": \"Garantir que a lista de registros siga os tokens: cartões nível 1 (#FFFFFF, borda 1px, raio md), números tabulares, hora em body-sm, botão de excluir com alvo ≥44px e cor de erro só no diálogo de confirmação. Usar a sigla (label-code) no título do histórico para manter o modo privado coerente.\"}, {\"severidade\": \"minor\", \"tela\": \"indicators-mobile-privado / indicators-mobile-nomes\", \"descricao\": \"No celular, o chip 'Arquivados' fica cortado na borda direita. Faz sentido para uma linha de rolagem horizontal, e o mockup tem o mesmo corte, mas não há nenhum sinal de que dá para rolar além do próprio corte.\", \"sugestao\": \"Opcional: deixar a última pílula parcialmente visível com padding no final da linha, para indicar a rolagem.\"}]}\n```"
+}

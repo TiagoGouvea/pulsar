@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-08T11:23:45.737Z",
+  "workerId": "codex-mid",
+  "role": "test_writer",
+  "featureId": "F-2.09",
+  "stage": 2,
+  "attempt": 0,
+  "outcome": "success",
+  "costUsd": 0.1442123,
+  "durationMs": 100065,
+  "usage": {
+    "inputTokens": 64717,
+    "outputTokens": 8651,
+    "cachedTokens": 724806
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"summary\": \"Testes de aceite escritos; validação bloqueada.\",\n  \"filesChanged\": [\"app/e2e/entry-history.spec.ts\", \".harness/inbox/questions.jsonl\"],\n  \"testsRun\": \"Playwright não iniciou: o emulador recebeu EPERM ao abrir portas locais.\",\n  \"confidence\": \"low\",\n  \"notes\": \"Não foi possível confirmar se as falhas vêm apenas da feature ausente.\"\n}\n```"
+}

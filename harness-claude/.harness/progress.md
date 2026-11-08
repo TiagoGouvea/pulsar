@@ -76,3 +76,44 @@
 - 2026-11-07T13:06 ▶ etapa 1 (Base) │ features 13/14 │ 0 bloqueadas │ US$ 32.22/33 │ branch 1-base
 - 2026-11-07T13:11 ✔ F-1.adj-01 passing — Remover o texto "Preparando seu espaço" durante a carga inicial (worker minimax, 1 tentativa(s), US$ 0.97) │ features 14/14
 - 2026-11-07T14:24 ✔ etapa 1 aprovada · commits em 1-base
+- 2026-11-07T17:58 ▶ etapa 2 (Registro) │ features 0/9 │ 0 bloqueadas │ US$ 0.00/9 │ branch 2-registro
+- 2026-11-07T17:59 ⛔ F-2.01 BLOQUEADA: test_writer não produziu testes de aceite │ features 0/9
+- 2026-11-07T17:59 ⏸ 8 feature(s) esperando bloqueadas (F-2.01): ajuste e rode harness resume
+- 2026-11-07T18:08 ▶ etapa 2 (Registro) │ features 0/9 │ 1 bloqueadas │ US$ 0.14/9 │ branch 2-registro
+- 2026-11-07T18:08 ⏸ 8 feature(s) esperando bloqueadas (F-2.01): ajuste e rode harness resume
+- 2026-11-07T18:08 ▶ etapa 2 (Registro) │ features 0/9 │ 0 bloqueadas │ US$ 0.14/9 │ branch 2-registro
+- 2026-11-07T18:17 ⛔ F-2.01 BLOQUEADA: sem progresso: kimi-pro e codex-mid falharam igual (gates G2); provável problema no teste, na spec ou no ambiente │ features 0/9
+- 2026-11-07T18:17 ⏸ 8 feature(s) esperando bloqueadas (F-2.01): ajuste e rode harness resume
+- 2026-11-07T19:25 ▶ etapa 2 (Registro) │ features 0/9 │ 0 bloqueadas │ US$ 1.44/9 │ branch 2-registro
+- 2026-11-07T19:27 ✔ F-2.01 passing — Repositório e regras de indicadores (worker codex-mid, 3 tentativa(s), US$ 1.77) │ features 1/9
+- 2026-11-07T19:32 ✔ F-2.06 passing — Repositório e regras de registros (worker codex-mid, 1 tentativa(s), US$ 0.56) │ features 2/9
+- 2026-11-07T20:11 ✔ F-2.03 passing — Editor de indicador (worker haiku, 2 tentativa(s), US$ 1.28) │ features 3/9
+- 2026-11-07T20:15 ⛔ F-2.10 BLOQUEADA: teto de custo da feature atingido │ features 3/9
+- 2026-11-07T20:32 ⛔ F-2.08 BLOQUEADA: teto de custo da feature atingido │ features 3/9
+- 2026-11-07T20:53 ⛔ F-2.05 BLOQUEADA: teto de custo da feature atingido │ features 3/9
+- 2026-11-07T21:02 ✔ F-2.11 passing — Convite discreto para salvar a conta (worker minimax, 1 tentativa(s), US$ 0.60) │ features 4/9
+- 2026-11-07T21:02 ⏸ 2 feature(s) esperando bloqueadas (F-2.05, F-2.08, F-2.10): ajuste e rode harness resume
+- 2026-11-08T11:01 ▶ etapa 2 (Registro) │ features 4/9 │ 3 bloqueadas │ US$ 9.03/9 │ branch 2-registro
+- 2026-11-08T11:01 ⏸ 2 feature(s) esperando bloqueadas (F-2.05, F-2.08, F-2.10): ajuste e rode harness resume
+- 2026-11-08T11:02 ▶ etapa 2 (Registro) │ features 4/9 │ 0 bloqueadas │ US$ 9.03/12 │ branch 2-registro
+- 2026-11-08T11:21 ✔ F-2.05 passing — Tela Meus indicadores (worker codex-mid, 4 tentativa(s), US$ 2.66) │ features 5/9
+- 2026-11-08T11:32 ⛔ F-2.08 BLOQUEADA: limite de 5 tentativas atingido │ features 5/9
+- 2026-11-08T11:39 ⛔ F-2.10 BLOQUEADA: limite de 5 tentativas atingido │ features 5/9
+- 2026-11-08T11:45 ✔ F-2.09 passing — Histórico de registros e exclusão retroativa (worker minimax, 2 tentativa(s), US$ 0.62) │ features 6/9
+- 2026-11-08T11:45 ⏸ 1 feature(s) esperando bloqueadas (F-2.08, F-2.10): ajuste e rode harness resume
+- 2026-11-08T12:03 ▶ etapa 2 (Registro) │ features 7/9 │ 0 bloqueadas │ US$ 11.86/12 │ branch 2-registro
+- 2026-11-08T12:11 ⛔ F-2.08 BLOQUEADA: limite de 5 tentativas atingido │ features 7/9
+- 2026-11-08T12:11 ⏸ 1 feature(s) esperando bloqueadas (F-2.08): ajuste e rode harness resume
+- 2026-11-08T12:23 ▶ etapa 2 (Registro) │ features 7/9 │ 0 bloqueadas │ US$ 11.91/12 │ branch 2-registro
+- 2026-11-08T12:32 teto da etapa 2 aumentado para US$ 15 (budget.yaml)
+- 2026-11-08T12:32 ▶ etapa 2 (Registro) │ features 7/9 │ 0 bloqueadas │ US$ 12.17/15 │ branch 2-registro
+- 2026-11-08T12:37 ⛔ F-2.08 BLOQUEADA: limite de 5 tentativas atingido │ features 7/9
+- 2026-11-08T12:37 ⏸ 1 feature(s) esperando bloqueadas (F-2.08): ajuste e rode harness resume
+- 2026-11-08T12:46 ▶ etapa 2 (Registro) │ features 8/9 │ 0 bloqueadas │ US$ 12.57/15 │ branch 2-registro
+- 2026-11-08T13:01 ✔ F-1.06 passing — Guarda e2e do modo privado (sentinelas) (worker minimax, 1 tentativa(s), US$ 1.16) │ features 9/9
+- 2026-11-08T13:09 ▶ etapa 2 (Registro) │ features 9/10 │ 0 bloqueadas │ US$ 13.05/15 │ branch 2-registro
+- 2026-11-08T13:19 ⛔ F-2.fix-1 BLOQUEADA: limite de 5 tentativas atingido │ features 9/10
+- 2026-11-08T13:26 ▶ etapa 2 (Registro) │ features 9/11 │ 1 bloqueadas │ US$ 13.58/15 │ branch 2-registro
+- 2026-11-08T13:36 ⛔ F-2.fix-2 BLOQUEADA: limite de 5 tentativas atingido │ features 9/11
+- 2026-11-08T13:43 ▶ etapa 2 (Registro) │ features 9/12 │ 2 bloqueadas │ US$ 14.11/15 │ branch 2-registro
+- 2026-11-08T13:49 ✔ F-2.fix-3 passing — Suíte completa da etapa falhou nos gates G6, G11 (worker codex-mid, 2 tentativa(s), US$ 0.28) │ features 10/12

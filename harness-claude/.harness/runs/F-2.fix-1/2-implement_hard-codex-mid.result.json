@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-08T13:12:08.957Z",
+  "workerId": "codex-mid",
+  "role": "implement_hard",
+  "featureId": "F-2.fix-1",
+  "stage": 2,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.0954923,
+  "durationMs": 33497,
+  "usage": {
+    "inputTokens": 63353,
+    "outputTokens": 2216,
+    "cachedTokens": 421186
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"summary\": \"Bloqueado pela infraestrutura: os emuladores recebem EPERM ao abrir portas locais.\",\n  \"filesChanged\": [\".harness/inbox/questions.jsonl\"],\n  \"testsRun\": [\"test:visual não iniciou\", \"build das Functions passou\"],\n  \"confidence\": \"low\",\n  \"notes\": \"Nenhuma correção foi implementada; é necessário executar em ambiente que permita portas locais.\"\n}\n```"
+}

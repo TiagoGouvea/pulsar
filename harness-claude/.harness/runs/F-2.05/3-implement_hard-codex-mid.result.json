@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-08T11:06:10.746Z",
+  "workerId": "codex-mid",
+  "role": "implement_hard",
+  "featureId": "F-2.05",
+  "stage": 2,
+  "attempt": 3,
+  "outcome": "success",
+  "costUsd": 0.18510075,
+  "durationMs": 82660,
+  "usage": {
+    "inputTokens": 82033,
+    "outputTokens": 6589,
+    "cachedTokens": 1402455
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"summary\": \"Privacidade e reordenação da tela ajustadas.\",\n  \"filesChanged\": [\n    \"app/src/data/indicators.ts\",\n    \"app/src/data/__tests__/indicators.test.ts\",\n    \"app/src/indicators/IndicatorCard.tsx\",\n    \"app/src/indicators/__tests__/IndicatorCard.test.tsx\",\n    \"app/src/pages/IndicatorsPage.tsx\",\n    \".harness/inbox/questions.jsonl\"\n  ],\n  \"testsRun\": \"Lint, typecheck, formatação, builds e 185 testes unitários passaram. E2e bloqueado.\",\n  \"confidence\": \"med\",\n  \"notes\": \"Unitários passaram com --no-experimental-webstorage. E2e não iniciou: portas ocupadas e EPERM ao abrir portas locais; bloqueio registrado.\"\n}\n```"
+}

@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-08T11:09:55.224Z",
+  "workerId": "gemini-lite",
+  "role": "triage",
+  "featureId": "F-2.05",
+  "stage": 2,
+  "attempt": 3,
+  "outcome": "success",
+  "costUsd": 0.001418,
+  "durationMs": 2651,
+  "usage": {
+    "inputTokens": 2636,
+    "outputTokens": 506,
+    "cachedTokens": 0,
+    "costUsd": 0.001418
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\"causaRaiz\": \"O botão de 'Informações sobre os indicadores' possui dimensões de 36x36px, violando o requisito de acessibilidade de no mínimo 44px para alvos de toque em dispositivos móveis.\", \"categoria\": \"design\", \"padrao\": true, \"dica\": \"Aumente o tamanho do container ou aplique padding suficiente no botão para garantir a área de toque mínima de 44px.\"}\n```"
+}

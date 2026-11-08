@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-07T21:02:39.773Z",
+  "workerId": "haiku",
+  "role": "review_ui",
+  "featureId": "F-2.11",
+  "stage": 2,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.167331,
+  "durationMs": 22074,
+  "usage": {
+    "inputTokens": 21228,
+    "outputTokens": 2040,
+    "cachedTokens": 101995,
+    "costUsd": 0.167331
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": ": 7, \"c7\": 9, \"c8\": 8, \"c9\": 9, \"c10\": 9}, \"issues\": [\n{\"severidade\": \"minor\", \"tela\": \"dashboard (banner de convite)\", \"descricao\": \"O banner não aparece em nenhum screenshot. Nas capturas a conta ainda não tem 3 dias com registro, então ele fica oculto, como a regra manda. Por isso só deu para avaliar o visual pelo código (SaveAccountInviteBanner.tsx). O Card usa tokens do design system (bg-secondary-fixed, label-lg, body-sm, rounded-full, min-h-11). O dashboard sem o banner não teve regressão nem no mobile nem no desktop, com e sem modo privado.\", \"sugestao\": \"Nenhuma ação obrigatória.\"},\n{\"severidade\": \"minor\", \"tela\": \"dashboard (banner de convite)\", \"descricao\": \"O banner fica acima do título 'Seu painel' (DashboardPage coloca SaveAccountInviteBanner antes do PlaceholderPage). Isso quebra a hierarquia: o título da tela deixa de ser o primeiro elemento.\", \"sugestao\": \"Mostrar o banner abaixo do cabeçalho 'Seu painel', por exemplo passando-o como slot para o PlaceholderPage ou movendo o título para o DashboardPage.\"},\n{\"severidade\": \"minor\", \"tela\": \"dashboard (banner de convite)\", \"descricao\": \"O banner deveria ser 'discreto', mas tem um botão primário violeta cheio ('Salvar minha conta') e um segundo botão de largura total ('Agora não'). Com o estado vazio, ficariam dois CTAs primários violeta na mesma tela, e isso compete com 'Registrar agora'.\", \"sugestao\": \"Usar um CTA tonal/secundário ou um link de texto para 'Salvar minha conta', e trocar 'Agora não' por um ícone de fechar compacto no canto do card. Assim 'Registrar agora' continua sendo a ação principal.\"},\n{\"severidade\": \"minor\", \"tela\": \"dashboard (banner de convite)\", \"descricao\": \"O texto 'Seus registros ficam salvos apenas neste navegador' é tecnicamente impreciso: os dados estão no Firestore, mas ficam presos à credencial anônima deste navegador.\", \"sugestao\": \"Trocar por algo como 'Sua conta anônima só funciona neste navegador. Vincule com Google ou e-mail para não perder seus registros.'\"}\n]}\n```"
+}

@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-08T11:21:05.412Z",
+  "workerId": "gemini-lite",
+  "role": "triage",
+  "featureId": "F-2.08",
+  "stage": 2,
+  "attempt": 3,
+  "outcome": "success",
+  "costUsd": 0.00107775,
+  "durationMs": 1942,
+  "usage": {
+    "inputTokens": 3351,
+    "outputTokens": 160,
+    "cachedTokens": 0,
+    "costUsd": 0.00107775
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"causaRaiz\": \"O teste E2E tenta interagir com a interface (`click`) logo após `page.context().setOffline(true)`, o que parece causar uma falha na renderização ou fechamento inesperado do contexto do navegador, possivelmente devido a uma requisição em andamento que deveria ter sido concluída ou abortada de forma mais graciosa antes da transição para o modo offline.\",\n  \"categoria\": \"flaky\",\n  \"padrao\": true,\n  \"dica\": \"Adicione um `await page.waitForLoadState('networkidle')` ou aguarde o estado de prontidão da página/componente antes de ativar o modo offline e realizar a interação.\"\n}\n```"
+}

@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-07T20:50:29.244Z",
+  "workerId": "haiku",
+  "role": "implement",
+  "featureId": "F-2.05",
+  "stage": 2,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.7831105999999999,
+  "durationMs": 110259,
+  "usage": {
+    "inputTokens": 67559,
+    "outputTokens": 9263,
+    "cachedTokens": 1300508,
+    "costUsd": 0.7831105999999999
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "ir own section, where \"Restaurar\" brings them back.\n- **Eye toggle:** names follow the global eye through `IndicatorLabel`, and the buttons' screen-reader labels always use the abbreviation, so real names never leak when the eye is closed.\n- **Editor:** \"Novo Indicador\" and \"Editar Parâmetros\" open the indicator editor.\n\n**Test results:**\n- `yarn typecheck`, `yarn lint` and `yarn format:check` are clean.\n- `yarn test:unit`: 178 passed.\n- `e2e/indicators-list.spec.ts`: 12 of 12 passed (mobile and desktop).\n- Regression run of the route, app-shell and design e2e specs: 48 of 48 passed.\n\n**To fix:** `app/src/data/firestoreRest.ts` is still in the worktree because I wasn't allowed to delete it here. Nothing imports it any more, so lint, typecheck and tests are unaffected, but the orchestrator should delete it.\n\n```json\n{\"summary\":\"F-2.05 Meus indicadores: Fatores/Resultados/Arquivados lists with IndicatorLabel, type and aggregation chips, Subir/Descer reorder (persisted via reorderIndicators), archive via Opções sheet, restore from archived section, editor links. This attempt replaced the previous one's custom Firestore REST reader with the existing useIndicators live hook (less code, no hard-coded project, no manual reload after actions).\",\"filesChanged\":[\"app/src/pages/IndicatorsPage.tsx\",\"app/src/indicators/IndicatorCard.tsx\",\"app/src/indicators/summary.ts\",\"app/src/indicators/__tests__/summary.test.ts\",\"app/src/data/indicators.ts\",\"app/src/App.tsx\",\"app/scripts/icons.ts\",\"app/src/design/icons.ts\"],\"testsRun\":[\"yarn typecheck\",\"yarn lint\",\"yarn format:check\",\"yarn test:unit (178 passed)\",\"yarn test:e2e e2e/indicators-list.spec.ts (12 passed)\",\"yarn test:e2e e2e/routes.spec.ts e2e/app-shell.spec.ts e2e/design.spec.ts (48 passed)\"],\"confidence\":\"high\",\"notes\":\"app/src/data/firestoreRest.ts (added in attempt 1) is now unused but could not be deleted because file deletion was not permitted in this session; the orchestrator should delete it. No imports reference it.\"}\n```"
+}

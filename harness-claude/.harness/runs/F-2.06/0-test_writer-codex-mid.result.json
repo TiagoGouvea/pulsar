@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-07T19:29:05.250Z",
+  "workerId": "codex-mid",
+  "role": "test_writer",
+  "featureId": "F-2.06",
+  "stage": 2,
+  "attempt": 0,
+  "outcome": "success",
+  "costUsd": 0.1452691,
+  "durationMs": 84943,
+  "usage": {
+    "inputTokens": 61421,
+    "outputTokens": 10702,
+    "cachedTokens": 606762
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"summary\": \"Testes de aceite criados; execução bloqueada pela infraestrutura.\",\n  \"filesChanged\": [\n    \"app/src/data/__tests__/entries.test.ts\",\n    \"app/tests/rules/entries.test.ts\",\n    \".harness/inbox/questions.jsonl\"\n  ],\n  \"testsRun\": \"Unitários falharam pela ausência de entries.ts. O emulador não iniciou: EPERM nas portas locais.\",\n  \"confidence\": \"low\",\n  \"notes\": \"Os testes de regras não foram verificados. O lint apontou uma variável não utilizada no teste de regras.\"\n}\n```"
+}

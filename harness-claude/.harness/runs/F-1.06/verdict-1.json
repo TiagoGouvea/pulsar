@@ -1,0 +1,60 @@
+[
+  {
+    "kind": "code",
+    "pass": true,
+    "score": 8,
+    "issues": [
+      {
+        "severidade": "minor",
+        "arquivo": "app/eslint.config.js",
+        "descricao": "The new no-restricted-syntax rule only catches member expressions on objects named `indicator`/`indicatorSource` or `x.indicator.name`. Destructuring (`const { name } = indicator`), other variable names (`ind.name`, `item.name`) or template strings get past it. The AGENTS.md/DECISOES.md wording ('o ESLint bloqueia indicator.name') suggests more coverage than the rule gives.",
+        "sugestao": "Make the documentation say it is a heuristic. The e2e guard remains the real line of defense."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/src/privacy/allow.ts",
+        "descricao": "`privacyAllowProps()` plus the PRIVACY_ALLOW_ATTRIBUTE constant add an abstraction for a single static attribute. The unit test allow.test.ts only checks a constant against itself, so it adds almost no protection. This works against the project's 'código mínimo' rule.",
+        "sugestao": "Keep only the exported constant (used by the e2e support) or drop the trivial test. Not blocking."
+      },
+      {
+        "severidade": "minor",
+        "arquivo": "app/e2e/privacy-mode.spec.ts",
+        "descricao": "`waitForRoute` has a long if/else chain keyed on route paths. Its fallback assumes every other route shows the 'Registrar agora' link. A new route added to routes.json would fail for an unrelated reason or need this list edited, which makes the guard fragile.",
+        "sugestao": "Move the readiness condition into routes.json (for example a `ready` field) or use a generic wait (networkidle plus main visible) as the fallback."
+      }
+    ],
+    "workerId": "haiku"
+  },
+  {
+    "kind": "ui",
+    "pass": true,
+    "score": 8.1,
+    "issues": [
+      {
+        "severidade": "minor",
+        "tela": "Design system (modo nomes)",
+        "descricao": "No cartão 'Título de seção', o texto 'ENE · 7,4' fica como sigla com o olho aberto, enquanto chips, cartões e a frase de exemplo passam a mostrar emoji e nome ('⚡ Nível de Energia'). Os dois modos ficam inconsistentes na mesma tela.",
+        "sugestao": "Renderizar esse rótulo pelo mesmo componente de nome/sigla do indicador, para que siga o modo privado como os demais."
+      },
+      {
+        "severidade": "minor",
+        "tela": "Design system (ambos os modos)",
+        "descricao": "Na escala 0–10 de 'Nível de Energia', o botão '6' aparece cortado na borda direita do cartão em 375px. Não há nenhum sinal visual de que a linha rola na horizontal.",
+        "sugestao": "Adicionar um degradê ou espaçamento no fim da linha para indicar a rolagem, ou quebrar a escala em duas linhas no mobile."
+      }
+    ],
+    "porCriterio": {
+      "c1": 8,
+      "c2": 8,
+      "c3": 8,
+      "c4": 8,
+      "c5": 8,
+      "c6": 8,
+      "c7": 9,
+      "c8": 8,
+      "c9": 8,
+      "c10": 8
+    },
+    "workerId": "haiku"
+  }
+]

@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-08T13:35:01.830Z",
+  "workerId": "codex-mid",
+  "role": "implement_hard",
+  "featureId": "F-2.fix-2",
+  "stage": 2,
+  "attempt": 5,
+  "outcome": "success",
+  "costUsd": 0.12228570000000001,
+  "durationMs": 40253,
+  "usage": {
+    "inputTokens": 72431,
+    "outputTokens": 2880,
+    "cachedTokens": 709094
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"summary\": \"Implementação interrompida por bloqueio de infraestrutura.\",\n  \"filesChanged\": [\".harness/inbox/questions.jsonl\"],\n  \"testsRun\": \"E2E não iniciou: emuladores retornaram listen EPERM nas portas locais.\",\n  \"confidence\": \"low\",\n  \"notes\": \"Nenhum teste protegido foi alterado. Execute o worker em ambiente que permita abrir portas locais.\"\n}\n```"
+}

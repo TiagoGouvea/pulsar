@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-07T17:58:46.137Z",
+  "workerId": "codex-mid",
+  "role": "test_writer",
+  "featureId": "F-2.01",
+  "stage": 2,
+  "attempt": 0,
+  "outcome": "success",
+  "costUsd": 0.07418235000000001,
+  "durationMs": 31532,
+  "usage": {
+    "inputTokens": 47642,
+    "outputTokens": 2731,
+    "cachedTokens": 257707
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"summary\": \"Bloqueado: Vitest não está disponível; nenhum teste de aceite foi criado.\",\n  \"filesChanged\": [\".harness/inbox/questions.jsonl\"],\n  \"testsRun\": [\"yarn test:unit: falhou com código 127 (vitest não encontrado)\"],\n  \"confidence\": \"high\",\n  \"notes\": \"O orquestrador precisa provisionar as dependências antes de repetir o trabalho.\"\n}\n```"
+}

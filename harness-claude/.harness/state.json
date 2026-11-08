@@ -1,10 +1,14 @@
 {
-  "phase": "STAGE_RUNNING",
+  "phase": "AWAITING_APPROVAL",
   "stage": 2,
   "pausedFrom": "STAGE_RUNNING",
   "featuresSinceRetro": 0,
-  "stageFixRounds": 0,
-  "budgetAlerts": [],
+  "stageFixRounds": 3,
+  "budgetAlerts": [
+    0.5,
+    0.8,
+    1
+  ],
   "postmortemDone": false,
   "stageTimes": {
     "1": {
@@ -14,8 +18,9 @@
     },
     "2": {
       "startedAt": "2026-11-07T14:24:36.162Z",
-      "activeMs": 3388
+      "activeMs": 14321456,
+      "finishedAt": "2026-11-08T13:59:20.974Z"
     }
   },
-  "updatedAt": "2026-11-07T14:24:36.162Z"
+  "updatedAt": "2026-11-08T13:59:20.974Z"
 }

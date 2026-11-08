@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-08T11:44:55.005Z",
+  "workerId": "haiku",
+  "role": "review_code",
+  "featureId": "F-2.09",
+  "stage": 2,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.2171238,
+  "durationMs": 19663,
+  "usage": {
+    "inputTokens": 32671,
+    "outputTokens": 1814,
+    "cachedTokens": 87484,
+    "costUsd": 0.2171238
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "descricao\": \"`formatTime` repete o bloco `Intl.DateTimeFormat`/`formatToParts`/`get` que já existe em `formatDateTime`. É duplicação, e as regras do projeto pedem para reaproveitar código.\", \"sugestao\": \"Reescrever `formatDateTime` como `${formatDate(date)} ${formatTime(date)}`.\"},\n  {\"severidade\": \"minor\", \"arquivo\": \"app/src/data/entryHistory.ts\", \"descricao\": \"`listIndicatorEntries` baixa todos os registros do usuário (todos os indicadores, com paginação) e só depois filtra por `indicatorId` no cliente. O custo de leitura e a latência crescem com o histórico total, não com o histórico do indicador.\", \"sugestao\": \"Usar `runQuery` do REST com filtro `indicatorId == X` e ordenação por `recordedAt desc`, ou registrar como risco futuro.\"},\n  {\"severidade\": \"minor\", \"arquivo\": \"app/src/indicators/EntryHistorySheet.tsx\", \"descricao\": \"Ao trocar de indicador, `entries` não é limpo antes do novo `load`, então os registros do indicador anterior aparecem por um instante. Também não há proteção contra corrida: uma resposta antiga pode sobrescrever a nova.\", \"sugestao\": \"Fazer `setEntries([])` no efeito e ignorar respostas antigas com uma flag `cancelled` no cleanup do `useEffect`.\"},\n  {\"severidade\": \"minor\", \"arquivo\": \"app/src/indicators/entryValue.ts\", \"descricao\": \"Faltam testes unitários para os helpers puros novos (`entryValueLabel` com boolean/ordinal/numeric com unidade/null, e `formatTime`). Os critérios de aceite estão cobertos pelo e2e, mas os ramos de tipo de valor não.\", \"sugestao\": \"Adicionar testes em `src/indicators/__tests__/entryValue.test.ts` e em `lib/__tests__/time`.\"},\n  {\"severidade\": \"minor\", \"arquivo\": \"app/src/indicators/EntryHistorySheet.tsx\", \"descricao\": \"No Sheet de confirmação, o botão Cancelar e o fechamento do sheet continuam ativos enquanto `deleting` é true. Se o usuário cancelar durante a exclusão, o registro é excluído mesmo assim, sem um retorno claro.\", \"sugestao\": \"Desabilitar Cancelar e `onClose` enquanto `deleting` for true.\"}\n]}\n```"
+}

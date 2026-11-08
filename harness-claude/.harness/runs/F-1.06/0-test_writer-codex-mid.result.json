@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-08T12:47:46.264Z",
+  "workerId": "codex-mid",
+  "role": "test_writer",
+  "featureId": "F-1.06",
+  "stage": 2,
+  "attempt": 0,
+  "outcome": "success",
+  "costUsd": 0.14630289999999999,
+  "durationMs": 64709,
+  "usage": {
+    "inputTokens": 78568,
+    "outputTokens": 5934,
+    "cachedTokens": 761298
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"summary\": \"Testes de privacidade escritos; execução bloqueada antes do navegador.\",\n  \"filesChanged\": [\"app/e2e/privacy-mode.spec.ts\", \".harness/inbox/questions.jsonl\"],\n  \"testsRun\": [\"E2E mobile: Firebase CLI falhou com EPERM ao iniciar\"],\n  \"confidence\": \"low\",\n  \"notes\": \"Não foi possível confirmar se os testes falham pela feature.\"\n}\n```"
+}

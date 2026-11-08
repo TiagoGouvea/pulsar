@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-08T13:01:54.064Z",
+  "workerId": "haiku",
+  "role": "review_ui",
+  "featureId": "F-1.06",
+  "stage": 2,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.1021046,
+  "durationMs": 11255,
+  "usage": {
+    "inputTokens": 15225,
+    "outputTokens": 905,
+    "cachedTokens": 39428,
+    "costUsd": 0.1021046
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\"pass\": true, \"score\": 8.1, \"porCriterio\": {\"c1\": 8, \"c2\": 8, \"c3\": 8, \"c4\": 8, \"c5\": 8, \"c6\": 8, \"c7\": 9, \"c8\": 8, \"c9\": 8, \"c10\": 8}, \"issues\": [{\"severidade\": \"minor\", \"tela\": \"Design system (modo nomes)\", \"descricao\": \"No cartão 'Título de seção', o texto 'ENE · 7,4' fica como sigla com o olho aberto, enquanto chips, cartões e a frase de exemplo passam a mostrar emoji e nome ('⚡ Nível de Energia'). Os dois modos ficam inconsistentes na mesma tela.\", \"sugestao\": \"Renderizar esse rótulo pelo mesmo componente de nome/sigla do indicador, para que siga o modo privado como os demais.\"}, {\"severidade\": \"minor\", \"tela\": \"Design system (ambos os modos)\", \"descricao\": \"Na escala 0–10 de 'Nível de Energia', o botão '6' aparece cortado na borda direita do cartão em 375px. Não há nenhum sinal visual de que a linha rola na horizontal.\", \"sugestao\": \"Adicionar um degradê ou espaçamento no fim da linha para indicar a rolagem, ou quebrar a escala em duas linhas no mobile.\"}]}\n```"
+}

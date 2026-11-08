@@ -1,0 +1,19 @@
+{
+  "ts": "2026-11-08T11:04:37.076Z",
+  "workerId": "codex-mid",
+  "role": "implement_hard",
+  "featureId": "F-2.08",
+  "stage": 2,
+  "attempt": 1,
+  "outcome": "success",
+  "costUsd": 0.22734975,
+  "durationMs": 117026,
+  "usage": {
+    "inputTokens": 96825,
+    "outputTokens": 12136,
+    "cachedTokens": 1396895
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "```json\n{\n  \"summary\": \"Preenchimento rápido implementado; validação incompleta.\",\n  \"filesChanged\": [\"app/src/App.tsx\", \"app/src/data/entries.ts\", \"app/src/design/NumberInput.tsx\", \"app/src/entry/QuickEntry.tsx\", \"app/src/entry/__tests__/QuickEntry.extra.test.tsx\", \"app/src/pages/QuickEntryPage.tsx\", \".harness/inbox/questions.jsonl\"],\n  \"testsRun\": \"Lint, typecheck e formatação passaram. Unitários: 192/193 passaram com ajuste de ambiente. E2E não iniciou.\",\n  \"confidence\": \"low\",\n  \"notes\": \"Um teste unitário tem asserções contraditórias. O ambiente bloqueou as portas dos emuladores. Ambos os impedimentos foram registrados.\"\n}\n```"
+}

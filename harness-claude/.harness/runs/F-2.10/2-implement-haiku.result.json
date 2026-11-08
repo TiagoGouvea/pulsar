@@ -1,0 +1,20 @@
+{
+  "ts": "2026-11-07T20:07:18.550Z",
+  "workerId": "haiku",
+  "role": "implement",
+  "featureId": "F-2.10",
+  "stage": 2,
+  "attempt": 2,
+  "outcome": "success",
+  "costUsd": 0.5059024000000001,
+  "durationMs": 329999,
+  "usage": {
+    "inputTokens": 40779,
+    "outputTokens": 7853,
+    "cachedTokens": 724927,
+    "costUsd": 0.5059024000000001
+  },
+  "exitCode": 0,
+  "timedOut": false,
+  "finalTail": "ne**\n- I left out the \"#PLS-xxxx | Dia 1\" header badge: the spec defines neither a user code nor a day count. I also left out the \"Seus dados estão protegidos localmente\" card, which looks like part of F-2.11 (invite to save the account). Both are logged in `.harness/inbox/questions.jsonl`.\n\n**Failing test:** `account-link-visual.spec.ts` (Settings, Google sign-in popup) failed twice. After the popup closes, it waits for an alert containing \"cancelada\" that never appears. This change doesn't touch that flow, but I didn't run the test without my changes to confirm it fails there too.\n\n```json\n{\n  \"summary\": \"Fixed the suggestion cards on the empty dashboard. The acronym chip now always shows the code (EXE/CAF/ENE/CON) via a new optional abbreviationOnly prop on IndicatorLabel. The acronym chip and the type chip share one row above the meta line. The title follows the eye toggle through indicatorLabel() and ends with an ellipsis (min-w-0 flex-1 column, truncate on the title, shrink-0 button). The #PLS badge and the protected-data card were left out (outside the spec / F-2.11) and logged in questions.jsonl.\",\n  \"filesChanged\": [\n    \"app/src/pages/DashboardPage.tsx\",\n    \"app/src/design/IndicatorLabel.tsx\",\n    \".harness/inbox/questions.jsonl\"\n  ],\n  \"testsRun\": [\n    \"yarn lint (ok)\",\n    \"yarn typecheck (ok)\",\n    \"yarn format:check (ok after prettier --write)\",\n    \"yarn test:unit (151/151)\",\n    \"yarn test:e2e --project=mobile empty-dashboard, design, app-shell (17/17)\",\n    \"yarn test:visual --project=mobile (9 passed; account-link-visual failed waiting for the 'cancelada' alert after the Google popup closes; this diff does not touch that flow, and it was not run without the changes to confirm)\"\n  ],\n  \"confidence\": \"med\",\n  \"notes\": \"Only the acronym-mode dashboard screenshot was reviewed. The title ellipsis with names shown was not checked visually. The no-records and first-record states already use Card and pt-BR text from attempt 1 and were not changed.\"\n}\n```"
+}
