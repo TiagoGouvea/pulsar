@@ -301,6 +301,17 @@ function CreateOwnIndicatorCard() {
   );
 }
 
+function RegisterNowLink() {
+  return (
+    <Link
+      to="/register"
+      className="inline-flex min-h-11 items-center justify-center rounded-full bg-surface-container-highest px-4 font-label-lg text-label-lg text-primary"
+    >
+      Registrar agora
+    </Link>
+  );
+}
+
 function NoRecordsCard() {
   return (
     <Card data-testid="indicators-without-records" className="gap-space-sm">
@@ -323,12 +334,7 @@ function NoRecordsCard() {
         <Icon name="schedule" className="text-[14px] text-primary" />
         Aguardando primeiros dados de registro
       </span>
-      <Link
-        to="/register"
-        className="inline-flex min-h-11 items-center justify-center rounded-full bg-surface-container-highest px-4 font-label-lg text-label-lg text-primary"
-      >
-        Registrar agora
-      </Link>
+      <RegisterNowLink />
     </Card>
   );
 }
@@ -365,6 +371,7 @@ function PanelSummary({ entryCount }: { entryCount: number }) {
       <p className="font-body-md text-body-md text-on-surface-variant">
         Continue registrando para que os insights ganhem força ao longo dos dias.
       </p>
+      <RegisterNowLink />
     </Card>
   );
 }
@@ -443,12 +450,7 @@ function InsightsExplanationCard() {
           Primeiras possíveis associações estatísticas entre fatores e resultados.
         </TimelineStep>
       </ol>
-      <Link
-        to="/register"
-        className="inline-flex min-h-11 items-center justify-center rounded-full bg-surface-container-highest px-4 font-label-lg text-label-lg text-primary"
-      >
-        Registrar agora
-      </Link>
+      <RegisterNowLink />
     </Card>
   );
 }
