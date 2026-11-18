@@ -12,6 +12,7 @@ export interface LedgerRow {
 }
 export type Cap = "feature" | "stage" | "run" | "provider";
 
+export const CAP_EXEMPT_ROLES = ["approval_parser", "retro", "postmortem", "formatter"];
 const TIER_EST: Record<string, number> = { high: 1.0, mid: 0.4, low: 0.05, local: 0 };
 const file = (ctx: Ctx) => hp(ctx, "ledger.jsonl");
 export const readLedger = (ctx: Ctx) => readJsonl<LedgerRow>(file(ctx));
@@ -73,14 +74,16 @@ export function raiseCap(ctx: Ctx, cap: "stage" | "run", stage: number, by: numb
 }
 
 /** First cap that the estimated call would break, or null. */
-export function breach(ctx: Ctx, w: WorkerSpec, est: number, s: { stage: number; featureId?: string }): Cap | null {
+export function breach(ctx: Ctx, w: WorkerSpec, est: number, s: { stage: number; featureId?: string; role?: string }): Cap | null {
   const rows = readLedger(ctx);
   const c = ctx.budget.caps;
   if (spent(ctx, {}, rows) + est > c.run) return "run";
-  if (spent(ctx, { stage: s.stage }, rows) + est > stageCap(ctx, s.stage)) return "stage";
+  // approval parsing and the retro cost cents and close the stage: they only answer to the run and provider caps
+  const exempt = CAP_EXEMPT_ROLES.includes(s.role ?? "");
+  if (!exempt && spent(ctx, { stage: s.stage }, rows) + est > stageCap(ctx, s.stage)) return "stage";
   const prov = providerOf(w);
   if (c.dailyByProvider[prov] !== undefined && spent(ctx, { provider: prov, day: today() }, rows) + est > c.dailyByProvider[prov]) return "provider";
-  if (s.featureId) {
+  if (s.featureId && !exempt) {
     // a feature reset by hand (failures that were the harness's) starts a fresh feature budget
     const since = loadFeatures(ctx).features.find((f) => f.id === s.featureId)?.spendSince ?? "";
     if (spent(ctx, { featureId: s.featureId }, rows.filter((r) => r.ts >= since)) + est > c.feature) return "feature";

@@ -59,9 +59,10 @@ export async function resetHard(cwd: string, ref: string) {
   await git(cwd, "clean", "-fd", ...EXCL);
 }
 
-export const diff = (cwd: string, base: string) => git(cwd, "diff", "--relative", base, "HEAD", ...EXCL);
+// three dots: diff from the merge-base, so commits that landed on `base` meanwhile do not appear as deletions
+export const diff = (cwd: string, base: string) => git(cwd, "diff", "--relative", `${base}...HEAD`, ...EXCL);
 export const changedFiles = async (cwd: string, base: string) =>
-  (await git(cwd, "diff", "--relative", "--name-only", base, "HEAD", ...EXCL)).split("\n").filter(Boolean);
+  (await git(cwd, "diff", "--relative", "--name-only", `${base}...HEAD`, ...EXCL)).split("\n").filter(Boolean);
 
 /** Brings the latest commits of `branch` into the worktree. On conflict the markers are left for the worker. */
 export async function integrate(cwd: string, branch: string) {

@@ -52,9 +52,9 @@ workers:
   kimi:         { cli: pi,     model: "openrouter/moonshotai/kimi-k2.7-code", family: moonshot, tier: mid, vision: false, billing: api, concurrency: 2, timeoutMin: 40 }
   deepseek:     { cli: pi,     model: "openrouter/deepseek/deepseek-v4-pro", family: deepseek, tier: low, vision: false, billing: api, concurrency: 2, timeoutMin: 30 }
   # baratos novos (OpenRouter, 2026-10): entram no implement para o roteador comparar com deepseek/kimi
-  deepseek-flash: { cli: pi,   model: "openrouter/deepseek/deepseek-v4.1-flash-1017", family: deepseek, tier: low, vision: true, billing: api, concurrency: 2, timeoutMin: 30 }
+  deepseek-flash: { cli: pi,   model: "openrouter/deepseek/deepseek-v4.1-flash-1017", family: deepseek, tier: low, vision: true, billing: api, concurrency: 2, timeoutMin: 12 }   # etapa 2: 27 min por tentativa
   qwen-coder:   { cli: pi,     model: "openrouter/qwen/qwen3-coder-next",     family: qwen,     tier: low, vision: false, billing: api, concurrency: 2, timeoutMin: 20 }   # estourou 15 min no harness do Codex
-  minimax:      { cli: pi,     model: "openrouter/minimax/minimax-m3.1-flash", family: minimax, tier: low, vision: true, billing: api, concurrency: 2, timeoutMin: 30, pinModel: true }   # pi 1.4 trocava pelo ":free" aposentado (404)
+  minimax:      { cli: pi,     model: "openrouter/minimax/minimax-m3.1-flash", family: minimax, tier: low, vision: true, billing: api, concurrency: 2, timeoutMin: 12, pinModel: true }   # pi 1.4 trocava pelo ":free" aposentado (404)
   # GLM 5.3 via OpenRouter (o harness do Codex aposta no completo; o flash foi bem como revisor lá)
   glm-or:       { cli: pi,     model: "openrouter/z-ai/glm-5.3",       family: zhipu, tier: mid, vision: false, billing: api, concurrency: 2, timeoutMin: 30 }
   glm-flash:    { cli: pi,     model: "openrouter/z-ai/glm-5.3-flash", family: zhipu, tier: low, vision: true,  billing: api, concurrency: 3, timeoutMin: 20 }
@@ -74,10 +74,10 @@ workers:
 roles:
   # Etapa 1: só remotos (locais desligados); a ordem só desempata, quem escolhe é o roteador (histórico e preço).
   initializer:     { pool: [opus],                              note: "decompõe spec, scaffold, design system" }
-  test_writer:     { pool: [codex-mid, glm-or],                 note: "escreve testes de aceite ANTES da implementação (sem sonnet: US$ 5 só de testes na etapa 1); glm-or só se o codex-mid faltar" }
-  implement:       { pool: [deepseek-flash, minimax, haiku, codex-mid], note: "features comuns. deepseek-flash: 2ª chance (craque no harness do Codex; aqui 0/3 só em F-1.03/F-1.10, na fase dos bugs do harness, histórico zerado). Sem qwen-coder/kimi; sem glm-or (15 min por tentativa)" }
+  test_writer:     { pool: [codex-mid],                         note: "escreve testes de aceite ANTES da implementação (sem sonnet: US$ 5 só de testes na etapa 1; sem glm-or: US$ 1,17 e 11 min por chamada na etapa 2)" }
+  implement:       { pool: [codex-mid, minimax, deepseek-flash], note: "features comuns. deepseek-flash: 2ª chance (craque no harness do Codex; aqui 0/3 só em F-1.03/F-1.10, na fase dos bugs do harness, histórico zerado). Sem qwen-coder/kimi; sem glm-or (15 min por tentativa)" }
   implement_easy:  { pool: [deepseek-flash, minimax, glm-flash, haiku], note: "features difficulty=easy e ajustes do humano" }
-  implement_hard:  { pool: [codex-mid, glm-or, kimi-pro],       note: "estatística, security rules e difficulty=hard (sem opus/sonnet: US$ 10,65 com 8/37 sucessos na etapa 1; como o harness do Codex)" }
+  implement_hard:  { pool: [codex-mid, kimi-pro],               note: "estatística, security rules e difficulty=hard (sem opus/sonnet: US$ 10,65 com 8/37 sucessos na etapa 1; como o harness do Codex)" }
   review_code:     { pool: [gemini, glm-or, gemini-argon, codex-mid, haiku, sonnet], rule: different_family_from_implementer }
   review_ui:       { pool: [gemini, gemini-argon, haiku, sonnet],                    rule: different_family_from_implementer, requires: vision }
   triage:          { pool: [haiku, glm-flash, deepseek-flash, gemini-lite] }   # deepseek v4-pro saiu: 4-5 min e até US$ 0,64 por triagem
@@ -127,7 +127,7 @@ gates:
   G8:  { name: privacy-leak,   builtin: privacy, fromStage: 1, onlyTags: [ui, privacy-mode] }
   G9:  { name: a11y,           builtin: a11y, onlyTags: [ui] }
   G10: { name: mobile-layout,  builtin: layout, onlyTags: [ui] }
-  G11: { name: visual-regression, cmd: "yarn test:visual", updateCmd: "yarn test:visual --update-snapshots", fromStage: 2, scope: stage }
+  G11: { name: visual-regression, cmd: "yarn test:visual --pass-with-no-tests {tests}", updateCmd: "yarn test:visual --update-snapshots", fromStage: 2, onlyTags: [ui] }   # feature ui: só os @visual dos próprios specs (antes só no fim da etapa e falhava tarde); fim de etapa: todos
   G12: { name: lighthouse,     builtin: lighthouse, scope: stage }
   G13: { name: secrets,        builtin: secrets }
 

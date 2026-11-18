@@ -3,6 +3,10 @@ import { join, resolve } from "node:path";
 import { parse } from "yaml";
 import { z } from "zod";
 
+/** HARNESS_VISUAL=1: browsers open on screen (slow motion), e2e run headed with one worker, and only one task at a time. */
+export const VISUAL = () => !!process.env.HARNESS_VISUAL && process.env.HARNESS_VISUAL !== "0";
+export const visualCmd = (cmd: string) => (VISUAL() ? cmd.replace(/(yarn test:(?:e2e|visual))/, "$1 --headed --workers=1") : cmd);
+
 export const PLACEHOLDER = "<preencher>";
 
 const Worker = z.object({

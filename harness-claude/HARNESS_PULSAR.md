@@ -106,12 +106,11 @@ pulsar/
 │   ├── lessons/harness.md       # sobrevive entre projetos
 │   ├── proposals/
 │   └── runs/<taskId>/           # prompt, transcript, gate report, verdict
+├── feedback-etapa-N.md          # o humano escreve aqui: status, ajustes e respostas das dúvidas (raiz do harness)
 └── checkpoints/etapa-N/
     ├── RELATORIO.md
     ├── COMO-TESTAR.md
-    ├── DUVIDAS.md
     ├── RISCOS.md
-    ├── APROVACAO.md             # o humano escreve aqui
     └── screenshots/
 ```
 
@@ -362,7 +361,7 @@ Qualquer estado → PAUSED_BUDGET | PAUSED_SPEC_CHANGE | PAUSED_MANUAL | CRASHED
 
 ### 7.5 `harness approve`
 
-1. Ler `checkpoints/etapa-N/APROVACAO.md` e as respostas em `DUVIDAS.md`.
+1. Ler `feedback-etapa-N.md` (raiz do harness): `Status`, `## Ajustes` e as respostas em `## Dúvidas`. Ao processar ajustes, o arquivo é arquivado como `feedback-etapa-N.rodada-K.md` e o próximo checkpoint cria um novo. (Etapas antigas com `checkpoints/etapa-N/APROVACAO.md` + `DUVIDAS.md` continuam sendo lidas.)
 2. Um modelo barato converte as respostas em JSON: `{aprovado: bool, ajustes: [...], respostasDuvidas: [...]}`. Depois o humano confirma o resumo no terminal (y/n).
 3. Ajustes viram novas features na etapa N (com prefixo `F-N.adj-`). Respostas a dúvidas atualizam `DECISOES.md` e `lessons/project.md`.
 4. Se a etapa foi aprovada sem ajustes: merge de `stage/N` em `main`, tag `etapa-N-aprovada`, e o harness segue para a etapa N+1.
@@ -587,9 +586,8 @@ Os valores são sugestão inicial. O humano ajusta.
 |---|---|
 | `RELATORIO.md` | Features entregues; critérios da spec atendidos; o que ficou `blocked` e por quê; custo e tempo da etapa; workers usados e taxas de sucesso; aprendizados; URL do preview |
 | `COMO-TESTAR.md` | Roteiro de 10 a 15 minutos, passo a passo, no celular e no desktop; como carregar o seed de demonstração no preview; o que observar |
-| `DUVIDAS.md` | Itens de `inbox/questions.jsonl` agrupados e deduplicados. Cada um tem a pergunta, o que foi escolhido, as alternativas, o impacto e uma linha `Resposta:` vazia para o humano |
+| `feedback-etapa-N.md` (raiz) | Template único: `Status: (aprovado / ajustes)`, lista de ajustes e a seção de dúvidas: itens de `inbox/questions.jsonl` agrupados e deduplicados. Cada um tem a pergunta, o que foi escolhido, as alternativas, o impacto e uma linha `Resposta:` vazia para o humano |
 | `RISCOS.md` | Itens de `inbox/risks.jsonl` com probabilidade, impacto, sugestão e status |
-| `APROVACAO.md` | Template: `Status: (aprovado / ajustes)` + uma lista de ajustes |
 | `screenshots/` | Todas as telas e estados, em mobile e desktop, com e sem modo privado |
 
 **Preview:**
@@ -642,6 +640,8 @@ HARNESS_ALLOW_DEMO_SEED=0
 | `harness status` | Etapa, features por status, custo acumulado, próximo passo |
 | `harness approve` | Processa a aprovação da etapa (7.5) |
 | `harness pause` | Pausa limpa após a tarefa atual |
+| `harness unblock <id\|all>` | Devolve feature bloqueada à fila (orçamento da feature zerado, até 2 tentativas) |
+| `harness accept <id>` | Entrega o código de uma feature reprovada só em revisão (gates da última tentativa verdes); harness parado |
 | `harness report` | Relatório de custo e desempenho |
 | `harness apply-proposal <id>` | Aplica uma proposta de melhoria do harness (humano) |
 

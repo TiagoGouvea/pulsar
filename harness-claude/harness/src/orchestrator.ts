@@ -8,9 +8,9 @@ import { FatalError, type WorkerSpec } from "./adapters/types.js";
 import { raiseCap, spent, stageCap, usageRatio } from "./budget.js";
 import {
   addQuestion, addRisk, ApprovalSchema, type Approval, buildCheckpoint, checkpointDir, computeHash, deployPreview,
-  freezeSpec, markAnswered, parseApprovalFiles, resolveAnswer, storedHash, writeSpecChange,
+  feedbackFile, freezeSpec, markAnswered, parseApprovalFiles, resolveAnswer, storedHash, writeSpecChange,
 } from "./checkpoint.js";
-import { type Ctx, enabledWorkers, remoteTwin } from "./config.js";
+import { type Ctx, enabledWorkers, remoteTwin, VISUAL, visualCmd } from "./config.js";
 import { formatIssues, judge, reviewCode, reviewFeatures, reviewUi, TriageSchema, type Verdict } from "./evaluator.js";
 import {
   type Feature, FeaturesFileSchema, loadFeatures, nextFeature, resetInProgress, saveFeatures, stageFeatures, stageSettled,
@@ -121,6 +121,46 @@ export class Orchestrator {
     return "pausa solicitada: o harness para após as tarefas em andamento";
   }
 
+  /** Human command (harness stopped): blocked features go back to the queue with a fresh feature budget and at most 2 more attempts. */
+  unblock(ids: string[]) {
+    const targets = loadFeatures(this.ctx).features.filter((f) => f.status === "blocked" && (ids.includes("all") || ids.includes(f.id)));
+    if (!targets.length) return `nenhuma feature bloqueada${ids.length && !ids.includes("all") ? ` entre: ${ids.join(", ")}` : ""}`;
+    const max = this.ctx.config.routing.maxAttemptsPerFeature;
+    for (const f of targets) updateFeature(this.ctx, f.id, (x) => { x.status = "failing"; x.blockedReason = undefined; x.attempts = Math.min(x.attempts, max - 2); x.spendSince = new Date().toISOString(); });
+    // a stage already at its checkpoint goes back to running, so `resume` works on the unblocked features
+    const st = loadState(this.ctx);
+    const reopened = st && ["AWAITING_APPROVAL", "CHECKPOINT_READY"].includes(st.phase);
+    if (reopened) { this.state = st; this.set("STAGE_RUNNING"); }
+    return `desbloqueadas: ${targets.map((f) => f.id).join(", ")} (orçamento da feature zerado, até 2 tentativas).${reopened ? ` A etapa ${st.stage} voltou a rodar (o checkpoint será gerado de novo).` : ""} Rode harness resume.`;
+  }
+
+  /** Human command (harness stopped): lands the code a feature has in its worktree although a review rejected it. The gates of its last attempt must be green. */
+  async accept(id: string) {
+    const ctx = this.ctx;
+    const f = loadFeatures(ctx).features.find((x) => x.id === id);
+    if (!f) return `feature ${id} não existe`;
+    if (f.status === "passing") return `${id} já está entregue`;
+    if (!(await g.listWorktrees(ctx.repo)).includes(id)) return `${id} não tem worktree com código para aceitar`;
+    const reports = readdirSync(hp(ctx, "runs", id)).filter((n) => /^gate-report-\d+\.json$/.test(n)).sort((x, y) => parseInt(x.slice(12)) - parseInt(y.slice(12)));
+    const lastGates = reports.length ? (JSON.parse(readFileSync(hp(ctx, "runs", id, reports.at(-1)!), "utf8")) as GateReport) : undefined;
+    if (!lastGates?.ok) return `${id}: os gates da última tentativa não estão verdes${lastGates ? ` (${lastGates.failed.join(",")})` : " (nenhum relatório)"}; aceitar só vale para código reprovado em revisão`;
+    await this.useBranch();
+    const wt = await g.addWorktree(ctx.repo, id, this.branch);
+    this.harvestInbox(wt, id);
+    rmSync(join(wt, ".harness"), { recursive: true, force: true });   // worker scratch (inbox) already moved to the root; it must not block the merge
+    await g.commitAll(wt, `wip(${id}): estado aceito pelo humano`);
+    // tests this feature added besides its own acceptance tests become protected, growing-only (as when a feature lands normally)
+    const touched = (await g.changedFiles(wt, this.branch)).filter((p) => TEST_FILE.test(p) && !f.protectedTests.includes(p) && existsSync(join(wt, p)));
+    const landed = await this.merge(() => g.land(ctx.repo, wt, this.branch, `feat(${id}): ${f.title}\n\nAccepted-by: human (revisão reprovou; pendências em RISCOS.md)`));
+    if (!landed.ok) return `${id}: conflito de merge com ${this.branch} em: ${landed.conflict}`;
+    registerProtected(ctx, wt, id, touched, true);
+    await g.removeWorktree(ctx.repo, id);
+    updateFeature(ctx, id, (x) => { x.status = "passing"; x.blockedReason = undefined; x.pending = undefined; });
+    addRisk(ctx, { featureId: id, risco: "feature aceita pelo humano apesar de revisão reprovada", probabilidade: "média", impacto: "médio", sugestao: "ver verdict-N.json em .harness/runs/" + id });
+    this.progress(`✔ ${id} aceita pelo humano — ${f.title} │ ${this.stageCount(f.stage)}`);
+    return `${id} entregue na branch ${this.branch}`;
+  }
+
   /** Main loop. Ends (process exits) at AWAITING_APPROVAL, DONE or any PAUSED_* state. */
   async run(): Promise<Phase> {
     await this.useBranch();
@@ -229,7 +269,7 @@ export class Orchestrator {
     for (const t of this.ctx.budget.alerts.filter((a) => ratio >= a && !this.state.budgetAlerts.includes(a))) {
       this.state.budgetAlerts.push(t);
       this.save();
-      await notify(this.ctx, t >= 1 ? "budget_100" : t >= 0.8 ? "budget_80" : "budget_50", `orçamento em ${Math.round(ratio * 100)}%${t >= 0.8 ? " (prefer_cheap ativo)" : ""}`);
+      await notify(this.ctx, t >= 1 ? "budget_100" : t >= 0.8 ? "budget_80" : "budget_50", `orçamento em ${Math.round(ratio * 100)}% (etapa US$ ${spent(this.ctx, { stage }).toFixed(2)}/${stageCap(this.ctx, stage)} · projeto US$ ${spent(this.ctx).toFixed(2)}/${this.ctx.budget.caps.run})${t >= 0.8 ? " — prefer_cheap ativo" : ""}`);
     }
   }
 
@@ -325,7 +365,7 @@ export class Orchestrator {
     const running = new Map<string, Promise<void>>();
     this.fatal = undefined;
     for (;;) {
-      while (running.size < this.ctx.config.loop.maxParallelTasks && !this.fatal && !existsSync(PAUSE_FILE(this.ctx)) && !this.specChanged()) {
+      while (running.size < (VISUAL() ? 1 : this.ctx.config.loop.maxParallelTasks) && !this.fatal && !existsSync(PAUSE_FILE(this.ctx)) && !this.specChanged()) {
         const f = nextFeature(loadFeatures(this.ctx), s, new Set(running.keys()));
         if (!f) break;
         updateFeature(this.ctx, f.id, (x) => { x.status = "in_progress"; });
@@ -380,6 +420,8 @@ export class Orchestrator {
 
   private async ensureAcceptanceTests(f: Feature, wt: string) {
     if (f.protectedTests.length && f.protectedTests.every((p) => existsSync(join(wt, p)))) return f;
+    // fresh worktree has no node_modules: the test writer runs its tests, and autofix/typecheck need them (G1 would install only later)
+    await execa("yarn install --frozen-lockfile --prefer-offline --silent", { shell: true, cwd: this.appAbs(wt), reject: false, timeout: 600_000 });
     let retry = "";
     for (let i = 1; i <= 2; i++) {
       this.clearInbox(wt);
@@ -389,8 +431,6 @@ export class Orchestrator {
       if (r.outcome !== "success" || !(await g.commitAll(wt, `test(${f.id}): testes de aceite`))) { await g.resetHard(wt, base); continue; }
       // protected tests are hashed as they will stay: formatted now (a later autofix broke G7) and free of type errors
       // implementers can't fix. Tests come before the code, so missing modules/members (TDD) are expected.
-      // fresh worktree: dependencies are only installed by G1, and autofix/typecheck need them
-      await execa("yarn install --frozen-lockfile --prefer-offline --silent", { shell: true, cwd: this.appAbs(wt), reject: false, timeout: 600_000 });
       await this.tidy(wt, f.id);
       const tc = this.ctx.config.gates.G3?.cmd;
       const typed = tc ? await execa(tc, { shell: true, cwd: this.appAbs(wt), reject: false, all: true, timeout: 300_000 }) : undefined;
@@ -405,6 +445,14 @@ export class Orchestrator {
         continue;
       }
       const written = (await g.changedFiles(wt, base)).filter((p) => TEST_FILE.test(p));
+      // the implementer cannot fix lint/format errors inside protected tests, so they are caught before the hash is taken
+      const lintBad = await this.lintErrorsIn(wt, written);
+      if (lintBad) {
+        log(`↻ ${f.id} test_writer ${r.worker.id}: lint/formato nos testes, nova tentativa`);
+        retry = `\n\n## Tentativa anterior rejeitada\nSeus testes falham no lint/formato (G2) e o implementador não pode corrigir arquivos protegidos. Corrija:\n\`\`\`\n${lintBad}\n\`\`\``;
+        await g.resetHard(wt, base);
+        continue;
+      }
       const declared = f.protectedTests.length ? f.protectedTests : f.tests;
       const prot = declared.filter((p) => existsSync(join(wt, p)));
       const protectedTests = prot.length ? prot : written;
@@ -433,13 +481,51 @@ export class Orchestrator {
   }
 
   /** New acceptance tests run once: failing is expected (no code yet), unless a cheap model sees the test itself is broken. */
+  /** G2 output lines about the given files (project-relative paths), or undefined when lint/format are clean for them. */
+  private async lintErrorsIn(wt: string, files: string[]): Promise<string | undefined> {
+    const cmd = this.ctx.config.gates.G2?.cmd;
+    if (!cmd || !files.length) return undefined;
+    const app = this.ctx.config.project.appDir.replace(/\/$/, "") + "/";
+    const r = await execa(cmd, { shell: true, cwd: this.appAbs(wt), reject: false, all: true, timeout: 300_000 });
+    if (!r.exitCode) return undefined;
+    const rel = files.map((p) => (p.startsWith(app) ? p.slice(app.length) : p));
+    const out = String(r.all);
+    return rel.some((p) => out.includes(p)) ? out.slice(-2500) : undefined;   // errors elsewhere are not the test writer's
+  }
+
+  /** The same failure twice on a feature's own acceptance test: a test-writer model checks the test and fixes it (once per feature). */
+  private async repairTest(f: Feature, wt: string, gates: GateReport): Promise<boolean> {
+    if ((f.testRepairs ?? 0) >= 1) return false;
+    const app = this.ctx.config.project.appDir.replace(/\/$/, "") + "/";
+    const out = gates.results.filter((r) => !r.ok).map((r) => `### ${r.id} ${r.name}\n${r.output.slice(-3500)}`).join("\n\n");
+    const tests = f.protectedTests.filter((p) => out.includes(p.startsWith(app) ? p.slice(app.length) : p));
+    if (!tests.length) return false;
+    const before = new Map(tests.map((p) => [p, (readFileSync(join(wt, p), "utf8").match(/\bexpect(\.soft)?\(|\bassert[.(]/g) ?? []).length]));
+    const base = await g.head(wt);
+    let r;
+    try {
+      r = await this.rt.invoke({ role: "test_writer", taskId: f.id, featureId: f.id, stage: f.stage, attempt: 0, cwd: wt, prompt: render(this.ctx, "test_repair", { ...featureVars(this.ctx, f), tests: tests.join("\n"), output: out.slice(-6000), otherFeatures: otherFeatures(this.ctx, f) }, f.tags), schema: WorkerFinal.extend({ testeDefeituoso: z.boolean().default(false) }), tags: f.tags });
+    } catch (e) {
+      if (e instanceof NoWorkerError) return false;
+      throw e;
+    }
+    const fixed = r.outcome === "success" && (r.data as { testeDefeituoso?: boolean } | undefined)?.testeDefeituoso;
+    await this.tidy(wt, f.id);
+    const weaker = tests.some((p) => existsSync(join(wt, p)) && (readFileSync(join(wt, p), "utf8").match(/\bexpect(\.soft)?\(|\bassert[.(]/g) ?? []).length < before.get(p)!);
+    if (!fixed || weaker || !(await g.commitAll(wt, `test(${f.id}): corrige teste de aceite defeituoso`))) { await g.resetHard(wt, base); return false; }
+    registerProtected(this.ctx, wt, f.id, tests);   // new hash; the assert count did not drop
+    updateFeature(this.ctx, f.id, (x) => { x.testRepairs = (x.testRepairs ?? 0) + 1; });
+    this.progress(`↻ ${f.id}: o teste de aceite estava defeituoso e foi corrigido por ${r.worker.id} (${tests.join(", ")}); a feature continua`);
+    return true;
+  }
+
   private async brokenTests(f: Feature, wt: string, tests: string[]): Promise<string | undefined> {
     const app = this.ctx.config.project.appDir.replace(/\/$/, "") + "/";
     let output = "";
     for (const d of this.ctx.config.project.dryRun) {
       const files = tests.filter((p) => new RegExp(d.match).test(p)).map((p) => (p.startsWith(app) ? p.slice(app.length) : p));
       if (!files.length) continue;
-      const p = await execa(d.cmd.replace("{files}", files.join(" ")), { shell: true, cwd: this.appAbs(wt), reject: false, all: true, timeout: 600_000 });
+      const p = await execa(visualCmd(d.cmd.replace("{files}", files.join(" "))), { shell: true, cwd: this.appAbs(wt), reject: false, all: true, timeout: 600_000 });
       if (p.exitCode !== 0) output += `$ ${d.cmd.replace("{files}", files.join(" "))}\n${String(p.all).slice(-6000)}\n`;
     }
     if (!output) return undefined;
@@ -534,7 +620,9 @@ export class Orchestrator {
         x.history.push({ attempt, role, workerId: res.worker.id, outcome, failedGates: gates?.failed ?? [], eventId, ts: new Date().toISOString(), ...(sig && { sig }) });
       });
       // a second model failing exactly like the previous one: the cause is likely the test, the spec or the environment
-      if (sig && prev?.sig === sig && prev.workerId !== res.worker.id) {
+      // (fix features stop at the 2nd identical failure even with the same model: repeating it only burns budget)
+      if (sig && prev?.sig === sig && (prev.workerId !== res.worker.id || f.id.includes(".fix-"))) {
+        if (await this.repairTest(fNow, wt, gates!)) continue;
         return this.block(fNow, `sem progresso: ${prev.workerId} e ${res.worker.id} falharam igual (gates ${gates!.failed.join(",")}); provável problema no teste, na spec ou no ambiente`);
       }
       if (outcome !== "success") {
@@ -543,6 +631,9 @@ export class Orchestrator {
         continue;
       }
 
+      // minor review findings never reject: they become pendencies in RISCOS.md
+      for (const v of verdicts) for (const i of (v.issues as { severidade?: string; descricao?: string; sugestao?: string }[]).filter((x) => x.severidade === "minor").slice(0, 5))
+        addRisk(ctx, { featureId: f.id, risco: `[revisão ${v.kind}, menor] ${String(i.descricao ?? "").slice(0, 300)}`, probabilidade: "baixa", impacto: "baixo", sugestao: String(i.sugestao ?? "").slice(0, 200) });
       const authors = {
         implementer: res.worker.id,
         attempts: fNow.history.map((h) => `${h.workerId} ${h.outcome === "success" ? "✔" : `✖ ${h.failedGates?.length ? h.failedGates.join(",") : h.outcome}`}`),
@@ -709,7 +800,10 @@ export class Orchestrator {
     await this.useBranch();
     const s = this.state.stage;
     const dir = checkpointDir(ctx, s);
-    const aprovacao = readFileSync(join(dir, "APROVACAO.md"), "utf8"), duvidas = existsSync(join(dir, "DUVIDAS.md")) ? readFileSync(join(dir, "DUVIDAS.md"), "utf8") : "";
+    // one file at the harness root (status, adjustments, answers); the old APROVACAO.md/DUVIDAS.md pair in checkpoints/ is still read for older stages
+    const fb = feedbackFile(ctx, s), single = existsSync(fb);
+    const aprovacao = single ? readFileSync(fb, "utf8") : readFileSync(join(dir, "APROVACAO.md"), "utf8");
+    const duvidas = single ? aprovacao : existsSync(join(dir, "DUVIDAS.md")) ? readFileSync(join(dir, "DUVIDAS.md"), "utf8") : "";
     let a: Approval = parseApprovalFiles(aprovacao, duvidas);
     // same files as the last `approve` (e.g. confirmation answered "n"): reuse the parsed answer instead of paying a model again
     const cacheFile = hp(ctx, "runs", `approve-${s}`, "parsed.json");
@@ -717,7 +811,7 @@ export class Orchestrator {
     const cached = existsSync(cacheFile) ? (JSON.parse(readFileSync(cacheFile, "utf8")) as { key: string; a: Approval }) : undefined;
     if (cached?.key === key) a = cached.a;
     else try {
-      const r = await this.rt.invoke({ role: "approval_parser", taskId: `approve-${s}`, stage: s, attempt: 1, cwd: ctx.root, prompt: render(ctx, "approval_parser", { aprovacao, duvidas, features: stageFeatures(loadFeatures(ctx), s).filter((f) => f.authors).map((f) => `- ${f.id} ${f.title} (arquivos: ${f.authors!.files.slice(0, 15).join(", ")})`).join("\n") || "-" }), schema: ApprovalSchema });
+      const r = await this.rt.invoke({ role: "approval_parser", taskId: `approve-${s}`, stage: s, attempt: 1, cwd: ctx.root, prompt: render(ctx, "approval_parser", { aprovacao, duvidas: single ? "(as respostas das dúvidas estão no mesmo arquivo acima)" : duvidas, features: stageFeatures(loadFeatures(ctx), s).filter((f) => f.authors).map((f) => `- ${f.id} ${f.title} (arquivos: ${f.authors!.files.slice(0, 15).join(", ")})`).join("\n") || "-" }), schema: ApprovalSchema });
       if (r.data) {
         a = { ...r.data, respostasDuvidas: r.data.respostasDuvidas.map((x) => ({ ...x, resposta: resolveAnswer(duvidas, x.id, x.resposta) })) };
         writeJson(cacheFile, { key, a });
@@ -726,7 +820,7 @@ export class Orchestrator {
       if (!(e instanceof NoWorkerError)) throw e;
     }
     const ajustes = a.ajustes.map((x) => (typeof x === "string" ? { titulo: x, descricao: x, criterios: [x], tags: [] as string[], features: [] as string[] } : x));
-    if (!a.aprovado && !ajustes.length) return `✖ APROVACAO.md da etapa ${s} não está preenchido (Status: aprovado, ou ajustes + lista). Nada mudou.`;
+    if (!a.aprovado && !ajustes.length) return `✖ ${single ? `feedback-etapa-${s}.md` : "APROVACAO.md"} da etapa ${s} não está preenchido (Status: aprovado, ou ajustes + lista). Nada mudou.`;
     const summary = [`Etapa ${s}: ${a.aprovado && !ajustes.length ? "APROVADA" : "AJUSTES"}`, ...ajustes.map((x) => `  ajuste: ${x.titulo}`), ...a.respostasDuvidas.map((r) => `  ${r.id}: ${r.resposta}`)].join("\n");
     const ok = await this.deps.confirm(`${summary}\n${ajustes.length ? `→ os ajustes viram features F-${s}.adj-* da MESMA etapa: o harness implementa, refaz os gates da etapa e gera um novo checkpoint (a etapa só fecha com "aprovado").` : `→ a etapa ${s} fecha; a próxima só começa com harness resume, depois que você criar/trocar para a branch dela.`}\nResponda y para confirmar.`);
     this.lastTick = Date.now();   // waiting for the human is not active time
@@ -737,7 +831,7 @@ export class Orchestrator {
       const decisions = join(wt, ctx.config.project.decisionsFile);
       appendFileSync(decisions, `\n\n## Respostas do checkpoint da etapa ${s}\n\n${a.respostasDuvidas.map((r) => `- ${r.id}${r.pergunta ? ` (${r.pergunta})` : ""}: ${r.resposta}`).join("\n")}\n`);
       await this.commitToBranch(wt, `docs(decisoes): respostas do checkpoint da etapa ${s}`);
-      for (const r of a.respostasDuvidas) addLesson(ctx, { rule: `Decisão do humano: ${r.pergunta ? `${r.pergunta} → ` : ""}${r.resposta}`, evidence: [`checkpoints/etapa-${s}/DUVIDAS.md#${r.id}`] });
+      for (const r of a.respostasDuvidas) addLesson(ctx, { rule: `Decisão do humano: ${r.pergunta ? `${r.pergunta} → ` : ""}${r.resposta}`, evidence: [`${single ? `feedback-etapa-${s}.md` : `checkpoints/etapa-${s}/DUVIDAS.md`}#${r.id}`] });
       markAnswered(ctx, a.respostasDuvidas.map((r) => r.id));
     }
     if (ajustes.length) {
@@ -750,6 +844,7 @@ export class Orchestrator {
         difficulty: "easy", dependsOn: [], status: "failing", attempts: 0, costUsd: 0, history: [], origin: x.features,
       }));
       saveFeatures(ctx, all);
+      if (single) { let k = 1; while (existsSync(fb.replace(/\.md$/, `.rodada-${k}.md`))) k++; renameSync(fb, fb.replace(/\.md$/, `.rodada-${k}.md`)); }   // the next checkpoint starts a fresh feedback
       this.state.stageFixRounds = 0;
       this.set("STAGE_RUNNING");
       this.progress(`etapa ${s}: ${ajustes.length} ajuste(s) viraram features F-${s}.adj-*; rodando agora`);
@@ -832,11 +927,12 @@ export class Orchestrator {
   private nextStep(s: State, stageFs: Feature[]) {
     const dir = `checkpoints/etapa-${s.stage}`;
     if (s.phase === "AWAITING_APPROVAL") {
-      const file = join(this.ctx.root, dir, "APROVACAO.md");
+      const name = existsSync(feedbackFile(this.ctx, s.stage)) ? `feedback-etapa-${s.stage}.md` : `${dir}/APROVACAO.md`;
+      const file = join(this.ctx.root, name);
       const a = existsSync(file) ? parseApprovalFiles(readFileSync(file, "utf8"), "") : undefined;
-      if (a?.ajustes.length) return `${dir}/APROVACAO.md tem ${a.ajustes.length} ajuste(s), ainda não processados: rode harness approve`;
-      if (a?.aprovado) return `${dir}/APROVACAO.md está "aprovado", mas a aprovação ainda não foi processada: rode harness approve`;
-      return `testar (${dir}/COMO-TESTAR.md), preencher ${dir}/APROVACAO.md e DUVIDAS.md, depois harness approve`;
+      if (a?.ajustes.length) return `${name} tem ${a.ajustes.length} ajuste(s), ainda não processados: rode harness approve`;
+      if (a?.aprovado) return `${name} está "aprovado", mas a aprovação ainda não foi processada: rode harness approve`;
+      return `testar (${dir}/COMO-TESTAR.md), preencher ${name}, depois harness approve`;
     }
     if (s.phase === "STAGE_RUNNING" && !stageFs.some((f) => f.attempts > 0 || f.status !== "failing")) return `a etapa ${s.stage} ainda não começou: crie/troque para a branch da etapa e rode harness resume`;
     return {

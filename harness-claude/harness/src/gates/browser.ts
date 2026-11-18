@@ -4,11 +4,11 @@ import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } 
 import { createRequire } from "node:module";
 import { join, sep } from "node:path";
 import { execa } from "execa";
-import type { Ctx } from "../config.js";
+import { type Ctx, VISUAL } from "../config.js";
 import { baseEnv } from "../adapters/exec.js";
 import { mutex } from "../state.js";
 
-export const VIEWPORTS = { mobile: { width: 375, height: 812 }, desktop: { width: 1280, height: 800 } } as const;
+export const VIEWPORTS = { mobile: { width: 375, height: 812 } } as const;   // mobile-only app
 export interface AppRoute { path: string; name: string; tags?: string[]; setup?: string }
 
 export function appRequire(appAbs: string) {
@@ -88,18 +88,24 @@ export async function withServer<T>(ctx: Ctx, appAbs: string, fn: (baseUrl: stri
 }
 
 export async function withBrowser<T>(appAbs: string, fn: (browser: any) => Promise<T>): Promise<T> {
-  const browser = await loadPlaywright(appAbs).chromium.launch();
+  const browser = await loadPlaywright(appAbs).chromium.launch(VISUAL() ? { headless: false, slowMo: 400 } : {});
   try { return await fn(browser); } finally { await browser.close(); }
 }
 
 /** Opens each route on each viewport and calls fn(page, route, viewportName). */
-export async function forEachPage(appAbs: string, baseUrl: string, routes: AppRoute[], viewports: Record<string, { width: number; height: number }>, fn: (page: any, r: AppRoute, vp: string) => Promise<void>) {
+export async function forEachPage(appAbs: string, baseUrl: string, routes: AppRoute[], viewports: Record<string, { width: number; height: number }>, fn: (page: any, r: AppRoute, vp: string) => Promise<void>, useSetup = false) {
   await withBrowser(appAbs, async (browser) => {
     for (const [vp, size] of Object.entries(viewports)) {
       const page = await (await browser.newContext({ viewport: size })).newPage();
       for (const r of routes) {
         await page.goto(new URL(r.path, baseUrl).href, { waitUntil: "load" });
         await page.waitForLoadState("networkidle", { timeout: 5000 }).catch(() => {});   // realtime listeners (onSnapshot) never go idle
+        // routes.json `setup`: JS run in the page first (e.g. sign in as the seeded user) so screenshots show real data; the session stays for the next routes
+        if (useSetup && r.setup) {
+          await page.evaluate(`(async () => { ${r.setup} })()`).catch(() => {});
+          await page.waitForLoadState("networkidle", { timeout: 5000 }).catch(() => {});
+          await page.waitForTimeout(1000);
+        }
         await fn(page, r, vp);
       }
       await page.context().close();

@@ -94,6 +94,9 @@ function riscosMd(ctx: Ctx, stage: number) {
 
 // ---------- checkpoint package ----------
 
+/** The single file the human fills in per stage, at the root of the harness folder: status, adjustments and answers to the questions. */
+export const feedbackFile = (ctx: Ctx, stage: number) => join(ctx.root, `feedback-etapa-${stage}.md`);
+
 export const checkpointDir = (ctx: Ctx, stage: number, partial = false) => join(ctx.root, "checkpoints", `etapa-${stage}${partial ? "-parcial" : ""}`);
 
 export interface CheckpointInput { stage: number; partialReason?: string; previewUrl?: string; previewNote?: string; screenshots?: string[]; aprendizados?: string; comoTestar?: string; uiVerdict?: string; suiteNote?: string }
@@ -121,7 +124,7 @@ export function buildCheckpoint(ctx: Ctx, c: CheckpointInput) {
     `\n**Preview:** ${c.previewUrl ?? c.previewNote ?? "não publicado"}`,
     `\n**Resumo:** ${passing.length} de ${fs.length} features entregues${blocked.length ? `, ${blocked.length} bloqueada(s)` : ""}${pending.length ? `, ${pending.length} pendente(s)` : ""} · US$ ${spent(ctx, { stage: c.stage }).toFixed(2)} · ${hours.toFixed(1)} h`,
     `\n| Feature | Status | Feito por | Tentativas | US$ |\n|---|---|---|---|---|\n${fs.map((f) => `| ${f.id} ${f.title} | ${f.status === "passing" ? "✔" : f.status === "blocked" ? "⛔" : "…"} | ${f.authors?.implementer ?? "-"} | ${f.attempts} | ${f.costUsd.toFixed(2)} |`).join("\n")}`,
-    `\n## Próximos passos\n\n1. Testar seguindo \`COMO-TESTAR.md\`.\n2. Preencher \`APROVACAO.md\` (aprovado, ou ajustes: um por linha) e responder \`DUVIDAS.md\`.\n3. \`harness approve\` e responder y. Ajustes rodam na mesma etapa e geram um novo checkpoint.`,
+    `\n## Próximos passos\n\n1. Testar seguindo \`COMO-TESTAR.md\`.\n2. Preencher \`feedback-etapa-${c.stage}.md\` (na raiz do harness): status, ajustes (um por linha) e respostas das dúvidas.\n3. \`harness approve\` e responder y. Ajustes rodam na mesma etapa e geram um novo checkpoint.`,
     `\n## Features entregues (${passing.length}/${fs.length})\n`,
     ...passing.map((f) => `- **${f.id}** ${f.title} — ${f.attempts} tentativa(s), US$ ${f.costUsd.toFixed(2)}${f.covers.length ? ` — critérios: ${f.covers.join(", ")}` : ""}${authorsMd(f)}\n${f.acceptance.map((a) => `  - [x] ${a}`).join("\n")}`),
     `\n## Bloqueadas (${blocked.length})\n`, ...blocked.map((f) => `- **${f.id}** ${f.title}: ${f.blockedReason ?? "-"}`),
@@ -136,10 +139,14 @@ export function buildCheckpoint(ctx: Ctx, c: CheckpointInput) {
     `\n## Aprendizados\n\n${c.aprendizados || "-"}`,
   ].join("\n") + "\n");
   writeFileSync(join(dir, "COMO-TESTAR.md"), `# Como testar — etapa ${c.stage} (${stageName})\n\nPreview: ${c.previewUrl ?? "(local) yarn dev"}\n\n${c.comoTestar ?? "Roteiro não gerado."}\n`);
-  writeFileSync(join(dir, "DUVIDAS.md"), duvidasMd(ctx, c.stage));
+  if (c.partialReason) writeFileSync(join(dir, "DUVIDAS.md"), duvidasMd(ctx, c.stage));
   writeFileSync(join(dir, "RISCOS.md"), riscosMd(ctx, c.stage));
-  if (!existsSync(join(dir, "APROVACAO.md")))
-    writeFileSync(join(dir, "APROVACAO.md"), `# Aprovação — etapa ${c.stage} (${stageName})\n\n<!-- Como funciona:\n  - "aprovado": a etapa fecha. A próxima só começa com \`harness resume\`, depois que você criar/trocar para a branch dela.\n  - "ajustes": liste abaixo. Cada linha vira uma feature F-${c.stage}.adj-* da MESMA etapa (rodada final de ajustes,\n    sem teste de aceite novo). O harness implementa, refaz os gates da etapa e gera um novo checkpoint;\n    você testa de novo e aprova (ou pede mais ajustes).\n  Depois de preencher: \`harness approve\` e responda y. -->\n\nStatus: (aprovado / ajustes)\n\n## Ajustes\n\n<!-- um ajuste por linha, ex.: "- O botão Registrar agora deve ficar fixo no rodapé no celular" -->\n- \n`);
+  if (c.partialReason) {
+    if (!existsSync(join(dir, "APROVACAO.md")))
+      writeFileSync(join(dir, "APROVACAO.md"), `# Aprovação — etapa ${c.stage} (${stageName})\n\nStatus: (aprovado / ajustes)\n\n## Ajustes\n\n- \n`);
+  } else if (!existsSync(feedbackFile(ctx, c.stage))) {
+    writeFileSync(feedbackFile(ctx, c.stage), `# Feedback — etapa ${c.stage} (${stageName})\n\n<!-- Teste seguindo checkpoints/etapa-${c.stage}/COMO-TESTAR.md e preencha este arquivo; depois rode \`harness approve\`.\n  - Status "aprovado": a etapa fecha. A próxima só começa com \`harness resume\`, depois que você criar/trocar para a branch dela.\n  - Status "ajustes": cada linha abaixo vira uma feature F-${c.stage}.adj-* da MESMA etapa (sem teste de aceite novo); o harness implementa,\n    refaz os gates e gera novo checkpoint, com um feedback novo. -->\n\nStatus: (aprovado / ajustes)\n\n## Ajustes\n\n<!-- um ajuste por linha, ex.: "- O botão Registrar agora deve ficar fixo no rodapé no celular" -->\n- \n\n${duvidasMd(ctx, c.stage)}`);
+  }
   return dir;
 }
 
@@ -188,7 +195,7 @@ export function resolveAnswer(duvidas: string, id: string, resposta: string) {
 
 export function parseApprovalFiles(aprovacao: string, duvidas: string): Approval {
   const status = aprovacao.match(/^Status:\s*(.+)$/im)?.[1]?.toLowerCase() ?? "";
-  const ajustes = (aprovacao.split(/^##\s*Ajustes/im)[1] ?? "").split("\n").map((l) => l.match(/^\s*[-*]\s+(.+)$/)?.[1]?.trim()).filter((x): x is string => !!x);
+  const ajustes = (aprovacao.split(/^##\s*Ajustes/im)[1] ?? "").split(/^#{1,2}\s/m)[0].split("\n").map((l) => l.match(/^\s*[-*]\s+(.+)$/)?.[1]?.trim()).filter((x): x is string => !!x);
   const respostasDuvidas = [...duvidas.matchAll(/^###\s*(Q-\d+)\s*\n\s*\*\*Pergunta:\*\*\s*(.*)\n[\s\S]*?^Resposta:[ \t]*(.*)$/gm)]
     .filter((m) => m[3].trim()).map((m) => ({ id: m[1], pergunta: m[2], resposta: resolveAnswer(duvidas, m[1], m[3]) }));
   return { aprovado: /aprovad/.test(status) && !/ajuste/.test(status), ajustes, respostasDuvidas };

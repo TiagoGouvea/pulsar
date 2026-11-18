@@ -18,6 +18,6 @@ export async function captureScreens(ctx: Ctx, appAbs: string, outDir: string, f
       await page.screenshot({ path: file, fullPage: true });
       shots.push(file);
     }
-  })));
+  }, true)));
   return shots;
 }

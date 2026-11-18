@@ -96,6 +96,7 @@ export async function doctor(ctx: Ctx, o: { auth?: boolean; emulators?: boolean 
   // Firebase
   const fbProject = ctx.env.FIREBASE_PROJECT_ID;
   if (!fbProject) add("fail", "firebase projeto", "FIREBASE_PROJECT_ID vazio no .env");
+  else if (!(await version("firebase"))) add(ctx.config.preview.enabled ? "warn" : "info", "firebase CLI", "não encontrado no PATH: o preview online não será publicado (npm i -g firebase-tools && firebase login)");
   else if (await version("firebase")) {
     const r = await sh("firebase", ["projects:list", "--json"], undefined, 60_000);
     add(String(r.stdout).includes(`"${fbProject}"`) ? "ok" : "fail", "firebase projeto", String(r.stdout).includes(`"${fbProject}"`) ? fbProject : `${fbProject} não acessível (firebase login?)`);

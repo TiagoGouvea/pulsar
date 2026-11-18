@@ -112,4 +112,5 @@ export function deps(gate: GateFn = () => true, over: Partial<Deps> = {}): Deps 
 
 export const orch = (ctx: Ctx, d = deps()) => new Orchestrator(ctx, d);
 export { setFakeScript };
-export const approveFile = (root: string, stage: number, body: string) => writeFileSync(join(root, "checkpoints", `etapa-${stage}`, "APROVACAO.md"), body);
+/** The human's answer: one feedback file at the harness root. */
+export const approveFile = (root: string, stage: number, body: string) => writeFileSync(join(root, `feedback-etapa-${stage}.md`), body);

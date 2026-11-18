@@ -28,7 +28,14 @@ caffeinate -dimsu ./harness/bin/harness start
 ./harness/bin/harness pause
 ./harness/bin/harness report
 
-# Aprovação humana de fim de etapa
+# Ver os navegadores e testes na tela, uma tarefa por vez
+HARNESS_VISUAL=1 ./harness/bin/harness resume
+
+# Destravar / aceitar feature (com o harness parado)
+./harness/bin/harness unblock F-2.08      # ou: unblock all
+./harness/bin/harness accept F-2.08       # entrega o código reprovado só em revisão (gates verdes)
+
+# Aprovação humana de fim de etapa: preencha feedback-etapa-N.md (raiz do harness) e rode
 ./harness/bin/harness approve
 ```
 

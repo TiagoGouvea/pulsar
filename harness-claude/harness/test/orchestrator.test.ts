@@ -22,7 +22,8 @@ describe("orquestrador (adapter fake)", () => {
     const o = orch(ctx);
     expect(await o.start()).toBe("AWAITING_APPROVAL");
     expect(loadState(ctx)!.stage).toBe(0);
-    for (const f of ["RELATORIO.md", "COMO-TESTAR.md", "DUVIDAS.md", "RISCOS.md", "APROVACAO.md"]) expect(existsSync(join(root, "checkpoints/etapa-0", f))).toBe(true);
+    for (const f of ["RELATORIO.md", "COMO-TESTAR.md", "RISCOS.md"]) expect(existsSync(join(root, "checkpoints/etapa-0", f))).toBe(true);
+    expect(existsSync(join(root, "feedback-etapa-0.md"))).toBe(true);   // one file for status, adjustments and answers
     expect(readFileSync(join(root, "checkpoints/etapa-0/RELATORIO.md"), "utf8")).toContain("https://test--etapa.web.app");
     approveFile(root, 0, "Status: aprovado\n\n## Ajustes\n");
     expect(await o.approve()).toBe("STAGE_RUNNING");   // approve does not start the next stage
@@ -60,7 +61,7 @@ describe("orquestrador (adapter fake)", () => {
     expect(f.attempts).toBe(5);
     expect(existsSync(join(ctx.repo, ".worktrees", "F-0.01"))).toBe(true);   // kept: unblocking continues from it
     expect(feature(root, "F-0.02").status).toBe("passing");
-    expect(readFileSync(join(root, "checkpoints/etapa-0/DUVIDAS.md"), "utf8")).toContain("F-0.01");
+    expect(readFileSync(join(root, "feedback-etapa-0.md"), "utf8")).toContain("F-0.01");
     expect(readFileSync(join(root, "checkpoints/etapa-0/RISCOS.md"), "utf8")).toContain("F-0.01");
   });
 
@@ -314,7 +315,7 @@ describe("orquestrador (adapter fake)", () => {
     }));
     const o = orch(ctx);
     await o.start();
-    expect(readFileSync(join(root, "checkpoints/etapa-0/DUVIDAS.md"), "utf8")).toContain("Virada do dia às 4h?");
+    expect(readFileSync(join(root, "feedback-etapa-0.md"), "utf8")).toContain("Virada do dia às 4h?");
     approveFile(root, 0, "Status: ajustes\n\n## Ajustes\n- Botão Registrar maior no celular\n");
     expect(await o.approve()).toBe("AWAITING_APPROVAL");
     const adj = feature(root, "F-0.adj-01");
@@ -322,7 +323,100 @@ describe("orquestrador (adapter fake)", () => {
     expect(adj.status).toBe("passing");
     expect(await git(root, "show", "main:DECISOES.md")).toContain("usar 4h");
     expect(loadLessons(ctx, "project").some((l) => l.rule.includes("usar 4h"))).toBe(true);
-    expect(readFileSync(join(root, "checkpoints/etapa-0/DUVIDAS.md"), "utf8")).not.toContain("Virada do dia");
+    expect(existsSync(join(root, "feedback-etapa-0.rodada-1.md"))).toBe(true);   // processed feedback is archived
+    expect(readFileSync(join(root, "feedback-etapa-0.md"), "utf8")).not.toContain("Virada do dia");
     expect(readJsonl(hp(ctx, "inbox", "questions.jsonl"))[0].featureId).toBe("F-0.01");
+  });
+
+  it("13. unblock devolve a feature bloqueada à fila com até 2 tentativas e ela conclui", async () => {
+    const { root, ctx } = await makeProject({ sub: true });
+    setFakeScript(script([{ id: "F-0.01", stage: 0 }]));
+    let broken = true;
+    const o = orch(ctx, deps((cwd, g) => g.mode === "stage" || !(broken && cwd.includes("F-0.01"))));
+    await o.start();
+    expect(feature(root, "F-0.01").status).toBe("blocked");
+    expect(o.unblock(["F-9.99"])).toContain("nenhuma feature bloqueada");
+    broken = false;
+    expect(o.unblock(["F-0.01"])).toContain("F-0.01");
+    expect(feature(root, "F-0.01")).toMatchObject({ status: "failing", attempts: 3 });
+    expect(feature(root, "F-0.01").blockedReason).toBeUndefined();
+    await o.resume();
+    expect(feature(root, "F-0.01").status).toBe("passing");
+  });
+
+  it("14. accept entrega o código de uma feature reprovada só em revisão (gates verdes)", async () => {
+    const { root, ctx, top } = await makeProject();
+    setFakeScript(script([{ id: "F-0.01", stage: 0 }], (run) => (run.role === "review_code" ? { json: { pass: false, score: 4, issues: [{ severidade: "major", arquivo: "x", descricao: "d", sugestao: "s" }] } } : undefined)));
+    const o = orch(ctx);
+    await o.start();
+    expect(feature(root, "F-0.01").status).toBe("blocked");
+    const msg = await o.accept("F-0.01");
+    expect(msg).toContain("entregue");
+    expect(feature(root, "F-0.01").status).toBe("passing");
+    expect(await git(top, "log", "--format=%s%n%b", "-1")).toContain("Accepted-by: human");
+    expect((await listWorktrees(ctx.repo)).includes("F-0.01")).toBe(false);
+    expect(await o.accept("F-0.01")).toContain("já está entregue");
+  });
+
+  it("14b. accept recusa quando os gates da última tentativa falharam", async () => {
+    const { ctx } = await makeProject();
+    setFakeScript(script([{ id: "F-0.01", stage: 0 }]));
+    const o = orch(ctx, deps((cwd, g) => g.mode === "stage" || !cwd.endsWith("F-0.01")));
+    await o.start();
+    expect(await o.accept("F-0.01")).toContain("gates da última tentativa não estão verdes");
+  });
+
+  /** Gate that fails with a recognizable error line (so failures are comparable) while `fail()` says so. */
+  const errorGate = (fail: () => boolean, mention: string) => async (_c: any, _cwd: string, o: any) => ({
+    ok: !fail(), mode: o.mode, stage: o.stage, failed: fail() ? ["G6"] : [],
+    results: [{ id: "G6", name: "e2e", ok: !fail(), required: true, durationMs: 0, output: fail() ? `Error: boom\n  at ${mention}:10:5` : "ok" }],
+  });
+
+  it("15. feature de correção para na 2ª falha idêntica, mesmo com o mesmo modelo", async () => {
+    const { root, ctx } = await makeProject();
+    setFakeScript(script([{ id: "F-0.fix-1", stage: 0 }]));
+    await orch(ctx, deps(() => true, { runGates: (async (c: any, cwd: string, o: any) => (o.mode === "stage" ? { ok: true, mode: "stage", stage: 0, failed: [], results: [] } : errorGate(() => true, "unrelated.ts")(c, cwd, o))) as any })).start();
+    const f = feature(root, "F-0.fix-1");
+    expect(f.status).toBe("blocked");
+    expect(f.attempts).toBe(2);
+    expect(f.blockedReason).toContain("sem progresso");
+  });
+
+  it("16. falha repetida num teste de aceite da própria feature: o teste é corrigido uma vez e a feature continua", async () => {
+    const { root, ctx } = await makeProject();
+    let repaired = false;
+    setFakeScript(script([{ id: "F-0.fix-1", stage: 0 }], (run) => {
+      if (run.role === "test_writer" && run.prompt.includes("reparo de teste")) {
+        repaired = true;
+        return { files: { "app/e2e/F-0.fix-1.spec.ts": `test("ok", () => { expect(1).toBe(1); expect(2).toBe(2); });\n` }, json: { testeDefeituoso: true, summary: "corrida corrigida", filesChanged: [], testsRun: [], confidence: "high", notes: "" } };
+      }
+    }));
+    await orch(ctx, deps(() => true, { runGates: (async (c: any, cwd: string, o: any) => (o.mode === "stage" ? { ok: true, mode: "stage", stage: 0, failed: [], results: [] } : { ...(await errorGate(() => !repaired, "e2e/F-0.fix-1.spec.ts")(c, cwd, o)), failed: repaired ? [] : ["G6"] })) as any })).start();
+    const f = feature(root, "F-0.fix-1");
+    expect(repaired).toBe(true);
+    expect(f.testRepairs).toBe(1);
+    expect(f.status).toBe("passing");
+  });
+
+  it("17. feedback: um arquivo na raiz com placeholders; revisão só rejeita por major/blocker e registra os menores", async () => {
+    const { root, ctx } = await makeProject();
+    setFakeScript(script([{ id: "F-0.01", stage: 0 }], (run) => (run.role === "review_code" ? { json: { pass: false, score: 6, issues: [{ severidade: "minor", arquivo: "x", descricao: "nome pouco claro", sugestao: "renomear" }] } } : undefined)));
+    expect(await orch(ctx).start()).toBe("AWAITING_APPROVAL");
+    expect(feature(root, "F-0.01").status).toBe("passing");
+    const fb = readFileSync(join(root, "feedback-etapa-0.md"), "utf8");
+    expect(fb).toContain("Status: (aprovado / ajustes)");
+    expect(fb).toContain("## Ajustes");
+    expect(readFileSync(join(root, "checkpoints/etapa-0/RISCOS.md"), "utf8")).toContain("nome pouco claro");
+  });
+
+  it("18. erro de lint no teste escrito: o test_writer refaz antes de o teste ser protegido", async () => {
+    const { root, ctx } = await makeProject({ config: { gates: { G7: { name: "protected-tests", builtin: "protected" }, G2: { name: "lint", cmd: "echo 'e2e/F-0.01.spec.ts 1:1 error no-unused-vars'; exit 1" } } } });
+    setFakeScript(script([{ id: "F-0.01", stage: 0 }]));
+    await orch(ctx).start();
+    const f = feature(root, "F-0.01");
+    expect(f.status).toBe("blocked");
+    expect(f.blockedReason).toContain("test_writer não produziu testes");
+    expect(readEvents(ctx).filter((e) => e.featureId === "F-0.01" && e.role === "test_writer").length).toBe(2);   // retried once with the lint output
+    expect(existsSync(hp(ctx, "protected.json"))).toBe(false);   // never registered
   });
 });

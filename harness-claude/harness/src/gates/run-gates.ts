@@ -1,6 +1,6 @@
 import { existsSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import type { Ctx } from "../config.js";
+import { type Ctx, visualCmd } from "../config.js";
 import { runProcess } from "../adapters/exec.js";
 import { git } from "../git.js";
 import { hp } from "../state.js";
@@ -46,7 +46,7 @@ export const runGates: RunGates = (ctx, cwd, o) => withPortLock(ctx, join(cwd, c
     if (o.only && !o.only.includes(id)) continue;
     // {tests}: feature mode runs only the feature's own spec files (the whole suite runs at the stage end)
     const own = (o.tests ?? []).filter((p) => /\.spec\.[cm]?[jt]sx?$/.test(p)).map((p) => p.replace(new RegExp(`^${ctx.config.project.appDir.replace(/\/$/, "")}/`), ""));
-    const cmd = g.cmd?.replace("{tests}", o.mode === "feature" ? own.join(" ") : "");
+    const cmd = g.cmd && visualCmd(g.cmd.replace("{tests}", o.mode === "feature" ? own.join(" ") : ""));
     const skip = o.stage < g.fromStage ? `a partir da etapa ${g.fromStage}` : g.scope === "stage" && o.mode === "feature" && !o.extra?.includes(id) ? "só no fim de etapa"
       : o.mode === "feature" && g.onlyTags && !g.onlyTags.some((t) => o.tags?.includes(t)) ? `só em features ${g.onlyTags.join("/")}`
       : o.mode === "feature" && g.cmd?.includes("{tests}") && !own.length ? "a feature não tem e2e próprio" : undefined;

@@ -17,8 +17,10 @@ const USAGE = `uso: harness <comando> [opções]
   start                                 INIT + loop até o primeiro checkpoint
   resume                                continua do estado atual
   status                                etapa, features, custo, próximo passo
-  approve [--yes]                       processa checkpoints/etapa-N/APROVACAO.md (aprovado: fecha a etapa; a próxima começa no resume)
+  approve [--yes]                       processa feedback-etapa-N.md (raiz do harness) (aprovado: fecha a etapa; a próxima começa no resume)
   pause                                 pausa limpa após as tarefas atuais
+  unblock <F-x.y|all>                   devolve feature bloqueada à fila (orçamento da feature zerado, até 2 tentativas)
+  accept <F-x.y>                        entrega o código de uma feature reprovada em revisão (gates verdes; harness parado)
   report                                custo por etapa, worker, papel e provedor
   models [--stage N]                    performance por modelo (sucesso, veredito, custo, tempo, gates)
   costs                                 gasto registrado vs. o que os provedores informam
@@ -73,6 +75,8 @@ async function main() {
     case "status": return console.log(orch.status());
     case "approve": return run(() => orch.approve());
     case "pause": return console.log(orch.pause());
+    case "unblock": return console.log(orch.unblock(rest));
+    case "accept": return console.log(await orch.accept(rest[0] ?? ""));
     case "report": return console.log(report(ctx));
     case "models": return console.log(modelsReport(ctx, argv.includes("--stage") ? Number(argv[argv.indexOf("--stage") + 1]) : undefined));
     case "costs": return console.log(await costsReport(ctx));

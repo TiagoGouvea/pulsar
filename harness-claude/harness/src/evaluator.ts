@@ -23,8 +23,10 @@ export const FeaturesReviewSchema = z.object({ pass: z.boolean(), issues: z.arra
 export interface Verdict { kind: "code" | "ui" | "features"; pass: boolean; score: number; issues: unknown[]; workerId?: string; porCriterio?: Record<string, number> }
 
 export const CRITICAL_UI = ["c1", "c2", "c3"];
-export const codeRules = (r: z.infer<typeof ReviewCodeSchema>) => r.pass && r.score >= 7 && !r.issues.some((i) => i.severidade === "blocker");
-export const uiRules = (r: z.infer<typeof ReviewUiSchema>) => r.pass && r.score >= 7.5 && CRITICAL_UI.every((c) => (r.porCriterio[c] ?? 10) >= 6);
+/** Only blocker/major issues reject; minor ones are recorded as pendencies. A rejection with no issue listed still rejects. */
+const blocking = (issues: { severidade?: string }[]) => issues.some((i) => i.severidade === "blocker" || i.severidade === "major");
+export const codeRules = (r: z.infer<typeof ReviewCodeSchema>) => !blocking(r.issues) && (r.pass || r.issues.length > 0);
+export const uiRules = (r: z.infer<typeof ReviewUiSchema>) => !blocking(r.issues) && (r.pass || r.issues.length > 0) && CRITICAL_UI.every((c) => (r.porCriterio[c] ?? 10) >= 6);
 
 interface Base { rt: Runtime; f: Pick<Feature, "id" | "stage" | "tags">; cwd: string; attempt: number; implementerFamily: string }
 

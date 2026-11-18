@@ -177,7 +177,7 @@ export class Runtime {
     if (r.workerId) {
       const w = enabledWorkers(this.ctx).find((x) => x.id === r.workerId);
       if (!w) throw new NoWorkerError(`worker ${r.workerId} não habilitado`);
-      const b = breach(this.ctx, w, estimate(this.ctx, w, r.role), { stage: r.stage, featureId: r.featureId });
+      const b = breach(this.ctx, w, estimate(this.ctx, w, r.role), { stage: r.stage, featureId: r.featureId, role: r.role });
       if (b) throw new BudgetError(b);
       return w;
     }
@@ -197,7 +197,7 @@ export class Runtime {
         this.unavailable.add(w.id);
         continue;
       }
-      const b = breach(this.ctx, w, estimate(this.ctx, w, r.role), { stage: r.stage, featureId: r.featureId });
+      const b = breach(this.ctx, w, estimate(this.ctx, w, r.role), { stage: r.stage, featureId: r.featureId, role: r.role });
       if (b) { lastBreach = b; exclude.push(w.id); continue; }
       return w;
     }

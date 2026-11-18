@@ -1,6 +1,6 @@
 // G9 (axe), G10 (overflow + touch targets) and G12 (Lighthouse) run by the harness against the served app.
 import { execa } from "execa";
-import type { Ctx } from "../config.js";
+import { type Ctx, VISUAL } from "../config.js";
 import { appRequire, forEachPage, gateEnv, readRoutes, VIEWPORTS, withServer } from "./browser.js";
 
 type Res = { ok: boolean; output: string };
@@ -16,7 +16,7 @@ export async function a11yGate(ctx: Ctx, appAbs: string): Promise<Res> {
   return result(problems, "zero violações serious/critical");
 }
 
-const WIDTHS = { w320: { width: 320, height: 700 }, w375: { width: 375, height: 812 }, w414: { width: 414, height: 896 } };
+const WIDTHS = { w320: { width: 320, height: 700 }, w375: { width: 375, height: 812 } };   // narrowest phone + the target
 
 export async function layoutGate(ctx: Ctx, appAbs: string): Promise<Res> {
   const problems: string[] = [];
@@ -34,7 +34,7 @@ export async function layoutGate(ctx: Ctx, appAbs: string): Promise<Res> {
     });
     problems.push(...found.map((f) => `${r.name}/${vp}: ${f}`));
   }));
-  return result(problems, "sem overflow e alvos ≥ 44px em 320/375/414");
+  return result(problems, "sem overflow e alvos ≥ 44px em 320/375");
 }
 
 export async function lighthouseGate(ctx: Ctx, appAbs: string): Promise<Res> {
@@ -43,7 +43,7 @@ export async function lighthouseGate(ctx: Ctx, appAbs: string): Promise<Res> {
   await withServer(ctx, appAbs, async (url) => {
     for (const r of readRoutes(ctx, appAbs)) {
       const target = new URL(r.path, url).href;
-      const lh = await execa("npx", ["--yes", "lighthouse", target, "--output=json", "--quiet", "--form-factor=mobile", "--only-categories=performance,accessibility,best-practices", "--chrome-flags=--headless=new"], { cwd: appAbs, env: gateEnv(ctx), extendEnv: false, reject: false, timeout: 300_000 });
+      const lh = await execa("npx", ["--yes", "lighthouse", target, "--output=json", "--quiet", "--form-factor=mobile", "--only-categories=performance,accessibility,best-practices", ...(VISUAL() ? [] : ["--chrome-flags=--headless=new"])], { cwd: appAbs, env: gateEnv(ctx), extendEnv: false, reject: false, timeout: 300_000 });
       if (lh.exitCode !== 0) { problems.push(`${r.name}: lighthouse falhou: ${String(lh.stderr).slice(-300)}`); continue; }
       const cats = JSON.parse(String(lh.stdout)).categories;
       const perf = Math.round(cats.performance.score * 100), a11y = Math.round(cats.accessibility.score * 100);

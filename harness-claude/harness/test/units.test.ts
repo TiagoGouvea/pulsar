@@ -161,9 +161,14 @@ describe("utilitários", () => {
   it("regras de aprovação dos avaliadores", () => {
     expect(codeRules({ pass: true, score: 8, issues: [] })).toBe(true);
     expect(codeRules({ pass: true, score: 9, issues: [{ severidade: "blocker", arquivo: "", descricao: "x", sugestao: "" }] })).toBe(false);
-    expect(codeRules({ pass: true, score: 6.9, issues: [] })).toBe(false);
+    const issue = (severidade: "blocker" | "major" | "minor") => ({ severidade, arquivo: "", descricao: "x", sugestao: "" });
+    // only blocker/major reject; minor issues never do, even when the reviewer marked pass=false
+    expect(codeRules({ pass: false, score: 6, issues: [issue("minor"), issue("minor")] })).toBe(true);
+    expect(codeRules({ pass: true, score: 9, issues: [issue("major")] })).toBe(false);
+    expect(codeRules({ pass: false, score: 3, issues: [] })).toBe(false);   // rejection without a reason still rejects
     expect(uiRules({ pass: true, score: 8, porCriterio: { c1: 9, c2: 5 }, issues: [] })).toBe(false);
-    expect(uiRules({ pass: true, score: 7.4, porCriterio: {}, issues: [] })).toBe(false);
+    expect(uiRules({ pass: false, score: 7.2, porCriterio: {}, issues: [issue("minor")] })).toBe(true);
+    expect(uiRules({ pass: false, score: 7.2, porCriterio: {}, issues: [issue("major")] })).toBe(false);
   });
 
   it("custo: CLI > prices.yaml; assinatura e local custam 0", async () => {
@@ -217,5 +222,17 @@ describe("roteador por custo de um sucesso", () => {
       "fast|implement|*": { tentativas: 5, sucessos: 1, custoMedio: 0.15, duracaoMedia: 84_000, falhasPorGate: {} },
     };
     expect(score(stats, w("fast"), "implement")).toBeGreaterThan(score(stats, w("slow"), "implement"));
+  });
+});
+
+describe("visual mode", () => {
+  it("adds --headed --workers=1 to e2e commands only when HARNESS_VISUAL is on", async () => {
+    const { visualCmd } = await import("../src/config.js");
+    delete process.env.HARNESS_VISUAL;
+    expect(visualCmd("yarn test:e2e a.spec.ts")).toBe("yarn test:e2e a.spec.ts");
+    process.env.HARNESS_VISUAL = "1";
+    expect(visualCmd("yarn test:e2e a.spec.ts")).toBe("yarn test:e2e --headed --workers=1 a.spec.ts");
+    expect(visualCmd("yarn lint")).toBe("yarn lint");
+    delete process.env.HARNESS_VISUAL;
   });
 });
